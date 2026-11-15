@@ -60,10 +60,12 @@ static void testHits(void)
 
 static void testSettings(void)
 {
-    CHECK(settingsSleepMinutes(0) == 0 && settingsSleepMinutes(2) == 30);
-    CHECK(settingsSleepMinutes(-1) == 0 && settingsSleepMinutes(SLEEP_OPTION_COUNT) == 0);
-    CHECK(settingsSleepStep(0, -1) == SLEEP_OPTION_COUNT - 1);
-    CHECK(settingsSleepStep(SLEEP_OPTION_COUNT - 1, 1) == 0);
+    CHECK(settingsSleepStep(0, 1) == 5 && settingsSleepStep(5, 1) == 10);
+    CHECK(settingsSleepStep(0, -1) == 0);                       // Stays off.
+    CHECK(settingsSleepStep(7, 1) == 10 && settingsSleepStep(7, -1) == 5);
+    CHECK(settingsSleepStep(SLEEP_MAX_MINUTES, 1) == SLEEP_MAX_MINUTES);
+    CHECK(settingsSleepClamp(-3) == 0 && settingsSleepClamp(99999) == SLEEP_MAX_MINUTES);
+    CHECK(settingsSleepClamp(42) == 42);
     CHECK(settingsRowEditable(SETTING_SLEEP) && !settingsRowEditable(SETTING_ABOUT));
     CHECK(strcmp(settingsRowLabel(SETTING_CLOCK), "Clock") == 0 && settingsRowLabel(SETTING_COUNT)[0] == '\0');
 

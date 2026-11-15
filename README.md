@@ -123,9 +123,9 @@ music, KaiPlayer switches to Now Playing.
 
 | Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move                         | Move                         | Move                       | —                          |
-| ← →       | Previous / next page         | Previous / next page         | Previous / next page       | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song | Open playlist / play from song | Play this track          | Pause / resume             |
+| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **+ Add to playlist**, ↑ leaves it |
+| →  / ←    | Select the row's **+** / back to the row | Same, inside a playlist | Same                 | Rewind / fast-forward 10 s |
+| A         | Open folder / play from song (or press the selected **‹ Back** or **+**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **+** is selected) |
 | B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Back to Browse             |
 | X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
 | Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
@@ -138,6 +138,7 @@ In every tab:
 | L / R   | Previous / next track |
 | −       | Pause / resume |
 | RS ← →  | Rewind / fast-forward 10 s |
+| RS ↑ ↓  | Previous / next page of a list |
 | +       | Open the menu. Press **+** again to exit KaiPlayer: it asks you to confirm. |
 
 ### The + menu
@@ -146,11 +147,12 @@ In every tab:
 
 | Tab         | Menu items |
 |-------------|------------|
-| Browse      | Add the selected song or folder to a playlist |
 | Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
-| Queue       | Add the selected song to a playlist, save the whole queue as a playlist |
-| Now Playing | Add the current song to a playlist |
+| Queue       | Save the whole queue as a playlist |
 | All         | Settings, and Exit KaiPlayer (asks you to confirm) |
+
+Adding songs to a playlist isn't in the menu: use the **+** buttons (see
+[Playlists](#playlists)).
 
 Use ↑ ↓ and **A** to choose, and **B** to close the menu. To exit, press
 **+** twice and confirm with **A** (or press **+** a third time).
@@ -197,12 +199,14 @@ close with **B**.
 
 | Setting | Values |
 |---------|--------|
-| Sleep timer | Off, 15, 30, 45, 60 or 90 minutes |
+| Sleep timer | Off, or any number of minutes up to 600 |
 | Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
 | About | The KaiPlayer version |
 
-**Sleep timer:** when the time runs out, the music fades out over 10 seconds
+**Sleep timer:** press **A** (or tap the row) to type the minutes on the
+number pad, or use ← → to change it by 5 minutes. **0** turns it off. When
+the time runs out, the music fades out over 10 seconds
 and pauses. The minutes left show in the top right corner. Pausing or
 changing the song during the fade cancels it. The timer isn't saved when you
 exit.
@@ -224,9 +228,9 @@ playlists made on your PC into that folder.
 - **Add songs:** tap the **+** on a song or folder in Browse (a folder adds
   all its songs, subfolders included), on a song in Queue or in another
   playlist, or **+ Add to playlist** in Now Playing. Then pick the playlist,
-  or **New playlist...**. With buttons, select the row, press **+** (the
-  menu) and choose **Add … to playlist**. Songs already in the playlist
-  aren't added twice.
+  or **New playlist...**. With buttons, select the row, press **→** to
+  select its **+**, then **A** (in Now Playing, **↓** then **A**). Songs
+  already in the playlist aren't added twice.
 - **Save the queue:** in Queue, press **+** and choose **Save queue as
   playlist**.
 - **Play:** in the Playlists tab, **X** plays a playlist, **Y** shuffles it,

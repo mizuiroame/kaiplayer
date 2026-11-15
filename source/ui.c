@@ -24,7 +24,7 @@ static void drawBrowser(const App *app)
     char parent[UTIL_PATH_MAX];
     snprintf(parent, sizeof(parent), "%s", b->path);
     if (utilParentPath(parent)) {  // Not at the root: a touch way up.
-        int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6);
+        int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, app->focus == FOCUS_BACK);
         path_x += back_w + 12;
         path_w -= back_w + 12;
     }
@@ -54,18 +54,18 @@ static void drawBrowser(const App *app)
             uiDrawNoteIcon(MARGIN + 4, y + 10, 24, COLOR_ACCENT);
         fontDrawClipped(i == b->cursor ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
                         GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W, e->name, e->is_dir ? COLOR_FOLDER : COLOR_TEXT);
-        uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i);
+        uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
     }
     uiDrawScrollbar(first, b->count);
 }
 
 // One row of the queue: pos is a position in the play order.
-static void drawQueueRow(size_t pos, int y, bool selected, bool current)
+static void drawQueueRow(size_t pos, int y, bool selected, bool current, bool add_focused)
 {
     char path[UTIL_PATH_MAX];
     size_t track;
     if (playerQueueTrack(pos, &track) && playerTrackPath(track, path, sizeof(path)))
-        uiDrawTrackRow(pos + 1, path, y, selected, current, pos);
+        uiDrawTrackRow(pos + 1, path, y, selected, current, pos, add_focused);
 }
 
 static void drawQueue(const App *app, const PlayerStatus *status)
@@ -86,7 +86,8 @@ static void drawQueue(const App *app, const PlayerStatus *status)
     for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
         bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
         uiHitRow(LIST_Y + (int)(i - first) * ROW_H, i);
-        drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current);
+        drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current,
+                     i == cursor && app->focus == FOCUS_ADD);
     }
     uiDrawScrollbar(first, status->track_count);
 }
@@ -219,10 +220,10 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "A open    B back    X play folder    Y shuffle folder    − pause    L/R track    + menu",
-        "A open    X play    Y shuffle    − pause    L/R track    + menu",
-        "A play    B browse    X shuffle    Y repeat    − pause    L/R track    + menu",
-        "A pause    Left/Right seek    X shuffle    Y repeat    L/R track    + menu",
+        "A open    B back    Right: add to playlist    X play folder    Y shuffle    − pause    + menu",
+        "A open    X play    Y shuffle    RS up/down: page    − pause    L/R track    + menu",
+        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    − pause    + menu",
+        "A pause    Left/Right seek    Down: add to playlist    X shuffle    Y repeat    + menu",
     };
     if (app->keyboard_open)
         return "A type    B delete    X shift    Y space    + done    − cancel";
@@ -235,7 +236,7 @@ static const char *footerHelp(const App *app)
     if (app->playlists.moving)
         return "Up/Down move the song    A or B done";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "A play from song    B back    X play    Y shuffle    + menu";
+        return "A play from song    B back    Right: add to playlist    X play    Y shuffle    + menu";
     return HELP[app->view];
 }
 

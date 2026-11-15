@@ -42,6 +42,13 @@ enum {
     MENU_KIND_EXIT,  // "Exit KaiPlayer?"
 };
 
+// What the buttons act on in a list: its rows, "< Back" or a row's "+".
+typedef enum {
+    FOCUS_LIST,
+    FOCUS_BACK,
+    FOCUS_ADD,
+} Focus;
+
 // Where the songs for "add to playlist" come from.
 typedef enum {
     SRC_BROWSE_ENTRY,   // The selected song or folder in Browse.
@@ -62,6 +69,7 @@ typedef struct {
     Browser browser;
     Config config;
     size_t queue_cursor;
+    Focus focus;
     PlaylistsTab playlists;
     bool audio_ok;
     SysInfo sys;  // Clock and battery, refreshed by the main loop.
@@ -76,7 +84,7 @@ typedef struct {
     TrackList pending;      // Songs waiting for a playlist to be picked.
     bool settings_open;
     SettingRow settings_cursor;
-    int sleep_option;           // Index into the sleep timer choices; 0 is off.
+    int sleep_minutes;          // The sleep timer's length; 0 is off.
     uint64_t sleep_deadline_ns; // When the sleep timer fires; 0 if off.
     TouchTracker touch;
     int drag_rows;              // Pixels dragged on a list, not yet a whole row.
@@ -87,6 +95,11 @@ typedef struct {
 
 // Shows a short message above the player bar.
 void appToast(App *app, const char *message);
+
+// Moves the focus between a list, its "< Back" (Up from the first row) and
+// its rows' "+" (Right; Left returns). Returns the buttons left for the
+// list itself, without Left and Right.
+uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, bool has_back, bool has_add);
 
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
 void appHandleBrowser(App *app, uint64_t pressed);
@@ -118,6 +131,8 @@ void appActivateRow(App *app, size_t index, bool select_only);
 void appOpenSettings(App *app);
 void appHandleSettings(App *app, uint64_t pressed);
 void appChangeSetting(App *app, SettingRow row, int delta);
+// A on a row (or a tap): the sleep timer opens the number pad, others change.
+void appActivateSetting(App *app, SettingRow row);
 // Pauses with a fade-out when the sleep timer runs out.
 void appTickSleepTimer(App *app, uint64_t now_ns);
 

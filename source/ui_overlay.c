@@ -84,7 +84,7 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
             snprintf(out, size, "Off");
         } else {
             unsigned left = (unsigned)((app->sleep_deadline_ns - now_ns + NS_PER_MINUTE - 1) / NS_PER_MINUTE);
-            snprintf(out, size, "%d min  (%u left)", settingsSleepMinutes(app->sleep_option), left);
+            snprintf(out, size, "%d min  (%u left)", app->sleep_minutes, left);
         }
         break;
     case SETTING_RESUME: {

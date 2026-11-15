@@ -14,3 +14,7 @@ typedef enum {
 // Shows the Latin keyboard and waits for it. On OK, out holds the text.
 SystemKeyboardResult systemKeyboardInput(const char *title, const char *initial, char *out,
                                          size_t size, size_t max_length);
+
+// Shows the number pad (digits only) and waits for it.
+SystemKeyboardResult systemKeyboardNumber(const char *title, const char *initial, char *out,
+                                          size_t size, size_t max_length);

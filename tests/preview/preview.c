@@ -119,6 +119,9 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->playlists.moving = true;
     render(dir, "playlist_songs", app, status);
     app->playlists.moving = false;
+    app->focus = FOCUS_BACK;
+    render(dir, "playlist_focus_back", app, status);
+    app->focus = FOCUS_LIST;
 
     menuOpen(&app->menu, "Menu");
     menuAdd(&app->menu, "Move song", 0, 0);
@@ -157,7 +160,7 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     // Settings with the sleep timer running (24 minutes left at time 0).
     app->config.resume = RESUME_PLAYING;
     app->config.clock_24h = false;
-    app->sleep_option = 2;
+    app->sleep_minutes = 30;
     app->sleep_deadline_ns = 24ull * 60000000000ull;
     app->view = VIEW_NOW_PLAYING;
     app->settings_open = true;
@@ -193,6 +196,9 @@ int main(int argc, char **argv)
 
     app.view = VIEW_BROWSER;
     render(argv[1], "browse", &app, &status);
+    app.focus = FOCUS_ADD;
+    render(argv[1], "browse_focus_add", &app, &status);
+    app.focus = FOCUS_LIST;
     app.view = VIEW_QUEUE;
     app.queue_cursor = 3;
     render(argv[1], "queue", &app, &status);

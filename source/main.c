@@ -45,12 +45,15 @@ static void handleQueue(App *app, uint64_t pressed)
 {
     PlayerStatus status;
     playerGetStatus(&status);
+    pressed = appFocusFilter(app, pressed, app->queue_cursor, false, status.track_count > 0);
     if (pressed & BUTTONS_UP) moveQueueCursor(app, -1, status.track_count);
     if (pressed & BUTTONS_DOWN) moveQueueCursor(app, 1, status.track_count);
-    if (pressed & BUTTONS_LEFT) moveQueueCursor(app, -PAGE_ROWS, status.track_count);
-    if (pressed & BUTTONS_RIGHT) moveQueueCursor(app, PAGE_ROWS, status.track_count);
+    if (pressed & BUTTONS_PAGE_UP) moveQueueCursor(app, -PAGE_ROWS, status.track_count);
+    if (pressed & BUTTONS_PAGE_DOWN) moveQueueCursor(app, PAGE_ROWS, status.track_count);
     size_t track;
-    if ((pressed & HidNpadButton_A) && playerQueueTrack(app->queue_cursor, &track))
+    if ((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD)
+        appAddToPlaylist(app, SRC_QUEUE_ENTRY);
+    else if ((pressed & HidNpadButton_A) && playerQueueTrack(app->queue_cursor, &track))
         playerJumpTo(track);
     if (pressed & HidNpadButton_B) app->view = VIEW_BROWSER;
     if (pressed & HidNpadButton_X) playerToggleShuffle();
@@ -59,7 +62,13 @@ static void handleQueue(App *app, uint64_t pressed)
 
 static void handleNowPlaying(App *app, uint64_t pressed)
 {
-    if (pressed & HidNpadButton_A) playerTogglePause();
+    // Down puts the focus on "+ Add to playlist"; Up takes it back.
+    if (pressed & BUTTONS_DOWN) app->focus = FOCUS_ADD;
+    if (pressed & BUTTONS_UP) app->focus = FOCUS_LIST;
+    if ((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD)
+        appAddToPlaylist(app, SRC_NOW_PLAYING);
+    else if (pressed & HidNpadButton_A)
+        playerTogglePause();
     if (pressed & HidNpadButton_B) app->view = VIEW_BROWSER;
     if (pressed & BUTTONS_LEFT) playerSeek(-SEEK_STEP_SECONDS);
     if (pressed & BUTTONS_RIGHT) playerSeek(SEEK_STEP_SECONDS);
@@ -71,6 +80,7 @@ static void handleNowPlaying(App *app, uint64_t pressed)
 void appSetView(App *app, View view)
 {
     app->view = view;
+    app->focus = FOCUS_LIST;
     if (app->view == VIEW_QUEUE) {
         PlayerStatus status;
         playerGetStatus(&status);

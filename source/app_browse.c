@@ -50,12 +50,28 @@ static void openSelected(App *app)
 void appHandleBrowser(App *app, uint64_t pressed)
 {
     Browser *b = &app->browser;
+    char parent[UTIL_PATH_MAX];
+    snprintf(parent, sizeof(parent), "%s", b->path);
+    bool has_back = utilParentPath(parent);
+    pressed = appFocusFilter(app, pressed, b->cursor, has_back, b->count > 0);
     if (pressed & BUTTONS_UP) browserMove(b, -1);
     if (pressed & BUTTONS_DOWN) browserMove(b, 1);
-    if (pressed & BUTTONS_LEFT) browserMove(b, -PAGE_ROWS);
-    if (pressed & BUTTONS_RIGHT) browserMove(b, PAGE_ROWS);
-    if (pressed & HidNpadButton_A) openSelected(app);
-    if (pressed & HidNpadButton_B) browserGoUp(b);
+    if (pressed & BUTTONS_PAGE_UP) browserMove(b, -PAGE_ROWS);
+    if (pressed & BUTTONS_PAGE_DOWN) browserMove(b, PAGE_ROWS);
+    if (pressed & HidNpadButton_A) {
+        if (app->focus == FOCUS_BACK) {
+            browserGoUp(b);
+            app->focus = FOCUS_LIST;
+        } else if (app->focus == FOCUS_ADD) {
+            appAddToPlaylist(app, SRC_BROWSE_ENTRY);
+        } else {
+            openSelected(app);
+        }
+    }
+    if (pressed & HidNpadButton_B) {
+        browserGoUp(b);
+        app->focus = FOCUS_LIST;
+    }
     if (pressed & HidNpadButton_X) playFolder(app, b->path, true, NULL, false);
     if (pressed & HidNpadButton_Y) playFolder(app, b->path, true, NULL, true);
 }

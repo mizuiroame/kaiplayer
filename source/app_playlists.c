@@ -131,14 +131,20 @@ static void handleSongs(App *app, uint64_t pressed)
         handleMoving(app, pressed);
         return;
     }
+    pressed = appFocusFilter(app, pressed, t->track_cursor, true, t->tracks.count > 0);
     if (pressed & BUTTONS_UP) moveCursor(&t->track_cursor, -1, t->tracks.count);
     if (pressed & BUTTONS_DOWN) moveCursor(&t->track_cursor, 1, t->tracks.count);
-    if (pressed & BUTTONS_LEFT) moveCursor(&t->track_cursor, -PAGE_ROWS, t->tracks.count);
-    if (pressed & BUTTONS_RIGHT) moveCursor(&t->track_cursor, PAGE_ROWS, t->tracks.count);
-    if (pressed & HidNpadButton_A) playPlaylist(app, t->track_cursor, false);
+    if (pressed & BUTTONS_PAGE_UP) moveCursor(&t->track_cursor, -PAGE_ROWS, t->tracks.count);
+    if (pressed & BUTTONS_PAGE_DOWN) moveCursor(&t->track_cursor, PAGE_ROWS, t->tracks.count);
+    bool back = (pressed & HidNpadButton_B) || ((pressed & HidNpadButton_A) && app->focus == FOCUS_BACK);
+    if ((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD)
+        appAddToPlaylist(app, SRC_PLAYLIST_SONG);
+    else if ((pressed & HidNpadButton_A) && app->focus == FOCUS_LIST)
+        playPlaylist(app, t->track_cursor, false);
     if (pressed & HidNpadButton_X) playPlaylist(app, 0, false);
     if (pressed & HidNpadButton_Y) playPlaylist(app, 0, true);
-    if (pressed & HidNpadButton_B) {
+    if (back) {
+        app->focus = FOCUS_LIST;
         appPlaylistsClose(app);
         appPlaylistsRefresh(app);
     }
@@ -151,10 +157,11 @@ void appHandlePlaylists(App *app, uint64_t pressed)
         handleSongs(app, pressed);
         return;
     }
+    pressed = appFocusFilter(app, pressed, t->cursor, false, false);
     if (pressed & BUTTONS_UP) moveCursor(&t->cursor, -1, t->index.count);
     if (pressed & BUTTONS_DOWN) moveCursor(&t->cursor, 1, t->index.count);
-    if (pressed & BUTTONS_LEFT) moveCursor(&t->cursor, -PAGE_ROWS, t->index.count);
-    if (pressed & BUTTONS_RIGHT) moveCursor(&t->cursor, PAGE_ROWS, t->index.count);
+    if (pressed & BUTTONS_PAGE_UP) moveCursor(&t->cursor, -PAGE_ROWS, t->index.count);
+    if (pressed & BUTTONS_PAGE_DOWN) moveCursor(&t->cursor, PAGE_ROWS, t->index.count);
     if (pressed & HidNpadButton_A) openSelected(app);
     if (pressed & HidNpadButton_X) playPlaylist(app, 0, false);
     if (pressed & HidNpadButton_Y) playPlaylist(app, 0, true);

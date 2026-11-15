@@ -1,18 +1,23 @@
 #include "settings.h"
 
-static const int SLEEP_MINUTES[SLEEP_OPTION_COUNT] = {0, 15, 30, 45, 60, 90};
 static const char *const ROW_LABELS[SETTING_COUNT] = {
     "Sleep timer", "Resume where you left off", "Clock", "About",
 };
 
-int settingsSleepMinutes(int option)
+int settingsSleepClamp(long minutes)
 {
-    return option >= 0 && option < SLEEP_OPTION_COUNT ? SLEEP_MINUTES[option] : 0;
+    return minutes < 0 ? 0 : minutes > SLEEP_MAX_MINUTES ? SLEEP_MAX_MINUTES : (int)minutes;
 }
 
-int settingsSleepStep(int option, int delta)
+int settingsSleepStep(int minutes, int delta)
 {
-    return ((option + delta) % SLEEP_OPTION_COUNT + SLEEP_OPTION_COUNT) % SLEEP_OPTION_COUNT;
+    minutes = settingsSleepClamp(minutes);
+    int step = minutes / SLEEP_STEP_MINUTES;
+    if (delta > 0)
+        step += delta;
+    else if (delta < 0)
+        step += minutes % SLEEP_STEP_MINUTES ? delta + 1 : delta;  // 7 goes down to 5.
+    return settingsSleepClamp((long)step * SLEEP_STEP_MINUTES);
 }
 
 const char *settingsRowLabel(SettingRow row)

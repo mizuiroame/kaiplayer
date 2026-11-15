@@ -60,6 +60,7 @@ static void tapRegion(App *app, const HitRegion *r, int x)
         return;
     PlayerStatus status;
     playerGetStatus(&status);
+    app->focus = FOCUS_LIST;  // Touch moves away from button focus.
     switch (r->kind) {
     case HIT_TAB: appSetView(app, (View)r->arg); break;
     case HIT_MENU_BUTTON:
@@ -95,7 +96,7 @@ static void tapRegion(App *app, const HitRegion *r, int x)
         break;
     case HIT_SETTING:
         app->settings_cursor = (SettingRow)r->arg;
-        appChangeSetting(app, (SettingRow)r->arg, 1);
+        appActivateSetting(app, (SettingRow)r->arg);
         break;
     case HIT_BACK: appDispatchButtons(app, HidNpadButton_B); break;
     case HIT_ADD: addFromRow(app, r->arg); break;

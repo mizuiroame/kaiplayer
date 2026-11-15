@@ -12,12 +12,14 @@ typedef enum {
     SETTING_COUNT,
 } SettingRow;
 
-#define SLEEP_OPTION_COUNT 6
+#define SLEEP_STEP_MINUTES 5
+#define SLEEP_MAX_MINUTES 600  // 10 hours.
 
-// Minutes for a sleep timer option; option 0 is off.
-int settingsSleepMinutes(int option);
-// Steps an option by delta, wrapping around.
-int settingsSleepStep(int option, int delta);
+// Moves the sleep timer by delta steps of 5 minutes, to the next multiple
+// of 5, within 0 (off) and SLEEP_MAX_MINUTES.
+int settingsSleepStep(int minutes, int delta);
+// Clamps typed minutes to 0..SLEEP_MAX_MINUTES.
+int settingsSleepClamp(long minutes);
 
 // Label and current value of a row, for drawing.
 const char *settingsRowLabel(SettingRow row);

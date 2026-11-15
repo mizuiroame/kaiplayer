@@ -15,7 +15,6 @@ typedef enum {
     ACT_EXIT,           // Asks to confirm.
     ACT_EXIT_CONFIRMED,
     ACT_SETTINGS,
-    ACT_ADD,            // arg: AddSource. Opens the picker.
     ACT_PICK,           // arg: playlist index. Adds the pending songs.
     ACT_PICK_NEW,       // Names a new playlist for the pending songs.
     ACT_SAVE_QUEUE,
@@ -64,27 +63,12 @@ void appOpenMenu(App *app)
     playerGetStatus(&status);
     menuOpen(&app->menu, "Menu");
     app->menu.kind = MENU_KIND_MAIN;
-    const BrowserEntry *entry = browserSelected(&app->browser);
-    switch (app->view) {
-    case VIEW_BROWSER:
-        if (entry)
-            menuAdd(&app->menu, entry->is_dir ? "Add folder to playlist" : "Add song to playlist", ACT_ADD,
-                    SRC_BROWSE_ENTRY);
-        break;
-    case VIEW_PLAYLISTS:
+    // Adding songs to a playlist is on the + buttons of each row and of Now
+    // Playing, so the menu keeps the actions that have no button.
+    if (app->view == VIEW_PLAYLISTS)
         addPlaylistItems(app);
-        break;
-    case VIEW_QUEUE:
-        if (status.track_count > 0) {
-            menuAdd(&app->menu, "Add song to playlist", ACT_ADD, SRC_QUEUE_ENTRY);
-            menuAdd(&app->menu, "Save queue as playlist", ACT_SAVE_QUEUE, 0);
-        }
-        break;
-    default:
-        if (status.track_count > 0)
-            menuAdd(&app->menu, "Add this song to playlist", ACT_ADD, SRC_NOW_PLAYING);
-        break;
-    }
+    else if (app->view == VIEW_QUEUE && status.track_count > 0)
+        menuAdd(&app->menu, "Save queue as playlist", ACT_SAVE_QUEUE, 0);
     menuAdd(&app->menu, "Settings", ACT_SETTINGS, 0);
     menuAdd(&app->menu, "Exit KaiPlayer", ACT_EXIT, 0);
 }
@@ -225,7 +209,6 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_EXIT: confirmExit(app); break;
     case ACT_EXIT_CONFIRMED: app->quit = true; break;
     case ACT_SETTINGS: appOpenSettings(app); break;
-    case ACT_ADD: appAddToPlaylist(app, (AddSource)item->arg); break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
             addPendingTo(app, app->playlists.index.names[item->arg]);

@@ -102,7 +102,7 @@ static void drawTransport(const PlayerStatus *status)
     drawHint(cx + 120, cy + 26, "R");
 }
 
-static void drawToggles(const PlayerStatus *status)
+static void drawToggles(const PlayerStatus *status, bool add_focused)
 {
     int x = INFO_X;
     const char *shuffle = status->shuffle ? "X  Shuffle on" : "X  Shuffle off";
@@ -116,7 +116,7 @@ static void drawToggles(const PlayerStatus *status)
     if (status->track_count > 0) {  // Add the current song to a playlist.
         static const char ADD[] = "+  Add to playlist";
         x += uiPillWidth(repeat) + 12;
-        uiDrawPill(x, TOGGLES_Y, ADD, false);
+        uiDrawPill(x, TOGGLES_Y, ADD, add_focused);
         uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(ADD), 46, HIT_ADD, -1);
     }
 }
@@ -131,7 +131,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
     drawInfo(status, track);
     drawProgress(app, status);
     drawTransport(status);
-    drawToggles(status);
+    drawToggles(status, app->focus == FOCUS_ADD);
     if (app->toast[0] && now_ns < app->toast_until_ns)
         fontDrawClipped(FONT_REGULAR, 17, INFO_X, TOGGLES_Y + 52, INFO_W, app->toast, COLOR_ERROR);
 }

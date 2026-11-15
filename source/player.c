@@ -34,6 +34,7 @@ static u64 g_played_frames;
 static double g_duration;
 static char g_error[160];
 static unsigned g_generation;
+static double g_seeking_to = -1.0;  // A seek the audio thread is running.
 static u64 g_fade_total;  // Frames of the running fade-out, 0 if none.
 static u64 g_fade_left;
 
@@ -189,14 +190,15 @@ static bool fillBuffer(AudioOutBuffer *buffer, float gain_start, float gain_end)
 
 static void applySeek(double seconds)
 {
-    if (!g_decoder)
-        return;
-    u64 frame = (u64)(seconds * decoderSampleRate(g_decoder));
-    if (!decoderSeek(g_decoder, frame))
-        return;
-    resamplerReset(&g_resampler, decoderSampleRate(g_decoder), g_out_rate);
+    bool ok = false;
+    if (g_decoder && decoderSeek(g_decoder, (u64)(seconds * decoderSampleRate(g_decoder)))) {
+        resamplerReset(&g_resampler, decoderSampleRate(g_decoder), g_out_rate);
+        ok = true;
+    }
     mutexLock(&g_lock);
-    g_played_frames = (u64)(seconds * g_out_rate);
+    if (ok)
+        g_played_frames = (u64)(seconds * g_out_rate);
+    g_seeking_to = -1.0;
     mutexUnlock(&g_lock);
 }
 
@@ -207,6 +209,7 @@ static void handleCommands(void)
     double seek = g_seek_target;
     g_load_pending = false;
     g_seek_target = -1.0;
+    g_seeking_to = seek;  // Still reported as the position until it's done.
     mutexUnlock(&g_lock);
 
     // Every command that loads a track clears the seek target, except a
@@ -215,8 +218,13 @@ static void handleCommands(void)
     // failed and another was loaded, or the UI asked for a different one.
     if (load && !loadCurrent())
         seek = -1.0;
-    if (seek >= 0.0)
+    if (seek >= 0.0) {
         applySeek(seek);
+    } else {
+        mutexLock(&g_lock);
+        g_seeking_to = -1.0;
+        mutexUnlock(&g_lock);
+    }
 }
 
 // Moves the fade-out on by one buffer; at silence, pauses.
@@ -552,7 +560,11 @@ void playerGetStatus(PlayerStatus *out)
     out->generation = g_generation;
     out->fading = g_fade_total != 0 && g_state == PLAYER_PLAYING;
     out->track_count = g_list.count;
-    out->position = g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
+    // A seek that is asked for or running shows its target, so the progress
+    // bar doesn't flash back to the old position meanwhile.
+    out->position = g_seek_target >= 0.0 ? g_seek_target
+                  : g_seeking_to >= 0.0  ? g_seeking_to
+                  : g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
     out->duration = g_duration;
     out->shuffle = g_shuffle;
     out->repeat = g_repeat;
