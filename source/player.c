@@ -33,6 +33,7 @@ static double g_seek_target = -1.0;
 static u64 g_played_frames;
 static double g_duration;
 static char g_error[160];
+static unsigned g_generation;
 
 // Owned by the audio thread.
 static Thread g_thread;
@@ -58,7 +59,8 @@ static void installDecoder(Decoder *d)
 }
 
 // Opens the queue's current track, skipping files that fail to open.
-static void loadCurrent(void)
+// Returns true if the track that was current on entry is now loaded.
+static bool loadCurrent(void)
 {
     char path[UTIL_PATH_MAX];
     for (int attempt = 0; attempt < MAX_OPEN_FAILURES; attempt++) {
@@ -66,7 +68,7 @@ static void loadCurrent(void)
         if (g_list.count == 0) {
             mutexUnlock(&g_lock);
             installDecoder(NULL);
-            return;
+            return false;
         }
         snprintf(path, sizeof(path), "%s", g_list.paths[queueCurrent(&g_queue)]);
         mutexUnlock(&g_lock);
@@ -78,14 +80,15 @@ static void loadCurrent(void)
             g_played_frames = 0;
             u64 total = decoderTotalFrames(d);
             g_duration = total ? (double)total / decoderSampleRate(d) : 0.0;
+            bool requested = attempt == 0 && !g_load_pending;
             mutexUnlock(&g_lock);
             installDecoder(d);
-            return;
+            return requested;
         }
         if (g_load_pending) {
             // The UI changed the queue meanwhile; handleCommands loads its pick.
             mutexUnlock(&g_lock);
-            return;
+            return false;
         }
         snprintf(g_error, sizeof(g_error), "Could not open: %s", utilFileName(path));
         queueNext(&g_queue, true);
@@ -96,6 +99,7 @@ static void loadCurrent(void)
     mutexLock(&g_lock);
     g_state = PLAYER_STOPPED;
     mutexUnlock(&g_lock);
+    return false;
 }
 
 static void stopPlayback(void)
@@ -198,9 +202,13 @@ static void handleCommands(void)
     g_seek_target = -1.0;
     mutexUnlock(&g_lock);
 
-    if (load)
-        loadCurrent();
-    else if (seek >= 0.0)
+    // Every command that loads a track clears the seek target, except a
+    // restore, which loads and then seeks to the saved position.
+    // A restore's seek belongs to the track it loads: drop it if that track
+    // failed and another was loaded, or the UI asked for a different one.
+    if (load && !loadCurrent())
+        seek = -1.0;
+    if (seek >= 0.0)
         applySeek(seek);
 }
 
@@ -320,13 +328,14 @@ void playerExit(void)
     trackListFree(&g_list);
 }
 
-void playerPlay(TrackList *list, size_t start)
+// Replaces the list and starts at start. Call with the lock held.
+static void startListLocked(TrackList *list, size_t start)
 {
-    mutexLock(&g_lock);
     trackListFree(&g_list);
     queueFree(&g_queue);
     g_list = *list;
     *list = (TrackList){0};
+    g_generation++;
     if (queueInit(&g_queue, g_list.count, start, g_shuffle, armGetSystemTick())) {
         g_queue.repeat = g_repeat;
         g_state = PLAYER_PLAYING;
@@ -338,7 +347,38 @@ void playerPlay(TrackList *list, size_t start)
     } else {
         g_state = PLAYER_STOPPED;
     }
+}
+
+void playerPlay(TrackList *list, size_t start)
+{
+    mutexLock(&g_lock);
+    startListLocked(list, start);
     mutexUnlock(&g_lock);
+}
+
+void playerRestore(TrackList *list, size_t track, double position)
+{
+    mutexLock(&g_lock);
+    startListLocked(list, track);
+    if (g_state == PLAYER_PLAYING) {
+        g_state = PLAYER_PAUSED;
+        g_seek_target = position > 0.0 ? position : -1.0;
+    }
+    mutexUnlock(&g_lock);
+}
+
+bool playerSnapshot(TrackList *out, size_t *track, double *position)
+{
+    mutexLock(&g_lock);
+    bool ok = g_list.count > 0 && trackListCopy(out, &g_list);
+    if (ok) {
+        *track = queueCurrent(&g_queue);
+        // Right after a restore the seek may not have happened yet.
+        *position = g_seek_target >= 0.0 ? g_seek_target
+                  : g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
+    }
+    mutexUnlock(&g_lock);
+    return ok;
 }
 
 // Loads the queue's current track and plays it. Call with the lock held.
@@ -441,6 +481,7 @@ void playerGetStatus(PlayerStatus *out)
     out->state = g_state;
     out->track = queueCurrent(&g_queue);
     out->queue_pos = g_queue.pos;
+    out->generation = g_generation;
     out->track_count = g_list.count;
     out->position = g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
     out->duration = g_duration;

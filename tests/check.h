@@ -21,3 +21,4 @@ extern int g_checks;
 void testTags(void);
 void testCover(void);
 void testFixtures(void);
+void testPlaylists(void);

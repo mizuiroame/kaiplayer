@@ -25,25 +25,6 @@ bool libraryIsSystemFolder(const char *parent, const char *name)
     return false;
 }
 
-static bool appendPath(TrackList *list, const char *path)
-{
-    if (list->count >= LIBRARY_MAX_TRACKS)
-        return true;
-    if (list->count == list->capacity) {
-        size_t capacity = list->capacity ? list->capacity * 2 : 64;
-        char **grown = realloc(list->paths, capacity * sizeof(char *));
-        if (!grown)
-            return false;
-        list->paths = grown;
-        list->capacity = capacity;
-    }
-    char *copy = strdup(path);
-    if (!copy)
-        return false;
-    list->paths[list->count++] = copy;
-    return true;
-}
-
 static bool scanDir(TrackList *list, const char *folder, bool recursive, int depth, size_t *budget)
 {
     DIR *dir = opendir(folder);
@@ -64,7 +45,7 @@ static bool scanDir(TrackList *list, const char *folder, bool recursive, int dep
                 !libraryIsSystemFolder(folder, entry->d_name))
                 ok = scanDir(list, path, recursive, depth + 1, budget);
         } else if (utilIsAudioFile(entry->d_name)) {
-            ok = appendPath(list, path);
+            ok = trackListAdd(list, path);
         }
     }
     closedir(dir);
@@ -87,21 +68,4 @@ bool libraryScan(TrackList *out, const char *folder, bool recursive)
     if (out->count > 1)
         qsort(out->paths, out->count, sizeof(char *), comparePaths);
     return true;
-}
-
-void trackListFree(TrackList *list)
-{
-    for (size_t i = 0; i < list->count; i++)
-        free(list->paths[i]);
-    free(list->paths);
-    *list = (TrackList){0};
-}
-
-size_t trackListFind(const TrackList *list, const char *path)
-{
-    for (size_t i = 0; i < list->count; i++) {
-        if (strcmp(list->paths[i], path) == 0)
-            return i;
-    }
-    return list->count;
 }

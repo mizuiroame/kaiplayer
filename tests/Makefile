@@ -11,8 +11,9 @@ LDFLAGS := $(SAN) -lm
 OBJDIR  := build
 
 TESTED  := util.c queue.c resampler.c decoder.c library.c browser.c \
-           tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c
-TESTS   := test_main.c test_tags.c test_cover.c
+           tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
+           tracklist.c playlist.c resume.c keyboard.c menu.c
+TESTS   := test_main.c test_tags.c test_cover.c test_playlist.c
 PARSERS := util.c decoder.c tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
            codecs_impl.c image_impl.c
 ITER    ?= 1000

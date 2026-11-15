@@ -1,0 +1,29 @@
+// A list of choices shown over the current tab: the + menu, the playlist
+// picker and confirmations.
+#pragma once
+
+#include <stdbool.h>
+
+#define MENU_MAX_ITEMS 520  // The picker lists up to 512 playlists.
+#define MENU_LABEL_MAX 96
+
+typedef struct {
+    char label[MENU_LABEL_MAX];
+    int action;  // What choosing the item does; defined by the app.
+    int arg;     // Extra data, such as a playlist index.
+} MenuItem;
+
+typedef struct {
+    bool open;
+    char title[MENU_LABEL_MAX];
+    MenuItem items[MENU_MAX_ITEMS];
+    int count;
+    int cursor;
+} Menu;
+
+void menuOpen(Menu *m, const char *title);
+void menuClose(Menu *m);
+// Adds an item. False if the menu is full.
+bool menuAdd(Menu *m, const char *label, int action, int arg);
+void menuMove(Menu *m, int delta);
+const MenuItem *menuSelected(const Menu *m);

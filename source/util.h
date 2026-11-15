@@ -26,6 +26,20 @@ bool utilJoinPath(char *out, size_t size, const char *dir, const char *name);
 // Returns false if the path is already a root ("sdmc:/").
 bool utilParentPath(char *path);
 
+// Collapses "." and ".." components and repeated slashes, in place.
+// "sdmc:/a/./b/../c" -> "sdmc:/a/c". False if ".." goes above the root.
+bool utilNormalizePath(char *path);
+
+// Resolves a path read from a playlist against the playlist's folder:
+// "sdmc:/x" stays absolute, "/x" is on base_dir's device, anything else is
+// relative to base_dir. Backslashes count as slashes. The result is
+// normalized. False if it doesn't fit or leaves the device root.
+bool utilResolvePath(const char *base_dir, const char *ref, char *out, size_t size);
+
+// Writes target relative to from_dir ("../Music/a.mp3"), or target itself
+// when they are on different devices. Both must be normalized absolute paths.
+bool utilRelativePath(const char *from_dir, const char *target, char *out, size_t size);
+
 // Case-insensitive ASCII comparison, for sorting names.
 int utilCompareNames(const char *a, const char *b);
 

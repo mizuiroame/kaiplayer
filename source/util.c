@@ -71,6 +71,129 @@ bool utilParentPath(char *path)
     return true;
 }
 
+// Length of a device prefix such as "sdmc:/", or 0 if the path has none.
+static size_t devicePrefix(const char *path)
+{
+    const char *colon = strstr(path, ":/");
+    return colon && !memchr(path, '/', (size_t)(colon - path)) ? (size_t)(colon - path) + 2 : 0;
+}
+
+bool utilNormalizePath(char *path)
+{
+    size_t prefix = devicePrefix(path);
+    bool absolute = prefix > 0 || path[0] == '/';
+    if (!prefix && absolute)
+        prefix = 1;
+    char *out = path + prefix;  // Written components, separated by '/'.
+    size_t len = 0;
+    const char *p = path + prefix;
+    while (*p) {
+        while (*p == '/')
+            p++;
+        const char *end = strchr(p, '/');
+        size_t n = end ? (size_t)(end - p) : strlen(p);
+        if (n == 0)
+            break;
+        if (n == 1 && p[0] == '.') {
+            // Skip.
+        } else if (n == 2 && p[0] == '.' && p[1] == '.') {
+            if (len == 0)
+                return false;
+            while (len > 0 && out[len - 1] != '/')
+                len--;
+            if (len > 0)
+                len--;  // The slash before the dropped component.
+        } else {
+            if (len > 0)
+                out[len++] = '/';
+            memmove(out + len, p, n);
+            len += n;
+        }
+        p += n;
+    }
+    out[len] = '\0';
+    return true;
+}
+
+bool utilResolvePath(const char *base_dir, const char *ref, char *out, size_t size)
+{
+    char clean[UTIL_PATH_MAX];
+    int n = snprintf(clean, sizeof(clean), "%s", ref);
+    if (n < 0 || (size_t)n >= sizeof(clean))
+        return false;
+    for (char *c = clean; *c; c++) {
+        if (*c == '\\')
+            *c = '/';
+    }
+
+    int written;
+    if (devicePrefix(clean)) {
+        written = snprintf(out, size, "%s", clean);
+    } else if (clean[0] == '/') {
+        size_t prefix = devicePrefix(base_dir);
+        written = snprintf(out, size, "%.*s%s", (int)(prefix ? prefix - 1 : 0), base_dir, clean);
+    } else {
+        written = utilJoinPath(out, size, base_dir, clean) ? 0 : -1;
+    }
+    return written >= 0 && (size_t)written < size && utilNormalizePath(out);
+}
+
+// Splits a normalized path after its device prefix into components.
+static int splitComponents(const char *path, const char **parts, size_t *lens, int max)
+{
+    const char *p = path + devicePrefix(path);
+    int count = 0;
+    while (*p && count < max) {
+        const char *end = strchr(p, '/');
+        size_t n = end ? (size_t)(end - p) : strlen(p);
+        parts[count] = p;
+        lens[count++] = n;
+        p += n;
+        if (*p == '/')
+            p++;
+    }
+    return count;
+}
+
+#define MAX_COMPONENTS 64
+
+bool utilRelativePath(const char *from_dir, const char *target, char *out, size_t size)
+{
+    size_t from_prefix = devicePrefix(from_dir), target_prefix = devicePrefix(target);
+    if (from_prefix != target_prefix || strncmp(from_dir, target, from_prefix) != 0) {
+        int n = snprintf(out, size, "%s", target);
+        return n >= 0 && (size_t)n < size;
+    }
+    const char *a[MAX_COMPONENTS], *b[MAX_COMPONENTS];
+    size_t alen[MAX_COMPONENTS], blen[MAX_COMPONENTS];
+    int na = splitComponents(from_dir, a, alen, MAX_COMPONENTS);
+    int nb = splitComponents(target, b, blen, MAX_COMPONENTS);
+    int common = 0;
+    while (common < na && common < nb && alen[common] == blen[common] &&
+           strncmp(a[common], b[common], alen[common]) == 0)
+        common++;
+
+    size_t pos = 0;
+    out[0] = '\0';
+    for (int i = common; i < na; i++) {
+        if (pos + 3 >= size)
+            return false;
+        memcpy(out + pos, "../", 3);
+        pos += 3;
+    }
+    for (int i = common; i < nb; i++) {
+        size_t need = blen[i] + (i + 1 < nb ? 1 : 0);
+        if (pos + need >= size)
+            return false;
+        memcpy(out + pos, b[i], blen[i]);
+        pos += blen[i];
+        if (i + 1 < nb)
+            out[pos++] = '/';
+    }
+    out[pos] = '\0';
+    return true;
+}
+
 int utilCompareNames(const char *a, const char *b)
 {
     for (;; a++, b++) {

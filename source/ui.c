@@ -4,56 +4,16 @@
 #include <string.h>
 
 #include "ui_common.h"
+#include "ui_list.h"
 
-#define SUBTITLE_Y 76
-#define LIST_Y 108
-#define ROW_H 44
 #define MINI_Y 572
 #define MINI_H 92
 #define THUMB_SIZE ARTWORK_SMALL_SIZE
-#define TEXT_ROW 22
-#define TEXT_SMALL 18
-#define QUEUE_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16)
-#define QUEUE_FOLDER_MAX_W 360
 #define TAB_GAP 28
 #define BATTERY_LOW 15
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 
-static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Queue", "Now Playing"};
-
-// First row to show so that the cursor stays near the middle.
-static size_t firstVisible(size_t cursor, size_t count)
-{
-    if (count <= UI_LIST_ROWS || cursor < UI_LIST_ROWS / 2)
-        return 0;
-    size_t first = cursor - UI_LIST_ROWS / 2;
-    return first + UI_LIST_ROWS > count ? count - UI_LIST_ROWS : first;
-}
-
-static void drawSelection(int y)
-{
-    gfxFillRoundRect(MARGIN - 12, y + 2, GFX_WIDTH - 2 * (MARGIN - 12), ROW_H - 4, 8, COLOR_SURFACE_HI);
-    gfxFillRect(MARGIN - 12, y + 10, 3, ROW_H - 20, COLOR_ACCENT);
-}
-
-static void drawFolderIcon(int x, int y, Color color)
-{
-    gfxFillRoundRect(x, y, 10, 6, 2, color);
-    gfxFillRoundRect(x, y + 3, 22, 15, 3, color);
-}
-
-static void drawScrollbar(size_t first, size_t count)
-{
-    if (count <= UI_LIST_ROWS)
-        return;
-    int track_h = UI_LIST_ROWS * ROW_H;
-    int thumb_h = track_h * UI_LIST_ROWS / (int)count;
-    if (thumb_h < 24)
-        thumb_h = 24;
-    int thumb_y = LIST_Y + (int)((long)(track_h - thumb_h) * (long)first / (long)(count - UI_LIST_ROWS));
-    gfxFillRoundRect(GFX_WIDTH - 12, LIST_Y, 4, track_h, 2, COLOR_SURFACE);
-    gfxFillRoundRect(GFX_WIDTH - 12, thumb_y, 4, thumb_h, 2, COLOR_FAINT);
-}
+static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue", "Now Playing"};
 
 static void drawBrowser(const App *app)
 {
@@ -71,55 +31,35 @@ static void drawBrowser(const App *app)
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, "This folder has no subfolders or music.", COLOR_DIM);
         return;
     }
-    size_t first = firstVisible(b->cursor, b->count);
+    size_t first = uiFirstVisible(b->cursor, b->count);
     for (size_t i = first; i < b->count && i < first + UI_LIST_ROWS; i++) {
         int y = LIST_Y + (int)(i - first) * ROW_H;
         const BrowserEntry *e = &b->entries[i];
         if (i == b->cursor)
-            drawSelection(y);
+            uiDrawSelection(y, COLOR_ACCENT);
         if (e->is_dir)
-            drawFolderIcon(MARGIN + 4, y + 13, COLOR_FOLDER);
+            uiDrawFolderIcon(MARGIN + 4, y + 13, COLOR_FOLDER);
         else
             uiDrawNoteIcon(MARGIN + 4, y + 10, 24, COLOR_ACCENT);
         fontDrawClipped(i == b->cursor ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
                         GFX_WIDTH - 2 * MARGIN - 60, e->name, e->is_dir ? COLOR_FOLDER : COLOR_TEXT);
     }
-    drawScrollbar(first, b->count);
+    uiDrawScrollbar(first, b->count);
 }
 
 // One row of the queue: pos is a position in the play order.
 static void drawQueueRow(size_t pos, int y, bool selected, bool current)
 {
-    char path[UTIL_PATH_MAX], title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX], number[24];
+    char path[UTIL_PATH_MAX];
     size_t track;
-    if (!playerQueueTrack(pos, &track) || !playerTrackPath(track, path, sizeof(path)))
-        return;
-    uiSplitTrackPath(path, title, folder);
-    if (selected)
-        drawSelection(y);
-
-    snprintf(number, sizeof(number), "%zu", pos + 1);
-    int number_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, number);
-    if (current)
-        gfxFillTriangleRight(MARGIN + 34, y + 14, 12, 16, COLOR_ACCENT);
-    else
-        fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN + 46 - number_w, y + 11, number, COLOR_FAINT);
-
-    int folder_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, folder);
-    if (folder_w > QUEUE_FOLDER_MAX_W)
-        folder_w = QUEUE_FOLDER_MAX_W;
-    int folder_x = QUEUE_RIGHT_EDGE - folder_w;
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, folder_x, y + 11, folder_w, folder, COLOR_DIM);
-    fontDrawClipped(current || selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
-                    folder_x - (MARGIN + 66) - 24, title, current ? COLOR_ACCENT : COLOR_TEXT);
+    if (playerQueueTrack(pos, &track) && playerTrackPath(track, path, sizeof(path)))
+        uiDrawTrackRow(pos + 1, path, y, selected, current);
 }
 
 static void drawQueue(const App *app, const PlayerStatus *status)
 {
     if (status->track_count == 0) {
-        fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, "Queue is empty", COLOR_DIM);
-        fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10,
-                 "Pick a folder in Browse and press X to play it.", COLOR_DIM);
+        uiDrawEmptyList("Queue is empty", "Pick a folder in Browse or a playlist, and press X to play it.");
         return;
     }
     // The rows follow the play order, so a shuffled queue shows its real order.
@@ -129,12 +69,12 @@ static void drawQueue(const App *app, const PlayerStatus *status)
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
 
     size_t cursor = app->queue_cursor < status->track_count ? app->queue_cursor : 0;
-    size_t first = firstVisible(cursor, status->track_count);
+    size_t first = uiFirstVisible(cursor, status->track_count);
     for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
         bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
         drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current);
     }
-    drawScrollbar(first, status->track_count);
+    uiDrawScrollbar(first, status->track_count);
 }
 
 static void drawButtonHint(int x, int y, const char *label)
@@ -240,14 +180,28 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
 }
 
-static void drawFooter(const App *app)
+static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "A open    B back    X play folder    Y shuffle folder    − pause    L/R track    + exit",
-        "A play    B browse    X shuffle    Y repeat    − pause    L/R track    + exit",
-        "A pause    Left/Right seek    X shuffle    Y repeat    L/R track    + exit",
+        "A open    B back    X play folder    Y shuffle folder    − pause    L/R track    + menu",
+        "A open    X play    Y shuffle    − pause    L/R track    + menu",
+        "A play    B browse    X shuffle    Y repeat    − pause    L/R track    + menu",
+        "A pause    Left/Right seek    X shuffle    Y repeat    L/R track    + menu",
     };
-    fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, HELP[app->view], COLOR_DIM);
+    if (app->keyboard_open)
+        return "A type    B delete    X shift    Y space    + done    − cancel";
+    if (app->menu.open)
+        return "A choose    B close    + + exit";
+    if (app->playlists.moving)
+        return "Up/Down move the song    A or B done";
+    if (app->view == VIEW_PLAYLISTS && app->playlists.open)
+        return "A play from song    B back    X play    Y shuffle    + menu";
+    return HELP[app->view];
+}
+
+static void drawFooter(const App *app)
+{
+    fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, footerHelp(app), COLOR_DIM);
 }
 
 void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
@@ -265,11 +219,14 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
                      "Audio unavailable: audout could not start.", COLOR_ERROR);
         else if (app->view == VIEW_BROWSER)
             drawBrowser(app);
+        else if (app->view == VIEW_PLAYLISTS)
+            uiDrawPlaylists(app, status);
         else
             drawQueue(app, status);
         drawMiniPlayer(app, status, &track, now_ns);
     }
     drawHeader(app);
-    drawFooter(app);
+    uiDrawOverlay(app, now_ns);
+    drawFooter(app);  // Over the dimmed screen, so the overlay's help reads well.
     artworkUnlock();
 }

@@ -6,9 +6,9 @@ card and KaiPlayer plays the music in it.
 
 ![Now Playing](docs/screenshots/now_playing.png)
 
-| Browse | Queue |
-|--------|-------|
-| ![Browse](docs/screenshots/browse.png) | ![Queue](docs/screenshots/queue.png) |
+| Browse | Playlists | Queue |
+|--------|-----------|-------|
+| ![Browse](docs/screenshots/browse.png) | ![Playlists](docs/screenshots/playlists.png) | ![Queue](docs/screenshots/queue.png) |
 
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
@@ -16,6 +16,8 @@ card and KaiPlayer plays the music in it.
 - [For users: install the .nro](#for-users-install-the-nro)
 - [Supported audio formats](#supported-audio-formats)
 - [Controls](#controls)
+- [Playlists](#playlists)
+- [Resume where you left off](#resume-where-you-left-off)
 - [Song details and album art](#song-details-and-album-art)
 - [File names and tags](#file-names-and-tags)
 - [Troubleshooting](#troubleshooting)
@@ -113,18 +115,18 @@ and WMA won't be added, because they need paid licenses.
 
 ## Controls
 
-KaiPlayer has three tabs: **Browse**, **Queue** and **Now Playing**. Press
-**ZL** / **ZR** to move between them. When you start playing music, KaiPlayer
-switches to Now Playing.
+KaiPlayer has four tabs: **Browse**, **Playlists**, **Queue** and **Now
+Playing**. Press **ZL** / **ZR** to move between them. When you start playing
+music, KaiPlayer switches to Now Playing.
 
-| Button    | Browse                          | Queue                   | Now Playing                |
-|-----------|---------------------------------|-------------------------|----------------------------|
-| ↑ ↓ / LS  | Move                            | Move                    | —                          |
-| ← →       | Previous / next page            | Previous / next page    | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song    | Play this track         | Pause / resume             |
-| B         | Go up one folder                | Back to Browse          | Back to Browse             |
-| X         | Play the whole folder           | Shuffle on / off        | Shuffle on / off           |
-| Y         | Shuffle the whole folder        | Repeat: off / queue / song | Repeat: off / queue / song |
+| Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
+|-----------|------------------------------|------------------------------|----------------------------|----------------------------|
+| ↑ ↓ / LS  | Move                         | Move                         | Move                       | —                          |
+| ← →       | Previous / next page         | Previous / next page         | Previous / next page       | Rewind / fast-forward 10 s |
+| A         | Open folder / play from song | Open playlist / play from song | Play this track          | Pause / resume             |
+| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Back to Browse             |
+| X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
+| Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
 
 In every tab:
 
@@ -134,7 +136,21 @@ In every tab:
 | L / R   | Previous / next track |
 | −       | Pause / resume |
 | RS ← →  | Rewind / fast-forward 10 s |
-| +       | Exit |
+| +       | Open the menu. Press **+** twice to exit KaiPlayer. |
+
+### The + menu
+
+**+** opens a menu with actions for the current tab:
+
+| Tab         | Menu items |
+|-------------|------------|
+| Browse      | Add the selected song or folder to a playlist |
+| Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
+| Queue       | Add the selected song to a playlist, save the whole queue as a playlist |
+| Now Playing | Add the current song to a playlist |
+| All         | Exit KaiPlayer |
+
+Use ↑ ↓ and **A** to choose, and **B** to close the menu.
 
 Use the console's volume buttons to change the volume; KaiPlayer plays at
 full level and has no volume of its own. The top right corner shows the
@@ -152,6 +168,46 @@ tab lists the songs in the shuffled order they will play in.
 
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.
+
+### Playlists
+
+Playlists are saved as standard `.m3u8` files in `sdmc:/playlists/`, with
+paths relative to that folder (for example `../Music/Album/01 Song.flac`).
+Other music players can read them, and you can also copy `.m3u` or `.m3u8`
+playlists made on your PC into that folder.
+
+- **Create one:** in the Playlists tab, press **+** and choose
+  **New playlist**. Or, in any tab, choose **Add … to playlist** and then
+  **New playlist...**.
+- **Add songs:** in Browse, select a song or a folder (the whole folder,
+  subfolders included, is added); in Queue, select a song; in Now Playing,
+  the current song. Then press **+** and choose **Add … to playlist**. Songs
+  already in the playlist aren't added twice.
+- **Save the queue:** in Queue, press **+** and choose **Save queue as
+  playlist**.
+- **Play:** in the Playlists tab, **X** plays a playlist, **Y** shuffles it,
+  and **A** opens it to play from a song.
+- **Reorder:** open a playlist, select a song, press **+** and choose **Move
+  song**. Move it with ↑ ↓ and press **A** to place it.
+- **Remove a song, rename or delete a playlist:** with **+** in the
+  Playlists tab. Deleting a playlist doesn't delete any songs.
+
+Playlist names are typed on KaiPlayer's keyboard, which has Latin letters,
+digits, spaces and `- _ . ( ) ' & ! + ,`. Names with other characters would
+be hidden on Switch 2 (see [File names and tags](#file-names-and-tags)). On
+the keyboard, **A** types, **B** deletes, **X** is Shift, **Y** is a space,
+**+** finishes and **−** cancels.
+
+If a playlist names a song that is no longer on the card, KaiPlayer skips it
+when playing.
+
+### Resume where you left off
+
+KaiPlayer remembers the queue, the current song and the position. When you
+open it again, it starts in Now Playing, paused at that spot: press **A** to
+continue. It saves this in `sdmc:/config/kaiplayer/resume.m3u8` and
+`resume.txt` when the song changes, when you pause, every 30 seconds while
+playing, and when you exit.
 
 ### Song details and album art
 
@@ -238,6 +294,8 @@ followed by the file size.
 | `?` in titles | The character isn't in KaiPlayer's font or in the console's fonts. |
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
 | The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
+| A playlist name isn't accepted | Use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`, up to 48 characters, and a name no other playlist has. |
+| A playlist made on the PC doesn't appear | It must be in `sdmc:/playlists/`, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
 ---
@@ -327,9 +385,15 @@ source/
   gfx.c           drawing: shapes, gradients, images
   gfx_switch.c    the console framebuffer
   font.c          anti-aliased text with the embedded fonts
-  ui*.c           the Browse, Queue and Now Playing tabs
+  ui*.c           the tabs, the menu and the keyboard
   config.c        settings saved on the SD card
   input.c         button auto-repeat
+  tracklist.c     lists of song paths (folders, playlists, the queue)
+  playlist.c      .m3u8 playlists in sdmc:/playlists
+  resume.c        saves and restores the last queue and position
+  keyboard.c      the on-screen keyboard for playlist names
+  menu.c          the + menu and dialogs
+  app_*.c         input handling for each tab, the menu and resume
 data/           Noto Sans Regular and Bold, embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
 tests/          host tests, fuzzer, fixtures and the UI preview

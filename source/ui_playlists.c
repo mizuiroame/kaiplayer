@@ -1,0 +1,75 @@
+// The Playlists tab: the list of playlists, or the songs of an open one.
+#include <stdio.h>
+#include <string.h>
+
+#include "ui.h"
+#include "ui_common.h"
+#include "ui_list.h"
+
+static void drawPlaylistIcon(int x, int y, Color color)
+{
+    for (int i = 0; i < 3; i++)
+        gfxFillRoundRect(x, y + i * 6, 14, 3, 1, color);
+    gfxFillCircle(x + 19, y + 15, 4, color);
+    gfxFillRect(x + 22, y + 1, 2, 15, color);
+}
+
+static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status)
+{
+    char line[160];
+    if (t->tracks.count == 0) {
+        snprintf(line, sizeof(line), "%s  ·  empty", t->name);
+        uiDrawEmptyList(line, "Add songs with + in Browse, Queue or Now Playing.");
+        return;
+    }
+    snprintf(line, sizeof(line), "%s  ·  %zu song%s%s", t->name, t->tracks.count,
+             t->tracks.count == 1 ? "" : "s", t->moving ? "  ·  moving a song" : "");
+    fontDrawClipped(FONT_BOLD, TEXT_SMALL, MARGIN, SUBTITLE_Y, GFX_WIDTH - 2 * MARGIN, line,
+                    t->moving ? COLOR_FOLDER : COLOR_DIM);
+
+    char playing[UTIL_PATH_MAX] = "";
+    if (status->state != PLAYER_STOPPED)
+        playerTrackPath(status->track, playing, sizeof(playing));
+    size_t first = uiFirstVisible(t->track_cursor, t->tracks.count);
+    for (size_t i = first; i < t->tracks.count && i < first + UI_LIST_ROWS; i++) {
+        int y = LIST_Y + (int)(i - first) * ROW_H;
+        bool selected = i == t->track_cursor;
+        bool current = playing[0] && strcmp(playing, t->tracks.paths[i]) == 0;
+        if (selected && t->moving)
+            uiDrawSelection(y, COLOR_FOLDER);  // A different bar while moving.
+        uiDrawTrackRow(i + 1, t->tracks.paths[i], y, selected && !t->moving, current);
+    }
+    uiDrawScrollbar(first, t->tracks.count);
+}
+
+static void drawList(const PlaylistsTab *t)
+{
+    if (t->index.count == 0) {
+        uiDrawEmptyList("No playlists yet",
+                        "Press + to create one, or to add songs from Browse, Queue or Now Playing.");
+        return;
+    }
+    char line[96];
+    snprintf(line, sizeof(line), "%zu playlist%s  ·  sdmc:/playlists", t->index.count, t->index.count == 1 ? "" : "s");
+    fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
+
+    size_t first = uiFirstVisible(t->cursor, t->index.count);
+    for (size_t i = first; i < t->index.count && i < first + UI_LIST_ROWS; i++) {
+        int y = LIST_Y + (int)(i - first) * ROW_H;
+        bool selected = i == t->cursor;
+        if (selected)
+            uiDrawSelection(y, COLOR_ACCENT);
+        drawPlaylistIcon(MARGIN + 4, y + 13, COLOR_ACCENT);
+        fontDrawClipped(selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
+                        GFX_WIDTH - 2 * MARGIN - 60, t->index.names[i], COLOR_TEXT);
+    }
+    uiDrawScrollbar(first, t->index.count);
+}
+
+void uiDrawPlaylists(const App *app, const PlayerStatus *status)
+{
+    if (app->playlists.open)
+        drawSongs(&app->playlists, status);
+    else
+        drawList(&app->playlists);
+}

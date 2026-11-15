@@ -56,5 +56,11 @@ const char *uiRepeatLabel(RepeatMode repeat);
 int uiPillWidth(const char *label);
 void uiDrawPill(int x, int y, const char *label, bool on);
 
+// The Playlists tab (ui_playlists.c).
+void uiDrawPlaylists(const App *app, const PlayerStatus *status);
+
+// The + menu and the keyboard, drawn over everything (ui_overlay.c).
+void uiDrawOverlay(const App *app, uint64_t now_ns);
+
 // The Now Playing view (ui_now.c).
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns);

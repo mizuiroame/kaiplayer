@@ -100,6 +100,53 @@ static void loadArtwork(const char *cover_path)
     g_has_art = true;
 }
 
+static char *const PLAYLIST_NAMES[] = {"Chill evenings", "Road Trip 2026", "Workout"};
+
+static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status)
+{
+    app->view = VIEW_PLAYLISTS;
+    app->playlists.index = (PlaylistIndex){(char **)PLAYLIST_NAMES, 3};
+    app->playlists.cursor = 1;
+    render(dir, "playlists", app, status);
+
+    static char *paths[TRACK_COUNT];
+    for (size_t i = 0; i < TRACK_COUNT; i++)
+        paths[i] = (char *)TRACKS[i];
+    app->playlists.open = true;
+    snprintf(app->playlists.name, sizeof(app->playlists.name), "%s", "Road Trip 2026");
+    app->playlists.tracks = (TrackList){paths, TRACK_COUNT, TRACK_COUNT};
+    app->playlists.track_cursor = 3;
+    app->playlists.moving = true;
+    render(dir, "playlist_songs", app, status);
+    app->playlists.moving = false;
+
+    menuOpen(&app->menu, "Menu");
+    menuAdd(&app->menu, "Move song", 0, 0);
+    menuAdd(&app->menu, "Remove song from playlist", 0, 0);
+    menuAdd(&app->menu, "Rename \"Road Trip 2026\"", 0, 0);
+    menuAdd(&app->menu, "Delete \"Road Trip 2026\"", 0, 0);
+    menuAdd(&app->menu, "Exit KaiPlayer", 0, 0);
+    app->menu.cursor = 1;
+    render(dir, "menu", app, status);
+
+    app->view = VIEW_BROWSER;
+    menuOpen(&app->menu, "Add \"01 - Overpass.mp3\" to");
+    menuAdd(&app->menu, "New playlist...", 0, 0);
+    for (int i = 0; i < 3; i++)
+        menuAdd(&app->menu, PLAYLIST_NAMES[i], 0, 0);
+    app->menu.cursor = 2;
+    render(dir, "picker", app, status);
+    menuClose(&app->menu);
+
+    app->keyboard_open = true;
+    keyboardInit(&app->keyboard, "Late night dr");
+    app->keyboard.row = 2;
+    app->keyboard.col = 4;
+    snprintf(app->keyboard_title, sizeof(app->keyboard_title), "%s", "Name for the new playlist");
+    render(dir, "keyboard", app, status);
+    app->keyboard_open = false;
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 2 || !fontInit()) {
@@ -145,6 +192,8 @@ int main(int argc, char **argv)
     app.browser.incomplete = true;
     app.sys.charging = true;
     render(argv[1], "browse_incomplete", &app, &status);
+    app.browser.incomplete = false;
+    renderPlaylistScenes(argv[1], &app, &status);
     fontExit();
     return 0;
 }

@@ -1,17 +1,17 @@
 // KaiPlayer: a music player for Switch 2 homebrew (kaiHEN + libounce).
-// Browse the SD card, pick a folder and play its MP3, FLAC, Ogg Vorbis and
-// WAV files.
+// Browse the SD card, pick a folder or a playlist and play its MP3, FLAC,
+// Ogg Vorbis and WAV files.
 #include <stdio.h>
 #include <string.h>
 
 #include <switch.h>
 
 #include "app.h"
+#include "app_buttons.h"
 #include "artwork.h"
 #include "font.h"
 #include "gfx.h"
 #include "input.h"
-#include "library.h"
 #include "player.h"
 #include "sysinfo.h"
 #include "ui.h"
@@ -19,13 +19,6 @@
 #define TOAST_NS 3000000000ull
 #define SEEK_STEP_SECONDS 10.0
 #define PAGE_ROWS UI_LIST_ROWS
-
-#define BUTTONS_UP (HidNpadButton_Up | HidNpadButton_StickLUp)
-#define BUTTONS_DOWN (HidNpadButton_Down | HidNpadButton_StickLDown)
-#define BUTTONS_LEFT (HidNpadButton_Left | HidNpadButton_StickLLeft)
-#define BUTTONS_RIGHT (HidNpadButton_Right | HidNpadButton_StickLRight)
-#define BUTTONS_REPEATING (BUTTONS_UP | BUTTONS_DOWN | BUTTONS_LEFT | BUTTONS_RIGHT | \
-                           HidNpadButton_StickRLeft | HidNpadButton_StickRRight)
 
 static uint64_t nowNs(void)
 {
@@ -36,62 +29,6 @@ void appToast(App *app, const char *message)
 {
     snprintf(app->toast, sizeof(app->toast), "%s", message);
     app->toast_until_ns = nowNs() + TOAST_NS;
-}
-
-// Scans folder and starts playing it, from start_name if given, or from a
-// random track when shuffled.
-static void playFolder(App *app, const char *folder, bool recursive, const char *start_name, bool shuffle)
-{
-    TrackList list;
-    if (!libraryScan(&list, folder, recursive)) {
-        appToast(app, "Out of memory for the track list.");
-        return;
-    }
-    if (list.count == 0) {
-        trackListFree(&list);
-        appToast(app, "No music in this folder.");
-        return;
-    }
-    size_t start = shuffle ? (size_t)(armGetSystemTick() % list.count) : 0;
-    char path[UTIL_PATH_MAX];
-    if (start_name && utilJoinPath(path, sizeof(path), folder, start_name)) {
-        size_t found = trackListFind(&list, path);
-        start = found < list.count ? found : 0;
-    }
-    if (shuffle)
-        playerSetShuffle(true);
-    playerPlay(&list, start);
-    app->view = VIEW_NOW_PLAYING;
-    snprintf(app->config.folder, sizeof(app->config.folder), "%s", folder);
-    configSave(&app->config);
-}
-
-static void openSelected(App *app)
-{
-    const BrowserEntry *e = browserSelected(&app->browser);
-    if (!e)
-        return;
-    if (!e->is_dir) {
-        playFolder(app, app->browser.path, false, e->name, false);
-        return;
-    }
-    char path[UTIL_PATH_MAX];
-    if (!utilJoinPath(path, sizeof(path), app->browser.path, e->name) ||
-        !browserOpen(&app->browser, path))
-        appToast(app, "Could not open the folder.");
-}
-
-static void handleBrowser(App *app, uint64_t pressed)
-{
-    Browser *b = &app->browser;
-    if (pressed & BUTTONS_UP) browserMove(b, -1);
-    if (pressed & BUTTONS_DOWN) browserMove(b, 1);
-    if (pressed & BUTTONS_LEFT) browserMove(b, -PAGE_ROWS);
-    if (pressed & BUTTONS_RIGHT) browserMove(b, PAGE_ROWS);
-    if (pressed & HidNpadButton_A) openSelected(app);
-    if (pressed & HidNpadButton_B) browserGoUp(b);
-    if (pressed & HidNpadButton_X) playFolder(app, b->path, true, NULL, false);
-    if (pressed & HidNpadButton_Y) playFolder(app, b->path, true, NULL, true);
 }
 
 static void moveQueueCursor(App *app, long delta, size_t count)
@@ -138,6 +75,8 @@ static void switchView(App *app, int delta)
         PlayerStatus status;
         playerGetStatus(&status);
         app->queue_cursor = status.queue_pos;
+    } else if (app->view == VIEW_PLAYLISTS && !app->playlists.open) {
+        appPlaylistsRefresh(app);
     }
 }
 
@@ -150,6 +89,27 @@ static void handleGlobal(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_R) playerNext();
     if (pressed & HidNpadButton_StickRLeft) playerSeek(-SEEK_STEP_SECONDS);
     if (pressed & HidNpadButton_StickRRight) playerSeek(SEEK_STEP_SECONDS);
+}
+
+static void handleInput(App *app, uint64_t pressed)
+{
+    if (appHandleOverlay(app, pressed))
+        return;
+    if (app->playlists.moving) {  // Moving a song takes all the buttons, + too.
+        appHandlePlaylists(app, pressed);
+        return;
+    }
+    if (pressed & HidNpadButton_Plus) {
+        appOpenMenu(app);
+        return;
+    }
+    switch (app->view) {
+    case VIEW_BROWSER: appHandleBrowser(app, pressed); break;
+    case VIEW_PLAYLISTS: appHandlePlaylists(app, pressed); break;
+    case VIEW_QUEUE: handleQueue(app, pressed); break;
+    default: handleNowPlaying(app, pressed); break;
+    }
+    handleGlobal(app, pressed);
 }
 
 // Keeps the console awake while music plays, and surfaces player errors.
@@ -192,6 +152,37 @@ static void saveSettings(App *app)
     configSave(&app->config);
 }
 
+static void runLoop(App *app)
+{
+    PadState pad;
+    padInitializeDefault(&pad);
+    InputRepeat repeat;
+    inputRepeatInit(&repeat, BUTTONS_REPEATING);
+    PlayerState last_state = PLAYER_STOPPED;
+    char last_error[sizeof(((PlayerStatus *)0)->error)] = "";
+
+    while (!app->quit && appletMainLoop()) {
+        padUpdate(&pad);
+        uint64_t now = nowNs();
+        uint64_t pressed = inputRepeatUpdate(&repeat, padGetButtonsDown(&pad), padGetButtons(&pad), now);
+        if (app->audio_ok) {
+            handleInput(app, pressed);
+            syncWithPlayer(app, &last_state, last_error, sizeof(last_error));
+            appSaveSession(app, now, false);
+        } else if (pressed & HidNpadButton_Plus) {
+            app->quit = true;
+        }
+
+        PlayerStatus status;
+        playerGetStatus(&status);
+        requestArtwork(&status);
+        sysinfoGet(&app->sys, now);
+        gfxBegin();
+        uiDraw(app, &status, now);
+        gfxEnd();
+    }
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -199,12 +190,7 @@ int main(int argc, char **argv)
 
     static App app;
     configLoad(&app.config);
-
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
-    PadState pad;
-    padInitializeDefault(&pad);
-    InputRepeat repeat;
-    inputRepeatInit(&repeat, BUTTONS_REPEATING);
 
     if (!gfxInit())
         return 1;
@@ -216,43 +202,22 @@ int main(int argc, char **argv)
     sysinfoInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
     openStartFolder(&app);
+    if (app.audio_ok)
+        appRestoreSession(&app);
 
-    PlayerState last_state = PLAYER_STOPPED;
-    char last_error[sizeof(((PlayerStatus *)0)->error)] = "";
-    while (appletMainLoop()) {
-        padUpdate(&pad);
-        uint64_t now = nowNs();
-        uint64_t pressed = inputRepeatUpdate(&repeat, padGetButtonsDown(&pad), padGetButtons(&pad), now);
-        if (pressed & HidNpadButton_Plus)
-            break;
-
-        if (app.audio_ok) {
-            if (app.view == VIEW_BROWSER)
-                handleBrowser(&app, pressed);
-            else if (app.view == VIEW_QUEUE)
-                handleQueue(&app, pressed);
-            else
-                handleNowPlaying(&app, pressed);
-            handleGlobal(&app, pressed);
-            syncWithPlayer(&app, &last_state, last_error, sizeof(last_error));
-        }
-
-        PlayerStatus status;
-        playerGetStatus(&status);
-        requestArtwork(&status);
-        sysinfoGet(&app.sys, now);
-        gfxBegin();
-        uiDraw(&app, &status, now);
-        gfxEnd();
-    }
+    runLoop(&app);
 
     if (app.audio_ok) {
+        appSaveSession(&app, nowNs(), true);
         saveSettings(&app);
         appletSetMediaPlaybackState(false);
         playerExit();
     }
     artworkExit();
     sysinfoExit();
+    appPlaylistsClose(&app);
+    playlistIndexFree(&app.playlists.index);
+    trackListFree(&app.pending);
     browserFree(&app.browser);
     fontExit();
     gfxExit();
