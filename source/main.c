@@ -67,10 +67,10 @@ static void handleNowPlaying(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_Y) playerCycleRepeat();
 }
 
-// ZL and ZR move between the tabs. Opening the queue shows the current track.
-static void switchView(App *app, int delta)
+// Opening the queue shows the current track; Playlists reloads its list.
+void appSetView(App *app, View view)
 {
-    app->view = (View)((app->view + VIEW_COUNT + delta) % VIEW_COUNT);
+    app->view = view;
     if (app->view == VIEW_QUEUE) {
         PlayerStatus status;
         playerGetStatus(&status);
@@ -78,6 +78,44 @@ static void switchView(App *app, int delta)
     } else if (app->view == VIEW_PLAYLISTS && !app->playlists.open) {
         appPlaylistsRefresh(app);
     }
+}
+
+// ZL and ZR move between the tabs.
+static void switchView(App *app, int delta)
+{
+    appSetView(app, (View)((app->view + VIEW_COUNT + delta) % VIEW_COUNT));
+}
+
+void appActivateRow(App *app, size_t index, bool select_only)
+{
+    PlayerStatus status;
+    playerGetStatus(&status);
+    PlaylistsTab *t = &app->playlists;
+    // The index comes from the last frame; a list that shrank since makes it stale.
+    switch (app->view) {
+    case VIEW_BROWSER:
+        if (index >= app->browser.count)
+            return;
+        app->browser.cursor = index;
+        break;
+    case VIEW_PLAYLISTS:
+        if (t->moving || index >= (t->open ? t->tracks.count : t->index.count))
+            return;
+        if (t->open)
+            t->track_cursor = index;
+        else
+            t->cursor = index;
+        break;
+    case VIEW_QUEUE:
+        if (index >= status.track_count)
+            return;
+        app->queue_cursor = index;
+        break;
+    default:
+        return;
+    }
+    if (!select_only)
+        appDispatchButtons(app, HidNpadButton_A);
 }
 
 static void handleGlobal(App *app, uint64_t pressed)
@@ -91,7 +129,7 @@ static void handleGlobal(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_StickRRight) playerSeek(SEEK_STEP_SECONDS);
 }
 
-static void handleInput(App *app, uint64_t pressed)
+void appDispatchButtons(App *app, uint64_t pressed)
 {
     if (appHandleOverlay(app, pressed))
         return;
@@ -166,9 +204,12 @@ static void runLoop(App *app)
         uint64_t now = nowNs();
         uint64_t pressed = inputRepeatUpdate(&repeat, padGetButtonsDown(&pad), padGetButtons(&pad), now);
         if (app->audio_ok) {
-            handleInput(app, pressed);
+            appDispatchButtons(app, pressed);
+            appHandleTouch(app, now);
+            appTickSleepTimer(app, now);
             syncWithPlayer(app, &last_state, last_error, sizeof(last_error));
-            appSaveSession(app, now, false);
+            if (app->config.resume)
+                appSaveSession(app, now, false);
         } else if (pressed & HidNpadButton_Plus) {
             app->quit = true;
         }
@@ -202,13 +243,14 @@ int main(int argc, char **argv)
     sysinfoInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
     openStartFolder(&app);
-    if (app.audio_ok)
+    if (app.audio_ok && app.config.resume)
         appRestoreSession(&app);
 
     runLoop(&app);
 
     if (app.audio_ok) {
-        appSaveSession(&app, nowNs(), true);
+        if (app.config.resume)
+            appSaveSession(&app, nowNs(), true);
         saveSettings(&app);
         appletSetMediaPlaybackState(false);
         playerExit();

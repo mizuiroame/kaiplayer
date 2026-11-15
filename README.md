@@ -16,6 +16,8 @@ card and KaiPlayer plays the music in it.
 - [For users: install the .nro](#for-users-install-the-nro)
 - [Supported audio formats](#supported-audio-formats)
 - [Controls](#controls)
+- [Touch screen](#touch-screen)
+- [Settings](#settings)
 - [Playlists](#playlists)
 - [Resume where you left off](#resume-where-you-left-off)
 - [Song details and album art](#song-details-and-album-art)
@@ -148,7 +150,7 @@ In every tab:
 | Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
 | Queue       | Add the selected song to a playlist, save the whole queue as a playlist |
 | Now Playing | Add the current song to a playlist |
-| All         | Exit KaiPlayer (asks you to confirm) |
+| All         | Settings, and Exit KaiPlayer (asks you to confirm) |
 
 Use ↑ ↓ and **A** to choose, and **B** to close the menu. To exit, press
 **+** twice and confirm with **A** (or press **+** a third time).
@@ -169,6 +171,40 @@ tab lists the songs in the shuffled order they will play in.
 
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.
+
+### Touch screen
+
+Everything can also be done by touch:
+
+- **Tabs:** tap a tab name to open it.
+- **Lists:** tap a song to play it, or a folder or playlist to open it. Drag
+  up or down to scroll.
+- **Mini player:** tap it to open Now Playing. Tap **Shuffle** or **Repeat**
+  to change them.
+- **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point,
+  and tap the Shuffle and Repeat buttons.
+- **Menu:** tap the ☰ button or the KaiPlayer title in the top left to open
+  the + menu. Tap an item to choose it, or outside the menu to close it.
+- **Keyboard:** tap the keys.
+
+### Settings
+
+Open **+ → Settings**. Change a setting with ← → or **A** (or tap it), and
+close with **B**.
+
+| Setting | Values |
+|---------|--------|
+| Sleep timer | Off, 15, 30, 45, 60 or 90 minutes |
+| Resume where you left off | On (default) or Off |
+| Clock | 24-hour (default) or 12-hour |
+| About | The KaiPlayer version |
+
+**Sleep timer:** when the time runs out, the music fades out over 10 seconds
+and pauses. The minutes left show in the top right corner. Pausing or
+changing the song during the fade cancels it. The timer isn't saved when you
+exit.
+
+**Resume where you left off:** turning it off also deletes the saved queue.
 
 ### Playlists
 
@@ -204,7 +240,8 @@ when playing.
 
 ### Resume where you left off
 
-KaiPlayer remembers the queue, the current song and the position. When you
+Unless you turn it off in Settings, KaiPlayer remembers the queue, the
+current song and the position. When you
 open it again, it starts in Now Playing, paused at that spot: press **A** to
 continue. It saves this in `sdmc:/config/kaiplayer/resume.m3u8` and
 `resume.txt` when the song changes, when you pause, every 30 seconds while
@@ -297,6 +334,7 @@ followed by the file size.
 | The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
 | A playlist name isn't accepted | Use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`, up to 48 characters, and a name no other playlist has. |
 | A playlist made on the PC doesn't appear | It must be in `sdmc:/playlists/`, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
+| Taps land in the wrong place | Please open an issue with your console model and where you tapped. The buttons always work. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
 ---
@@ -394,7 +432,10 @@ source/
   resume.c        saves and restores the last queue and position
   keyboard.c      the on-screen keyboard for playlist names
   menu.c          the + menu and dialogs
-  app_*.c         input handling for each tab, the menu and resume
+  settings.c      the Settings rows and sleep timer choices
+  touch.c         taps and drags from the touch screen
+  ui_hit.c        touch targets recorded as the UI is drawn
+  app_*.c         input handling for each tab, the menu, settings, touch and resume
 data/           Noto Sans Regular and Bold, embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
 tests/          host tests, fuzzer, fixtures and the UI preview

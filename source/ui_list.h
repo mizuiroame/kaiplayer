@@ -20,5 +20,9 @@ void uiDrawScrollbar(size_t first, size_t count);
 void uiDrawFolderIcon(int x, int y, Color color);
 // A song row: number (or a play mark when current), title and folder.
 void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current);
+// Touch targets: the list area (for drags) and one row.
+void uiHitListArea(void);
+void uiHitRow(int y, size_t index);
+
 // A grey line of text under the header, and a hint in the empty list.
 void uiDrawEmptyList(const char *subtitle, const char *hint);

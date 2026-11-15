@@ -153,6 +153,17 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     snprintf(app->keyboard_title, sizeof(app->keyboard_title), "%s", "Name for the new playlist");
     render(dir, "keyboard", app, status);
     app->keyboard_open = false;
+
+    // Settings with the sleep timer running (24 minutes left at time 0).
+    app->config.resume = true;
+    app->config.clock_24h = false;
+    app->sleep_option = 2;
+    app->sleep_deadline_ns = 24ull * 60000000000ull;
+    app->view = VIEW_NOW_PLAYING;
+    app->settings_open = true;
+    app->settings_cursor = SETTING_SLEEP;
+    render(dir, "settings", app, status);
+    app->settings_open = false;
 }
 
 int main(int argc, char **argv)

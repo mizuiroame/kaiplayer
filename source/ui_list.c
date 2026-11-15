@@ -4,6 +4,7 @@
 
 #include "ui.h"
 #include "ui_common.h"
+#include "ui_hit.h"
 
 #define TRACK_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16)
 #define TRACK_FOLDER_MAX_W 360
@@ -62,6 +63,16 @@ void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool 
     fontDrawClipped(FONT_REGULAR, TEXT_SMALL, folder_x, y + 11, folder_w, folder, COLOR_DIM);
     fontDrawClipped(current || selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
                     folder_x - (MARGIN + 66) - 24, title, current ? COLOR_ACCENT : COLOR_TEXT);
+}
+
+void uiHitListArea(void)
+{
+    uiHitAdd(0, LIST_Y, GFX_WIDTH, UI_LIST_ROWS * ROW_H, HIT_LIST, 0);
+}
+
+void uiHitRow(int y, size_t index)
+{
+    uiHitAdd(MARGIN - 12, y, GFX_WIDTH - 2 * (MARGIN - 12), ROW_H, HIT_ROW, (int)index);
 }
 
 void uiDrawEmptyList(const char *subtitle, const char *hint)

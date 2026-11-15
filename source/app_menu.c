@@ -14,6 +14,7 @@
 typedef enum {
     ACT_EXIT,           // Asks to confirm.
     ACT_EXIT_CONFIRMED,
+    ACT_SETTINGS,
     ACT_ADD,            // arg: AddSource. Opens the picker.
     ACT_PICK,           // arg: playlist index. Adds the pending songs.
     ACT_PICK_NEW,       // Names a new playlist for the pending songs.
@@ -90,6 +91,7 @@ void appOpenMenu(App *app)
             menuAdd(&app->menu, "Add this song to playlist", ACT_ADD, SRC_NOW_PLAYING);
         break;
     }
+    menuAdd(&app->menu, "Settings", ACT_SETTINGS, 0);
     menuAdd(&app->menu, "Exit KaiPlayer", ACT_EXIT, 0);
 }
 
@@ -223,6 +225,7 @@ static void runItem(App *app, const MenuItem *item)
     switch (action) {
     case ACT_EXIT: confirmExit(app); break;
     case ACT_EXIT_CONFIRMED: app->quit = true; break;
+    case ACT_SETTINGS: appOpenSettings(app); break;
     case ACT_ADD: startAdd(app, (AddSource)item->arg); break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
@@ -281,6 +284,10 @@ bool appHandleOverlay(App *app, uint64_t pressed)
     }
     if (app->menu.open) {
         handleMenu(app, pressed);
+        return true;
+    }
+    if (app->settings_open) {
+        appHandleSettings(app, pressed);
         return true;
     }
     return false;

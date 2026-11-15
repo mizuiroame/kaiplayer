@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "ui_common.h"
+#include "ui_hit.h"
 #include "ui_list.h"
 
 #define MINI_Y 572
@@ -12,6 +13,7 @@
 #define TAB_GAP 28
 #define BATTERY_LOW 15
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
+#define NS_PER_MINUTE 60000000000ull
 
 static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue", "Now Playing"};
 
@@ -32,9 +34,11 @@ static void drawBrowser(const App *app)
         return;
     }
     size_t first = uiFirstVisible(b->cursor, b->count);
+    uiHitListArea();
     for (size_t i = first; i < b->count && i < first + UI_LIST_ROWS; i++) {
         int y = LIST_Y + (int)(i - first) * ROW_H;
         const BrowserEntry *e = &b->entries[i];
+        uiHitRow(y, i);
         if (i == b->cursor)
             uiDrawSelection(y, COLOR_ACCENT);
         if (e->is_dir)
@@ -70,8 +74,10 @@ static void drawQueue(const App *app, const PlayerStatus *status)
 
     size_t cursor = app->queue_cursor < status->track_count ? app->queue_cursor : 0;
     size_t first = uiFirstVisible(cursor, status->track_count);
+    uiHitListArea();
     for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
         bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
+        uiHitRow(LIST_Y + (int)(i - first) * ROW_H, i);
         drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current);
     }
     uiDrawScrollbar(first, status->track_count);
@@ -97,6 +103,7 @@ static void drawTabs(const App *app)
     for (int i = 0; i < VIEW_COUNT; i++) {
         bool active = (int)app->view == i;
         fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, VIEW_NAMES[i], active ? COLOR_TEXT : COLOR_DIM);
+        uiHitAdd(x - TAB_GAP / 2, 4, widths[i] + TAB_GAP, HEADER_H - 8, HIT_TAB, i);
         if (active)
             gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
         x += widths[i] + TAB_GAP;
@@ -116,9 +123,10 @@ static void drawBattery(int x, int y, int percent, bool charging)
         gfxFillRoundRect(x + 4, y + 4, inner, 8, 2, fill);
 }
 
-// Clock and battery in the top right corner.
-static void drawStatus(const SysInfo *sys)
+// Clock, battery and the sleep timer in the top right corner.
+static void drawStatus(const App *app, uint64_t now_ns)
 {
+    const SysInfo *sys = &app->sys;
     int x = GFX_WIDTH - MARGIN;
     if (sys->has_battery) {
         char percent[8];
@@ -130,24 +138,42 @@ static void drawStatus(const SysInfo *sys)
         x -= 20;
     }
     if (sys->has_time) {
-        char clock[8];
-        snprintf(clock, sizeof(clock), "%02d:%02d", sys->hour % 24, sys->minute % 60);
+        char clock[16];
+        utilFormatClock(clock, sizeof(clock), sys->hour, sys->minute, app->config.clock_24h);
         x -= fontTextWidth(FONT_BOLD, 18, clock);
         fontDraw(FONT_BOLD, 18, x, 18, clock, COLOR_TEXT);
+        x -= 20;
+    }
+    if (app->sleep_deadline_ns > now_ns) {
+        char sleep[32];
+        unsigned minutes = (unsigned)((app->sleep_deadline_ns - now_ns + NS_PER_MINUTE - 1) / NS_PER_MINUTE);
+        snprintf(sleep, sizeof(sleep), "Sleep %u min", minutes);
+        x -= fontTextWidth(FONT_BOLD, 16, sleep);
+        fontDraw(FONT_BOLD, 16, x, 20, sleep, COLOR_ACCENT);
     }
 }
 
-static void drawHeader(const App *app)
+// Three bars before the title: the touch way into the + menu.
+static void drawMenuButton(void)
 {
-    fontDraw(FONT_BOLD, 26, MARGIN, 16, "KaiPlayer", COLOR_ACCENT);
+    for (int i = 0; i < 3; i++)
+        gfxFillRoundRect(MARGIN, 22 + i * 7, 22, 3, 1, COLOR_ACCENT);
+}
+
+static void drawHeader(const App *app, uint64_t now_ns)
+{
+    drawMenuButton();
+    int title_w = fontDraw(FONT_BOLD, 26, MARGIN + 36, 16, "KaiPlayer", COLOR_ACCENT);
+    uiHitAdd(0, 0, MARGIN + 36 + title_w + 12, HEADER_H, HIT_MENU_BUTTON, 0);
     drawTabs(app);
-    drawStatus(&app->sys);
+    drawStatus(app, now_ns);
 }
 
 static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
     gfxFillRect(0, MINI_Y, GFX_WIDTH, MINI_H, COLOR_SURFACE);
     gfxFillRect(0, MINI_Y, GFX_WIDTH, 3, COLOR_FAINT);
+    uiHitAdd(0, MINI_Y, GFX_WIDTH, MINI_H, HIT_MINI_PLAYER, 0);
     if (status->duration > 0) {
         double fraction = status->position / status->duration;
         gfxFillRect(0, MINI_Y, (int)(GFX_WIDTH * (fraction > 1.0 ? 1.0 : fraction)), 3, COLOR_ACCENT);
@@ -176,8 +202,10 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     const char *repeat = uiRepeatLabel(status->repeat);
     int x = GFX_WIDTH - MARGIN - uiPillWidth(repeat);
     uiDrawPill(x, MINI_Y + 48, repeat, status->repeat != REPEAT_OFF);
+    uiHitAdd(x, MINI_Y + 40, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
     x -= uiPillWidth(shuffle) + 10;
     uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
+    uiHitAdd(x, MINI_Y + 40, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
 }
 
 static const char *footerHelp(const App *app)
@@ -190,6 +218,8 @@ static const char *footerHelp(const App *app)
     };
     if (app->keyboard_open)
         return "A type    B delete    X shift    Y space    + done    − cancel";
+    if (app->settings_open)
+        return "Up/Down choose    Left/Right or A change    B close";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
         return "A choose    B cancel    + exit";
     if (app->menu.open)
@@ -209,6 +239,7 @@ static void drawFooter(const App *app)
 void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     UiTrack track;
+    uiHitReset();
     const Artwork *art = artworkLock();
     uiResolveTrack(status, art, &track);
 
@@ -227,7 +258,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
             drawQueue(app, status);
         drawMiniPlayer(app, status, &track, now_ns);
     }
-    drawHeader(app);
+    drawHeader(app, now_ns);
     uiDrawOverlay(app, now_ns);
     drawFooter(app);  // Over the dimmed screen, so the overlay's help reads well.
     artworkUnlock();

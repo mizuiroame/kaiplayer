@@ -4,6 +4,7 @@
 
 #include "ui.h"
 #include "ui_common.h"
+#include "ui_hit.h"
 #include "ui_list.h"
 
 static void drawPlaylistIcon(int x, int y, Color color)
@@ -31,8 +32,10 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status)
     if (status->state != PLAYER_STOPPED)
         playerTrackPath(status->track, playing, sizeof(playing));
     size_t first = uiFirstVisible(t->track_cursor, t->tracks.count);
+    uiHitListArea();
     for (size_t i = first; i < t->tracks.count && i < first + UI_LIST_ROWS; i++) {
         int y = LIST_Y + (int)(i - first) * ROW_H;
+        uiHitRow(y, i);
         bool selected = i == t->track_cursor;
         bool current = playing[0] && strcmp(playing, t->tracks.paths[i]) == 0;
         if (selected && t->moving)
@@ -54,8 +57,10 @@ static void drawList(const PlaylistsTab *t)
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
 
     size_t first = uiFirstVisible(t->cursor, t->index.count);
+    uiHitListArea();
     for (size_t i = first; i < t->index.count && i < first + UI_LIST_ROWS; i++) {
         int y = LIST_Y + (int)(i - first) * ROW_H;
+        uiHitRow(y, i);
         bool selected = i == t->cursor;
         if (selected)
             uiDrawSelection(y, COLOR_ACCENT);

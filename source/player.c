@@ -34,6 +34,8 @@ static u64 g_played_frames;
 static double g_duration;
 static char g_error[160];
 static unsigned g_generation;
+static u64 g_fade_total;  // Frames of the running fade-out, 0 if none.
+static u64 g_fade_left;
 
 // Owned by the audio thread.
 static Thread g_thread;
@@ -98,6 +100,7 @@ static bool loadCurrent(void)
     installDecoder(NULL);
     mutexLock(&g_lock);
     g_state = PLAYER_STOPPED;
+    g_fade_total = g_fade_left = 0;
     mutexUnlock(&g_lock);
     return false;
 }
@@ -106,6 +109,7 @@ static void stopPlayback(void)
 {
     mutexLock(&g_lock);
     g_state = PLAYER_STOPPED;
+    g_fade_total = g_fade_left = 0;
     mutexUnlock(&g_lock);
     installDecoder(NULL);
 }
@@ -122,6 +126,7 @@ static bool advanceAfterTrack(void)
     bool more = queueNext(&g_queue, false);
     if (!more) {
         g_state = PLAYER_STOPPED;
+        g_fade_total = g_fade_left = 0;
         g_queue.pos = 0;
         g_played_frames = 0;
     }
@@ -135,10 +140,12 @@ static bool advanceAfterTrack(void)
 }
 
 // Full scale: the console's volume, set with its buttons, is the only volume.
-static void writeSamples(s16 *dst, const float *src, u64 frames)
+// gain_start..gain_end ramps linearly over the buffer, for the fade-out.
+static void writeSamples(s16 *dst, const float *src, u64 frames, float gain_start, float gain_end)
 {
+    float step = frames ? (gain_end - gain_start) / (float)frames : 0.0f;
     for (u64 i = 0; i < frames * 2; i++) {
-        float v = src[i];
+        float v = src[i] * (gain_start + step * (float)(i / 2));
         if (v > 1.0f)
             v = 1.0f;
         if (v < -1.0f)
@@ -148,7 +155,7 @@ static void writeSamples(s16 *dst, const float *src, u64 frames)
 }
 
 // Decodes the next block into a buffer. False if there is nothing to play.
-static bool fillBuffer(AudioOutBuffer *buffer)
+static bool fillBuffer(AudioOutBuffer *buffer, float gain_start, float gain_end)
 {
     u64 done = 0;
     int empty_tracks = 0;
@@ -174,7 +181,7 @@ static bool fillBuffer(AudioOutBuffer *buffer)
         return false;
 
     memset(g_mix + done * 2, 0, (BUFFER_FRAMES - done) * 2 * sizeof(float));
-    writeSamples(buffer->buffer, g_mix, BUFFER_FRAMES);
+    writeSamples(buffer->buffer, g_mix, BUFFER_FRAMES, gain_start, gain_end);
     buffer->data_size = BUFFER_BYTES;
     buffer->data_offset = 0;
     return true;
@@ -212,6 +219,21 @@ static void handleCommands(void)
         applySeek(seek);
 }
 
+// Moves the fade-out on by one buffer; at silence, pauses.
+static void advanceFade(void)
+{
+    mutexLock(&g_lock);
+    if (g_fade_total) {
+        g_fade_left = g_fade_left > BUFFER_FRAMES ? g_fade_left - BUFFER_FRAMES : 0;
+        if (g_fade_left == 0) {
+            g_fade_total = 0;
+            if (g_state == PLAYER_PLAYING)
+                g_state = PLAYER_PAUSED;
+        }
+    }
+    mutexUnlock(&g_lock);
+}
+
 static void submitBuffers(void)
 {
     for (int i = 0; i < BUFFER_COUNT; i++) {
@@ -219,11 +241,18 @@ static void submitBuffers(void)
             continue;
         mutexLock(&g_lock);
         bool playing = g_state == PLAYER_PLAYING;
+        float gain_start = 1.0f, gain_end = 1.0f;
+        if (g_fade_total) {
+            u64 after = g_fade_left > BUFFER_FRAMES ? g_fade_left - BUFFER_FRAMES : 0;
+            gain_start = (float)g_fade_left / (float)g_fade_total;
+            gain_end = (float)after / (float)g_fade_total;
+        }
         mutexUnlock(&g_lock);
-        if (!playing || !fillBuffer(&g_buffers[i]))
+        if (!playing || !fillBuffer(&g_buffers[i], gain_start, gain_end))
             return;
         if (R_SUCCEEDED(audoutAppendAudioOutBuffer(&g_buffers[i])))
             g_queued[i] = true;
+        advanceFade();
     }
 }
 
@@ -289,6 +318,7 @@ bool playerInit(bool shuffle, RepeatMode repeat)
     g_shuffle = shuffle;
     g_repeat = repeat;
     g_state = PLAYER_STOPPED;
+    g_fade_total = g_fade_left = 0;
 
     if (R_FAILED(audoutInitialize()))
         return false;
@@ -328,9 +358,16 @@ void playerExit(void)
     trackListFree(&g_list);
 }
 
+static void cancelFadeLocked(void)
+{
+    g_fade_total = 0;
+    g_fade_left = 0;
+}
+
 // Replaces the list and starts at start. Call with the lock held.
 static void startListLocked(TrackList *list, size_t start)
 {
+    cancelFadeLocked();
     trackListFree(&g_list);
     queueFree(&g_queue);
     g_list = *list;
@@ -346,6 +383,7 @@ static void startListLocked(TrackList *list, size_t start)
         g_error[0] = '\0';
     } else {
         g_state = PLAYER_STOPPED;
+        g_fade_total = g_fade_left = 0;
     }
 }
 
@@ -386,6 +424,8 @@ static void startCurrentLocked(void)
 {
     if (g_list.count == 0)
         return;
+    // A running fade (the sleep timer) continues across skips; only a
+    // pause/play or a new list cancels it.
     g_load_pending = true;
     g_seek_target = -1.0;
     g_played_frames = 0;
@@ -396,6 +436,7 @@ static void startCurrentLocked(void)
 void playerTogglePause(void)
 {
     mutexLock(&g_lock);
+    cancelFadeLocked();
     if (g_state == PLAYER_PLAYING)
         g_state = PLAYER_PAUSED;
     else if (g_state == PLAYER_PAUSED)
@@ -435,6 +476,33 @@ void playerSeek(double delta_seconds)
         if (g_duration > 0.0 && target > g_duration - 1.0)
             target = g_duration - 1.0;
         g_seek_target = target < 0.0 ? 0.0 : target;
+    }
+    mutexUnlock(&g_lock);
+}
+
+void playerSeekTo(double seconds)
+{
+    mutexLock(&g_lock);
+    if (g_state != PLAYER_STOPPED) {
+        if (g_duration > 0.0 && seconds > g_duration - 1.0)
+            seconds = g_duration - 1.0;
+        g_seek_target = seconds < 0.0 ? 0.0 : seconds;
+    }
+    mutexUnlock(&g_lock);
+}
+
+void playerFadeOutAndPause(double seconds)
+{
+    mutexLock(&g_lock);
+    if (g_state == PLAYER_PLAYING && !g_fade_total) {
+        // No rate yet (a track still loading) or no time: pause at once.
+        u64 frames = seconds > 0.0 && g_out_rate ? (u64)(seconds * g_out_rate) : 0;
+        if (frames == 0) {
+            g_state = PLAYER_PAUSED;
+        } else {
+            g_fade_total = frames;
+            g_fade_left = frames;
+        }
     }
     mutexUnlock(&g_lock);
 }
@@ -482,6 +550,7 @@ void playerGetStatus(PlayerStatus *out)
     out->track = queueCurrent(&g_queue);
     out->queue_pos = g_queue.pos;
     out->generation = g_generation;
+    out->fading = g_fade_total != 0 && g_state == PLAYER_PLAYING;
     out->track_count = g_list.count;
     out->position = g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
     out->duration = g_duration;

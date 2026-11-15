@@ -22,6 +22,10 @@ static void applyLine(Config *c, char *line)
         strcpy(c->folder, value);
     } else if (strcmp(key, "shuffle") == 0) {
         c->shuffle = strcmp(value, "1") == 0;
+    } else if (strcmp(key, "resume") == 0) {
+        c->resume = strcmp(value, "0") != 0;
+    } else if (strcmp(key, "clock24") == 0) {
+        c->clock_24h = strcmp(value, "0") != 0;
     } else if (strcmp(key, "repeat") == 0) {
         int r = atoi(value);
         if (r >= 0 && r < REPEAT_MODE_COUNT)
@@ -33,6 +37,8 @@ void configLoad(Config *c)
 {
     strcpy(c->folder, DEFAULT_FOLDER);
     c->shuffle = false;
+    c->resume = true;
+    c->clock_24h = true;
     c->repeat = REPEAT_ALL;
 
     FILE *f = fopen(CONFIG_FILE, "r");
@@ -61,7 +67,7 @@ bool configSave(const Config *c)
         return false;
     // A line break in the folder would split it into extra settings.
     const char *folder = strpbrk(c->folder, "\r\n") ? DEFAULT_FOLDER : c->folder;
-    fprintf(f, "folder=%s\nshuffle=%d\nrepeat=%d\n",
-            folder, c->shuffle ? 1 : 0, (int)c->repeat);
+    fprintf(f, "folder=%s\nshuffle=%d\nrepeat=%d\nresume=%d\nclock24=%d\n",
+            folder, c->shuffle ? 1 : 0, (int)c->repeat, c->resume ? 1 : 0, c->clock_24h ? 1 : 0);
     return fclose(f) == 0;
 }

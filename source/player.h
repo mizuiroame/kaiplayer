@@ -20,6 +20,7 @@ typedef struct {
     size_t track;         // Index in the track list.
     size_t queue_pos;     // Position of that track in the play order.
     unsigned generation;  // Changes whenever a new list starts playing.
+    bool fading;          // A fade-out to pause is running.
     size_t track_count;
     double position;      // Seconds.
     double duration;      // Seconds, 0 if unknown.
@@ -47,6 +48,11 @@ void playerNext(void);
 // Restarts the track, or goes to the previous one near its start.
 void playerPrev(void);
 void playerSeek(double delta_seconds);
+// Seeks to an absolute position in seconds.
+void playerSeekTo(double seconds);
+// Lowers the volume to silence over `seconds`, then pauses. Any other
+// playback command (pause, next, jump...) cancels the fade.
+void playerFadeOutAndPause(double seconds);
 void playerJumpTo(size_t track);
 void playerToggleShuffle(void);
 void playerSetShuffle(bool shuffle);

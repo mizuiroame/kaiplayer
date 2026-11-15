@@ -3,6 +3,7 @@
 
 #include "ui.h"
 #include "ui_common.h"
+#include "ui_hit.h"
 
 #define COVER_SIZE ARTWORK_LARGE_SIZE
 #define COVER_X 96
@@ -48,6 +49,7 @@ static void drawProgress(const PlayerStatus *status)
         fraction = 1.0;
     int filled = (int)(INFO_W * fraction);
     gfxFillRoundRect(INFO_X, PROGRESS_Y, INFO_W, 6, 3, COLOR_SURFACE_HI);
+    uiHitAdd(INFO_X - 12, PROGRESS_Y - 18, INFO_W + 24, 42, HIT_SEEK, 0);  // 12 px slack: app_touch.c
     if (filled > 0)
         gfxFillRoundRect(INFO_X, PROGRESS_Y, filled, 6, 3, COLOR_ACCENT);
     if (status->duration > 0)
@@ -90,6 +92,9 @@ static void drawTransport(const PlayerStatus *status)
     } else {
         gfxFillTriangleRight(cx - 9, cy - 16, 26, 32, COLOR_BG);
     }
+    uiHitAdd(cx - 160, cy - 40, 80, 80, HIT_PREV, 0);
+    uiHitAdd(cx - 44, cy - 44, 88, 88, HIT_PLAY, 0);
+    uiHitAdd(cx + 80, cy - 40, 80, 80, HIT_NEXT, 0);
     drawHint(cx - 120, cy + 26, "L");
     drawHint(cx, cy + 46, "A");
     drawHint(cx + 120, cy + 26, "R");
@@ -100,10 +105,12 @@ static void drawToggles(const PlayerStatus *status)
     int x = INFO_X;
     const char *shuffle = status->shuffle ? "X  Shuffle on" : "X  Shuffle off";
     uiDrawPill(x, TOGGLES_Y, shuffle, status->shuffle);
+    uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
     x += uiPillWidth(shuffle) + 12;
     char repeat[32];
     snprintf(repeat, sizeof(repeat), "Y  %s", uiRepeatLabel(status->repeat));
     uiDrawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
+    uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
 }
 
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)

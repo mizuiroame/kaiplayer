@@ -236,6 +236,18 @@ unsigned utilNextCodePoint(const char **s)
     return cp;
 }
 
+void utilFormatClock(char *out, size_t size, int hour, int minute, bool use_24h)
+{
+    hour = ((hour % 24) + 24) % 24;
+    minute = ((minute % 60) + 60) % 60;
+    if (use_24h) {
+        snprintf(out, size, "%02d:%02d", hour, minute);
+        return;
+    }
+    int h12 = hour % 12 == 0 ? 12 : hour % 12;
+    snprintf(out, size, "%d:%02d %s", h12, minute, hour < 12 ? "AM" : "PM");
+}
+
 void utilFormatTime(char *out, size_t size, double seconds)
 {
     if (seconds < 0)

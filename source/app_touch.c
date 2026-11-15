@@ -1,0 +1,129 @@
+// Touch input: taps act like the matching button, and drags on a list move
+// its cursor. Targets come from the regions the UI drew last frame.
+#include <switch.h>
+
+#include "app.h"
+#include "app_buttons.h"
+#include "player.h"
+#include "ui_hit.h"
+#include "ui_list.h"
+
+#define SCREEN_W 1280
+#define SCREEN_H 720
+#define PANEL_W 1920  // In case the touch panel reports its own resolution.
+#define SEEK_MARGIN 12  // Matches the slack ui_now.c gives the progress bar.
+
+static bool g_touch_ready;
+static bool g_full_hd;  // Seen coordinates beyond 1280x720: scale them down.
+
+static bool overlayOpen(const App *app)
+{
+    return app->keyboard_open || app->menu.open || app->settings_open;
+}
+
+static bool isOverlayTarget(HitKind kind)
+{
+    return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING;
+}
+
+static void tapRegion(App *app, const HitRegion *r, int x)
+{
+    // Targets are from the last frame. If an overlay opened or closed since,
+    // they belong to the other layer: ignore the tap.
+    if (isOverlayTarget(r->kind) != overlayOpen(app))
+        return;
+    PlayerStatus status;
+    playerGetStatus(&status);
+    switch (r->kind) {
+    case HIT_TAB: appSetView(app, (View)r->arg); break;
+    case HIT_MENU_BUTTON:
+        if (!overlayOpen(app) && !app->playlists.moving)
+            appOpenMenu(app);
+        break;
+    case HIT_ROW: appActivateRow(app, (size_t)r->arg, false); break;
+    case HIT_MINI_PLAYER: appSetView(app, VIEW_NOW_PLAYING); break;
+    case HIT_SEEK: {
+        // The region has SEEK_MARGIN of slack on each side of the bar.
+        double fraction = (double)(x - r->x - SEEK_MARGIN) / (double)(r->w - 2 * SEEK_MARGIN);
+        if (status.duration > 0)
+            playerSeekTo(status.duration * (fraction < 0.0 ? 0.0 : fraction > 1.0 ? 1.0 : fraction));
+        break;
+    }
+    case HIT_PREV: playerPrev(); break;
+    case HIT_PLAY: playerTogglePause(); break;
+    case HIT_NEXT: playerNext(); break;
+    case HIT_SHUFFLE: playerToggleShuffle(); break;
+    case HIT_REPEAT: playerCycleRepeat(); break;
+    case HIT_BACKDROP:
+        // Outside a menu or Settings closes it; the keyboard keeps its text.
+        if (!app->keyboard_open)
+            appDispatchButtons(app, HidNpadButton_B);
+        break;
+    case HIT_MENU_ITEM:
+        if (!app->menu.open || r->arg >= app->menu.count)
+            break;
+        app->menu.cursor = r->arg;
+        appDispatchButtons(app, HidNpadButton_A);
+        break;
+    case HIT_KEY:
+        app->keyboard.row = r->arg / 16;
+        app->keyboard.col = r->arg % 16;
+        appDispatchButtons(app, HidNpadButton_A);
+        break;
+    case HIT_SETTING:
+        app->settings_cursor = (SettingRow)r->arg;
+        appChangeSetting(app, (SettingRow)r->arg, 1);
+        break;
+    case HIT_LIST: break;
+    }
+}
+
+// A drag that starts on a list moves its cursor one row per row height.
+static void dragList(App *app, const TouchEvent *e)
+{
+    const HitRegion *start = uiHitFind(e->start_x, e->start_y);
+    if (!start || (start->kind != HIT_LIST && start->kind != HIT_ROW) || overlayOpen(app) ||
+        app->playlists.moving)
+        return;
+    app->drag_rows -= e->dy;  // Finger up: the list moves on, the cursor goes down.
+    while (app->drag_rows >= ROW_H) {
+        app->drag_rows -= ROW_H;
+        appDispatchButtons(app, HidNpadButton_Down);
+    }
+    while (app->drag_rows <= -ROW_H) {
+        app->drag_rows += ROW_H;
+        appDispatchButtons(app, HidNpadButton_Up);
+    }
+}
+
+void appHandleTouch(App *app, uint64_t now_ns)
+{
+    if (!g_touch_ready) {
+        hidInitializeTouchScreen();
+        g_touch_ready = true;
+    }
+    HidTouchScreenState state = {0};
+    bool touching = hidGetTouchScreenStates(&state, 1) > 0 && state.count > 0;
+    int x = 0, y = 0;
+    if (touching) {
+        x = (int)state.touches[0].x;
+        y = (int)state.touches[0].y;
+        if (x >= SCREEN_W || y >= SCREEN_H)
+            g_full_hd = true;
+        if (g_full_hd) {
+            x = x * SCREEN_W / PANEL_W;
+            y = y * SCREEN_W / PANEL_W;
+        }
+    }
+    TouchEvent e = touchUpdate(&app->touch, touching, x, y, now_ns);
+    if (e.type == TOUCH_TAP) {
+        app->drag_rows = 0;
+        const HitRegion *r = uiHitFind(e.x, e.y);
+        if (r)
+            tapRegion(app, r, e.x);
+    } else if (e.type == TOUCH_DRAG) {
+        dragList(app, &e);
+    } else if (!touching) {
+        app->drag_rows = 0;  // A new drag starts from zero.
+    }
+}

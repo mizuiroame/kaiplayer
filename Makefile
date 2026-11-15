@@ -45,7 +45,7 @@ DATA		:=	data
 INCLUDES	:=	include third_party
 APP_TITLE	:=	KaiPlayer
 APP_AUTHOR	:=	Mizuiro
-APP_VERSION	:=	0.3.0-beta
+APP_VERSION	:=	0.4.0-beta
 #ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ ARCH	:=	$(SWITCH2_CPU) -mtp=soft -fPIE
 CFLAGS	:=	-g -Wall -O2 -ffunction-sections -fstack-protector-strong -fwrapv \
 			$(ARCH) $(DEFINES)
 
-CFLAGS	+=	$(INCLUDE) -D__SWITCH__
+CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DKAIPLAYER_VERSION=\"$(APP_VERSION)\"
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
