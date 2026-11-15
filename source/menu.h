@@ -19,6 +19,7 @@ typedef struct {
     MenuItem items[MENU_MAX_ITEMS];
     int count;
     int cursor;
+    int kind;  // Which menu this is; defined by the app, 0 after menuOpen.
 } Menu;
 
 void menuOpen(Menu *m, const char *title);

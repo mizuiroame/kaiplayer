@@ -136,7 +136,15 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
         menuAdd(&app->menu, PLAYLIST_NAMES[i], 0, 0);
     app->menu.cursor = 2;
     render(dir, "picker", app, status);
+
+    app->view = VIEW_NOW_PLAYING;
+    menuOpen(&app->menu, "Exit KaiPlayer?");
+    app->menu.kind = MENU_KIND_EXIT;
+    menuAdd(&app->menu, "Exit", 0, 0);
+    menuAdd(&app->menu, "Cancel", 0, 0);
+    render(dir, "exit", app, status);
     menuClose(&app->menu);
+    app->view = VIEW_BROWSER;
 
     app->keyboard_open = true;
     keyboardInit(&app->keyboard, "Late night dr");

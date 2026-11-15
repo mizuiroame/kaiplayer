@@ -190,8 +190,10 @@ static const char *footerHelp(const App *app)
     };
     if (app->keyboard_open)
         return "A type    B delete    X shift    Y space    + done    − cancel";
+    if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
+        return "A choose    B cancel    + exit";
     if (app->menu.open)
-        return "A choose    B close    + + exit";
+        return app->menu.kind == MENU_KIND_MAIN ? "A choose    B close    + exit..." : "A choose    B close";
     if (app->playlists.moving)
         return "Up/Down move the song    A or B done";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)

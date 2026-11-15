@@ -136,7 +136,7 @@ In every tab:
 | L / R   | Previous / next track |
 | −       | Pause / resume |
 | RS ← →  | Rewind / fast-forward 10 s |
-| +       | Open the menu. Press **+** twice to exit KaiPlayer. |
+| +       | Open the menu. Press **+** again to exit KaiPlayer: it asks you to confirm. |
 
 ### The + menu
 
@@ -148,9 +148,10 @@ In every tab:
 | Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
 | Queue       | Add the selected song to a playlist, save the whole queue as a playlist |
 | Now Playing | Add the current song to a playlist |
-| All         | Exit KaiPlayer |
+| All         | Exit KaiPlayer (asks you to confirm) |
 
-Use ↑ ↓ and **A** to choose, and **B** to close the menu.
+Use ↑ ↓ and **A** to choose, and **B** to close the menu. To exit, press
+**+** twice and confirm with **A** (or press **+** a third time).
 
 Use the console's volume buttons to change the volume; KaiPlayer plays at
 full level and has no volume of its own. The top right corner shows the

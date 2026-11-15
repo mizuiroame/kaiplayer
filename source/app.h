@@ -33,6 +33,13 @@ typedef struct {
     bool moving;                        // Up/Down move the selected song.
 } PlaylistsTab;
 
+// Menus that the app treats specially. Others are MENU_KIND_OTHER.
+enum {
+    MENU_KIND_OTHER,
+    MENU_KIND_MAIN,  // The + menu.
+    MENU_KIND_EXIT,  // "Exit KaiPlayer?"
+};
+
 // What the on-screen keyboard is typing a name for.
 typedef enum {
     NAME_FOR_NEW_PLAYLIST,

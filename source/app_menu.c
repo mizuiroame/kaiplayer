@@ -12,7 +12,8 @@
 #define MENU_PAGE 8
 
 typedef enum {
-    ACT_EXIT,
+    ACT_EXIT,           // Asks to confirm.
+    ACT_EXIT_CONFIRMED,
     ACT_ADD,            // arg: AddSource. Opens the picker.
     ACT_PICK,           // arg: playlist index. Adds the pending songs.
     ACT_PICK_NEW,       // Names a new playlist for the pending songs.
@@ -67,6 +68,7 @@ void appOpenMenu(App *app)
     PlayerStatus status;
     playerGetStatus(&status);
     menuOpen(&app->menu, "Menu");
+    app->menu.kind = MENU_KIND_MAIN;
     const BrowserEntry *entry = browserSelected(&app->browser);
     switch (app->view) {
     case VIEW_BROWSER:
@@ -167,6 +169,14 @@ static void confirmDelete(App *app)
     menuAdd(&app->menu, "Cancel", ACT_CANCEL, 0);
 }
 
+static void confirmExit(App *app)
+{
+    menuOpen(&app->menu, "Exit KaiPlayer?");
+    app->menu.kind = MENU_KIND_EXIT;
+    menuAdd(&app->menu, "Exit", ACT_EXIT_CONFIRMED, 0);
+    menuAdd(&app->menu, "Cancel", ACT_CANCEL, 0);
+}
+
 static void deletePlaylist(App *app)
 {
     const char *name = currentPlaylist(app);
@@ -211,7 +221,8 @@ static void runItem(App *app, const MenuItem *item)
     MenuAction action = (MenuAction)item->action;
     menuClose(&app->menu);
     switch (action) {
-    case ACT_EXIT: app->quit = true; break;
+    case ACT_EXIT: confirmExit(app); break;
+    case ACT_EXIT_CONFIRMED: app->quit = true; break;
     case ACT_ADD: startAdd(app, (AddSource)item->arg); break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
@@ -237,8 +248,12 @@ static void runItem(App *app, const MenuItem *item)
 static void handleMenu(App *app, uint64_t pressed)
 {
     Menu *m = &app->menu;
-    // + twice exits: once to open the menu, once more here.
-    if ((pressed & HidNpadButton_Plus) && strcmp(m->title, "Menu") == 0) {
+    // + in the + menu asks to exit; + once more in that dialog exits.
+    if ((pressed & HidNpadButton_Plus) && m->kind == MENU_KIND_MAIN) {
+        confirmExit(app);
+        return;
+    }
+    if ((pressed & HidNpadButton_Plus) && m->kind == MENU_KIND_EXIT) {
         app->quit = true;
         return;
     }
