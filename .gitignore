@@ -1,0 +1,6 @@
+build/
+tests/build/
+*.nro
+*.nacp
+*.elf
+*.map

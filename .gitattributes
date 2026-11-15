@@ -1,0 +1,5 @@
+# LF everywhere: the shell scripts run in Linux containers, and the vendored
+# files in third_party/ are checked by SHA-256.
+* text=auto eol=lf
+*.jpg binary
+*.png binary

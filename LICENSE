@@ -1,0 +1,60 @@
+MIT License
+
+Copyright (c) 2026 Mizuiro
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+DISCLAIMER
+
+This notice is informational. It does not change the license terms above.
+
+1. No affiliation. KaiPlayer is an independent open-source project. It is
+   not affiliated with, endorsed by, sponsored by or approved by Nintendo
+   Co., Ltd. or any of its subsidiaries or affiliates.
+
+2. Trademarks. "Nintendo", "Nintendo Switch" and "Switch 2" are trademarks
+   of their respective owners. They are used here only to describe the
+   hardware this software is compatible with. That use does not imply any
+   association with or endorsement by the trademark owners.
+
+3. No proprietary material. This software and its distributed binaries
+   contain no code, SDK, firmware, cryptographic keys, games or other
+   copyrighted material owned by Nintendo. The software is built only with
+   open-source tools and libraries (devkitPro, libounce and the public-domain
+   decoders in third_party/).
+
+4. No circumvention. This software does not circumvent, disable or bypass
+   any technological protection measure. It is not designed or intended to
+   copy, run or distribute commercial software. It plays only audio files
+   that the user provides.
+
+5. User responsibility. Users are solely responsible for:
+   - how they use this software;
+   - making sure they have the right to play the audio files they use with
+     it;
+   - complying with the laws of their jurisdiction and with any terms of
+     service that apply to their hardware.
+   Running homebrew software may carry risks to the device and may affect
+   its warranty.
+
+6. No liability. To the maximum extent permitted by law, the authors and
+   contributors are not liable for any damage to hardware, loss of data,
+   account restrictions or any other consequence of using this software.
