@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 
     PlayerStatus status = {
         .state = PLAYER_PLAYING, .track = 2, .track_count = TRACK_COUNT,
-        .position = 83.0, .duration = 247.0, .volume = 0.8f, .shuffle = true, .repeat = REPEAT_ALL,
+        .position = 83.0, .duration = 247.0, .shuffle = true, .repeat = REPEAT_ALL,
     };
     loadArtwork(argc > 2 ? argv[2] : NULL);
 

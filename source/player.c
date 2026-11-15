@@ -26,7 +26,6 @@ static Mutex g_lock;
 static TrackList g_list;
 static Queue g_queue;
 static PlayerState g_state;
-static float g_volume;
 static bool g_shuffle;
 static RepeatMode g_repeat;
 static bool g_load_pending;
@@ -131,10 +130,11 @@ static bool advanceAfterTrack(void)
     return more && g_decoder;
 }
 
-static void writeSamples(s16 *dst, const float *src, u64 frames, float gain)
+// Full scale: the console's volume, set with its buttons, is the only volume.
+static void writeSamples(s16 *dst, const float *src, u64 frames)
 {
     for (u64 i = 0; i < frames * 2; i++) {
-        float v = src[i] * gain;
+        float v = src[i];
         if (v > 1.0f)
             v = 1.0f;
         if (v < -1.0f)
@@ -144,7 +144,7 @@ static void writeSamples(s16 *dst, const float *src, u64 frames, float gain)
 }
 
 // Decodes the next block into a buffer. False if there is nothing to play.
-static bool fillBuffer(AudioOutBuffer *buffer, float gain)
+static bool fillBuffer(AudioOutBuffer *buffer)
 {
     u64 done = 0;
     int empty_tracks = 0;
@@ -170,7 +170,7 @@ static bool fillBuffer(AudioOutBuffer *buffer, float gain)
         return false;
 
     memset(g_mix + done * 2, 0, (BUFFER_FRAMES - done) * 2 * sizeof(float));
-    writeSamples(buffer->buffer, g_mix, BUFFER_FRAMES, gain);
+    writeSamples(buffer->buffer, g_mix, BUFFER_FRAMES);
     buffer->data_size = BUFFER_BYTES;
     buffer->data_offset = 0;
     return true;
@@ -211,9 +211,8 @@ static void submitBuffers(void)
             continue;
         mutexLock(&g_lock);
         bool playing = g_state == PLAYER_PLAYING;
-        float gain = g_volume * g_volume;
         mutexUnlock(&g_lock);
-        if (!playing || !fillBuffer(&g_buffers[i], gain))
+        if (!playing || !fillBuffer(&g_buffers[i]))
             return;
         if (R_SUCCEEDED(audoutAppendAudioOutBuffer(&g_buffers[i])))
             g_queued[i] = true;
@@ -276,10 +275,9 @@ static void freeBuffers(void)
     }
 }
 
-bool playerInit(float volume, bool shuffle, RepeatMode repeat)
+bool playerInit(bool shuffle, RepeatMode repeat)
 {
     mutexInit(&g_lock);
-    g_volume = volume;
     g_shuffle = shuffle;
     g_repeat = repeat;
     g_state = PLAYER_STOPPED;
@@ -411,17 +409,6 @@ void playerJumpTo(size_t track)
     mutexUnlock(&g_lock);
 }
 
-void playerSetVolume(float volume)
-{
-    if (volume < 0.0f)
-        volume = 0.0f;
-    if (volume > 1.0f)
-        volume = 1.0f;
-    mutexLock(&g_lock);
-    g_volume = volume;
-    mutexUnlock(&g_lock);
-}
-
 void playerToggleShuffle(void)
 {
     mutexLock(&g_lock);
@@ -456,7 +443,6 @@ void playerGetStatus(PlayerStatus *out)
     out->track_count = g_list.count;
     out->position = g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
     out->duration = g_duration;
-    out->volume = g_volume;
     out->shuffle = g_shuffle;
     out->repeat = g_repeat;
     snprintf(out->error, sizeof(out->error), "%s", g_error);

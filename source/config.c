@@ -8,7 +8,6 @@
 #define CONFIG_DIR "sdmc:/config/kaiplayer"
 #define CONFIG_FILE CONFIG_DIR "/settings.txt"
 #define DEFAULT_FOLDER "sdmc:/"
-#define DEFAULT_VOLUME 0.8f
 
 static void applyLine(Config *c, char *line)
 {
@@ -21,10 +20,6 @@ static void applyLine(Config *c, char *line)
 
     if (strcmp(key, "folder") == 0 && strlen(value) < sizeof(c->folder)) {
         strcpy(c->folder, value);
-    } else if (strcmp(key, "volume") == 0) {
-        float v = strtof(value, NULL);
-        if (v >= 0.0f && v <= 1.0f)
-            c->volume = v;
     } else if (strcmp(key, "shuffle") == 0) {
         c->shuffle = strcmp(value, "1") == 0;
     } else if (strcmp(key, "repeat") == 0) {
@@ -37,7 +32,6 @@ static void applyLine(Config *c, char *line)
 void configLoad(Config *c)
 {
     strcpy(c->folder, DEFAULT_FOLDER);
-    c->volume = DEFAULT_VOLUME;
     c->shuffle = false;
     c->repeat = REPEAT_ALL;
 
@@ -67,7 +61,7 @@ bool configSave(const Config *c)
         return false;
     // A line break in the folder would split it into extra settings.
     const char *folder = strpbrk(c->folder, "\r\n") ? DEFAULT_FOLDER : c->folder;
-    fprintf(f, "folder=%s\nvolume=%.2f\nshuffle=%d\nrepeat=%d\n",
-            folder, c->volume, c->shuffle ? 1 : 0, (int)c->repeat);
+    fprintf(f, "folder=%s\nshuffle=%d\nrepeat=%d\n",
+            folder, c->shuffle ? 1 : 0, (int)c->repeat);
     return fclose(f) == 0;
 }

@@ -226,8 +226,8 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
              elapsed, status->duration > 0 ? total : "--:--");
     fontDraw(FONT_REGULAR, 18, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 18, line),
              MINI_Y + 12, line, COLOR_DIM);
-    snprintf(line, sizeof(line), "%s  ·  %s  ·  App vol %d%%", status->shuffle ? "Shuffle on" : "Shuffle off",
-             uiRepeatLabel(status->repeat), (int)(status->volume * 100.0f + 0.5f));
+    snprintf(line, sizeof(line), "%s  ·  %s", status->shuffle ? "Shuffle on" : "Shuffle off",
+             uiRepeatLabel(status->repeat));
     fontDraw(FONT_REGULAR, 16, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 16, line),
              MINI_Y + 42, line, COLOR_FAINT);
 }
@@ -237,7 +237,7 @@ static void drawFooter(const App *app)
     static const char *const HELP[VIEW_COUNT] = {
         "A open    B back    X play folder    Y shuffle folder    − pause    L/R track    + exit",
         "A play    B browse    X shuffle    Y repeat    − pause    L/R track    + exit",
-        "A pause    Up/Down volume    Left/Right seek    X shuffle    Y repeat    L/R track    + exit",
+        "A pause    Left/Right seek    X shuffle    Y repeat    L/R track    + exit",
     };
     fontDrawClipped(FONT_REGULAR, 16, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, HELP[app->view], COLOR_FAINT);
 }

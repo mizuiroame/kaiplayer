@@ -1,4 +1,4 @@
-// Turns held buttons into repeated presses, for scrolling lists and volume.
+// Turns held buttons into repeated presses, for scrolling lists and seeking.
 #pragma once
 
 #include <stdint.h>

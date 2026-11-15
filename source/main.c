@@ -17,7 +17,6 @@
 #include "ui.h"
 
 #define TOAST_NS 3000000000ull
-#define VOLUME_STEP 0.05f
 #define SEEK_STEP_SECONDS 10.0
 #define PAGE_ROWS UI_LIST_ROWS
 
@@ -121,12 +120,8 @@ static void handleQueue(App *app, uint64_t pressed)
 
 static void handleNowPlaying(App *app, uint64_t pressed)
 {
-    PlayerStatus status;
-    playerGetStatus(&status);
     if (pressed & HidNpadButton_A) playerTogglePause();
     if (pressed & HidNpadButton_B) app->view = VIEW_BROWSER;
-    if (pressed & BUTTONS_UP) playerSetVolume(status.volume + VOLUME_STEP);
-    if (pressed & BUTTONS_DOWN) playerSetVolume(status.volume - VOLUME_STEP);
     if (pressed & BUTTONS_LEFT) playerSeek(-SEEK_STEP_SECONDS);
     if (pressed & BUTTONS_RIGHT) playerSeek(SEEK_STEP_SECONDS);
     if (pressed & HidNpadButton_X) playerToggleShuffle();
@@ -190,7 +185,6 @@ static void saveSettings(App *app)
 {
     PlayerStatus status;
     playerGetStatus(&status);
-    app->config.volume = status.volume;
     app->config.shuffle = status.shuffle;
     app->config.repeat = status.repeat;
     configSave(&app->config);
@@ -218,7 +212,7 @@ int main(int argc, char **argv)
     }
     artworkInit();
     sysinfoInit();
-    app.audio_ok = playerInit(app.config.volume, app.config.shuffle, app.config.repeat);
+    app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
     openStartFolder(&app);
 
     PlayerState last_state = PLAYER_STOPPED;

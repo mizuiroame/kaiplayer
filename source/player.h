@@ -21,13 +21,12 @@ typedef struct {
     size_t track_count;
     double position;      // Seconds.
     double duration;      // Seconds, 0 if unknown.
-    float volume;
     bool shuffle;
     RepeatMode repeat;
     char error[160];
 } PlayerStatus;
 
-bool playerInit(float volume, bool shuffle, RepeatMode repeat);
+bool playerInit(bool shuffle, RepeatMode repeat);
 void playerExit(void);
 
 // Plays list from track start. The player takes the list's contents.
@@ -39,7 +38,6 @@ void playerNext(void);
 void playerPrev(void);
 void playerSeek(double delta_seconds);
 void playerJumpTo(size_t track);
-void playerSetVolume(float volume);
 void playerToggleShuffle(void);
 void playerSetShuffle(bool shuffle);
 void playerCycleRepeat(void);

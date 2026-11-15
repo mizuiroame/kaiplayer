@@ -81,7 +81,7 @@ same way as the `.nro`: with the card in your PC, or over FTP.
 3. Press **X** to play the whole folder, subfolders included. Or press **A**
    on a song to start from that song.
 
-KaiPlayer remembers the last folder, the volume, and the shuffle and repeat
+KaiPlayer remembers the last folder and the shuffle and repeat
 modes. It saves them in `sdmc:/config/kaiplayer/settings.txt`.
 
 ---
@@ -116,7 +116,7 @@ switches to Now Playing.
 
 | Button    | Browse                          | Queue                   | Now Playing                |
 |-----------|---------------------------------|-------------------------|----------------------------|
-| ↑ ↓ / LS  | Move                            | Move                    | Volume up / down           |
+| ↑ ↓ / LS  | Move                            | Move                    | —                          |
 | ← →       | Previous / next page            | Previous / next page    | Rewind / fast-forward 10 s |
 | A         | Open folder / play from song    | Play this track         | Pause / resume             |
 | B         | Go up one folder                | Back to Browse          | Back to Browse             |
@@ -133,9 +133,8 @@ In every tab:
 | RS ← →  | Rewind / fast-forward 10 s |
 | +       | Exit |
 
-The volume bar is KaiPlayer's own volume (**App volume**). The console's
-volume buttons change the console volume on top of it; apps can't read that
-volume, so the bar doesn't move with those buttons. The top right corner shows the
+Use the console's volume buttons to change the volume; KaiPlayer plays at
+full level and has no volume of its own. The top right corner shows the
 time and the battery level (green while charging, red at 15% or less).
 
 **X** and **Y** also play the subfolders. When you press them in the root of

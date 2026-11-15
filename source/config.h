@@ -8,7 +8,6 @@
 
 typedef struct {
     char folder[UTIL_PATH_MAX];  // Last folder browsed.
-    float volume;                // 0..1
     bool shuffle;
     RepeatMode repeat;
 } Config;
