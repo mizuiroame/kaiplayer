@@ -133,7 +133,9 @@ In every tab:
 | RS ← →  | Rewind / fast-forward 10 s |
 | +       | Exit |
 
-The console's own volume buttons also work. The top right corner shows the
+The volume bar is KaiPlayer's own volume (**App volume**). The console's
+volume buttons change the console volume on top of it; apps can't read that
+volume, so the bar doesn't move with those buttons. The top right corner shows the
 time and the battery level (green while charging, red at 15% or less).
 
 **X** and **Y** also play the subfolders. When you press them in the root of
@@ -157,10 +159,11 @@ them from the file's tags:
 | Ogg Vorbis | Vorbis comments and the embedded picture (`METADATA_BLOCK_PICTURE`) |
 | WAV        | None: the file name is shown |
 
-If a file has no embedded cover, KaiPlayer looks for `cover.jpg`,
-`folder.jpg`, `front.jpg`, `albumart.jpg`, `cover.png`, `folder.png` or
-`front.png` in the same folder. Covers can be JPEG or PNG, up to 4096×4096
-pixels and 8 MB.
+If a file has no embedded cover, KaiPlayer looks in the same folder for an
+image named `cover`, `folder`, `front` or `albumart…` (in that order, in any
+letter case, as `.jpg`, `.jpeg` or `.png`). If the folder has exactly one
+image with another name, KaiPlayer uses that. Covers can be JPEG or PNG, up
+to 4096×4096 pixels and 8 MB.
 
 ### Troubleshooting
 

@@ -226,7 +226,7 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
              elapsed, status->duration > 0 ? total : "--:--");
     fontDraw(FONT_REGULAR, 18, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 18, line),
              MINI_Y + 12, line, COLOR_DIM);
-    snprintf(line, sizeof(line), "%s  ·  %s  ·  Vol %d%%", status->shuffle ? "Shuffle on" : "Shuffle off",
+    snprintf(line, sizeof(line), "%s  ·  %s  ·  App vol %d%%", status->shuffle ? "Shuffle on" : "Shuffle off",
              uiRepeatLabel(status->repeat), (int)(status->volume * 100.0f + 0.5f));
     fontDraw(FONT_REGULAR, 16, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 16, line),
              MINI_Y + 42, line, COLOR_FAINT);

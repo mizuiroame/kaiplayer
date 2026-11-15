@@ -21,6 +21,13 @@ void coverFree(CoverImage *c);
 bool coverDecode(const uint8_t *data, size_t size, CoverImage *large, int large_size,
                  CoverImage *small, int small_size);
 
-// Tries cover.jpg, folder.jpg and similar files in the track's folder.
+// How good a file name is as a folder cover, ignoring case: 0 for
+// "cover.*", then "folder", "front", "albumart*", then other images.
+// -1 if it is not a JPEG or PNG name. Exposed for tests.
+int coverNamePriority(const char *name);
+
+// Finds the cover image in the track's folder (Cover.jpg, folder.png...),
+// matching names without regard to case. Falls back to the folder's only
+// image if it has an unusual name.
 bool coverLoadFromFolder(const char *track_path, CoverImage *large, int large_size,
                          CoverImage *small, int small_size);

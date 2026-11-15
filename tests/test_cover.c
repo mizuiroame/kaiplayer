@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "check.h"
 #include "cover.h"
@@ -31,8 +32,54 @@ static bool coverLooksValid(const CoverImage *c, int size)
     return c->size == size && c->pixels && (c->average & 0xFFFFFF) != 0;
 }
 
+static void copyFile(const char *from, const char *to)
+{
+    size_t size = 0;
+    uint8_t *data = readFile(from, &size);
+    FILE *f = fopen(to, "wb");
+    if (f && data)
+        fwrite(data, 1, size, f);
+    if (f)
+        fclose(f);
+    free(data);
+}
+
+// The host filesystem is case-sensitive, like the Switch 2 SD card.
+static void testFolderCoverNames(void)
+{
+    CHECK(coverNamePriority("cover.jpg") == 0);
+    CHECK(coverNamePriority("Cover.JPG") == 0);
+    CHECK(coverNamePriority("FOLDER.jpeg") == 1);
+    CHECK(coverNamePriority("AlbumArt_{1234}_Large.jpg") == 3);
+    CHECK(coverNamePriority("scan 01.png") == 4);
+    CHECK(coverNamePriority("covers.jpg") == 4);  // Not exactly "cover".
+    CHECK(coverNamePriority("cover.txt") == -1);
+
+    CoverImage large, small;
+    mkdir(TMP_ROOT "/art", 0777);
+    mkdir(TMP_ROOT "/art/a", 0777);
+    copyFile(FIXTURES "/small_cover.jpg", TMP_ROOT "/art/a/Cover.JPG");
+    copyFile(FIXTURES "/small_cover.png", TMP_ROOT "/art/a/back.png");
+    CHECK(coverLoadFromFolder(TMP_ROOT "/art/a/song.flac", &large, LARGE, &small, SMALL));
+    coverFree(&large);
+    coverFree(&small);
+
+    mkdir(TMP_ROOT "/art/b", 0777);  // A single image with any name is used.
+    copyFile(FIXTURES "/small_cover.png", TMP_ROOT "/art/b/Booklet 01.png");
+    CHECK(coverLoadFromFolder(TMP_ROOT "/art/b/song.flac", &large, LARGE, &small, SMALL));
+    coverFree(&large);
+    coverFree(&small);
+
+    mkdir(TMP_ROOT "/art/c", 0777);  // Several unnamed images: none is guessed.
+    copyFile(FIXTURES "/small_cover.png", TMP_ROOT "/art/c/scan1.png");
+    copyFile(FIXTURES "/small_cover.png", TMP_ROOT "/art/c/scan2.png");
+    CHECK(!coverLoadFromFolder(TMP_ROOT "/art/c/song.flac", &large, LARGE, &small, SMALL));
+}
+
 void testCover(void)
 {
+    testFolderCoverNames();
+
     CoverImage large, small;
     CHECK(coverLoadFromFolder("preview/assets/track.flac", &large, LARGE, &small, SMALL));
     CHECK(coverLooksValid(&large, LARGE) && coverLooksValid(&small, SMALL));

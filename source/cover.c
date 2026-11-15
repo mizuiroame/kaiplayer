@@ -1,17 +1,27 @@
 #include "cover.h"
 
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "image_config.h"
 #include "stb_image.h"
 #include "util.h"
 
-static const char *const FOLDER_COVERS[] = {
-    "cover.jpg", "folder.jpg", "front.jpg", "albumart.jpg",
-    "cover.png", "folder.png", "front.png",
-};
+// Usual names of a folder's cover image, best first, without extension.
+// "albumart" also matches Windows Media Player's AlbumArt_{...}_Large.jpg.
+static const char *const COVER_NAMES[] = {"cover", "folder", "front", "albumart"};
+#define COVER_NAME_COUNT (sizeof(COVER_NAMES) / sizeof(COVER_NAMES[0]))
+#define PRIORITY_OTHER_IMAGE ((int)COVER_NAME_COUNT)  // Any other image file.
+#define MAX_CANDIDATES 16
+#define MAX_SCANNED_ENTRIES 4096
+
+typedef struct {
+    char name[256];
+    int priority;
+} CoverCandidate;
 
 void coverFree(CoverImage *c)
 {
@@ -119,6 +129,55 @@ static uint8_t *readSmallFile(const char *path, size_t *size)
     return data;
 }
 
+// How good a file name is as a folder cover: 0 is best, -1 is not an image.
+// Names are compared ignoring case: "Cover.JPG" is a cover.
+int coverNamePriority(const char *name)
+{
+    if (!utilHasExtension(name, "jpg") && !utilHasExtension(name, "jpeg") && !utilHasExtension(name, "png"))
+        return -1;
+    const char *dot = strrchr(name, '.');
+    size_t base = (size_t)(dot - name);
+    for (size_t i = 0; i < COVER_NAME_COUNT; i++) {
+        size_t n = strlen(COVER_NAMES[i]);
+        bool prefix_ok = strcmp(COVER_NAMES[i], "albumart") == 0 ? base >= n : base == n;
+        if (prefix_ok && strncasecmp(name, COVER_NAMES[i], n) == 0)
+            return (int)i;
+    }
+    return PRIORITY_OTHER_IMAGE;
+}
+
+static int compareCandidates(const void *a, const void *b)
+{
+    return ((const CoverCandidate *)a)->priority - ((const CoverCandidate *)b)->priority;
+}
+
+// Lists the image files of a folder, best names first. An image with an
+// unusual name is kept only when it is the folder's only image.
+static size_t findCandidates(const char *folder, CoverCandidate *out)
+{
+    DIR *dir = opendir(folder);
+    if (!dir)
+        return 0;
+    size_t count = 0, others = 0, scanned = 0;
+    struct dirent *entry;
+    while (scanned++ < MAX_SCANNED_ENTRIES && (entry = readdir(dir)) != NULL) {
+        int priority = coverNamePriority(entry->d_name);
+        if (priority < 0 || entry->d_name[0] == '.' || strlen(entry->d_name) >= sizeof(out->name) ||
+            utilEntryIsDir(folder, entry))
+            continue;
+        others += priority == PRIORITY_OTHER_IMAGE;
+        if (count < MAX_CANDIDATES) {
+            snprintf(out[count].name, sizeof(out[count].name), "%s", entry->d_name);
+            out[count++].priority = priority;
+        }
+    }
+    closedir(dir);
+    qsort(out, count, sizeof(CoverCandidate), compareCandidates);
+    while (count > 0 && others > 1 && out[count - 1].priority == PRIORITY_OTHER_IMAGE)
+        count--;
+    return count;
+}
+
 bool coverLoadFromFolder(const char *track_path, CoverImage *large, int large_size,
                          CoverImage *small, int small_size)
 {
@@ -126,8 +185,10 @@ bool coverLoadFromFolder(const char *track_path, CoverImage *large, int large_si
     snprintf(folder, sizeof(folder), "%s", track_path);
     if (!utilParentPath(folder))
         return false;
-    for (size_t i = 0; i < sizeof(FOLDER_COVERS) / sizeof(FOLDER_COVERS[0]); i++) {
-        if (!utilJoinPath(path, sizeof(path), folder, FOLDER_COVERS[i]))
+    CoverCandidate candidates[MAX_CANDIDATES];
+    size_t count = findCandidates(folder, candidates);
+    for (size_t i = 0; i < count; i++) {
+        if (!utilJoinPath(path, sizeof(path), folder, candidates[i].name))
             continue;
         size_t size = 0;
         uint8_t *data = readSmallFile(path, &size);

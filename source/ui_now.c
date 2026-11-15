@@ -111,9 +111,12 @@ static void drawToggles(const PlayerStatus *status)
     drawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
 
     int bar_w = 160, bar_x = INFO_X + INFO_W - bar_w;
-    char volume[16];
-    snprintf(volume, sizeof(volume), "%d%%", (int)(status->volume * 100.0f + 0.5f));
-    fontDraw(FONT_REGULAR, 16, bar_x - 56, TOGGLES_Y + 8, volume, COLOR_DIM);
+    // KaiPlayer's own volume. The console's volume buttons set the system
+    // volume, which an app cannot read, so they don't move this bar.
+    char volume[32];
+    snprintf(volume, sizeof(volume), "App volume  %d%%", (int)(status->volume * 100.0f + 0.5f));
+    int volume_w = fontTextWidth(FONT_REGULAR, 16, volume);
+    fontDraw(FONT_REGULAR, 16, bar_x - 14 - volume_w, TOGGLES_Y + 8, volume, COLOR_DIM);
     gfxFillRoundRect(bar_x, TOGGLES_Y + 14, bar_w, 6, 3, COLOR_SURFACE_HI);
     gfxFillRoundRect(bar_x, TOGGLES_Y + 14, (int)(bar_w * status->volume), 6, 3, COLOR_TEXT);
 }
