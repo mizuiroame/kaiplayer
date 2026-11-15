@@ -44,5 +44,5 @@ void playerToggleShuffle(void);
 void playerCycleRepeat(void);
 
 void playerGetStatus(PlayerStatus *out);
-// Copies the file name of a track in the list. False if out of range.
-bool playerTrackName(size_t track, char *out, size_t size);
+// Copies the full path of a track in the list. False if out of range.
+bool playerTrackPath(size_t track, char *out, size_t size);

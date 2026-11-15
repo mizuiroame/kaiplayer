@@ -15,6 +15,11 @@ typedef struct {
     size_t capacity;
 } TrackList;
 
+// True for a system or homebrew folder directly in a device root, such as
+// "switch" in "sdmc:/". A recursive scan skips these; scanning one directly
+// still works.
+bool libraryIsSystemFolder(const char *parent, const char *name);
+
 // Scans folder (and its subfolders when recursive). The list is empty, not
 // an error, when the folder has no audio. Returns false if memory runs out.
 bool libraryScan(TrackList *out, const char *folder, bool recursive);

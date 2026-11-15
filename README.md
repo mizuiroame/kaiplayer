@@ -118,6 +118,11 @@ and WMA won't be added, because they need paid licenses.
 | RS ← →    | Rewind / fast-forward 10 s                  | Rewind / fast-forward 10 s |
 | +         | Exit                                        | Exit                     |
 
+**X** also plays the subfolders. When you press it in the root of the card,
+KaiPlayer skips the system and homebrew folders there (`switch`, `config`,
+`Nintendo`, `atmosphere`, kaiHEN's folders and so on), so their sound effects
+don't end up in the queue. The queue shows the folder each track comes from.
+
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.
 

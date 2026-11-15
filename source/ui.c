@@ -26,6 +26,8 @@
 #define FOOTER_Y 684
 #define TEXT_SMALL 2
 #define TEXT_LARGE 3
+#define QUEUE_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16)
+#define QUEUE_FOLDER_MAX_W 400
 
 static void stripExtension(char *out, size_t size, const char *name)
 {
@@ -33,6 +35,20 @@ static void stripExtension(char *out, size_t size, const char *name)
     char *dot = strrchr(out, '.');
     if (dot && dot != out)
         *dot = '\0';
+}
+
+// Splits a track path into its title (file name without extension) and the
+// name of the folder it is in. All three buffers have the same size.
+static void splitTrackPath(const char *path, char *title, char *folder, size_t size)
+{
+    stripExtension(title, size, utilFileName(path));
+    snprintf(folder, size, "%s", path);
+    if (utilParentPath(folder)) {
+        const char *name = utilFileName(folder);
+        memmove(folder, name, strlen(name) + 1);
+    } else {
+        folder[0] = '\0';
+    }
 }
 
 // First row to show so that cursor stays near the middle.
@@ -120,15 +136,20 @@ static void drawQueue(const App *app, const PlayerStatus *status)
         int y = LIST_Y + (int)(i - first) * ROW_H;
         bool current = i == status->track && status->state != PLAYER_STOPPED;
         drawRow(i == cursor, y);
-        char name[UTIL_PATH_MAX], shown[UTIL_PATH_MAX];
-        if (!playerTrackName(i, name, sizeof(name)))
+        char path[UTIL_PATH_MAX], title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX];
+        if (!playerTrackPath(i, path, sizeof(path)))
             break;
-        stripExtension(shown, sizeof(shown), name);
+        splitTrackPath(path, title, folder, sizeof(title));
         snprintf(line, sizeof(line), "%3zu", i + 1);
         gfxDrawText(MARGIN, y + 9, line, TEXT_SMALL, COLOR_DIM);
         if (current)
             gfxFillPlayIcon(MARGIN + 60, y + 9, 12, 16, COLOR_ACCENT);
-        gfxDrawTextClipped(MARGIN + 84, y + 9, GFX_WIDTH - 2 * MARGIN - 100, shown, TEXT_SMALL,
+        int folder_w = gfxTextWidth(folder, TEXT_SMALL);
+        if (folder_w > QUEUE_FOLDER_MAX_W)
+            folder_w = QUEUE_FOLDER_MAX_W;
+        int folder_x = QUEUE_RIGHT_EDGE - folder_w;
+        gfxDrawTextClipped(folder_x, y + 9, folder_w, folder, TEXT_SMALL, COLOR_DIM);
+        gfxDrawTextClipped(MARGIN + 84, y + 9, folder_x - (MARGIN + 84) - 24, title, TEXT_SMALL,
                            current ? COLOR_ACCENT : COLOR_TEXT);
     }
     drawScrollbar(first, status->track_count);
@@ -165,10 +186,10 @@ static void drawPlayerBar(const App *app, const PlayerStatus *status, uint64_t n
 {
     gfxFillRect(0, PLAYER_Y, GFX_WIDTH, FOOTER_Y - PLAYER_Y, COLOR_PANEL);
 
-    char name[UTIL_PATH_MAX], title[UTIL_PATH_MAX], line[256];
-    bool has_track = status->track_count > 0 && playerTrackName(status->track, name, sizeof(name));
+    char path[UTIL_PATH_MAX], title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX], line[256];
+    bool has_track = status->track_count > 0 && playerTrackPath(status->track, path, sizeof(path));
     if (has_track)
-        stripExtension(title, sizeof(title), name);
+        splitTrackPath(path, title, folder, sizeof(title));
     else
         snprintf(title, sizeof(title), "%s", "Nothing playing");
 

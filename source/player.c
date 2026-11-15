@@ -453,12 +453,12 @@ void playerGetStatus(PlayerStatus *out)
     mutexUnlock(&g_lock);
 }
 
-bool playerTrackName(size_t track, char *out, size_t size)
+bool playerTrackPath(size_t track, char *out, size_t size)
 {
     mutexLock(&g_lock);
     bool ok = track < g_list.count;
     if (ok)
-        snprintf(out, size, "%s", utilFileName(g_list.paths[track]));
+        snprintf(out, size, "%s", g_list.paths[track]);
     mutexUnlock(&g_lock);
     return ok;
 }

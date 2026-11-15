@@ -5,6 +5,26 @@
 
 #include "util.h"
 
+// Root folders of the console, kaiHEN and other homebrew. Their sound effects
+// should not end up in a play list.
+static const char *const SYSTEM_FOLDERS[] = {
+    "atmosphere", "bootloader", "config", "emuMMC", "game", "hen", "licenses",
+    "Nintendo", "programs", "ro", "switch", "themes",
+};
+
+bool libraryIsSystemFolder(const char *parent, const char *name)
+{
+    size_t len = strlen(parent);
+    bool parent_is_root = len >= 2 && parent[len - 1] == '/' && parent[len - 2] == ':';
+    if (!parent_is_root)
+        return false;
+    for (size_t i = 0; i < sizeof(SYSTEM_FOLDERS) / sizeof(SYSTEM_FOLDERS[0]); i++) {
+        if (utilCompareNames(name, SYSTEM_FOLDERS[i]) == 0)
+            return true;
+    }
+    return false;
+}
+
 static bool appendPath(TrackList *list, const char *path)
 {
     if (list->count >= LIBRARY_MAX_TRACKS)
@@ -40,7 +60,8 @@ static bool scanDir(TrackList *list, const char *folder, bool recursive, int dep
         if (!utilJoinPath(path, sizeof(path), folder, entry->d_name))
             continue;
         if (utilEntryIsDir(folder, entry)) {
-            if (recursive && depth < LIBRARY_MAX_DEPTH)
+            if (recursive && depth < LIBRARY_MAX_DEPTH &&
+                !libraryIsSystemFolder(folder, entry->d_name))
                 ok = scanDir(list, path, recursive, depth + 1, budget);
         } else if (utilIsAudioFile(entry->d_name)) {
             ok = appendPath(list, path);

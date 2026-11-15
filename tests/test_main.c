@@ -276,6 +276,14 @@ static void testLibrary(void)
     CHECK(trackListFind(&list, TMP_ROOT "/lib/nope.mp3") == list.count);
     trackListFree(&list);
 
+    // System folders are skipped only right under a device root.
+    CHECK(libraryIsSystemFolder("sdmc:/", "switch"));
+    CHECK(libraryIsSystemFolder("sdmc:/", "Nintendo"));
+    CHECK(libraryIsSystemFolder("sdmc:/", "CONFIG"));
+    CHECK(!libraryIsSystemFolder("sdmc:/", "Music"));
+    CHECK(!libraryIsSystemFolder("sdmc:/Music", "Game"));
+    CHECK(!libraryIsSystemFolder(TMP_ROOT, "switch"));
+
     CHECK(libraryScan(&list, TMP_ROOT "/does-not-exist", true));
     CHECK(list.count == 0);
     trackListFree(&list);
