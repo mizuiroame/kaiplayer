@@ -20,7 +20,14 @@ static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue
 static void drawBrowser(const App *app)
 {
     const Browser *b = &app->browser;
-    int path_w = GFX_WIDTH - 2 * MARGIN;
+    int path_x = MARGIN, path_w = GFX_WIDTH - 2 * MARGIN;
+    char parent[UTIL_PATH_MAX];
+    snprintf(parent, sizeof(parent), "%s", b->path);
+    if (utilParentPath(parent)) {  // Not at the root: a touch way up.
+        int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6);
+        path_x += back_w + 12;
+        path_w -= back_w + 12;
+    }
     if (b->incomplete) {
         // The console returned an error while listing: some names may be missing.
         static const char WARNING[] = "Some items in this folder could not be read";
@@ -28,7 +35,7 @@ static void drawBrowser(const App *app)
         fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
         path_w -= warning_w + 24;
     }
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
+    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, path_x, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
     if (b->count == 0) {
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, "This folder has no subfolders or music.", COLOR_DIM);
         return;
@@ -46,7 +53,8 @@ static void drawBrowser(const App *app)
         else
             uiDrawNoteIcon(MARGIN + 4, y + 10, 24, COLOR_ACCENT);
         fontDrawClipped(i == b->cursor ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
-                        GFX_WIDTH - 2 * MARGIN - 60, e->name, e->is_dir ? COLOR_FOLDER : COLOR_TEXT);
+                        GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W, e->name, e->is_dir ? COLOR_FOLDER : COLOR_TEXT);
+        uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i);
     }
     uiDrawScrollbar(first, b->count);
 }
@@ -57,7 +65,7 @@ static void drawQueueRow(size_t pos, int y, bool selected, bool current)
     char path[UTIL_PATH_MAX];
     size_t track;
     if (playerQueueTrack(pos, &track) && playerTrackPath(track, path, sizeof(path)))
-        uiDrawTrackRow(pos + 1, path, y, selected, current);
+        uiDrawTrackRow(pos + 1, path, y, selected, current, pos);
 }
 
 static void drawQueue(const App *app, const PlayerStatus *status)

@@ -178,14 +178,17 @@ Everything can also be done by touch:
 
 - **Tabs:** tap a tab name to open it.
 - **Lists:** tap a song to play it, or a folder or playlist to open it. Drag
-  up or down to scroll.
+  up or down to scroll. **‹ Back** (next to the folder path, or the playlist
+  name) goes up a folder or back to the playlist list.
+- **+ buttons:** every song and folder row has a **+** that adds it to a
+  playlist, and so does **+ Add to playlist** in Now Playing.
 - **Mini player:** tap it to open Now Playing. Tap **Shuffle** or **Repeat**
   to change them.
-- **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point,
-  and tap the Shuffle and Repeat buttons.
+- **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point
+  (or drag along it and let go where you want), and tap the Shuffle and
+  Repeat buttons.
 - **Menu:** tap the ☰ button or the KaiPlayer title in the top left to open
   the + menu. Tap an item to choose it, or outside the menu to close it.
-- **Keyboard:** tap the keys.
 
 ### Settings
 
@@ -195,7 +198,7 @@ close with **B**.
 | Setting | Values |
 |---------|--------|
 | Sleep timer | Off, 15, 30, 45, 60 or 90 minutes |
-| Resume where you left off | On (default) or Off |
+| Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
 | About | The KaiPlayer version |
 
@@ -204,7 +207,9 @@ and pauses. The minutes left show in the top right corner. Pausing or
 changing the song during the fade cancels it. The timer isn't saved when you
 exit.
 
-**Resume where you left off:** turning it off also deletes the saved queue.
+**Resume where you left off:** **Keep playing** reopens the last song and
+plays on; **Paused** reopens it paused; **Off** forgets it (and deletes the
+saved queue).
 
 ### Playlists
 
@@ -216,10 +221,12 @@ playlists made on your PC into that folder.
 - **Create one:** in the Playlists tab, press **+** and choose
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
   **New playlist...**.
-- **Add songs:** in Browse, select a song or a folder (the whole folder,
-  subfolders included, is added); in Queue, select a song; in Now Playing,
-  the current song. Then press **+** and choose **Add … to playlist**. Songs
-  already in the playlist aren't added twice.
+- **Add songs:** tap the **+** on a song or folder in Browse (a folder adds
+  all its songs, subfolders included), on a song in Queue or in another
+  playlist, or **+ Add to playlist** in Now Playing. Then pick the playlist,
+  or **New playlist...**. With buttons, select the row, press **+** (the
+  menu) and choose **Add … to playlist**. Songs already in the playlist
+  aren't added twice.
 - **Save the queue:** in Queue, press **+** and choose **Save queue as
   playlist**.
 - **Play:** in the Playlists tab, **X** plays a playlist, **Y** shuffles it,
@@ -229,11 +236,11 @@ playlists made on your PC into that folder.
 - **Remove a song, rename or delete a playlist:** with **+** in the
   Playlists tab. Deleting a playlist doesn't delete any songs.
 
-Playlist names are typed on KaiPlayer's keyboard, which has Latin letters,
-digits, spaces and `- _ . ( ) ' & ! + ,`. Names with other characters would
-be hidden on Switch 2 (see [File names and tags](#file-names-and-tags)). On
-the keyboard, **A** types, **B** deletes, **X** is Shift, **Y** is a space,
-**+** finishes and **−** cancels.
+Playlist names are typed on the console's own keyboard, in its Latin layout.
+Names may use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`: names
+with other characters would be hidden on Switch 2 (see
+[File names and tags](#file-names-and-tags)). If a name isn't accepted, the
+keyboard opens again with the reason.
 
 If a playlist names a song that is no longer on the card, KaiPlayer skips it
 when playing.
@@ -241,9 +248,9 @@ when playing.
 ### Resume where you left off
 
 Unless you turn it off in Settings, KaiPlayer remembers the queue, the
-current song and the position. When you
-open it again, it starts in Now Playing, paused at that spot: press **A** to
-continue. It saves this in `sdmc:/config/kaiplayer/resume.m3u8` and
+current song and the position. When you open it again, it starts in Now
+Playing and keeps playing from that spot (or waits paused, if you chose
+**Paused** in Settings). It saves this in `sdmc:/config/kaiplayer/resume.m3u8` and
 `resume.txt` when the song changes, when you pause, every 30 seconds while
 playing, and when you exit.
 
@@ -430,7 +437,7 @@ source/
   tracklist.c     lists of song paths (folders, playlists, the queue)
   playlist.c      .m3u8 playlists in sdmc:/playlists
   resume.c        saves and restores the last queue and position
-  keyboard.c      the on-screen keyboard for playlist names
+  keyboard*.c     playlist names: the console's keyboard, and a fallback
   menu.c          the + menu and dialogs
   settings.c      the Settings rows and sleep timer choices
   touch.c         taps and drags from the touch screen

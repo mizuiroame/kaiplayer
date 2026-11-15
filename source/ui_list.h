@@ -18,8 +18,15 @@ size_t uiFirstVisible(size_t cursor, size_t count);
 void uiDrawSelection(int y, Color bar);
 void uiDrawScrollbar(size_t first, size_t count);
 void uiDrawFolderIcon(int x, int y, Color color);
-// A song row: number (or a play mark when current), title and folder.
-void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current);
+// A song row: number (or a play mark when current), title, folder and a
+// "+" button that adds the song at row index to a playlist.
+void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current, size_t index);
+
+// "+" at the end of a row, for adding it to a playlist.
+#define ADD_BUTTON_W 44
+void uiDrawAddButton(int x, int y, size_t index);
+// "< Back" at the start of the subtitle line. Returns its width.
+int uiDrawBackButton(int x, int y);
 // Touch targets: the list area (for drags) and one row.
 void uiHitListArea(void);
 void uiHitRow(int y, size_t index);

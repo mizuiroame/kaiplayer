@@ -208,7 +208,7 @@ static void runLoop(App *app)
             appHandleTouch(app, now);
             appTickSleepTimer(app, now);
             syncWithPlayer(app, &last_state, last_error, sizeof(last_error));
-            if (app->config.resume)
+            if (app->config.resume != RESUME_OFF)
                 appSaveSession(app, now, false);
         } else if (pressed & HidNpadButton_Plus) {
             app->quit = true;
@@ -243,13 +243,13 @@ int main(int argc, char **argv)
     sysinfoInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
     openStartFolder(&app);
-    if (app.audio_ok && app.config.resume)
-        appRestoreSession(&app);
+    if (app.audio_ok && app.config.resume != RESUME_OFF)
+        appRestoreSession(&app, app.config.resume == RESUME_PLAYING);
 
     runLoop(&app);
 
     if (app.audio_ok) {
-        if (app.config.resume)
+        if (app.config.resume != RESUME_OFF)
             appSaveSession(&app, nowNs(), true);
         saveSettings(&app);
         appletSetMediaPlaybackState(false);

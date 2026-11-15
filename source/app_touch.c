@@ -26,6 +26,32 @@ static bool isOverlayTarget(HitKind kind)
     return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING;
 }
 
+// "+" on a row (or, with index -1, in Now Playing) adds that song or folder.
+static void addFromRow(App *app, int index)
+{
+    if (index < 0) {
+        appAddToPlaylist(app, SRC_NOW_PLAYING);
+        return;
+    }
+    appActivateRow(app, (size_t)index, true);
+    switch (app->view) {
+    case VIEW_BROWSER: appAddToPlaylist(app, SRC_BROWSE_ENTRY); break;
+    case VIEW_QUEUE: appAddToPlaylist(app, SRC_QUEUE_ENTRY); break;
+    case VIEW_PLAYLISTS:
+        if (app->playlists.open)
+            appAddToPlaylist(app, SRC_PLAYLIST_SONG);
+        break;
+    default: break;
+    }
+}
+
+static double seekFraction(const HitRegion *r, int x)
+{
+    // The region has SEEK_MARGIN of slack on each side of the bar.
+    double fraction = (double)(x - r->x - SEEK_MARGIN) / (double)(r->w - 2 * SEEK_MARGIN);
+    return fraction < 0.0 ? 0.0 : fraction > 1.0 ? 1.0 : fraction;
+}
+
 static void tapRegion(App *app, const HitRegion *r, int x)
 {
     // Targets are from the last frame. If an overlay opened or closed since,
@@ -42,13 +68,10 @@ static void tapRegion(App *app, const HitRegion *r, int x)
         break;
     case HIT_ROW: appActivateRow(app, (size_t)r->arg, false); break;
     case HIT_MINI_PLAYER: appSetView(app, VIEW_NOW_PLAYING); break;
-    case HIT_SEEK: {
-        // The region has SEEK_MARGIN of slack on each side of the bar.
-        double fraction = (double)(x - r->x - SEEK_MARGIN) / (double)(r->w - 2 * SEEK_MARGIN);
+    case HIT_SEEK:
         if (status.duration > 0)
-            playerSeekTo(status.duration * (fraction < 0.0 ? 0.0 : fraction > 1.0 ? 1.0 : fraction));
+            playerSeekTo(status.duration * seekFraction(r, x));
         break;
-    }
     case HIT_PREV: playerPrev(); break;
     case HIT_PLAY: playerTogglePause(); break;
     case HIT_NEXT: playerNext(); break;
@@ -74,6 +97,8 @@ static void tapRegion(App *app, const HitRegion *r, int x)
         app->settings_cursor = (SettingRow)r->arg;
         appChangeSetting(app, (SettingRow)r->arg, 1);
         break;
+    case HIT_BACK: appDispatchButtons(app, HidNpadButton_B); break;
+    case HIT_ADD: addFromRow(app, r->arg); break;
     case HIT_LIST: break;
     }
 }
@@ -93,6 +118,28 @@ static void dragList(App *app, const TouchEvent *e)
     while (app->drag_rows <= -ROW_H) {
         app->drag_rows += ROW_H;
         appDispatchButtons(app, HidNpadButton_Up);
+    }
+}
+
+// A drag that starts on the progress bar scrubs: the bar follows the finger,
+// and the song jumps there on release. Other drags scroll lists.
+static void dragSeekOrList(App *app, const TouchEvent *e)
+{
+    const HitRegion *start = uiHitFind(e->start_x, e->start_y);
+    bool on_bar = start && start->kind == HIT_SEEK && !overlayOpen(app);
+    if (!on_bar) {
+        app->scrubbing = false;
+        if (e->type == TOUCH_DRAG)
+            dragList(app, e);
+        return;
+    }
+    app->scrub_fraction = seekFraction(start, e->x);
+    app->scrubbing = e->type == TOUCH_DRAG;
+    if (e->type == TOUCH_DRAG_END) {
+        PlayerStatus status;
+        playerGetStatus(&status);
+        if (status.duration > 0)
+            playerSeekTo(status.duration * app->scrub_fraction);
     }
 }
 
@@ -121,8 +168,8 @@ void appHandleTouch(App *app, uint64_t now_ns)
         const HitRegion *r = uiHitFind(e.x, e.y);
         if (r)
             tapRegion(app, r, e.x);
-    } else if (e.type == TOUCH_DRAG) {
-        dragList(app, &e);
+    } else if (e.type == TOUCH_DRAG || e.type == TOUCH_DRAG_END) {
+        dragSeekOrList(app, &e);
     } else if (!touching) {
         app->drag_rows = 0;  // A new drag starts from zero.
     }

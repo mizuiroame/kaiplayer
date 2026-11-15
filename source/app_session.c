@@ -27,7 +27,7 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle)
     app->view = VIEW_NOW_PLAYING;
 }
 
-void appRestoreSession(App *app)
+void appRestoreSession(App *app, bool play)
 {
     TrackList queue;
     size_t track;
@@ -35,6 +35,8 @@ void appRestoreSession(App *app)
     if (!resumeLoad(&queue, &track, &position))
         return;
     playerRestore(&queue, track, position);
+    if (play)
+        playerTogglePause();  // Restored paused: this resumes it.
     app->view = VIEW_NOW_PLAYING;
 }
 

@@ -42,9 +42,11 @@ static void drawInfo(const PlayerStatus *status, const UiTrack *track)
     }
 }
 
-static void drawProgress(const PlayerStatus *status)
+static void drawProgress(const App *app, const PlayerStatus *status)
 {
-    double fraction = status->duration > 0 ? status->position / status->duration : 0.0;
+    // While the finger drags the bar, show where it will jump to.
+    double position = app->scrubbing ? app->scrub_fraction * status->duration : status->position;
+    double fraction = status->duration > 0 ? position / status->duration : 0.0;
     if (fraction > 1.0)
         fraction = 1.0;
     int filled = (int)(INFO_W * fraction);
@@ -56,7 +58,7 @@ static void drawProgress(const PlayerStatus *status)
         gfxFillCircle(INFO_X + filled, PROGRESS_Y + 3, 8, COLOR_TEXT);
 
     char elapsed[16], total[16];
-    utilFormatTime(elapsed, sizeof(elapsed), status->position);
+    utilFormatTime(elapsed, sizeof(elapsed), position);
     utilFormatTime(total, sizeof(total), status->duration);
     const char *right = status->duration > 0 ? total : "--:--";
     fontDraw(FONT_REGULAR, 17, INFO_X, PROGRESS_Y + 16, elapsed, COLOR_DIM);
@@ -111,6 +113,12 @@ static void drawToggles(const PlayerStatus *status)
     snprintf(repeat, sizeof(repeat), "Y  %s", uiRepeatLabel(status->repeat));
     uiDrawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
     uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
+    if (status->track_count > 0) {  // Add the current song to a playlist.
+        static const char ADD[] = "+  Add to playlist";
+        x += uiPillWidth(repeat) + 12;
+        uiDrawPill(x, TOGGLES_Y, ADD, false);
+        uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(ADD), 46, HIT_ADD, -1);
+    }
 }
 
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
@@ -121,7 +129,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
                      COLOR_SHADOW, SHADOW_ALPHA);
     uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
     drawInfo(status, track);
-    drawProgress(status);
+    drawProgress(app, status);
     drawTransport(status);
     drawToggles(status);
     if (app->toast[0] && now_ns < app->toast_until_ns)

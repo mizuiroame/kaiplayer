@@ -155,7 +155,7 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->keyboard_open = false;
 
     // Settings with the sleep timer running (24 minutes left at time 0).
-    app->config.resume = true;
+    app->config.resume = RESUME_PLAYING;
     app->config.clock_24h = false;
     app->sleep_option = 2;
     app->sleep_deadline_ns = 24ull * 60000000000ull;

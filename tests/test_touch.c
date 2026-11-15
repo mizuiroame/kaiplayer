@@ -36,8 +36,8 @@ static void testDrag(void)
     CHECK(e.type == TOUCH_DRAG && e.dy == -40 && e.start_y == 400);
     e = touchUpdate(&t, true, 300, 350, 32 * MS);
     CHECK(e.type == TOUCH_DRAG && e.dy == -10);
-    e = touchUpdate(&t, false, 0, 0, 48 * MS);                 // A drag never ends in a tap.
-    CHECK(e.type == TOUCH_NONE);
+    e = touchUpdate(&t, false, 0, 0, 48 * MS);                 // A drag ends where it was released.
+    CHECK(e.type == TOUCH_DRAG_END && e.x == 300 && e.y == 350 && e.start_y == 400);
 }
 
 static void testHits(void)

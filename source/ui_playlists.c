@@ -20,12 +20,16 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status)
     char line[160];
     if (t->tracks.count == 0) {
         snprintf(line, sizeof(line), "%s  ·  empty", t->name);
-        uiDrawEmptyList(line, "Add songs with + in Browse, Queue or Now Playing.");
+        int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6) + 12;
+        fontDraw(FONT_BOLD, TEXT_SMALL, MARGIN + back_w, SUBTITLE_Y, line, COLOR_DIM);
+        fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10,
+                 "Add songs with the + buttons in Browse, Queue or Now Playing.", COLOR_DIM);
         return;
     }
     snprintf(line, sizeof(line), "%s  ·  %zu song%s%s", t->name, t->tracks.count,
              t->tracks.count == 1 ? "" : "s", t->moving ? "  ·  moving a song" : "");
-    fontDrawClipped(FONT_BOLD, TEXT_SMALL, MARGIN, SUBTITLE_Y, GFX_WIDTH - 2 * MARGIN, line,
+    int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6) + 12;
+    fontDrawClipped(FONT_BOLD, TEXT_SMALL, MARGIN + back_w, SUBTITLE_Y, GFX_WIDTH - 2 * MARGIN - back_w, line,
                     t->moving ? COLOR_FOLDER : COLOR_DIM);
 
     char playing[UTIL_PATH_MAX] = "";
@@ -40,7 +44,7 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status)
         bool current = playing[0] && strcmp(playing, t->tracks.paths[i]) == 0;
         if (selected && t->moving)
             uiDrawSelection(y, COLOR_FOLDER);  // A different bar while moving.
-        uiDrawTrackRow(i + 1, t->tracks.paths[i], y, selected && !t->moving, current);
+        uiDrawTrackRow(i + 1, t->tracks.paths[i], y, selected && !t->moving, current, i);
     }
     uiDrawScrollbar(first, t->tracks.count);
 }

@@ -34,8 +34,8 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         setSleep(app, settingsSleepStep(app->sleep_option, delta));
         break;
     case SETTING_RESUME:
-        app->config.resume = !app->config.resume;
-        if (!app->config.resume)
+        app->config.resume = (ResumeMode)((app->config.resume + delta + RESUME_MODE_COUNT) % RESUME_MODE_COUNT);
+        if (app->config.resume == RESUME_OFF)
             resumeClear();  // Off means KaiPlayer forgets the last queue.
         configSave(&app->config);
         break;

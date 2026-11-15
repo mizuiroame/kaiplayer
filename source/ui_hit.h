@@ -23,6 +23,8 @@ typedef enum {
     HIT_MENU_ITEM,     // arg: item index.
     HIT_KEY,           // arg: row * 16 + col on the keyboard.
     HIT_SETTING,       // arg: setting row.
+    HIT_BACK,          // Like B: up a folder, or out of a playlist.
+    HIT_ADD,           // "+": add to a playlist. arg: row index, or -1 for the current song.
 } HitKind;
 
 typedef struct {

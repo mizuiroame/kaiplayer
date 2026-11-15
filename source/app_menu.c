@@ -28,12 +28,6 @@ typedef enum {
     ACT_REMOVE_SONG,
 } MenuAction;
 
-typedef enum {
-    SRC_BROWSE_ENTRY,
-    SRC_QUEUE_ENTRY,
-    SRC_NOW_PLAYING,
-} AddSource;
-
 // The playlist the menu acts on: the open one, or the selected one.
 static const char *currentPlaylist(const App *app)
 {
@@ -116,6 +110,11 @@ static bool collectSongs(App *app, AddSource source)
                trackListAdd(&app->pending, path);
     case SRC_NOW_PLAYING:
         return playerTrackPath(status.track, path, sizeof(path)) && trackListAdd(&app->pending, path);
+    case SRC_PLAYLIST_SONG: {
+        const PlaylistsTab *t = &app->playlists;
+        return t->open && t->track_cursor < t->tracks.count &&
+               trackListAdd(&app->pending, t->tracks.paths[t->track_cursor]);
+    }
     }
     return false;
 }
@@ -152,7 +151,7 @@ static void addPendingTo(App *app, const char *name)
     trackListFree(&app->pending);
 }
 
-static void startAdd(App *app, AddSource source)
+void appAddToPlaylist(App *app, AddSource source)
 {
     if (!collectSongs(app, source) || app->pending.count == 0) {
         appToast(app, "There are no songs to add.");
@@ -226,7 +225,7 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_EXIT: confirmExit(app); break;
     case ACT_EXIT_CONFIRMED: app->quit = true; break;
     case ACT_SETTINGS: appOpenSettings(app); break;
-    case ACT_ADD: startAdd(app, (AddSource)item->arg); break;
+    case ACT_ADD: appAddToPlaylist(app, (AddSource)item->arg); break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
             addPendingTo(app, app->playlists.index.names[item->arg]);

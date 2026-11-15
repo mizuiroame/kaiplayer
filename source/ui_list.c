@@ -6,7 +6,7 @@
 #include "ui_common.h"
 #include "ui_hit.h"
 
-#define TRACK_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16)
+#define TRACK_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W)
 #define TRACK_FOLDER_MAX_W 360
 
 size_t uiFirstVisible(size_t cursor, size_t count)
@@ -42,7 +42,27 @@ void uiDrawScrollbar(size_t first, size_t count)
     gfxFillRoundRect(GFX_WIDTH - 12, thumb_y, 4, thumb_h, 2, COLOR_FAINT);
 }
 
-void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current)
+void uiDrawAddButton(int x, int y, size_t index)
+{
+    int cx = x + ADD_BUTTON_W / 2, cy = y + ROW_H / 2;
+    gfxFillCircle(cx, cy, 14, COLOR_SURFACE_HI);
+    gfxFillRect(cx - 7, cy - 1, 14, 3, COLOR_DIM);
+    gfxFillRect(cx - 1, cy - 7, 3, 14, COLOR_DIM);
+    uiHitAdd(x, y, ADD_BUTTON_W, ROW_H, HIT_ADD, (int)index);
+}
+
+int uiDrawBackButton(int x, int y)
+{
+    static const char LABEL[] = "Back";
+    int w = fontTextWidth(FONT_BOLD, 17, LABEL) + 44;
+    gfxFillRoundRect(x, y, w, 30, 15, COLOR_SURFACE_HI);
+    gfxFillTriangleLeft(x + 12, y + 8, 9, 14, COLOR_TEXT);
+    fontDraw(FONT_BOLD, 17, x + 28, y + 4, LABEL, COLOR_TEXT);
+    uiHitAdd(x - 8, y - 10, w + 16, 50, HIT_BACK, 0);
+    return w;
+}
+
+void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current, size_t index)
 {
     char title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX], digits[24];
     uiSplitTrackPath(path, title, folder);
@@ -63,6 +83,7 @@ void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool 
     fontDrawClipped(FONT_REGULAR, TEXT_SMALL, folder_x, y + 11, folder_w, folder, COLOR_DIM);
     fontDrawClipped(current || selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
                     folder_x - (MARGIN + 66) - 24, title, current ? COLOR_ACCENT : COLOR_TEXT);
+    uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, index);
 }
 
 void uiHitListArea(void)

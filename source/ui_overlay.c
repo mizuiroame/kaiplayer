@@ -87,7 +87,11 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
             snprintf(out, size, "%d min  (%u left)", settingsSleepMinutes(app->sleep_option), left);
         }
         break;
-    case SETTING_RESUME: snprintf(out, size, "%s", app->config.resume ? "On" : "Off"); break;
+    case SETTING_RESUME: {
+        static const char *const MODES[RESUME_MODE_COUNT] = {"Off", "Paused", "Keep playing"};
+        snprintf(out, size, "%s", MODES[app->config.resume % RESUME_MODE_COUNT]);
+        break;
+    }
     case SETTING_CLOCK: snprintf(out, size, "%s", app->config.clock_24h ? "24-hour" : "12-hour"); break;
     default: snprintf(out, size, "KaiPlayer %s", KAIPLAYER_VERSION); break;
     }

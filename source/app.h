@@ -42,6 +42,14 @@ enum {
     MENU_KIND_EXIT,  // "Exit KaiPlayer?"
 };
 
+// Where the songs for "add to playlist" come from.
+typedef enum {
+    SRC_BROWSE_ENTRY,   // The selected song or folder in Browse.
+    SRC_QUEUE_ENTRY,    // The selected song in Queue.
+    SRC_NOW_PLAYING,    // The current song.
+    SRC_PLAYLIST_SONG,  // The selected song of the open playlist.
+} AddSource;
+
 // What the on-screen keyboard is typing a name for.
 typedef enum {
     NAME_FOR_NEW_PLAYLIST,
@@ -72,6 +80,8 @@ typedef struct {
     uint64_t sleep_deadline_ns; // When the sleep timer fires; 0 if off.
     TouchTracker touch;
     int drag_rows;              // Pixels dragged on a list, not yet a whole row.
+    bool scrubbing;             // Dragging on the progress bar.
+    double scrub_fraction;      // Where the finger is on the bar, 0 to 1.
     bool quit;
 } App;
 
@@ -94,6 +104,8 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle);
 // The + menu, its dialogs and the keyboard. appOpenMenu builds the menu for
 // the current tab; appHandleOverlay returns true while an overlay is open.
 void appOpenMenu(App *app);
+// Collects the songs from source and opens the playlist picker.
+void appAddToPlaylist(App *app, AddSource source);
 bool appHandleOverlay(App *app, uint64_t pressed);
 
 // Switches tabs, refreshing what the new tab shows.
@@ -117,5 +129,6 @@ void appHandleTouch(App *app, uint64_t now_ns);
 void appDispatchButtons(App *app, uint64_t pressed);
 
 // Resume: restore the last queue at startup and save it while playing.
-void appRestoreSession(App *app);
+// play: keep playing; otherwise the restored queue waits paused.
+void appRestoreSession(App *app, bool play);
 void appSaveSession(App *app, uint64_t now_ns, bool force);
