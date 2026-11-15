@@ -16,6 +16,9 @@ card and KaiPlayer plays the music in it.
 - [For users: install the .nro](#for-users-install-the-nro)
 - [Supported audio formats](#supported-audio-formats)
 - [Controls](#controls)
+- [Song details and album art](#song-details-and-album-art)
+- [File names and tags](#file-names-and-tags)
+- [Troubleshooting](#troubleshooting)
 - [For developers: build from source](#for-developers-build-from-source)
 - [Legal notice](#legal-notice)
 - [License](#license)
@@ -24,13 +27,20 @@ card and KaiPlayer plays the music in it.
 
 ## For users: install the .nro
 
-You don't need to build anything.
+You don't need to build anything. Everything is copied over Wi-Fi with
+OunceShell's FTP server, so the microSD card stays in the console.
+
+> **Don't take the microSD card out while kaiHEN is running.** Removing it
+> means restarting the console, and kaiHEN has to be started again after
+> that.
 
 ### Requirements
 
 - A Switch 2 with **kaiHEN** running. Launch a game while holding **R** to open
   the homebrew menu (hbmenu).
-- A microSD card with your music on it.
+- **OunceShell**, which comes with kaiHEN.
+- A PC on the same Wi-Fi network as the console, with an FTP client such as
+  [FileZilla](https://filezilla-project.org/).
 
 ### 1. Download
 
@@ -39,40 +49,33 @@ Go to the repository's **[Releases](../../releases)** page and download
 
 ### 2. Copy the .nro to the console
 
-Choose one of these methods.
+1. In hbmenu, open **OunceShell** and start its FTP server. OunceShell shows
+   the console's IP address and port (for example `192.168.0.51`, port
+   `1337`).
+2. In FileZilla, enter that address as **Host** and that number as **Port**,
+   leave **Username** and **Password** empty, and click **Quickconnect**.
+3. In the remote pane (the console), open the `switch` folder. Create it if
+   it doesn't exist.
+4. Drag `KaiPlayer.nro` from your PC into `switch`. Its path on the card is
+   then `sdmc:/switch/KaiPlayer.nro`.
 
-**A. With the microSD card in your PC**
-
-1. Turn off the console and remove the microSD card.
-2. Copy `KaiPlayer.nro` into the card's `switch/` folder, so that its path is
-   `sdmc:/switch/KaiPlayer.nro`. Create the folder if it doesn't exist.
-3. Put the card back in the console.
-
-**B. Over FTP, without removing the card**
-
-1. In hbmenu, open **OunceShell** (it comes with kaiHEN) and start its FTP
-   server. OunceShell shows the console's IP address and port.
-2. On your PC, connect to that address and port with an FTP client such as
-   FileZilla.
-3. Upload `KaiPlayer.nro` to `/switch/`.
-
-**C. With nxlink (optional)**
-
-If your hbmenu has its *netloader* enabled (**Y** button in hbmenu), you can
-send the file straight from your PC:
-
-```sh
-nxlink -a <console-IP> KaiPlayer.nro
-```
-
-`nxlink` comes with devkitPro. This runs the program once without installing
-it.
+To update KaiPlayer later, upload the new `KaiPlayer.nro` the same way and
+let it replace the old one.
 
 ### 3. Copy your music
 
-Put your audio files in any folder on the microSD card, for example
-`sdmc:/Music/`. Subfolders (artist, album, and so on) are fine. Copy them the
-same way as the `.nro`: with the card in your PC, or over FTP.
+1. With the same FTP connection, create a folder for your music, for example
+   `Music`.
+2. Drag your album folders into it. Subfolders (artist, album and so on) are
+   fine.
+
+> **Use Latin letters in file and folder names.** On Switch 2, a file or
+> folder whose name has Japanese (or other non-Latin) characters is saved,
+> but no app can list it, KaiPlayer included. Rename such files on your PC
+> before uploading them, for example `04 みずいろの雨.mp3` →
+> `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the song's real title,
+> artist and album, in Japanese, from its tags. See
+> [File names and tags](#file-names-and-tags).
 
 ### 4. Play it
 
@@ -81,8 +84,8 @@ same way as the `.nro`: with the card in your PC, or over FTP.
 3. Press **X** to play the whole folder, subfolders included. Or press **A**
    on a song to start from that song.
 
-KaiPlayer remembers the last folder and the shuffle and repeat
-modes. It saves them in `sdmc:/config/kaiplayer/settings.txt`.
+KaiPlayer remembers the last folder and the shuffle and repeat modes. It
+saves them in `sdmc:/config/kaiplayer/settings.txt`.
 
 ---
 
@@ -146,35 +149,91 @@ track comes from.
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.
 
-### Album art and song details
+### Song details and album art
 
-Now Playing shows the album cover, title, artist and album. KaiPlayer reads
-them from the file's tags:
+Now Playing shows the album cover, title, artist and album. The mini player
+at the bottom of Browse and Queue shows a small cover, the title and the
+artist.
+
+KaiPlayer reads the song details from the file's tags:
 
 | Format     | Tags read |
 |------------|-----------|
 | MP3        | ID3v2.2, v2.3 and v2.4 (title, artist, album, cover); ID3v1 as a fallback |
 | FLAC       | Vorbis comments and the embedded picture |
 | Ogg Vorbis | Vorbis comments and the embedded picture (`METADATA_BLOCK_PICTURE`) |
-| WAV        | None: the file name is shown |
+| WAV        | None |
 
-If a file has no embedded cover, KaiPlayer looks in the same folder for an
-image named `cover`, `folder`, `front` or `albumart…` (in that order, in any
-letter case, as `.jpg`, `.jpeg` or `.png`). If the folder has exactly one
-image with another name, KaiPlayer uses that. Covers can be JPEG or PNG, up
-to 4096×4096 pixels and 8 MB.
+When a file has no title tag, KaiPlayer shows its file name without the
+extension. When it has no artist tag, Now Playing shows "Unknown artist" and
+the mini player shows the name of the song's folder.
+
+KaiPlayer looks for the cover in this order:
+
+1. **The cover embedded in the file.** If a file has several pictures,
+   KaiPlayer prefers the front cover.
+2. **An image in the song's folder** named `cover`, `folder`, `front` or
+   `albumart…`, in that order. Letter case doesn't matter (`Cover.jpg` and
+   `FOLDER.PNG` work), and the image can be `.jpg`, `.jpeg` or `.png`.
+3. **The folder's only image**, whatever its name, if the folder has exactly
+   one image file.
+
+Covers can be JPEG or PNG, up to 4096×4096 pixels and 8 MB. For a folder of
+FLAC files without embedded art, uploading the album's `Cover.jpg` next to
+them is enough.
+
+### File names and tags
+
+Text in tags and file names can be in any language:
+
+- **Latin, Greek and Cyrillic** are drawn with KaiPlayer's own font (Noto
+  Sans).
+- **Japanese (kanji and kana), Chinese and Korean** are drawn with the fonts
+  built into the console.
+
+**File and folder names, however, must use Latin letters.** This is a
+limitation of the console, not of KaiPlayer: on Switch 2, a file or folder
+whose name has Japanese characters is written correctly, but directory
+listings leave it out. FTP listings, OunceShell and KaiPlayer all list folders
+the same way, so the file is invisible in all of them, even though it is on
+the card. Accented Latin letters (á, ñ, ü) haven't been tested yet.
+
+Because KaiPlayer shows the title, artist and album from the tags, the file
+name doesn't matter much. A file renamed `04 Mizuiro no Ame.mp3` is still
+shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, with its
+embedded cover.
+
+If you already uploaded a file with a Japanese name, it is on the card but
+hidden. You can rename or delete it with FileZilla's
+**Server → Enter custom command** (use the folder that holds it as the
+current remote folder):
+
+```
+RNFR 04 みずいろの雨.mp3
+RNTO 04 Mizuiro no Ame.mp3
+```
+
+or, to delete it:
+
+```
+DELE 04 みずいろの雨.mp3
+```
+
+`SIZE <name>` tells you whether a hidden file is there: it answers `213`
+followed by the file size.
 
 ### Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
+| A file or folder doesn't appear | If its name has Japanese or other non-Latin characters, rename it with Latin letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
+| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This happens with non-Latin file names. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
+| No cover | The file has no embedded cover and its folder has no `cover.jpg` (or similar), or the image is larger than 4096×4096 or 8 MB. |
+| `?` in titles | The character isn't in KaiPlayer's font or in the console's fonts. |
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
-| `?` in names | Latin, Greek and Cyrillic use KaiPlayer's own font. Japanese, Chinese and Korean use the console's built-in fonts; if the console doesn't provide them, those characters show as `?`. |
-| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. See the next row. |
-| A file doesn't appear | Check that it has a supported extension. If its name has non-Latin characters (for example Japanese) and you copied it over FTP, check FileZilla's transfer log for errors, then try copying it with the microSD card in your PC. If it shows up after renaming it to a plain name such as `test.flac`, please open an issue with the original name. |
-| No cover | The file has no embedded cover and there is no `cover.jpg` (or similar) in its folder, or the image is larger than 4096×4096 or 8 MB. |
+| The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
 ---
@@ -280,6 +339,12 @@ icon.jpg        256×256 icon for hbmenu
 - Pause and track changes have about 140 ms of latency, the size of the audio
   buffers.
 - A play list holds up to 8192 tracks, from up to 8 levels of subfolders.
+- Files and folders with non-Latin names (for example Japanese) are left out
+  of directory listings on Switch 2, in every app. Opening them by path
+  works (FTP `SIZE` finds them), so the console's directory read seems to
+  stop at such entries. KaiPlayer can't list what the console doesn't return;
+  see [File names and tags](#file-names-and-tags) for the workaround.
+- Opus, AAC, ALAC and WMA aren't supported.
 
 ---
 
