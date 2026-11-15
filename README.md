@@ -133,7 +133,8 @@ In every tab:
 | RS ← →  | Rewind / fast-forward 10 s |
 | +       | Exit |
 
-The console's own volume buttons also work.
+The console's own volume buttons also work. The top right corner shows the
+time and the battery level (green while charging, red at 15% or less).
 
 **X** and **Y** also play the subfolders. When you press them in the root of
 the card, KaiPlayer skips the system and homebrew folders there (`switch`,
@@ -168,7 +169,9 @@ pixels and 8 MB.
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
-| `?` in names | The font covers Latin, Greek and Cyrillic. Other scripts, such as Japanese, can't be shown yet. |
+| `?` in names | Latin, Greek and Cyrillic use KaiPlayer's own font. Japanese, Chinese and Korean use the console's built-in fonts; if the console doesn't provide them, those characters show as `?`. |
+| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. See the next row. |
+| A file doesn't appear | Check that it has a supported extension. If its name has non-Latin characters (for example Japanese) and you copied it over FTP, check FileZilla's transfer log for errors, then try copying it with the microSD card in your PC. If it shows up after renaming it to a plain name such as `test.flac`, please open an issue with the original name. |
 | No cover | The file has no embedded cover and there is no `cover.jpg` (or similar) in its folder, or the image is larger than 4096×4096 or 8 MB. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 

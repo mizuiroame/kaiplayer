@@ -1,5 +1,6 @@
 #include "browser.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -46,9 +47,18 @@ bool browserOpen(Browser *b, const char *path)
 
     BrowserEntry *entries = NULL;
     size_t count = 0, capacity = 0;
-    bool ok = true;
-    struct dirent *entry;
-    while (ok && count < BROWSER_MAX_ENTRIES && (entry = readdir(dir)) != NULL) {
+    bool ok = true, incomplete = false;
+    while (ok) {
+        if (count >= BROWSER_MAX_ENTRIES) {
+            incomplete = true;
+            break;
+        }
+        errno = 0;
+        struct dirent *entry = readdir(dir);
+        if (!entry) {
+            incomplete = errno != 0;  // NULL with errno set is a read error, not the end.
+            break;
+        }
         if (entry->d_name[0] == '.')
             continue;
         bool is_dir = utilEntryIsDir(path, entry);
@@ -69,6 +79,7 @@ bool browserOpen(Browser *b, const char *path)
     b->entries = entries;
     b->count = count;
     b->cursor = 0;
+    b->incomplete = incomplete;
     return true;
 }
 

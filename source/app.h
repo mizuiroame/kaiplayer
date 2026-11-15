@@ -7,6 +7,7 @@
 
 #include "browser.h"
 #include "config.h"
+#include "sysinfo.h"
 
 typedef enum {
     VIEW_BROWSER,
@@ -21,6 +22,7 @@ typedef struct {
     Config config;
     size_t queue_cursor;
     bool audio_ok;
+    SysInfo sys;  // Clock and battery, refreshed by the main loop.
     char toast[160];
     uint64_t toast_until_ns;
 } App;

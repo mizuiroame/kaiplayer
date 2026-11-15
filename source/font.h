@@ -12,8 +12,13 @@ typedef enum {
     FONT_FACE_COUNT,
 } FontFace;
 
+// Loads the embedded fonts, plus the console's fonts for Japanese, Chinese
+// and Korean when available. False only if the embedded fonts fail.
 bool fontInit(void);
 void fontExit(void);
+
+// How many console fallback fonts loaded (0 if none: CJK shows as '?').
+int fontFallbackCount(void);
 
 int fontTextWidth(FontFace face, int px, const char *utf8);
 // Draws text with its line box starting at y. Returns the width drawn.

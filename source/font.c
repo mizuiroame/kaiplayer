@@ -6,19 +6,24 @@
 
 #include "font_bold_ttf.h"
 #include "font_regular_ttf.h"
+#include "font_system.h"
 #include "stb_truetype.h"
 #include "util.h"
 
 #define CACHE_SLOTS 4096
 #define CACHE_MAX_USED (CACHE_SLOTS * 3 / 4)
 #define ELLIPSIS "\xE2\x80\xA6"
+#define MAX_FALLBACKS 6
+#define MAX_FILES (FONT_FACE_COUNT + MAX_FALLBACKS)
+#define BLOB_HEADER 8  // Some console font blobs start with an 8-byte header.
 
 typedef struct {
     bool used;
     uint8_t face;
     uint8_t px;
+    uint8_t file;  // Font file the glyph comes from (a fallback if needed).
     uint32_t cp;
-    int glyph;  // Glyph index in the font.
+    int glyph;     // Glyph index in that file.
     int w, h, xoff, yoff;
     float advance;
     uint8_t *bitmap;
@@ -30,22 +35,61 @@ typedef struct {
     bool ok;
 } Face;
 
-static Face g_faces[FONT_FACE_COUNT];
+// The previous glyph as a value, not a cache entry: the cache may flush
+// mid-string. Kerning only applies between glyphs of the same font file.
+typedef struct {
+    int file;
+    int glyph;
+} PrevGlyph;
+
+#define NO_PREV ((PrevGlyph){-1, 0})
+
+// Noto Sans Regular and Bold first (indexed by FontFace), then the console's
+// fallback fonts for Japanese, Chinese and Korean.
+static Face g_faces[MAX_FILES];
+static int g_face_count;
 static Glyph g_cache[CACHE_SLOTS];
 static int g_cache_used;
+
+static bool initFace(Face *f, const unsigned char *data)
+{
+    int offset = stbtt_GetFontOffsetForIndex(data, 0);
+    f->ok = offset >= 0 && stbtt_InitFont(&f->info, data, offset) != 0;
+    if (f->ok) {
+        int descent, gap;
+        stbtt_GetFontVMetrics(&f->info, &f->ascent, &descent, &gap);
+    }
+    return f->ok;
+}
+
+// Adds the console fonts that parse as TrueType/OpenType; others are skipped.
+static void addFallbacks(void)
+{
+    FontBlob blobs[MAX_FALLBACKS];
+    int count = fontSystemLoad(blobs, MAX_FALLBACKS);
+    for (int i = 0; i < count && g_face_count < MAX_FILES; i++) {
+        Face *f = &g_faces[g_face_count];
+        if (initFace(f, blobs[i].data) ||
+            (blobs[i].size > BLOB_HEADER && initFace(f, blobs[i].data + BLOB_HEADER)))
+            g_face_count++;
+    }
+}
 
 bool fontInit(void)
 {
     const unsigned char *data[FONT_FACE_COUNT] = {font_regular_ttf, font_bold_ttf};
     for (int i = 0; i < FONT_FACE_COUNT; i++) {
-        Face *f = &g_faces[i];
-        f->ok = stbtt_InitFont(&f->info, data[i], stbtt_GetFontOffsetForIndex(data[i], 0)) != 0;
-        if (!f->ok)
+        if (!initFace(&g_faces[i], data[i]))
             return false;
-        int descent, gap;
-        stbtt_GetFontVMetrics(&f->info, &f->ascent, &descent, &gap);
     }
+    g_face_count = FONT_FACE_COUNT;
+    addFallbacks();
     return true;
+}
+
+int fontFallbackCount(void)
+{
+    return g_face_count > FONT_FACE_COUNT ? g_face_count - FONT_FACE_COUNT : 0;
 }
 
 static void flushCache(void)
@@ -59,20 +103,43 @@ static void flushCache(void)
 void fontExit(void)
 {
     flushCache();
+    fontSystemUnload();
+    g_face_count = 0;
 }
 
-static float scaleFor(FontFace face, int px)
+// Noto Sans is sized by its line height. Fallback fonts are scaled to the
+// same em size instead, since their line heights differ: sized by line
+// height, CJK text would look larger than the Latin text around it.
+static float scaleFor(int file, int px)
 {
-    return stbtt_ScaleForPixelHeight(&g_faces[face].info, (float)px);
+    float noto = stbtt_ScaleForPixelHeight(&g_faces[FONT_REGULAR].info, (float)px);
+    if (file < FONT_FACE_COUNT)
+        return file == FONT_REGULAR ? noto : stbtt_ScaleForPixelHeight(&g_faces[file].info, (float)px);
+    float em_pixels = noto / stbtt_ScaleForMappingEmToPixels(&g_faces[FONT_REGULAR].info, 1.0f);
+    return stbtt_ScaleForMappingEmToPixels(&g_faces[file].info, em_pixels);
+}
+
+// Finds cp in the face, then in the fallbacks; '?' if no font has it.
+static void findGlyph(Glyph *g, FontFace face, uint32_t cp)
+{
+    g->file = (uint8_t)face;
+    g->glyph = stbtt_FindGlyphIndex(&g_faces[face].info, (int)cp);
+    for (int i = FONT_FACE_COUNT; g->glyph == 0 && i < g_face_count; i++) {
+        g->glyph = stbtt_FindGlyphIndex(&g_faces[i].info, (int)cp);
+        if (g->glyph != 0)
+            g->file = (uint8_t)i;
+    }
+    if (g->glyph == 0) {
+        g->file = (uint8_t)face;
+        g->glyph = stbtt_FindGlyphIndex(&g_faces[face].info, '?');
+    }
 }
 
 static void renderGlyph(Glyph *g, FontFace face, int px, uint32_t cp)
 {
-    Face *f = &g_faces[face];
-    float scale = scaleFor(face, px);
-    g->glyph = stbtt_FindGlyphIndex(&f->info, (int)cp);
-    if (g->glyph == 0)
-        g->glyph = stbtt_FindGlyphIndex(&f->info, '?');
+    findGlyph(g, face, cp);
+    Face *f = &g_faces[g->file];
+    float scale = scaleFor(g->file, px);
     int advance, lsb;
     stbtt_GetGlyphHMetrics(&f->info, g->glyph, &advance, &lsb);
     g->advance = advance * scale;
@@ -98,12 +165,11 @@ static Glyph *getGlyph(FontFace face, int px, uint32_t cp)
     }
 }
 
-// prev is a glyph index, not a cache entry: the cache may flush mid-string.
-static float kerning(FontFace face, int px, int prev, const Glyph *next)
+static float kerning(int px, PrevGlyph prev, const Glyph *next)
 {
-    if (prev < 0)
+    if (prev.file != next->file)
         return 0.0f;
-    return stbtt_GetGlyphKernAdvance(&g_faces[face].info, prev, next->glyph) * scaleFor(face, px);
+    return stbtt_GetGlyphKernAdvance(&g_faces[prev.file].info, prev.glyph, next->glyph) * scaleFor(prev.file, px);
 }
 
 int fontTextWidth(FontFace face, int px, const char *utf8)
@@ -111,29 +177,30 @@ int fontTextWidth(FontFace face, int px, const char *utf8)
     if (!g_faces[face].ok)
         return 0;
     float x = 0.0f;
-    int prev = -1;
+    PrevGlyph prev = NO_PREV;
     while (*utf8) {
         Glyph *g = getGlyph(face, px, utilNextCodePoint(&utf8));
-        x += kerning(face, px, prev, g) + g->advance;
-        prev = g->glyph;
+        x += kerning(px, prev, g) + g->advance;
+        prev = (PrevGlyph){g->file, g->glyph};
     }
     return (int)ceilf(x);
 }
 
-// Draws up to max_width pixels of text; returns the width used.
+// Draws up to max_width pixels of text; returns the width used. Every
+// glyph, fallbacks included, sits on the face's baseline.
 static float drawRun(FontFace face, int px, float x, int y, const char *utf8, float max_width, Color color)
 {
     int baseline = y + (int)lroundf(g_faces[face].ascent * scaleFor(face, px));
     float start = x;
-    int prev = -1;
+    PrevGlyph prev = NO_PREV;
     while (*utf8) {
         Glyph *g = getGlyph(face, px, utilNextCodePoint(&utf8));
-        float next_x = x + kerning(face, px, prev, g);
+        float next_x = x + kerning(px, prev, g);
         if (next_x + g->advance - start > max_width)
             break;
         gfxBlendMask((int)lroundf(next_x) + g->xoff, baseline + g->yoff, g->w, g->h, g->bitmap, g->w, color);
         x = next_x + g->advance;
-        prev = g->glyph;
+        prev = (PrevGlyph){g->file, g->glyph};
     }
     return x - start;
 }

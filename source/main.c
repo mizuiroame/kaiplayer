@@ -13,6 +13,7 @@
 #include "input.h"
 #include "library.h"
 #include "player.h"
+#include "sysinfo.h"
 #include "ui.h"
 
 #define TOAST_NS 3000000000ull
@@ -216,6 +217,7 @@ int main(int argc, char **argv)
         return 1;
     }
     artworkInit();
+    sysinfoInit();
     app.audio_ok = playerInit(app.config.volume, app.config.shuffle, app.config.repeat);
     openStartFolder(&app);
 
@@ -242,6 +244,7 @@ int main(int argc, char **argv)
         PlayerStatus status;
         playerGetStatus(&status);
         requestArtwork(&status);
+        sysinfoGet(&app.sys, now);
         gfxBegin();
         uiDraw(&app, &status, now);
         gfxEnd();
@@ -253,6 +256,7 @@ int main(int argc, char **argv)
         playerExit();
     }
     artworkExit();
+    sysinfoExit();
     browserFree(&app.browser);
     fontExit();
     gfxExit();

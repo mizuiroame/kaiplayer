@@ -19,6 +19,7 @@ typedef struct {
     BrowserEntry *entries;
     size_t count;
     size_t cursor;
+    bool incomplete;  // Some entries could not be read, or the list was capped.
 } Browser;
 
 // Lists path. On failure the browser keeps its previous listing.

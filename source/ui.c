@@ -15,6 +15,9 @@
 #define TEXT_SMALL 18
 #define QUEUE_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16)
 #define QUEUE_FOLDER_MAX_W 360
+#define TAB_GAP 28
+#define BATTERY_LOW 15
+#define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 
 static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Queue", "Now Playing"};
 
@@ -55,7 +58,15 @@ static void drawScrollbar(size_t first, size_t count)
 static void drawBrowser(const App *app)
 {
     const Browser *b = &app->browser;
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, GFX_WIDTH - 2 * MARGIN, b->path, COLOR_DIM);
+    int path_w = GFX_WIDTH - 2 * MARGIN;
+    if (b->incomplete) {
+        // The console returned an error while listing: some names may be missing.
+        static const char WARNING[] = "Some items in this folder could not be read";
+        int warning_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, WARNING);
+        fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
+        path_w -= warning_w + 24;
+    }
+    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
     if (b->count == 0) {
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, "This folder has no subfolders or music.", COLOR_DIM);
         return;
@@ -129,22 +140,64 @@ static void drawButtonHint(int x, int y, const char *label)
     fontDraw(FONT_BOLD, 14, x + 7, y + 2, label, COLOR_DIM);
 }
 
+// The tabs, centered, between the ZL and ZR hints.
+static void drawTabs(const App *app)
+{
+    int widths[VIEW_COUNT], total = 0;
+    for (int i = 0; i < VIEW_COUNT; i++) {
+        widths[i] = fontTextWidth((int)app->view == i ? FONT_BOLD : FONT_REGULAR, 20, VIEW_NAMES[i]);
+        total += widths[i] + (i > 0 ? TAB_GAP : 0);
+    }
+    int x = (GFX_WIDTH - total) / 2;
+    drawButtonHint(x - 48, 21, "ZL");
+    for (int i = 0; i < VIEW_COUNT; i++) {
+        bool active = (int)app->view == i;
+        fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, VIEW_NAMES[i], active ? COLOR_TEXT : COLOR_DIM);
+        if (active)
+            gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
+        x += widths[i] + TAB_GAP;
+    }
+    drawButtonHint(x - TAB_GAP + 16, 21, "ZR");
+}
+
+// Battery outline with a fill for the charge; green while charging.
+static void drawBattery(int x, int y, int percent, bool charging)
+{
+    Color fill = charging ? COLOR_CHARGING : percent <= BATTERY_LOW ? COLOR_ERROR : COLOR_TEXT;
+    gfxFillRoundRect(x, y, 30, 16, 4, COLOR_DIM);
+    gfxFillRoundRect(x + 2, y + 2, 26, 12, 3, COLOR_BG);
+    gfxFillRoundRect(x + 31, y + 5, 3, 6, 1, COLOR_DIM);
+    int inner = 22 * (percent < 0 ? 0 : percent > 100 ? 100 : percent) / 100;
+    if (inner > 0)
+        gfxFillRoundRect(x + 4, y + 4, inner, 8, 2, fill);
+}
+
+// Clock and battery in the top right corner.
+static void drawStatus(const SysInfo *sys)
+{
+    int x = GFX_WIDTH - MARGIN;
+    if (sys->has_battery) {
+        char percent[8];
+        snprintf(percent, sizeof(percent), "%d%%", sys->battery_percent);
+        x -= 34;
+        drawBattery(x, 22, sys->battery_percent, sys->charging);
+        x -= fontTextWidth(FONT_REGULAR, 17, percent) + 8;
+        fontDraw(FONT_REGULAR, 17, x, 19, percent, COLOR_DIM);
+        x -= 20;
+    }
+    if (sys->has_time) {
+        char clock[8];
+        snprintf(clock, sizeof(clock), "%02d:%02d", sys->hour % 24, sys->minute % 60);
+        x -= fontTextWidth(FONT_BOLD, 18, clock);
+        fontDraw(FONT_BOLD, 18, x, 18, clock, COLOR_TEXT);
+    }
+}
+
 static void drawHeader(const App *app)
 {
     fontDraw(FONT_BOLD, 26, MARGIN, 16, "KaiPlayer", COLOR_ACCENT);
-
-    int x = GFX_WIDTH - MARGIN - 38;
-    drawButtonHint(x + 10, 21, "ZR");
-    for (int i = VIEW_COUNT - 1; i >= 0; i--) {
-        bool active = (int)app->view == i;
-        FontFace face = active ? FONT_BOLD : FONT_REGULAR;
-        int w = fontTextWidth(face, 20, VIEW_NAMES[i]);
-        x -= w + 28;
-        fontDraw(face, 20, x, 18, VIEW_NAMES[i], active ? COLOR_TEXT : COLOR_DIM);
-        if (active)
-            gfxFillRoundRect(x, 48, w, 3, 1, COLOR_ACCENT);
-    }
-    drawButtonHint(x - 46, 21, "ZL");
+    drawTabs(app);
+    drawStatus(&app->sys);
 }
 
 static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)

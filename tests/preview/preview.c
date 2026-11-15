@@ -20,6 +20,8 @@ static const char *const TRACKS[] = {
     "sdmc:/Music/Night Drive/01 - Overpass.mp3",
     "sdmc:/Music/Night Drive/02 - Ñandú Express.mp3",
     "sdmc:/Music/Night Drive/03 - Glass City.ogg",
+    "sdmc:/Music/東京の夜/01 - 夜明けの歌.flac",
+    "sdmc:/Music/東京の夜/02 - 桜の木の下で.flac",
 };
 #define TRACK_COUNT (sizeof(TRACKS) / sizeof(TRACKS[0]))
 
@@ -95,10 +97,13 @@ int main(int argc, char **argv)
     }
     static App app;
     app.audio_ok = true;
+    app.sys = (SysInfo){.has_time = true, .hour = 21, .minute = 47,
+                        .has_battery = true, .battery_percent = 72, .charging = false};
     snprintf(app.browser.path, sizeof(app.browser.path), "%s", "sdmc:/Music");
     addEntry(&app.browser, "Aurora Fields", true);
     addEntry(&app.browser, "Night Drive", true);
     addEntry(&app.browser, "Soundtracks", true);
+    addEntry(&app.browser, "東京の夜", true);
     addEntry(&app.browser, "intro.mp3", false);
     addEntry(&app.browser, "voice memo 2026-11-02.wav", false);
     app.browser.cursor = 1;
@@ -120,7 +125,14 @@ int main(int argc, char **argv)
     g_has_art = false;
     status.state = PLAYER_PAUSED;
     status.shuffle = false;
+    status.track = 7;
+    app.sys.battery_percent = 12;
     render(argv[1], "now_playing_no_art", &app, &status);
+
+    app.view = VIEW_BROWSER;
+    app.browser.incomplete = true;
+    app.sys.charging = true;
+    render(argv[1], "browse_incomplete", &app, &status);
     fontExit();
     return 0;
 }
