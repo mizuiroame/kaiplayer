@@ -3,3 +3,8 @@
 * text=auto eol=lf
 *.jpg binary
 *.png binary
+*.mp3 binary
+*.flac binary
+*.ogg binary
+*.wav binary
+*.ttf binary

@@ -7,6 +7,9 @@
 
 #define UTIL_PATH_MAX 769
 
+// True if path ends in "." + ext, ignoring case.
+bool utilHasExtension(const char *path, const char *ext);
+
 // True if the file name has an extension that a decoder handles.
 bool utilIsAudioFile(const char *name);
 
@@ -25,6 +28,10 @@ bool utilParentPath(char *path);
 
 // Case-insensitive ASCII comparison, for sorting names.
 int utilCompareNames(const char *a, const char *b);
+
+// Reads one UTF-8 code point and advances *s. Bad bytes read as '?'.
+// Never reads past a terminating NUL.
+unsigned utilNextCodePoint(const char **s);
 
 // Formats seconds as m:ss or h:mm:ss.
 void utilFormatTime(char *out, size_t size, double seconds);

@@ -33,12 +33,6 @@ struct Decoder {
     float scratch[SCRATCH_FRAMES * MAX_CHANNELS];
 };
 
-static bool hasExtension(const char *path, const char *ext)
-{
-    const char *dot = strrchr(utilFileName(path), '.');
-    return dot && utilCompareNames(dot + 1, ext) == 0;
-}
-
 static bool openWav(Decoder *d, const char *path)
 {
     if (!drwav_init_file(&d->u.wav, path, NULL))
@@ -92,16 +86,16 @@ Decoder *decoderOpen(const char *path)
         return NULL;
 
     bool ok = false;
-    if (hasExtension(path, "wav")) {
+    if (utilHasExtension(path, "wav")) {
         d->kind = KIND_WAV;
         ok = openWav(d, path);
-    } else if (hasExtension(path, "flac")) {
+    } else if (utilHasExtension(path, "flac")) {
         d->kind = KIND_FLAC;
         ok = openFlac(d, path);
-    } else if (hasExtension(path, "mp3")) {
+    } else if (utilHasExtension(path, "mp3")) {
         d->kind = KIND_MP3;
         ok = openMp3(d, path);
-    } else if (hasExtension(path, "ogg") || hasExtension(path, "oga")) {
+    } else if (utilHasExtension(path, "ogg") || utilHasExtension(path, "oga")) {
         d->kind = KIND_VORBIS;
         ok = openVorbis(d, path);
     }

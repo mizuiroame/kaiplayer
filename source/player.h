@@ -41,6 +41,7 @@ void playerSeek(double delta_seconds);
 void playerJumpTo(size_t track);
 void playerSetVolume(float volume);
 void playerToggleShuffle(void);
+void playerSetShuffle(bool shuffle);
 void playerCycleRepeat(void);
 
 void playerGetStatus(PlayerStatus *out);

@@ -1,49 +1,46 @@
 #include "gfx.h"
 
+#include <math.h>
 #include <string.h>
 
-#include <switch.h>
+static uint32_t *g_pixels;
+static uint32_t g_stride;  // In pixels.
 
-#include "font8x8_basic.h"
-#include "font8x8_ext_latin.h"
-
-#define FRAMEBUFFER_COUNT 2
-#define LATIN1_FIRST 0xA0
-#define LATIN1_LAST 0xFF
-
-static Framebuffer g_fb;
-static u32 *g_pixels;
-static u32 g_stride;  // In pixels.
-
-bool gfxInit(void)
+void gfxSetTarget(uint32_t *pixels, uint32_t stride)
 {
-    if (R_FAILED(framebufferCreate(&g_fb, nwindowGetDefault(), GFX_WIDTH, GFX_HEIGHT,
-                                   PIXEL_FORMAT_RGBA_8888, FRAMEBUFFER_COUNT)))
+    g_pixels = pixels;
+    g_stride = stride;
+}
+
+Color gfxMix(Color a, Color b, unsigned t)
+{
+    if (t > 255)
+        t = 255;
+    unsigned inv = 255 - t;
+    unsigned r = ((a & 0xFF) * inv + (b & 0xFF) * t) / 255;
+    unsigned g = (((a >> 8) & 0xFF) * inv + ((b >> 8) & 0xFF) * t) / 255;
+    unsigned bl = (((a >> 16) & 0xFF) * inv + ((b >> 16) & 0xFF) * t) / 255;
+    return GFX_RGB(r, g, bl);
+}
+
+// Clips a rectangle to the screen. False if nothing is left.
+static bool clip(int *x, int *y, int *w, int *h)
+{
+    int x0 = *x < 0 ? 0 : *x, y0 = *y < 0 ? 0 : *y;
+    int x1 = *x + *w > GFX_WIDTH ? GFX_WIDTH : *x + *w;
+    int y1 = *y + *h > GFX_HEIGHT ? GFX_HEIGHT : *y + *h;
+    if (!g_pixels || x1 <= x0 || y1 <= y0)
         return false;
-    if (R_FAILED(framebufferMakeLinear(&g_fb))) {
-        framebufferClose(&g_fb);
-        return false;
-    }
+    *x = x0, *y = y0, *w = x1 - x0, *h = y1 - y0;
     return true;
 }
 
-void gfxExit(void)
+static inline void blendPixel(uint32_t *p, Color color, unsigned alpha)
 {
-    framebufferClose(&g_fb);
-}
-
-void gfxBegin(void)
-{
-    u32 stride_bytes = 0;
-    g_pixels = framebufferBegin(&g_fb, &stride_bytes);
-    g_stride = stride_bytes / sizeof(u32);
-}
-
-void gfxEnd(void)
-{
-    if (g_pixels)
-        framebufferEnd(&g_fb);
-    g_pixels = NULL;
+    if (alpha >= 255)
+        *p = color;
+    else if (alpha > 0)
+        *p = gfxMix(*p, color, alpha);
 }
 
 void gfxClear(Color color)
@@ -53,112 +50,117 @@ void gfxClear(Color color)
 
 void gfxFillRect(int x, int y, int w, int h, Color color)
 {
-    if (!g_pixels)
+    if (!clip(&x, &y, &w, &h))
         return;
-    int x0 = x < 0 ? 0 : x, y0 = y < 0 ? 0 : y;
-    int x1 = x + w > GFX_WIDTH ? GFX_WIDTH : x + w;
-    int y1 = y + h > GFX_HEIGHT ? GFX_HEIGHT : y + h;
-    for (int py = y0; py < y1; py++) {
-        u32 *row = g_pixels + (size_t)py * g_stride;
-        for (int px = x0; px < x1; px++)
-            row[px] = color;
+    for (int py = y; py < y + h; py++) {
+        uint32_t *row = g_pixels + (size_t)py * g_stride + x;
+        for (int i = 0; i < w; i++)
+            row[i] = color;
     }
 }
 
-void gfxFillPlayIcon(int x, int y, int w, int h, Color color)
+void gfxBlendRect(int x, int y, int w, int h, Color color, unsigned alpha)
+{
+    if (!clip(&x, &y, &w, &h))
+        return;
+    for (int py = y; py < y + h; py++) {
+        uint32_t *row = g_pixels + (size_t)py * g_stride + x;
+        for (int i = 0; i < w; i++)
+            blendPixel(&row[i], color, alpha);
+    }
+}
+
+// Coverage (0-255) of pixel (px, py) by a circle, with a 1-pixel soft edge.
+static unsigned circleCoverage(float px, float py, float cx, float cy, float r)
+{
+    float d = sqrtf((px - cx) * (px - cx) + (py - cy) * (py - cy));
+    float c = r - d + 0.5f;
+    if (c <= 0.0f)
+        return 0;
+    return c >= 1.0f ? 255 : (unsigned)(c * 255.0f);
+}
+
+void gfxFillRoundRect(int x, int y, int w, int h, int radius, Color color)
+{
+    if (radius * 2 > w) radius = w / 2;
+    if (radius * 2 > h) radius = h / 2;
+    gfxFillRect(x, y + radius, w, h - 2 * radius, color);
+    gfxFillRect(x + radius, y, w - 2 * radius, radius, color);
+    gfxFillRect(x + radius, y + h - radius, w - 2 * radius, radius, color);
+    for (int dy = 0; dy < radius; dy++) {
+        for (int dx = 0; dx < radius; dx++) {
+            unsigned a = circleCoverage(dx + 0.5f, dy + 0.5f, (float)radius, (float)radius, (float)radius);
+            if (a == 0)
+                continue;
+            int xs[2] = {x + dx, x + w - 1 - dx}, ys[2] = {y + dy, y + h - 1 - dy};
+            for (int i = 0; i < 4; i++) {
+                int px = xs[i & 1], py = ys[i >> 1];
+                if (g_pixels && px >= 0 && px < GFX_WIDTH && py >= 0 && py < GFX_HEIGHT)
+                    blendPixel(g_pixels + (size_t)py * g_stride + px, color, a);
+            }
+        }
+    }
+}
+
+void gfxFillCircle(int cx, int cy, int radius, Color color)
+{
+    int x = cx - radius - 1, y = cy - radius - 1, w = radius * 2 + 3, h = w;
+    if (!clip(&x, &y, &w, &h))
+        return;
+    for (int py = y; py < y + h; py++) {
+        uint32_t *row = g_pixels + (size_t)py * g_stride;
+        for (int px = x; px < x + w; px++)
+            blendPixel(&row[px], color, circleCoverage(px + 0.5f, py + 0.5f, (float)cx, (float)cy, (float)radius));
+    }
+}
+
+void gfxGradientV(int x, int y, int w, int h, Color top, Color bottom)
+{
+    for (int i = 0; i < h; i++)
+        gfxFillRect(x, y + i, w, 1, gfxMix(top, bottom, h > 1 ? (unsigned)(i * 255 / (h - 1)) : 0));
+}
+
+static void fillTriangle(int x, int y, int w, int h, Color color, bool left)
 {
     for (int row = 0; row < h; row++) {
         int distance = row < h / 2 ? row : h - 1 - row;
         int span = (int)((long)w * distance * 2 / (h > 1 ? h - 1 : 1));
-        gfxFillRect(x, y + row, span > 0 ? span : 1, 1, color);
+        if (span < 1)
+            span = 1;
+        gfxFillRect(left ? x + w - span : x, y + row, span, 1, color);
     }
 }
 
-// Reads one UTF-8 code point and advances *s. Bad bytes read as '?'.
-static uint32_t nextCodePoint(const char **s)
+void gfxFillTriangleRight(int x, int y, int w, int h, Color color)
 {
-    const unsigned char *p = (const unsigned char *)*s;
-    uint32_t cp;
-    int extra;
-    if (p[0] < 0x80) {
-        cp = p[0];
-        extra = 0;
-    } else if ((p[0] & 0xE0) == 0xC0) {
-        cp = p[0] & 0x1F;
-        extra = 1;
-    } else if ((p[0] & 0xF0) == 0xE0) {
-        cp = p[0] & 0x0F;
-        extra = 2;
-    } else if ((p[0] & 0xF8) == 0xF0) {
-        cp = p[0] & 0x07;
-        extra = 3;
-    } else {
-        *s += 1;
-        return '?';
-    }
-    for (int i = 1; i <= extra; i++) {
-        if ((p[i] & 0xC0) != 0x80) {
-            *s += i;
-            return '?';
-        }
-        cp = (cp << 6) | (p[i] & 0x3F);
-    }
-    *s += extra + 1;
-    return cp;
+    fillTriangle(x, y, w, h, color, false);
 }
 
-static const char *glyphFor(uint32_t cp)
+void gfxFillTriangleLeft(int x, int y, int w, int h, Color color)
 {
-    if (cp < 128)
-        return font8x8_basic[cp];
-    if (cp >= LATIN1_FIRST && cp <= LATIN1_LAST)
-        return font8x8_ext_latin[cp - LATIN1_FIRST];
-    return font8x8_basic['?'];
+    fillTriangle(x, y, w, h, color, true);
 }
 
-static void drawGlyph(int x, int y, const char *glyph, int scale, Color color)
+void gfxBlit(int x, int y, int size, const uint32_t *pixels)
 {
-    for (int row = 0; row < GFX_GLYPH; row++) {
-        unsigned char bits = (unsigned char)glyph[row];
-        for (int col = 0; col < GFX_GLYPH; col++) {
-            if (bits & (1u << col))
-                gfxFillRect(x + col * scale, y + row * scale, scale, scale, color);
-        }
-    }
-}
-
-int gfxTextWidth(const char *utf8, int scale)
-{
-    int count = 0;
-    while (*utf8) {
-        nextCodePoint(&utf8);
-        count++;
-    }
-    return count * GFX_GLYPH * scale;
-}
-
-int gfxDrawText(int x, int y, const char *utf8, int scale, Color color)
-{
-    int start = x;
-    while (*utf8) {
-        drawGlyph(x, y, glyphFor(nextCodePoint(&utf8)), scale, color);
-        x += GFX_GLYPH * scale;
-    }
-    return x - start;
-}
-
-void gfxDrawTextClipped(int x, int y, int max_width, const char *utf8, int scale, Color color)
-{
-    int advance = GFX_GLYPH * scale;
-    int max_chars = max_width / advance;
-    if (gfxTextWidth(utf8, scale) <= max_width) {
-        gfxDrawText(x, y, utf8, scale, color);
+    int cx = x, cy = y, w = size, h = size;
+    if (!pixels || !clip(&cx, &cy, &w, &h))
         return;
+    for (int row = 0; row < h; row++) {
+        const uint32_t *src = pixels + (size_t)(cy - y + row) * size + (cx - x);
+        memcpy(g_pixels + (size_t)(cy + row) * g_stride + cx, src, (size_t)w * sizeof(uint32_t));
     }
-    int room = max_chars - 3;
-    for (int i = 0; i < room && *utf8; i++) {
-        drawGlyph(x, y, glyphFor(nextCodePoint(&utf8)), scale, color);
-        x += advance;
+}
+
+void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color)
+{
+    int cx = x, cy = y, cw = w, ch = h;
+    if (!mask || !clip(&cx, &cy, &cw, &ch))
+        return;
+    for (int row = 0; row < ch; row++) {
+        const uint8_t *m = mask + (size_t)(cy - y + row) * stride + (cx - x);
+        uint32_t *dst = g_pixels + (size_t)(cy + row) * g_stride + cx;
+        for (int i = 0; i < cw; i++)
+            blendPixel(&dst[i], color, m[i]);
     }
-    gfxDrawText(x, y, "...", scale, color);
 }

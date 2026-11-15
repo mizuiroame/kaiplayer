@@ -33,6 +33,12 @@ bool utilEntryIsDir(const char *folder, const struct dirent *entry)
            stat(path, &st) == 0 && S_ISDIR(st.st_mode);
 }
 
+bool utilHasExtension(const char *path, const char *ext)
+{
+    const char *dot = strrchr(utilFileName(path), '.');
+    return dot && utilCompareNames(dot + 1, ext) == 0;
+}
+
 const char *utilFileName(const char *path)
 {
     const char *slash = strrchr(path, '/');
@@ -73,6 +79,38 @@ int utilCompareNames(const char *a, const char *b)
         if (ca != cb || ca == '\0')
             return ca - cb;
     }
+}
+
+unsigned utilNextCodePoint(const char **s)
+{
+    const unsigned char *p = (const unsigned char *)*s;
+    unsigned cp;
+    int extra;
+    if (p[0] < 0x80) {
+        cp = p[0];
+        extra = 0;
+    } else if ((p[0] & 0xE0) == 0xC0) {
+        cp = p[0] & 0x1F;
+        extra = 1;
+    } else if ((p[0] & 0xF0) == 0xE0) {
+        cp = p[0] & 0x0F;
+        extra = 2;
+    } else if ((p[0] & 0xF8) == 0xF0) {
+        cp = p[0] & 0x07;
+        extra = 3;
+    } else {
+        *s += 1;
+        return '?';
+    }
+    for (int i = 1; i <= extra; i++) {
+        if ((p[i] & 0xC0) != 0x80) {  // Also stops at the NUL terminator.
+            *s += i;
+            return '?';
+        }
+        cp = (cp << 6) | (p[i] & 0x3F);
+    }
+    *s += extra + 1;
+    return cp;
 }
 
 void utilFormatTime(char *out, size_t size, double seconds)

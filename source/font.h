@@ -1,0 +1,22 @@
+// Anti-aliased text with the embedded Noto Sans fonts (Latin, Greek and
+// Cyrillic). Glyphs are rendered once per size and cached.
+#pragma once
+
+#include <stdbool.h>
+
+#include "gfx.h"
+
+typedef enum {
+    FONT_REGULAR,
+    FONT_BOLD,
+    FONT_FACE_COUNT,
+} FontFace;
+
+bool fontInit(void);
+void fontExit(void);
+
+int fontTextWidth(FontFace face, int px, const char *utf8);
+// Draws text with its line box starting at y. Returns the width drawn.
+int fontDraw(FontFace face, int px, int x, int y, const char *utf8, Color color);
+// Draws text cut to max_width, ending in an ellipsis when it does not fit.
+void fontDrawClipped(FontFace face, int px, int x, int y, int max_width, const char *utf8, Color color);

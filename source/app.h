@@ -11,6 +11,8 @@
 typedef enum {
     VIEW_BROWSER,
     VIEW_QUEUE,
+    VIEW_NOW_PLAYING,
+    VIEW_COUNT,
 } View;
 
 typedef struct {

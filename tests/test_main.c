@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "browser.h"
+#include "check.h"
 #include "codecs_config.h"
 #include "decoder.h"
 #include "dr_wav.h"
@@ -16,19 +17,8 @@
 #include "resampler.h"
 #include "util.h"
 
-static int g_failures;
-static int g_checks;
-
-#define CHECK(cond)                                                          \
-    do {                                                                     \
-        g_checks++;                                                          \
-        if (!(cond)) {                                                       \
-            g_failures++;                                                    \
-            fprintf(stderr, "%s:%d: CHECK failed: %s\n", __FILE__, __LINE__, #cond); \
-        }                                                                    \
-    } while (0)
-
-#define TMP_ROOT "/tmp/kaiplayer_test"
+int g_failures;
+int g_checks;
 
 static void testUtil(void)
 {
@@ -56,6 +46,20 @@ static void testUtil(void)
     CHECK(utilCompareNames("abc", "ABC") == 0);
     CHECK(utilCompareNames("a", "B") < 0);
     CHECK(utilCompareNames("b", "a") > 0);
+
+    const char *s = "a\xC3\xB1\xE2\x82\xAC\xF0\x9F\x98\x80";  // a, ñ, €, 😀
+    CHECK(utilNextCodePoint(&s) == 'a');
+    CHECK(utilNextCodePoint(&s) == 0xF1);
+    CHECK(utilNextCodePoint(&s) == 0x20AC);
+    CHECK(utilNextCodePoint(&s) == 0x1F600);
+    CHECK(*s == '\0');
+    const char *bad = "\xFF" "x\xE2\x82";  // Invalid lead byte, then a cut sequence.
+    CHECK(utilNextCodePoint(&bad) == '?' && *bad == 'x');
+    CHECK(utilNextCodePoint(&bad) == 'x');
+    CHECK(utilNextCodePoint(&bad) == '?' && *bad == '\0');  // Stops on the NUL.
+
+    CHECK(utilHasExtension("sdmc:/a.b/Song.FLAC", "flac"));
+    CHECK(!utilHasExtension("sdmc:/a.flac/song", "flac"));
 
     utilFormatTime(out, sizeof(out), 65.9);
     CHECK(strcmp(out, "1:05") == 0);
@@ -333,6 +337,9 @@ int main(void)
     testDecoder();
     testLibrary();
     testBrowser();
+    testTags();
+    testCover();
+    testFixtures();
 
     printf("%d checks, %d failures\n", g_checks, g_failures);
     return g_failures ? 1 : 0;

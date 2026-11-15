@@ -4,6 +4,12 @@ An **open-source homebrew music player** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen). Pick a folder on your microSD
 card and KaiPlayer plays the music in it.
 
+![Now Playing](docs/screenshots/now_playing.png)
+
+| Browse | Queue |
+|--------|-------|
+| ![Browse](docs/screenshots/browse.png) | ![Queue](docs/screenshots/queue.png) |
+
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
 
@@ -104,27 +110,56 @@ and WMA won't be added, because they need paid licenses.
 
 ## Controls
 
-| Button    | Browser                                     | Queue                    |
-|-----------|---------------------------------------------|--------------------------|
-| ↑ ↓ / LS  | Move                                        | Move                     |
-| ← →       | Previous / next page                        | Previous / next page     |
-| A         | Open the folder / play from this song       | Play this track          |
-| B         | Go up one folder                            | Back to the browser      |
-| X         | Play the whole folder                       | Shuffle on / off         |
-| Y         | Go to the queue                             | Repeat: off / all / one  |
-| −         | Pause / resume                              | Pause / resume           |
-| L / R     | Previous / next track                       | Previous / next track    |
-| ZL / ZR   | Volume down / up                            | Volume down / up         |
-| RS ← →    | Rewind / fast-forward 10 s                  | Rewind / fast-forward 10 s |
-| +         | Exit                                        | Exit                     |
+KaiPlayer has three tabs: **Browse**, **Queue** and **Now Playing**. Press
+**ZL** / **ZR** to move between them. When you start playing music, KaiPlayer
+switches to Now Playing.
 
-**X** also plays the subfolders. When you press it in the root of the card,
-KaiPlayer skips the system and homebrew folders there (`switch`, `config`,
-`Nintendo`, `atmosphere`, kaiHEN's folders and so on), so their sound effects
-don't end up in the queue. The queue shows the folder each track comes from.
+| Button    | Browse                          | Queue                   | Now Playing                |
+|-----------|---------------------------------|-------------------------|----------------------------|
+| ↑ ↓ / LS  | Move                            | Move                    | Volume up / down           |
+| ← →       | Previous / next page            | Previous / next page    | Rewind / fast-forward 10 s |
+| A         | Open folder / play from song    | Play this track         | Pause / resume             |
+| B         | Go up one folder                | Back to Browse          | Back to Browse             |
+| X         | Play the whole folder           | Shuffle on / off        | Shuffle on / off           |
+| Y         | Shuffle the whole folder        | Repeat: off / all / one | Repeat: off / all / one    |
+
+In every tab:
+
+| Button  | Action |
+|---------|--------|
+| ZL / ZR | Previous / next tab |
+| L / R   | Previous / next track |
+| −       | Pause / resume |
+| RS ← →  | Rewind / fast-forward 10 s |
+| +       | Exit |
+
+The console's own volume buttons also work.
+
+**X** and **Y** also play the subfolders. When you press them in the root of
+the card, KaiPlayer skips the system and homebrew folders there (`switch`,
+`config`, `Nintendo`, `atmosphere`, kaiHEN's folders and so on), so their
+sound effects don't end up in the queue. The queue shows the folder each
+track comes from.
 
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.
+
+### Album art and song details
+
+Now Playing shows the album cover, title, artist and album. KaiPlayer reads
+them from the file's tags:
+
+| Format     | Tags read |
+|------------|-----------|
+| MP3        | ID3v2.2, v2.3 and v2.4 (title, artist, album, cover); ID3v1 as a fallback |
+| FLAC       | Vorbis comments and the embedded picture |
+| Ogg Vorbis | Vorbis comments and the embedded picture (`METADATA_BLOCK_PICTURE`) |
+| WAV        | None: the file name is shown |
+
+If a file has no embedded cover, KaiPlayer looks for `cover.jpg`,
+`folder.jpg`, `front.jpg`, `albumart.jpg`, `cover.png`, `folder.png` or
+`front.png` in the same folder. Covers can be JPEG or PNG, up to 4096×4096
+pixels and 8 MB.
 
 ### Troubleshooting
 
@@ -133,7 +168,8 @@ If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
-| `?` in file names | KaiPlayer shows ASCII and Latin characters (á, ñ, ü…). Other scripts show as `?`. |
+| `?` in names | The font covers Latin, Greek and Cyrillic. Other scripts, such as Japanese, can't be shown yet. |
+| No cover | The file has no embedded cover and there is no `cover.jpg` (or similar) in its folder, or the image is larger than 4096×4096 or 8 MB. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
 ---
@@ -162,8 +198,10 @@ way to build it.
    On Windows (PowerShell):
 
    ```powershell
-   .\build.ps1          # builds KaiPlayer.nro
-   .\build.ps1 test     # host tests (ASan/UBSan + coverage)
+   .\build.ps1           # builds KaiPlayer.nro
+   .\build.ps1 test      # host tests (ASan/UBSan + coverage)
+   .\build.ps1 fuzz      # fuzzes every file parser ($env:ITER sets the count)
+   .\build.ps1 preview   # renders UI screenshots, no console needed
    .\build.ps1 clean
    ```
 
@@ -173,11 +211,17 @@ way to build it.
    docker run --rm -v "$PWD:/build/kaiplayer" -w /build/kaiplayer ounce-devkit make
    docker run --rm --security-opt seccomp=unconfined \
      -v "$PWD:/build/kaiplayer" -w /build/kaiplayer/tests ounce-devkit make coverage
+   docker run --rm --security-opt seccomp=unconfined \
+     -v "$PWD:/build/kaiplayer" -w /build/kaiplayer/tests ounce-devkit make fuzz ITER=3000
+   docker run --rm -v "$PWD:/build/kaiplayer" -w /build/kaiplayer/tests/preview ounce-devkit make
    ```
 
 The output is `KaiPlayer.nro`, in the project root.
 
-The tests run with ASLR turned off (`setarch -R`), because GCC 12's
+`preview` compiles the real interface code on the host with a fake player
+and writes `tests/preview/build/*.ppm` screenshots of each tab.
+
+The tests and the fuzzer run with ASLR turned off (`setarch -R`), because GCC 12's
 AddressSanitizer can hang on recent kernels. In Docker, turning ASLR off needs
 `--security-opt seccomp=unconfined`.
 
@@ -202,18 +246,25 @@ make -C tests run    # tests (needs the system gcc)
 
 ```
 source/
-  main.c        main loop and controls
-  player.c      audio thread: decode → resample → audout
-  decoder.c     common interface for MP3 / FLAC / Vorbis / WAV
-  resampler.c   sample rate conversion (linear interpolation)
-  queue.c       play order, shuffle and repeat
-  library.c     finds the music in a folder (recursively)
-  browser.c     folder browser
-  gfx.c ui.c    framebuffer drawing and the interface
-  config.c      settings saved on the SD card
-  input.c       button auto-repeat
-third_party/    dr_libs, stb_vorbis, font8x8 (public domain)
-tests/          host tests
+  main.c          main loop and controls
+  player.c        audio thread: decode → resample → audout
+  decoder.c       common interface for MP3 / FLAC / Vorbis / WAV
+  resampler.c     sample rate conversion (linear interpolation)
+  queue.c         play order, shuffle and repeat
+  library.c       finds the music in a folder (recursively)
+  browser.c       folder browser
+  tags_*.c        ID3 and Vorbis comment readers (title, artist, album, cover)
+  cover.c         decodes and scales album art (JPEG / PNG)
+  artwork.c       loads tags and covers on a background thread
+  gfx.c           drawing: shapes, gradients, images
+  gfx_switch.c    the console framebuffer
+  font.c          anti-aliased text with the embedded fonts
+  ui*.c           the Browse, Queue and Now Playing tabs
+  config.c        settings saved on the SD card
+  input.c         button auto-repeat
+data/           Noto Sans Regular and Bold, embedded in the .nro
+third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
+tests/          host tests, fuzzer, fixtures and the UI preview
 icon.jpg        256×256 icon for hbmenu
 ```
 
@@ -241,10 +292,17 @@ reduces that risk in these ways:
   - Audio headers with unsupported channel counts (0 or more than 8) or sample
     rates (below 1 kHz or above 768 kHz) are rejected.
   - Folder listings and recursive scans have entry, depth and track limits.
-- **Hardening.** The `.nro` is built with `-fstack-protector-strong`. The host
+- **Images are checked before decoding.** Only JPEG and PNG are decoded, and
+  images over 4096×4096 pixels or 8 MB are refused before any memory is
+  allocated for them. The tag readers check every length against the data.
+- **Hardening.** The `.nro` is built with `-fstack-protector-strong` and
+  `-fwrapv` (signed overflow wraps instead of being undefined). The host
   tests run under AddressSanitizer and UndefinedBehaviorSanitizer.
-- **Pinned dependencies.** The decoders in `third_party/` are pinned to
-  upstream commits with SHA-256 sums. See
+- **Fuzzing.** `make -C tests fuzz` feeds thousands of corrupted MP3, FLAC,
+  Ogg, WAV, JPEG and PNG files to every parser, with the sanitizers on. Run it
+  before each release.
+- **Pinned dependencies.** The libraries in `third_party/` and the fonts in
+  `data/` are pinned to upstream commits with SHA-256 sums. See
   [third_party/VERSIONS.md](third_party/VERSIONS.md), and check them with
   `sh third_party/verify.sh`.
 
@@ -293,7 +351,9 @@ Third-party libraries in `third_party/`:
 |---------|----------|---------|
 | [dr_mp3, dr_flac, dr_wav](https://github.com/mackron/dr_libs) | Decoding MP3, FLAC and WAV | Public domain (Unlicense) or MIT-0 |
 | [stb_vorbis](https://github.com/nothings/stb) | Decoding Ogg Vorbis | Public domain or MIT |
-| [font8x8](https://github.com/dhepper/font8x8) | Interface font | Public domain |
+| [stb_image](https://github.com/nothings/stb) | Decoding album art (JPEG, PNG) | Public domain or MIT |
+| [stb_truetype](https://github.com/nothings/stb) | Drawing text | Public domain or MIT |
+| [Noto Sans](https://github.com/notofonts/latin-greek-cyrillic) (`data/`) | Interface font | SIL Open Font License 1.1 ([third_party/NotoSans-OFL.txt](third_party/NotoSans-OFL.txt)) |
 
 The `.nro` also links [libounce](https://github.com/ouncebrew/libounce), which
 uses the ISC license (its bundled mimalloc uses MIT).

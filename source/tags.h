@@ -1,0 +1,41 @@
+// Reads title, artist, album and embedded cover art from audio files:
+// ID3v2/ID3v1 (MP3), FLAC metadata blocks and Vorbis comments (FLAC, Ogg).
+// The parsers work on memory, take untrusted input and check every length.
+#pragma once
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#define TAGS_TEXT_MAX 256
+#define TAGS_PICTURE_MAX (8u << 20)
+#define TAGS_ID3_MAX (16u << 20)
+#define TAGS_COMMENT_BLOCK_MAX (1u << 20)
+
+typedef struct {
+    char title[TAGS_TEXT_MAX];
+    char artist[TAGS_TEXT_MAX];
+    char album[TAGS_TEXT_MAX];
+    char album_artist[TAGS_TEXT_MAX];
+    uint8_t *picture;  // JPEG or PNG bytes, or NULL.
+    size_t picture_size;
+    int picture_type;  // ID3/FLAC picture type; 3 is the front cover.
+} TrackTags;
+
+void tagsInit(TrackTags *t);
+void tagsFree(TrackTags *t);
+
+// Reads the tags of a file by its extension. Missing tags stay empty.
+void tagsRead(const char *path, TrackTags *t);
+
+// Parsers, exposed for tests. Each fills only the fields it finds.
+// data starts with an ID3v2 header ("ID3").
+void tagsParseId3v2(const uint8_t *data, size_t size, TrackTags *t);
+// The 128-byte ID3v1 tag at the end of an MP3 ("TAG").
+void tagsParseId3v1(const uint8_t *data, size_t size, TrackTags *t);
+// The body of a FLAC VORBIS_COMMENT block (vendor, then the comments).
+void tagsParseVorbisComments(const uint8_t *data, size_t size, TrackTags *t);
+// One "KEY=value" comment, as Ogg Vorbis and FLAC store them.
+void tagsApplyComment(const char *comment, size_t length, TrackTags *t);
+// The body of a FLAC PICTURE block (also used inside Ogg comments).
+void tagsParseFlacPicture(const uint8_t *data, size_t size, TrackTags *t);

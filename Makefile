@@ -45,7 +45,7 @@ DATA		:=	data
 INCLUDES	:=	include third_party
 APP_TITLE	:=	KaiPlayer
 APP_AUTHOR	:=	Mizuiro
-APP_VERSION	:=	0.1.0-alpha
+APP_VERSION	:=	0.2.0-alpha
 #ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ APP_VERSION	:=	0.1.0-alpha
 #---------------------------------------------------------------------------------
 ARCH	:=	$(SWITCH2_CPU) -mtp=soft -fPIE
 
-CFLAGS	:=	-g -Wall -O2 -ffunction-sections -fstack-protector-strong \
+CFLAGS	:=	-g -Wall -O2 -ffunction-sections -fstack-protector-strong -fwrapv \
 			$(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
@@ -215,6 +215,11 @@ $(OFILES_SRC)	: $(HFILES_BIN)
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
 %.bin.o	%_bin.h :	%.bin
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	@$(bin2o)
+
+%.ttf.o	%_ttf.h :	%.ttf
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)

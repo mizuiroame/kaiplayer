@@ -430,6 +430,16 @@ void playerToggleShuffle(void)
     mutexUnlock(&g_lock);
 }
 
+void playerSetShuffle(bool shuffle)
+{
+    mutexLock(&g_lock);
+    if (g_shuffle != shuffle) {
+        g_shuffle = shuffle;
+        queueSetShuffle(&g_queue, shuffle);
+    }
+    mutexUnlock(&g_lock);
+}
+
 void playerCycleRepeat(void)
 {
     mutexLock(&g_lock);

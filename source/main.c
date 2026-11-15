@@ -7,6 +7,8 @@
 #include <switch.h>
 
 #include "app.h"
+#include "artwork.h"
+#include "font.h"
 #include "gfx.h"
 #include "input.h"
 #include "library.h"
@@ -23,7 +25,6 @@
 #define BUTTONS_LEFT (HidNpadButton_Left | HidNpadButton_StickLLeft)
 #define BUTTONS_RIGHT (HidNpadButton_Right | HidNpadButton_StickLRight)
 #define BUTTONS_REPEATING (BUTTONS_UP | BUTTONS_DOWN | BUTTONS_LEFT | BUTTONS_RIGHT | \
-                           HidNpadButton_ZL | HidNpadButton_ZR | \
                            HidNpadButton_StickRLeft | HidNpadButton_StickRRight)
 
 static uint64_t nowNs(void)
@@ -37,8 +38,9 @@ void appToast(App *app, const char *message)
     app->toast_until_ns = nowNs() + TOAST_NS;
 }
 
-// Scans folder and starts playing it, from start_name if given.
-static void playFolder(App *app, const char *folder, bool recursive, const char *start_name)
+// Scans folder and starts playing it, from start_name if given, or from a
+// random track when shuffled.
+static void playFolder(App *app, const char *folder, bool recursive, const char *start_name, bool shuffle)
 {
     TrackList list;
     if (!libraryScan(&list, folder, recursive)) {
@@ -50,13 +52,16 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
         appToast(app, "No music in this folder.");
         return;
     }
-    size_t start = 0;
+    size_t start = shuffle ? (size_t)(armGetSystemTick() % list.count) : 0;
     char path[UTIL_PATH_MAX];
     if (start_name && utilJoinPath(path, sizeof(path), folder, start_name)) {
         size_t found = trackListFind(&list, path);
         start = found < list.count ? found : 0;
     }
+    if (shuffle)
+        playerSetShuffle(true);
     playerPlay(&list, start);
+    app->view = VIEW_NOW_PLAYING;
     snprintf(app->config.folder, sizeof(app->config.folder), "%s", folder);
     configSave(&app->config);
 }
@@ -67,7 +72,7 @@ static void openSelected(App *app)
     if (!e)
         return;
     if (!e->is_dir) {
-        playFolder(app, app->browser.path, false, e->name);
+        playFolder(app, app->browser.path, false, e->name, false);
         return;
     }
     char path[UTIL_PATH_MAX];
@@ -85,13 +90,8 @@ static void handleBrowser(App *app, uint64_t pressed)
     if (pressed & BUTTONS_RIGHT) browserMove(b, PAGE_ROWS);
     if (pressed & HidNpadButton_A) openSelected(app);
     if (pressed & HidNpadButton_B) browserGoUp(b);
-    if (pressed & HidNpadButton_X) playFolder(app, b->path, true, NULL);
-    if (pressed & HidNpadButton_Y) {
-        PlayerStatus status;
-        playerGetStatus(&status);
-        app->queue_cursor = status.track;
-        app->view = VIEW_QUEUE;
-    }
+    if (pressed & HidNpadButton_X) playFolder(app, b->path, true, NULL, false);
+    if (pressed & HidNpadButton_Y) playFolder(app, b->path, true, NULL, true);
 }
 
 static void moveQueueCursor(App *app, long delta, size_t count)
@@ -118,15 +118,38 @@ static void handleQueue(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_Y) playerCycleRepeat();
 }
 
-static void handleGlobal(uint64_t pressed)
+static void handleNowPlaying(App *app, uint64_t pressed)
 {
     PlayerStatus status;
     playerGetStatus(&status);
+    if (pressed & HidNpadButton_A) playerTogglePause();
+    if (pressed & HidNpadButton_B) app->view = VIEW_BROWSER;
+    if (pressed & BUTTONS_UP) playerSetVolume(status.volume + VOLUME_STEP);
+    if (pressed & BUTTONS_DOWN) playerSetVolume(status.volume - VOLUME_STEP);
+    if (pressed & BUTTONS_LEFT) playerSeek(-SEEK_STEP_SECONDS);
+    if (pressed & BUTTONS_RIGHT) playerSeek(SEEK_STEP_SECONDS);
+    if (pressed & HidNpadButton_X) playerToggleShuffle();
+    if (pressed & HidNpadButton_Y) playerCycleRepeat();
+}
+
+// ZL and ZR move between the tabs. Opening the queue shows the current track.
+static void switchView(App *app, int delta)
+{
+    app->view = (View)((app->view + VIEW_COUNT + delta) % VIEW_COUNT);
+    if (app->view == VIEW_QUEUE) {
+        PlayerStatus status;
+        playerGetStatus(&status);
+        app->queue_cursor = status.track;
+    }
+}
+
+static void handleGlobal(App *app, uint64_t pressed)
+{
+    if (pressed & HidNpadButton_ZL) switchView(app, -1);
+    if (pressed & HidNpadButton_ZR) switchView(app, 1);
     if (pressed & HidNpadButton_Minus) playerTogglePause();
     if (pressed & HidNpadButton_L) playerPrev();
     if (pressed & HidNpadButton_R) playerNext();
-    if (pressed & HidNpadButton_ZL) playerSetVolume(status.volume - VOLUME_STEP);
-    if (pressed & HidNpadButton_ZR) playerSetVolume(status.volume + VOLUME_STEP);
     if (pressed & HidNpadButton_StickRLeft) playerSeek(-SEEK_STEP_SECONDS);
     if (pressed & HidNpadButton_StickRRight) playerSeek(SEEK_STEP_SECONDS);
 }
@@ -145,6 +168,15 @@ static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, 
         if (status.error[0])
             appToast(app, status.error);
     }
+}
+
+// Loads the tags and cover of the playing track in the background.
+static void requestArtwork(const PlayerStatus *status)
+{
+    char path[UTIL_PATH_MAX] = "";
+    if (status->track_count > 0)
+        playerTrackPath(status->track, path, sizeof(path));
+    artworkRequest(path);
 }
 
 static void openStartFolder(App *app)
@@ -179,6 +211,11 @@ int main(int argc, char **argv)
 
     if (!gfxInit())
         return 1;
+    if (!fontInit()) {
+        gfxExit();
+        return 1;
+    }
+    artworkInit();
     app.audio_ok = playerInit(app.config.volume, app.config.shuffle, app.config.repeat);
     openStartFolder(&app);
 
@@ -194,14 +231,17 @@ int main(int argc, char **argv)
         if (app.audio_ok) {
             if (app.view == VIEW_BROWSER)
                 handleBrowser(&app, pressed);
-            else
+            else if (app.view == VIEW_QUEUE)
                 handleQueue(&app, pressed);
-            handleGlobal(pressed);
+            else
+                handleNowPlaying(&app, pressed);
+            handleGlobal(&app, pressed);
             syncWithPlayer(&app, &last_state, last_error, sizeof(last_error));
         }
 
         PlayerStatus status;
         playerGetStatus(&status);
+        requestArtwork(&status);
         gfxBegin();
         uiDraw(&app, &status, now);
         gfxEnd();
@@ -212,7 +252,9 @@ int main(int argc, char **argv)
         appletSetMediaPlaybackState(false);
         playerExit();
     }
+    artworkExit();
     browserFree(&app.browser);
+    fontExit();
     gfxExit();
     return 0;
 }
