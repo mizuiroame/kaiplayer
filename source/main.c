@@ -112,7 +112,9 @@ static void handleQueue(App *app, uint64_t pressed)
     if (pressed & BUTTONS_DOWN) moveQueueCursor(app, 1, status.track_count);
     if (pressed & BUTTONS_LEFT) moveQueueCursor(app, -PAGE_ROWS, status.track_count);
     if (pressed & BUTTONS_RIGHT) moveQueueCursor(app, PAGE_ROWS, status.track_count);
-    if (pressed & HidNpadButton_A) playerJumpTo(app->queue_cursor);
+    size_t track;
+    if ((pressed & HidNpadButton_A) && playerQueueTrack(app->queue_cursor, &track))
+        playerJumpTo(track);
     if (pressed & HidNpadButton_B) app->view = VIEW_BROWSER;
     if (pressed & HidNpadButton_X) playerToggleShuffle();
     if (pressed & HidNpadButton_Y) playerCycleRepeat();
@@ -135,7 +137,7 @@ static void switchView(App *app, int delta)
     if (app->view == VIEW_QUEUE) {
         PlayerStatus status;
         playerGetStatus(&status);
-        app->queue_cursor = status.track;
+        app->queue_cursor = status.queue_pos;
     }
 }
 

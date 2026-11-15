@@ -24,8 +24,8 @@
 
 #define MARGIN 32
 #define HEADER_H 64
-#define CONTENT_BOTTOM 672
-#define FOOTER_Y 672
+#define CONTENT_BOTTOM 664
+#define FOOTER_Y 664
 
 // What the UI shows about the current track: tags when the artwork loader
 // has them, otherwise names derived from the path.
@@ -51,6 +51,10 @@ void uiDrawCover(int x, int y, int size, const CoverImage *cover);
 void uiDrawNoteIcon(int x, int y, int size, Color color);
 
 const char *uiRepeatLabel(RepeatMode repeat);
+
+// A rounded label, lit in the accent color when on. 30 pixels high.
+int uiPillWidth(const char *label);
+void uiDrawPill(int x, int y, const char *label, bool on);
 
 // The Now Playing view (ui_now.c).
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns);

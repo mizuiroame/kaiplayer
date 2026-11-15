@@ -64,11 +64,26 @@ void uiDrawCover(int x, int y, int size, const CoverImage *cover)
     uiDrawNoteIcon(x + size / 4, y + size / 4, size / 2, COLOR_FAINT);
 }
 
+#define PILL_TEXT 17
+#define PILL_PAD 14
+
+int uiPillWidth(const char *label)
+{
+    return fontTextWidth(FONT_BOLD, PILL_TEXT, label) + 2 * PILL_PAD;
+}
+
+void uiDrawPill(int x, int y, const char *label, bool on)
+{
+    int w = uiPillWidth(label);
+    gfxFillRoundRect(x, y, w, 30, 15, on ? gfxMix(COLOR_SURFACE_HI, COLOR_ACCENT, 70) : COLOR_SURFACE_HI);
+    fontDraw(FONT_BOLD, PILL_TEXT, x + PILL_PAD, y + 4, label, on ? COLOR_ACCENT : COLOR_DIM);
+}
+
 const char *uiRepeatLabel(RepeatMode repeat)
 {
     switch (repeat) {
-    case REPEAT_ALL: return "Repeat all";
-    case REPEAT_ONE: return "Repeat one";
+    case REPEAT_ALL: return "Repeat queue";
+    case REPEAT_ONE: return "Repeat song";
     default: return "Repeat off";
     }
 }

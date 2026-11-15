@@ -37,6 +37,17 @@ bool playerTrackPath(size_t track, char *out, size_t size)
     return true;
 }
 
+// A shuffled play order, so the Queue preview shows one.
+static const size_t ORDER[] = {2, 5, 0, 7, 3, 8, 1, 6, 4};
+
+bool playerQueueTrack(size_t pos, size_t *track)
+{
+    if (pos >= TRACK_COUNT)
+        return false;
+    *track = ORDER[pos];
+    return true;
+}
+
 const Artwork *artworkLock(void)
 {
     return g_has_art ? &g_art : NULL;
@@ -109,7 +120,7 @@ int main(int argc, char **argv)
     app.browser.cursor = 1;
 
     PlayerStatus status = {
-        .state = PLAYER_PLAYING, .track = 2, .track_count = TRACK_COUNT,
+        .state = PLAYER_PLAYING, .track = 2, .queue_pos = 0, .track_count = TRACK_COUNT,
         .position = 83.0, .duration = 247.0, .shuffle = true, .repeat = REPEAT_ALL,
     };
     loadArtwork(argc > 2 ? argv[2] : NULL);
@@ -117,7 +128,7 @@ int main(int argc, char **argv)
     app.view = VIEW_BROWSER;
     render(argv[1], "browse", &app, &status);
     app.view = VIEW_QUEUE;
-    app.queue_cursor = 4;
+    app.queue_cursor = 3;
     render(argv[1], "queue", &app, &status);
     app.view = VIEW_NOW_PLAYING;
     render(argv[1], "now_playing", &app, &status);
@@ -126,6 +137,7 @@ int main(int argc, char **argv)
     status.state = PLAYER_PAUSED;
     status.shuffle = false;
     status.track = 7;
+    status.queue_pos = 3;
     app.sys.battery_percent = 12;
     render(argv[1], "now_playing_no_art", &app, &status);
 

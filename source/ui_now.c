@@ -35,8 +35,9 @@ static void drawInfo(const PlayerStatus *status, const UiTrack *track)
 
     if (status->track_count > 0) {
         char line[UTIL_PATH_MAX + 48];
-        snprintf(line, sizeof(line), "Track %zu of %zu  ·  %s", status->track + 1, status->track_count, track->folder);
-        fontDrawClipped(FONT_REGULAR, 16, INFO_X, 312, INFO_W, line, COLOR_FAINT);
+        snprintf(line, sizeof(line), "Track %zu of %zu  ·  %s", status->queue_pos + 1, status->track_count,
+                 track->folder);
+        fontDrawClipped(FONT_REGULAR, 20, INFO_X, 314, INFO_W, line, COLOR_DIM);
     }
 }
 
@@ -74,7 +75,7 @@ static void drawSkipIcon(int cx, int cy, bool next, Color color)
 
 static void drawHint(int cx, int y, const char *label)
 {
-    fontDraw(FONT_BOLD, 14, cx - fontTextWidth(FONT_BOLD, 14, label) / 2, y, label, COLOR_FAINT);
+    fontDraw(FONT_BOLD, 17, cx - fontTextWidth(FONT_BOLD, 17, label) / 2, y, label, COLOR_DIM);
 }
 
 static void drawTransport(const PlayerStatus *status)
@@ -94,21 +95,15 @@ static void drawTransport(const PlayerStatus *status)
     drawHint(cx + 120, cy + 26, "R");
 }
 
-static int drawPill(int x, int y, const char *label, bool on)
-{
-    int w = fontTextWidth(FONT_BOLD, 16, label) + 28;
-    gfxFillRoundRect(x, y, w, 34, 17, on ? gfxMix(COLOR_SURFACE_HI, COLOR_ACCENT, 70) : COLOR_SURFACE_HI);
-    fontDraw(FONT_BOLD, 16, x + 14, y + 7, label, on ? COLOR_ACCENT : COLOR_DIM);
-    return w;
-}
-
 static void drawToggles(const PlayerStatus *status)
 {
     int x = INFO_X;
-    x += drawPill(x, TOGGLES_Y, status->shuffle ? "X  Shuffle on" : "X  Shuffle off", status->shuffle) + 12;
+    const char *shuffle = status->shuffle ? "X  Shuffle on" : "X  Shuffle off";
+    uiDrawPill(x, TOGGLES_Y, shuffle, status->shuffle);
+    x += uiPillWidth(shuffle) + 12;
     char repeat[32];
     snprintf(repeat, sizeof(repeat), "Y  %s", uiRepeatLabel(status->repeat));
-    drawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
+    uiDrawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
 }
 
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)

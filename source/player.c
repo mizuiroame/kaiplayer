@@ -440,6 +440,7 @@ void playerGetStatus(PlayerStatus *out)
     mutexLock(&g_lock);
     out->state = g_state;
     out->track = queueCurrent(&g_queue);
+    out->queue_pos = g_queue.pos;
     out->track_count = g_list.count;
     out->position = g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
     out->duration = g_duration;
@@ -447,6 +448,16 @@ void playerGetStatus(PlayerStatus *out)
     out->repeat = g_repeat;
     snprintf(out->error, sizeof(out->error), "%s", g_error);
     mutexUnlock(&g_lock);
+}
+
+bool playerQueueTrack(size_t pos, size_t *track)
+{
+    mutexLock(&g_lock);
+    bool ok = pos < g_queue.count;
+    if (ok)
+        *track = g_queue.order[pos];
+    mutexUnlock(&g_lock);
+    return ok;
 }
 
 bool playerTrackPath(size_t track, char *out, size_t size)

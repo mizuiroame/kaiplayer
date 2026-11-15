@@ -18,6 +18,7 @@ typedef enum {
 typedef struct {
     PlayerState state;
     size_t track;         // Index in the track list.
+    size_t queue_pos;     // Position of that track in the play order.
     size_t track_count;
     double position;      // Seconds.
     double duration;      // Seconds, 0 if unknown.
@@ -43,5 +44,9 @@ void playerSetShuffle(bool shuffle);
 void playerCycleRepeat(void);
 
 void playerGetStatus(PlayerStatus *out);
+// The track at a position of the play order (shuffled or not).
+// False if out of range.
+bool playerQueueTrack(size_t pos, size_t *track);
+
 // Copies the full path of a track in the list. False if out of range.
 bool playerTrackPath(size_t track, char *out, size_t size);

@@ -124,7 +124,7 @@ switches to Now Playing.
 | A         | Open folder / play from song    | Play this track         | Pause / resume             |
 | B         | Go up one folder                | Back to Browse          | Back to Browse             |
 | X         | Play the whole folder           | Shuffle on / off        | Shuffle on / off           |
-| Y         | Shuffle the whole folder        | Repeat: off / all / one | Repeat: off / all / one    |
+| Y         | Shuffle the whole folder        | Repeat: off / queue / song | Repeat: off / queue / song |
 
 In every tab:
 
@@ -145,6 +145,10 @@ the card, KaiPlayer skips the system and homebrew folders there (`switch`,
 `config`, `Nintendo`, `atmosphere`, kaiHEN's folders and so on), so their
 sound effects don't end up in the queue. The queue shows the folder each
 track comes from.
+
+**Repeat queue** plays the whole queue again after its last song. **Repeat
+song** plays the current song over and over. With **Shuffle on**, the Queue
+tab lists the songs in the shuffled order they will play in.
 
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.

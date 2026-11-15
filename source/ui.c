@@ -8,8 +8,8 @@
 #define SUBTITLE_Y 76
 #define LIST_Y 108
 #define ROW_H 44
-#define MINI_Y 600
-#define MINI_H 72
+#define MINI_Y 572
+#define MINI_H 92
 #define THUMB_SIZE ARTWORK_SMALL_SIZE
 #define TEXT_ROW 22
 #define TEXT_SMALL 18
@@ -87,16 +87,18 @@ static void drawBrowser(const App *app)
     drawScrollbar(first, b->count);
 }
 
-static void drawQueueRow(size_t i, int y, bool selected, bool current)
+// One row of the queue: pos is a position in the play order.
+static void drawQueueRow(size_t pos, int y, bool selected, bool current)
 {
     char path[UTIL_PATH_MAX], title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX], number[24];
-    if (!playerTrackPath(i, path, sizeof(path)))
+    size_t track;
+    if (!playerQueueTrack(pos, &track) || !playerTrackPath(track, path, sizeof(path)))
         return;
     uiSplitTrackPath(path, title, folder);
     if (selected)
         drawSelection(y);
 
-    snprintf(number, sizeof(number), "%zu", i + 1);
+    snprintf(number, sizeof(number), "%zu", pos + 1);
     int number_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, number);
     if (current)
         gfxFillTriangleRight(MARGIN + 34, y + 14, 12, 16, COLOR_ACCENT);
@@ -120,14 +122,16 @@ static void drawQueue(const App *app, const PlayerStatus *status)
                  "Pick a folder in Browse and press X to play it.", COLOR_DIM);
         return;
     }
-    char line[64];
-    snprintf(line, sizeof(line), "%zu tracks", status->track_count);
+    // The rows follow the play order, so a shuffled queue shows its real order.
+    char line[96];
+    snprintf(line, sizeof(line), "%zu tracks  ·  %s", status->track_count,
+             status->shuffle ? "shuffled play order" : "in folder order");
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
 
     size_t cursor = app->queue_cursor < status->track_count ? app->queue_cursor : 0;
     size_t first = firstVisible(cursor, status->track_count);
     for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
-        bool current = i == status->track && status->state != PLAYER_STOPPED;
+        bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
         drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current);
     }
     drawScrollbar(first, status->track_count);
@@ -210,26 +214,30 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     }
 
     uiDrawCover(MARGIN - 8, MINI_Y + 10, THUMB_SIZE, track->thumb);
-    int text_x = MARGIN + THUMB_SIZE + 8;
-    int text_w = GFX_WIDTH - text_x - 300;
-    fontDrawClipped(FONT_BOLD, 20, text_x, MINI_Y + 12, text_w, track->title,
+    int text_x = MARGIN + THUMB_SIZE + 12;
+    int text_w = GFX_WIDTH - text_x - 380;
+    fontDrawClipped(FONT_BOLD, 24, text_x, MINI_Y + 14, text_w, track->title,
                     track->has_track ? COLOR_TEXT : COLOR_DIM);
 
     bool toast = app->toast[0] && now_ns < app->toast_until_ns;
     const char *second = toast ? app->toast : track->artist[0] ? track->artist : track->folder;
-    fontDrawClipped(FONT_REGULAR, 17, text_x, MINI_Y + 40, text_w, second, toast ? COLOR_ERROR : COLOR_DIM);
+    fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, second, toast ? COLOR_ERROR : COLOR_DIM);
 
     char elapsed[16], total[16], line[96];
     utilFormatTime(elapsed, sizeof(elapsed), status->position);
     utilFormatTime(total, sizeof(total), status->duration);
-    snprintf(line, sizeof(line), "%s %s / %s", status->state == PLAYER_PAUSED ? "Paused" : "",
+    snprintf(line, sizeof(line), "%s%s / %s", status->state == PLAYER_PAUSED ? "Paused  " : "",
              elapsed, status->duration > 0 ? total : "--:--");
-    fontDraw(FONT_REGULAR, 18, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 18, line),
-             MINI_Y + 12, line, COLOR_DIM);
-    snprintf(line, sizeof(line), "%s  ·  %s", status->shuffle ? "Shuffle on" : "Shuffle off",
-             uiRepeatLabel(status->repeat));
-    fontDraw(FONT_REGULAR, 16, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 16, line),
-             MINI_Y + 42, line, COLOR_FAINT);
+    fontDraw(FONT_REGULAR, 20, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line),
+             MINI_Y + 14, line, COLOR_TEXT);
+
+    // Shuffle and repeat as pills, lit in the accent color when on.
+    const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
+    const char *repeat = uiRepeatLabel(status->repeat);
+    int x = GFX_WIDTH - MARGIN - uiPillWidth(repeat);
+    uiDrawPill(x, MINI_Y + 48, repeat, status->repeat != REPEAT_OFF);
+    x -= uiPillWidth(shuffle) + 10;
+    uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
 }
 
 static void drawFooter(const App *app)
@@ -239,7 +247,7 @@ static void drawFooter(const App *app)
         "A play    B browse    X shuffle    Y repeat    − pause    L/R track    + exit",
         "A pause    Left/Right seek    X shuffle    Y repeat    L/R track    + exit",
     };
-    fontDrawClipped(FONT_REGULAR, 16, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, HELP[app->view], COLOR_FAINT);
+    fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, HELP[app->view], COLOR_DIM);
 }
 
 void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)

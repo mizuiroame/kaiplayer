@@ -9,7 +9,7 @@
 #include "util.h"
 
 #define ARTWORK_LARGE_SIZE 400
-#define ARTWORK_SMALL_SIZE 56
+#define ARTWORK_SMALL_SIZE 72
 
 typedef struct {
     char path[UTIL_PATH_MAX];  // Track these belong to; empty if none.
