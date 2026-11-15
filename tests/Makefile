@@ -21,7 +21,7 @@ ITER    ?= 1000
 # In Docker this needs --security-opt seccomp=unconfined.
 NOASLR  := setarch $$(uname -m) -R
 
-.PHONY: run coverage fuzz clean
+.PHONY: run coverage fuzz tagdump clean
 
 run: $(OBJDIR)/test_main
 	$(NOASLR) ./$(OBJDIR)/test_main
@@ -47,6 +47,13 @@ $(OBJDIR)/%_impl.o: $(SRC)/%_impl.c
 $(OBJDIR)/fuzz: fuzz.c $(addprefix $(SRC)/,$(PARSERS))
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -O2 fuzz.c $(addprefix $(SRC)/,$(PARSERS)) -o $@ $(LDFLAGS)
+
+# make -C tests tagdump; then build/tagdump FILE... shows what KaiPlayer reads.
+tagdump: $(OBJDIR)/tagdump
+
+$(OBJDIR)/tagdump: tagdump.c $(addprefix $(SRC)/,$(PARSERS))
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -O2 tagdump.c $(addprefix $(SRC)/,$(PARSERS)) -o $@ $(LDFLAGS)
 
 clean:
 	rm -rf $(OBJDIR)
