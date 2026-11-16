@@ -10,6 +10,7 @@
 #include "font.h"
 #include "gfx.h"
 #include "player.h"
+#include "theme.h"
 #include "ui.h"
 
 static const char *const TRACKS[] = {
@@ -45,6 +46,11 @@ bool playerQueueTrack(size_t pos, size_t *track)
     if (pos >= TRACK_COUNT)
         return false;
     *track = ORDER[pos];
+    return true;
+}
+
+bool screenHasBacklightControl(void)
+{
     return true;
 }
 
@@ -166,7 +172,19 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->settings_open = true;
     app->settings_cursor = SETTING_SLEEP;
     render(dir, "settings", app, status);
+    app->eq_open = true;
+    app->config.eq_on = true;
+    app->config.eq_preset = EQ_PRESET_ROCK;
+    app->eq_band = 5;
+    render(dir, "equalizer", app, status);
+    app->eq_open = false;
     app->settings_open = false;
+    app->config.accent = THEME_ACCENT_FROM_COVER;
+    app->view = VIEW_NOW_PLAYING;
+    g_has_art = true;
+    status->track = 2;  // The track with the sample cover.
+    render(dir, "accent_from_cover", app, status);
+    app->config.accent = 0;
 }
 
 int main(int argc, char **argv)

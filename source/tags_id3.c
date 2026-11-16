@@ -12,11 +12,11 @@
 #define ID3V1_FIELD 30
 
 typedef struct {
-    const char *title, *artist, *album, *album_artist, *picture;
+    const char *title, *artist, *album, *album_artist, *picture, *user_text;
 } FrameIds;
 
-static const FrameIds IDS_V22 = {"TT2", "TP1", "TAL", "TP2", "PIC"};
-static const FrameIds IDS_V23 = {"TIT2", "TPE1", "TALB", "TPE2", "APIC"};
+static const FrameIds IDS_V22 = {"TT2", "TP1", "TAL", "TP2", "PIC", "TXX"};
+static const FrameIds IDS_V23 = {"TIT2", "TPE1", "TALB", "TPE2", "APIC", "TXXX"};
 
 // Undoes ID3 unsynchronization in place: drops each 0x00 that follows 0xFF.
 static size_t resynchronize(uint8_t *data, size_t size)
@@ -76,6 +76,19 @@ static void parsePictureFrame(const uint8_t *body, size_t size, bool v22, TrackT
         textOfferPicture(t, body + pos, size - pos, type);
 }
 
+// TXXX: encoding, description, value. ReplayGain uses this frame in MP3.
+static void parseUserTextFrame(const uint8_t *body, size_t size, TrackTags *t)
+{
+    if (size < 2)
+        return;
+    int encoding = body[0];
+    size_t desc_len = terminatedLength(body + 1, size - 1, encoding);
+    char name[64], value[64];
+    textToUtf8(body + 1, desc_len, encoding, name, sizeof(name));
+    textToUtf8(body + 1 + desc_len, size - 1 - desc_len, encoding, value, sizeof(value));
+    tagsApplyReplayGain(name, value, t);
+}
+
 static void parseFrame(const uint8_t *id, const uint8_t *body, size_t size, bool v22, TrackTags *t)
 {
     const FrameIds *ids = v22 ? &IDS_V22 : &IDS_V23;
@@ -90,6 +103,8 @@ static void parseFrame(const uint8_t *id, const uint8_t *body, size_t size, bool
         parseTextFrame(body, size, t->album_artist);
     else if (memcmp(id, ids->picture, n) == 0)
         parsePictureFrame(body, size, v22, t);
+    else if (memcmp(id, ids->user_text, n) == 0)
+        parseUserTextFrame(body, size, t);
 }
 
 // Strips the per-frame extras of v2.3/v2.4. Returns false for frames we skip

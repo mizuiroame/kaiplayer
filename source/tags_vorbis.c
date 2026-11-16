@@ -1,4 +1,5 @@
 // Vorbis comments ("KEY=value", used by FLAC and Ogg) and FLAC PICTURE blocks.
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -100,6 +101,23 @@ static void setTextField(char *field, const char *value, size_t len)
     textSetField(field, text);
 }
 
+#define GAIN_LIMIT_DB 51.0  // Outside +-51 dB a value is not a real ReplayGain.
+
+void tagsApplyReplayGain(const char *name, const char *value, TrackTags *t)
+{
+    char *end;
+    double db = strtod(value, &end);
+    if (end == value || !isfinite(db) || fabs(db) > GAIN_LIMIT_DB)
+        return;
+    if (utilCompareNames(name, "REPLAYGAIN_TRACK_GAIN") == 0) {
+        t->track_gain_db = (float)db;
+        t->has_track_gain = true;
+    } else if (utilCompareNames(name, "REPLAYGAIN_ALBUM_GAIN") == 0) {
+        t->album_gain_db = (float)db;
+        t->has_album_gain = true;
+    }
+}
+
 void tagsApplyComment(const char *comment, size_t length, TrackTags *t)
 {
     const char *eq = memchr(comment, '=', length);
@@ -117,6 +135,15 @@ void tagsApplyComment(const char *comment, size_t length, TrackTags *t)
         setTextField(t->album, value, value_len);
     else if (keyIs(comment, key_len, "ALBUMARTIST"))
         setTextField(t->album_artist, value, value_len);
+    else if (keyIs(comment, key_len, "REPLAYGAIN_TRACK_GAIN") || keyIs(comment, key_len, "REPLAYGAIN_ALBUM_GAIN")) {
+        char name[MAX_KEY + 1], number[32];
+        memcpy(name, comment, key_len);
+        name[key_len] = '\0';
+        size_t n = value_len < sizeof(number) - 1 ? value_len : sizeof(number) - 1;
+        memcpy(number, value, n);
+        number[n] = '\0';
+        tagsApplyReplayGain(name, number, t);
+    }
     else if (keyIs(comment, key_len, "METADATA_BLOCK_PICTURE") &&
              value_len / 4 * 3 <= TAGS_PICTURE_MAX + PICTURE_BLOCK_OVERHEAD) {
         size_t decoded_len = 0;

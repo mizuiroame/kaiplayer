@@ -1,5 +1,8 @@
 #include "config.h"
 
+#include "player.h"
+#include "theme.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +11,25 @@
 #define CONFIG_DIR "sdmc:/config/kaiplayer"
 #define CONFIG_FILE CONFIG_DIR "/settings.txt"
 #define DEFAULT_FOLDER "sdmc:/"
+
+static int clampInt(int v, int lo, int hi)
+{
+    return v < lo ? lo : v > hi ? hi : v;
+}
+
+// "0,3,-2,..." into the band gains; missing or bad values stay 0.
+static void parseGains(const char *value, int gains[EQ_BANDS])
+{
+    const char *p = value;
+    for (int b = 0; b < EQ_BANDS; b++) {
+        char *end;
+        long g = strtol(p, &end, 10);
+        if (end == p)
+            break;
+        gains[b] = clampInt((int)g, EQ_GAIN_MIN, EQ_GAIN_MAX);
+        p = *end == ',' ? end + 1 : end;
+    }
+}
 
 static void applyLine(Config *c, char *line)
 {
@@ -28,6 +50,18 @@ static void applyLine(Config *c, char *line)
             c->resume = (ResumeMode)mode;
     } else if (strcmp(key, "clock24") == 0) {
         c->clock_24h = strcmp(value, "0") != 0;
+    } else if (strcmp(key, "eq_on") == 0) {
+        c->eq_on = strcmp(value, "1") == 0;
+    } else if (strcmp(key, "eq_preset") == 0) {
+        c->eq_preset = clampInt(atoi(value), 0, EQ_PRESET_COUNT - 1);
+    } else if (strcmp(key, "eq_gains") == 0) {
+        parseGains(value, c->eq_gains);
+    } else if (strcmp(key, "replaygain") == 0) {
+        c->replaygain = clampInt(atoi(value), 0, REPLAYGAIN_MODE_COUNT - 1);
+    } else if (strcmp(key, "accent") == 0) {
+        c->accent = clampInt(atoi(value), 0, THEME_ACCENT_COUNT - 1);
+    } else if (strcmp(key, "screen_off") == 0) {
+        c->screen_off_minutes = clampInt(atoi(value), 0, 60);
     } else if (strcmp(key, "repeat") == 0) {
         int r = atoi(value);
         if (r >= 0 && r < REPEAT_MODE_COUNT)
@@ -41,6 +75,12 @@ void configLoad(Config *c)
     c->shuffle = false;
     c->resume = RESUME_PLAYING;
     c->clock_24h = true;
+    c->eq_on = false;
+    c->eq_preset = 0;
+    memset(c->eq_gains, 0, sizeof(c->eq_gains));
+    c->replaygain = 0;
+    c->accent = 0;
+    c->screen_off_minutes = 0;
     c->repeat = REPEAT_ALL;
 
     FILE *f = fopen(CONFIG_FILE, "r");
@@ -71,5 +111,9 @@ bool configSave(const Config *c)
     const char *folder = strpbrk(c->folder, "\r\n") ? DEFAULT_FOLDER : c->folder;
     fprintf(f, "folder=%s\nshuffle=%d\nrepeat=%d\nresume_mode=%d\nclock24=%d\n",
             folder, c->shuffle ? 1 : 0, (int)c->repeat, (int)c->resume, c->clock_24h ? 1 : 0);
+    fprintf(f, "eq_on=%d\neq_preset=%d\neq_gains=", c->eq_on ? 1 : 0, c->eq_preset);
+    for (int b = 0; b < EQ_BANDS; b++)
+        fprintf(f, b ? ",%d" : "%d", c->eq_gains[b]);
+    fprintf(f, "\nreplaygain=%d\naccent=%d\nscreen_off=%d\n", c->replaygain, c->accent, c->screen_off_minutes);
     return fclose(f) == 0;
 }

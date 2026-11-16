@@ -6,6 +6,8 @@
 #include "ui_common.h"
 #include "ui_hit.h"
 #include "ui_list.h"
+#include "screen.h"
+#include "theme.h"
 
 #define MINI_Y 572
 #define MINI_H 92
@@ -227,6 +229,8 @@ static const char *footerHelp(const App *app)
     };
     if (app->keyboard_open)
         return "A type    B delete    X shift    Y space    + done    − cancel";
+    if (app->eq_open)
+        return "Left/Right band    Up/Down gain    X preset    Y on/off    B back";
     if (app->settings_open)
         return "Up/Down choose    Left/Right or A change    B close";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
@@ -245,12 +249,22 @@ static void drawFooter(const App *app)
     fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, footerHelp(app), COLOR_DIM);
 }
 
+void uiDrawScreenOff(void)
+{
+    gfxClear(GFX_RGB(0, 0, 0));
+    // Only seen when the backlight can't be turned off: keep it very dim.
+    if (!screenHasBacklightControl())
+        fontDraw(FONT_REGULAR, 16, MARGIN, GFX_HEIGHT - 40, "Screen off  ·  press any button or touch to wake",
+                 GFX_RGB(0x30, 0x30, 0x36));
+}
+
 void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     UiTrack track;
     uiHitReset();
     const Artwork *art = artworkLock();
     uiResolveTrack(status, art, &track);
+    g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->average : 0, track.cover != NULL);
 
     gfxClear(COLOR_BG);
     if (app->view == VIEW_NOW_PLAYING) {

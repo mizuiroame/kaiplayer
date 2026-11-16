@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "settings.h"
+#include "theme.h"
 #include "ui_common.h"
 #include "ui_hit.h"
 
@@ -93,6 +94,21 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         break;
     }
     case SETTING_CLOCK: snprintf(out, size, "%s", app->config.clock_24h ? "24-hour" : "12-hour"); break;
+    case SETTING_EQUALIZER:
+        snprintf(out, size, "%s", app->config.eq_on ? eqPresetName((EqPreset)app->config.eq_preset) : "Off");
+        break;
+    case SETTING_REPLAYGAIN: {
+        static const char *const MODES[] = {"Off", "Track", "Album"};
+        snprintf(out, size, "%s", MODES[app->config.replaygain % REPLAYGAIN_MODE_COUNT]);
+        break;
+    }
+    case SETTING_ACCENT: snprintf(out, size, "%s", themeAccentName(app->config.accent)); break;
+    case SETTING_SCREEN_OFF:
+        if (app->config.screen_off_minutes)
+            snprintf(out, size, "After %d min idle", app->config.screen_off_minutes);
+        else
+            snprintf(out, size, "Never");
+        break;
     default: snprintf(out, size, "KaiPlayer %s", KAIPLAYER_VERSION); break;
     }
 }
@@ -174,12 +190,68 @@ static void drawKeyboard(const App *app, uint64_t now_ns)
         fontDrawClipped(FONT_REGULAR, 18, x + PANEL_PAD, action_y + KEY_H + 14, KEYS_W, app->toast, COLOR_ERROR);
 }
 
+#define EQ_W 940
+#define EQ_H 500
+#define EQ_SLIDER_H 250
+#define EQ_COLUMN_W 80
+
+static void drawEqualizer(const App *app)
+{
+    int x = (GFX_WIDTH - EQ_W) / 2, y = (GFX_HEIGHT - EQ_H) / 2;
+    dimScreen();
+    panel(x, y, EQ_W, EQ_H);
+    fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22, "Equalizer", COLOR_TEXT);
+
+    // Preset and on/off pills, top right.
+    char preset[48];
+    snprintf(preset, sizeof(preset), "X  %s", eqPresetName((EqPreset)app->config.eq_preset));
+    const char *toggle = app->config.eq_on ? "Y  On" : "Y  Off";
+    int px = x + EQ_W - PANEL_PAD - uiPillWidth(toggle);
+    uiDrawPill(px, y + 22, toggle, app->config.eq_on);
+    uiHitAdd(px, y + 14, uiPillWidth(toggle), 46, HIT_EQ_TOGGLE, 0);
+    px -= uiPillWidth(preset) + 12;
+    uiDrawPill(px, y + 22, preset, app->config.eq_on);
+    uiHitAdd(px, y + 14, uiPillWidth(preset), 46, HIT_EQ_PRESET, 0);
+
+    int gains[EQ_BANDS];
+    if (!eqPresetGains((EqPreset)app->config.eq_preset, gains))
+        for (int b = 0; b < EQ_BANDS; b++)
+            gains[b] = app->config.eq_gains[b];
+    int top = y + 120, zero_y = top + EQ_SLIDER_H / 2;
+    int first_x = x + (EQ_W - EQ_BANDS * EQ_COLUMN_W) / 2;
+    Color fill = app->config.eq_on ? COLOR_ACCENT : COLOR_FAINT;
+    gfxFillRect(first_x, zero_y, EQ_BANDS * EQ_COLUMN_W, 1, COLOR_SURFACE_HI);  // The 0 dB line.
+    for (int b = 0; b < EQ_BANDS; b++) {
+        int cx = first_x + b * EQ_COLUMN_W + EQ_COLUMN_W / 2;
+        bool selected = b == app->eq_band;
+        if (selected)
+            gfxFillRoundRect(cx - 34, top - 52, 68, EQ_SLIDER_H + 110, 12, COLOR_SURFACE_HI);
+        gfxFillRoundRect(cx - 3, top, 6, EQ_SLIDER_H, 3, COLOR_BG);
+        int knob_y = zero_y - gains[b] * (EQ_SLIDER_H / 2) / EQ_GAIN_MAX;
+        int bar_top = knob_y < zero_y ? knob_y : zero_y, bar_h = knob_y < zero_y ? zero_y - knob_y : knob_y - zero_y;
+        gfxFillRoundRect(cx - 3, bar_top, 6, bar_h + 1, 3, fill);
+        gfxFillCircle(cx, knob_y, selected ? 12 : 10, selected ? COLOR_TEXT : fill);
+
+        char value[8];
+        snprintf(value, sizeof(value), "%+d", gains[b]);
+        fontDraw(FONT_BOLD, 16, cx - fontTextWidth(FONT_BOLD, 16, value) / 2, top - 40, value,
+                 selected ? COLOR_TEXT : COLOR_DIM);
+        const char *label = eqBandLabel(b);
+        fontDraw(FONT_REGULAR, 16, cx - fontTextWidth(FONT_REGULAR, 16, label) / 2, top + EQ_SLIDER_H + 18, label,
+                 COLOR_DIM);
+        uiHitAdd(cx - EQ_COLUMN_W / 2, top, EQ_COLUMN_W, EQ_SLIDER_H, HIT_EQ_BAND, b);
+    }
+    fontDraw(FONT_REGULAR, 16, x + PANEL_PAD, y + EQ_H - 42, "Hz  ·  +12 to -12 dB", COLOR_FAINT);
+}
+
 void uiDrawOverlay(const App *app, uint64_t now_ns)
 {
     if (app->keyboard_open)
         drawKeyboard(app, now_ns);
     else if (app->menu.open)
         drawMenu(&app->menu);
+    else if (app->eq_open)
+        drawEqualizer(app);
     else if (app->settings_open)
         drawSettings(app, now_ns);
 }

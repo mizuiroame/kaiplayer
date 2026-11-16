@@ -1,12 +1,15 @@
 // The Settings page and the sleep timer.
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "app.h"
 #include "app_buttons.h"
 #include "keyboard_system.h"
 #include "player.h"
 #include "resume.h"
+#include "screen.h"
+#include "theme.h"
 
 #define SLEEP_FADE_SECONDS 10.0
 #define NS_PER_MINUTE 60000000000ull
@@ -42,12 +45,35 @@ static void typeSleepMinutes(App *app)
         appChangeSetting(app, SETTING_SLEEP, 1);  // No number pad: step instead.
 }
 
+void appApplyAudioSettings(App *app)
+{
+    int gains[EQ_BANDS];
+    if (!eqPresetGains((EqPreset)app->config.eq_preset, gains))
+        memcpy(gains, app->config.eq_gains, sizeof(gains));  // Custom.
+    playerSetEqualizer(app->config.eq_on, gains);
+    playerSetReplayGain((ReplayGainMode)app->config.replaygain);
+}
+
 void appActivateSetting(App *app, SettingRow row)
 {
-    if (row == SETTING_SLEEP)
+    if (row == SETTING_SLEEP) {
         typeSleepMinutes(app);
-    else
+    } else if (row == SETTING_EQUALIZER) {
+        app->eq_open = true;  // The editor opens over Settings.
+    } else {
         appChangeSetting(app, row, 1);
+    }
+}
+
+// Off, then each preset, then Custom.
+static void stepEqualizer(App *app, int delta)
+{
+    int count = EQ_PRESET_COUNT + 1;
+    int index = app->config.eq_on ? app->config.eq_preset + 1 : 0;
+    index = ((index + delta) % count + count) % count;
+    app->config.eq_on = index > 0;
+    if (index > 0)
+        app->config.eq_preset = index - 1;
 }
 
 void appChangeSetting(App *app, SettingRow row, int delta)
@@ -64,6 +90,25 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         break;
     case SETTING_CLOCK:
         app->config.clock_24h = !app->config.clock_24h;
+        configSave(&app->config);
+        break;
+    case SETTING_EQUALIZER:
+        stepEqualizer(app, delta);
+        appApplyAudioSettings(app);
+        configSave(&app->config);
+        break;
+    case SETTING_REPLAYGAIN:
+        app->config.replaygain = ((app->config.replaygain + delta) % REPLAYGAIN_MODE_COUNT + REPLAYGAIN_MODE_COUNT) %
+                                 REPLAYGAIN_MODE_COUNT;
+        appApplyAudioSettings(app);
+        configSave(&app->config);
+        break;
+    case SETTING_ACCENT:
+        app->config.accent = ((app->config.accent + delta) % THEME_ACCENT_COUNT + THEME_ACCENT_COUNT) % THEME_ACCENT_COUNT;
+        configSave(&app->config);
+        break;
+    case SETTING_SCREEN_OFF:
+        app->config.screen_off_minutes = settingsScreenOffStep(app->config.screen_off_minutes, delta);
         configSave(&app->config);
         break;
     default:
@@ -87,6 +132,12 @@ void appHandleSettings(App *app, uint64_t pressed)
         appChangeSetting(app, app->settings_cursor, -1);
     if (pressed & (HidNpadButton_B | HidNpadButton_Plus))
         app->settings_open = false;
+}
+
+void appScreenOff(App *app)
+{
+    app->screen_off = true;
+    screenSetOn(false);
 }
 
 void appTickSleepTimer(App *app, uint64_t now_ns)

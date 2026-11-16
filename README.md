@@ -149,7 +149,7 @@ In every tab:
 |-------------|------------|
 | Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
 | Queue       | Save the whole queue as a playlist |
-| All         | Settings, and Exit KaiPlayer (asks you to confirm) |
+| All         | Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
 
 Adding songs to a playlist isn't in the menu: use the **+** buttons (see
 [Playlists](#playlists)).
@@ -202,6 +202,10 @@ close with **B**.
 | Sleep timer | Off, or any number of minutes up to 600 |
 | Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
+| Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
+| ReplayGain (even loudness) | Off (default), Track or Album |
+| Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
+| Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
 | About | The KaiPlayer version |
 
 **Sleep timer:** press **A** (or tap the row) to type the minutes on the
@@ -214,6 +218,37 @@ exit.
 **Resume where you left off:** **Keep playing** reopens the last song and
 plays on; **Paused** reopens it paused; **Off** forgets it (and deletes the
 saved queue).
+
+**Equalizer:** ← → on the row steps through Off, the presets (Flat, Bass,
+Treble, Rock, Pop, Jazz, Classical, Vocal) and Custom. **A** (or a tap) opens
+the editor, with 10 bands from 31 Hz to 16 kHz and ±12 dB each:
+
+- ← → choose a band, ↑ ↓ change it by 1 dB. Tap or drag a slider to set it.
+- **X** (or tap the preset name) goes to the next preset; **Y** turns the
+  equalizer on or off. **B** goes back to Settings.
+- Changing a band of a preset turns it into **Custom**, starting from that
+  preset. Your Custom settings are saved.
+- The overall level is lowered by as much as the loudest boost, so boosting
+  bands doesn't make the sound clip.
+
+**ReplayGain:** plays songs at the same loudness, using the
+`REPLAYGAIN_TRACK_GAIN` / `REPLAYGAIN_ALBUM_GAIN` tags (Vorbis comments in
+FLAC and Ogg, `TXXX` frames in MP3) that tools such as foobar2000, MusicBrainz
+Picard or `loudgain` write. **Track** levels every song; **Album** keeps the
+differences between songs of an album (and uses the track gain if a song has
+no album gain). Songs without these tags play as they are. KaiPlayer only
+turns songs down, never up, so nothing clips. A new mode applies from the
+next song.
+
+**Accent color:** the color of the highlights, buttons and progress bar.
+**From cover** takes a bright version of the playing song's album art color.
+
+**Screen off while playing:** after that long without touching the console
+while music plays, the screen turns off to save battery and the music keeps
+playing. You can also turn it off at once with **+ → Turn screen off**. Any
+button or a touch turns it back on; that press does nothing else. Menus
+don't turn it off while they are open. If the console doesn't let homebrew
+control the backlight, the screen goes black instead.
 
 ### Playlists
 
@@ -444,9 +479,12 @@ source/
   keyboard*.c     playlist names: the console's keyboard, and a fallback
   menu.c          the + menu and dialogs
   settings.c      the Settings rows and sleep timer choices
+  eq.c            10-band equalizer (peaking filters) and its presets
+  theme.c         accent colors, including the one taken from the cover
+  screen.c        turning the screen off (backlight)
   touch.c         taps and drags from the touch screen
   ui_hit.c        touch targets recorded as the UI is drawn
-  app_*.c         input handling for each tab, the menu, settings, touch and resume
+  app_*.c         input handling for each tab, the menu, settings, equalizer, touch and resume
 data/           Noto Sans Regular and Bold, embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
 tests/          host tests, fuzzer, fixtures and the UI preview

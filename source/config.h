@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "eq.h"
 #include "queue.h"
 #include "util.h"
 
@@ -19,6 +20,12 @@ typedef struct {
     RepeatMode repeat;
     ResumeMode resume;           // What to do with the last queue at startup.
     bool clock_24h;              // 21:47 rather than 9:47 PM.
+    bool eq_on;
+    int eq_preset;               // EqPreset; Custom uses eq_gains.
+    int eq_gains[EQ_BANDS];      // dB per band.
+    int replaygain;              // ReplayGainMode.
+    int accent;                  // Theme accent, see theme.h.
+    int screen_off_minutes;      // Turn the screen off after this long idle while playing; 0 never.
 } Config;
 
 // Fills defaults, then overrides them with the saved file if it exists.

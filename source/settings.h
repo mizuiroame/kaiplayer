@@ -8,6 +8,10 @@ typedef enum {
     SETTING_SLEEP,
     SETTING_RESUME,
     SETTING_CLOCK,
+    SETTING_EQUALIZER,
+    SETTING_REPLAYGAIN,
+    SETTING_ACCENT,
+    SETTING_SCREEN_OFF,
     SETTING_ABOUT,
     SETTING_COUNT,
 } SettingRow;
@@ -20,6 +24,9 @@ typedef enum {
 int settingsSleepStep(int minutes, int delta);
 // Clamps typed minutes to 0..SLEEP_MAX_MINUTES.
 int settingsSleepClamp(long minutes);
+
+// The "turn the screen off after" choices, in minutes; 0 is never.
+int settingsScreenOffStep(int minutes, int delta);
 
 // Label and current value of a row, for drawing.
 const char *settingsRowLabel(SettingRow row);

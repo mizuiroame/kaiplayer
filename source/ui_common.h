@@ -14,7 +14,9 @@
 #define COLOR_BG GFX_RGB(0x12, 0x12, 0x14)
 #define COLOR_SURFACE GFX_RGB(0x1C, 0x1C, 0x21)
 #define COLOR_SURFACE_HI GFX_RGB(0x2C, 0x2C, 0x34)
-#define COLOR_ACCENT GFX_RGB(0xFF, 0x6B, 0x9A)
+// The accent changes with the theme (and the cover): set at each frame.
+extern Color g_ui_accent;
+#define COLOR_ACCENT g_ui_accent
 #define COLOR_FOLDER GFX_RGB(0x7C, 0xC4, 0xFF)
 #define COLOR_TEXT GFX_RGB(0xF2, 0xF2, 0xF5)
 #define COLOR_DIM GFX_RGB(0xA4, 0xA4, 0xB0)

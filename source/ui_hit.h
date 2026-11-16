@@ -25,6 +25,9 @@ typedef enum {
     HIT_SETTING,       // arg: setting row.
     HIT_BACK,          // Like B: up a folder, or out of a playlist.
     HIT_ADD,           // "+": add to a playlist. arg: row index, or -1 for the current song.
+    HIT_EQ_BAND,       // An equalizer slider: the tap's y gives the gain. arg: band.
+    HIT_EQ_PRESET,     // Next equalizer preset.
+    HIT_EQ_TOGGLE,     // Equalizer on/off.
 } HitKind;
 
 typedef struct {

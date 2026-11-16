@@ -84,6 +84,11 @@ typedef struct {
     TrackList pending;      // Songs waiting for a playlist to be picked.
     bool settings_open;
     SettingRow settings_cursor;
+    bool eq_open;               // The equalizer editor (over Settings).
+    int eq_band;                // Selected band in the editor.
+    bool screen_off;            // Screen off while music plays.
+    bool touch_wakes;           // The touch that woke the screen: ignore until released.
+    uint64_t last_input_ns;     // For turning the screen off when idle.
     int sleep_minutes;          // The sleep timer's length; 0 is off.
     uint64_t sleep_deadline_ns; // When the sleep timer fires; 0 if off.
     TouchTracker touch;
@@ -133,11 +138,22 @@ void appHandleSettings(App *app, uint64_t pressed);
 void appChangeSetting(App *app, SettingRow row, int delta);
 // A on a row (or a tap): the sleep timer opens the number pad, others change.
 void appActivateSetting(App *app, SettingRow row);
+// Sends the equalizer and ReplayGain settings to the player.
+void appApplyAudioSettings(App *app);
+// The equalizer editor (app_eq.c).
+void appHandleEqualizer(App *app, uint64_t pressed);
+void appEqualizerSetGain(App *app, int band, int gain);
+void appEqualizerNextPreset(App *app);
+void appEqualizerToggle(App *app);
+// Turns the screen off now (it comes back with any button or touch).
+void appScreenOff(App *app);
 // Pauses with a fade-out when the sleep timer runs out.
 void appTickSleepTimer(App *app, uint64_t now_ns);
 
 // Touch input (app_touch.c).
 void appHandleTouch(App *app, uint64_t now_ns);
+// True while a finger is on the screen.
+bool appTouchDown(void);
 
 // Handles buttons as if pressed this frame: overlays first, then the tab.
 // Touch uses it to act like the matching button.

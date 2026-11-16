@@ -23,3 +23,4 @@ void testCover(void);
 void testFixtures(void);
 void testPlaylists(void);
 void testTouch(void);
+void testEq(void);
