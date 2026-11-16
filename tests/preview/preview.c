@@ -332,6 +332,7 @@ int main(int argc, char **argv)
     PlayerStatus status = {
         .state = PLAYER_PLAYING, .track = 2, .queue_pos = 0, .track_count = TRACK_COUNT,
         .position = 83.0, .duration = 247.0, .shuffle = true, .repeat = REPEAT_ALL,
+        .format = {"FLAC", 96000, 24},
     };
     loadArtwork(argc > 2 ? argv[2] : NULL);
 

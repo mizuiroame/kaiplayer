@@ -255,6 +255,11 @@ uint32_t dsdSampleRate(const DsdDecoder *d)
     return d->out_rate;
 }
 
+uint32_t dsdRate(const DsdDecoder *d)
+{
+    return d->info.dsd_rate;
+}
+
 uint64_t dsdTotalFrames(const DsdDecoder *d)
 {
     return d->total_frames;

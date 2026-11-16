@@ -288,8 +288,16 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     utilFormatTime(total, sizeof(total), status->duration);
     snprintf(line, sizeof(line), "%s%s / %s", status->state == PLAYER_PAUSED ? "Paused  " : "",
              elapsed, status->duration > 0 ? total : "--:--");
-    fontDraw(FONT_REGULAR, 20, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line),
-             MINI_Y + 14, line, COLOR_TEXT);
+    int time_x = GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line);
+    fontDraw(FONT_REGULAR, 20, time_x, MINI_Y + 14, line, COLOR_TEXT);
+
+    char format[32];  // "FLAC 24/96" before the time, in a quiet pill.
+    decoderFormatLabel(&status->format, true, format, sizeof(format));
+    if (format[0]) {
+        int w = fontTextWidth(FONT_BOLD, 13, format) + 16;
+        gfxFillRoundRect(time_x - w - 12, MINI_Y + 15, w, 22, 11, COLOR_SURFACE_HI);
+        fontDrawMiddle(FONT_BOLD, 13, time_x - w - 4, MINI_Y + 26.0f, format, COLOR_DIM);
+    }
 
     // Shuffle and repeat as pills, lit in the accent color when on.
     const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";

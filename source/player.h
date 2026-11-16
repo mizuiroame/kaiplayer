@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "decoder.h"
 #include "tracklist.h"
 #include "eq.h"
 #include "queue.h"
@@ -28,6 +29,7 @@ typedef struct {
     double duration;      // Seconds, 0 if unknown.
     bool shuffle;
     RepeatMode repeat;
+    AudioFormat format;   // The playing file's format; an empty codec when none.
     char error[160];
 } PlayerStatus;
 

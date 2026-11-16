@@ -4,7 +4,10 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+
+#include "audioformat.h"
 
 typedef struct Decoder Decoder;
 
@@ -19,3 +22,5 @@ uint64_t decoderTotalFrames(const Decoder *d);
 // Reads up to frames stereo frames. Returns frames read; 0 at the end.
 uint64_t decoderReadStereo(Decoder *d, float *out, uint64_t frames);
 bool decoderSeek(Decoder *d, uint64_t frame);
+
+void decoderFormat(const Decoder *d, AudioFormat *out);

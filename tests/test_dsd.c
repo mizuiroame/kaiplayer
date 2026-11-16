@@ -72,8 +72,43 @@ static void checkRejects(void)
     CHECK(decoderOpen(path) == NULL);
 }
 
+static bool label(const AudioFormat *f, bool compact, const char *expected)
+{
+    char out[48];
+    decoderFormatLabel(f, compact, out, sizeof(out));
+    return strcmp(out, expected) == 0;
+}
+
+static void checkFormat(const char *path, const char *codec, uint32_t rate, unsigned bits)
+{
+    Decoder *d = decoderOpen(path);
+    CHECK(d != NULL);
+    if (!d)
+        return;
+    AudioFormat f;
+    decoderFormat(d, &f);
+    CHECK(strcmp(f.codec, codec) == 0 && f.sample_rate == rate && f.bits == bits);
+    decoderClose(d);
+}
+
+// The format each file reports, and the labels Now Playing and the bar show.
+static void testFormats(void)
+{
+    checkFormat(FIXTURES "/tone.flac", "FLAC", 44100, 16);
+    checkFormat(FIXTURES "/tone.mp3", "MP3", 44100, 0);
+    checkFormat(FIXTURES "/tone.ogg", "OGG", 44100, 0);
+    checkFormat(FIXTURES "/tone.dsf", "DSD64", 2822400, 0);
+    checkFormat(FIXTURES "/tone.dff", "DSD64", 2822400, 0);
+    AudioFormat flac = {"FLAC", 96000, 24}, mp3 = {"MP3", 44100, 0}, dsd = {"DSD128", 5644800, 0}, none = {"", 0, 0};
+    CHECK(label(&flac, false, "FLAC · 24-bit · 96 kHz") && label(&flac, true, "FLAC 24/96"));
+    CHECK(label(&mp3, false, "MP3 · 44.1 kHz") && label(&mp3, true, "MP3 44.1"));
+    CHECK(label(&dsd, false, "DSD128 · 5.6 MHz") && label(&dsd, true, "DSD128"));
+    CHECK(label(&none, false, "") && label(&none, true, ""));
+}
+
 void testDsd(void)
 {
+    testFormats();
     uint64_t dsf_frames = 0, dff_frames = 0;
     float *dsf = decodeAll(FIXTURES "/tone.dsf", &dsf_frames);
     float *dff = decodeAll(FIXTURES "/tone.dff", &dff_frames);

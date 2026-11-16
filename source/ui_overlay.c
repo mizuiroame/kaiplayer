@@ -116,9 +116,7 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : "Cover colors");
         break;
     case SETTING_OPEN_PLAYBACK:
-        snprintf(out, size, "%s", app->config.eq_on ? eqPresetName((EqPreset)app->config.eq_preset) : "");
-        break;
-    case SETTING_OPEN_DISPLAY: snprintf(out, size, "%s", nowStyleName(app->config.now_style)); break;
+    case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
     case SETTING_SCREEN_OFF:
         if (app->config.screen_off_minutes)
             snprintf(out, size, "After %d min idle", app->config.screen_off_minutes);

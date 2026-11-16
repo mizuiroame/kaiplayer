@@ -1,5 +1,6 @@
 #include "decoder.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -191,6 +192,29 @@ uint64_t decoderReadStereo(Decoder *d, float *out, uint64_t frames)
         total += got;
     }
     return total;
+}
+
+void decoderFormat(const Decoder *d, AudioFormat *out)
+{
+    *out = (AudioFormat){"", d->sample_rate, 0};
+    switch (d->kind) {
+    case KIND_WAV:
+        snprintf(out->codec, sizeof(out->codec), "WAV");
+        out->bits = d->u.wav.bitsPerSample;
+        break;
+    case KIND_FLAC:
+        snprintf(out->codec, sizeof(out->codec), "FLAC");
+        out->bits = d->u.flac->bitsPerSample;
+        break;
+    case KIND_MP3: snprintf(out->codec, sizeof(out->codec), "MP3"); break;
+    case KIND_VORBIS: snprintf(out->codec, sizeof(out->codec), "OGG"); break;
+    case KIND_DSD: {
+        out->sample_rate = dsdRate(d->u.dsd);
+        unsigned base = out->sample_rate % 3072000u == 0 ? 3072000u / 64 : 2822400u / 64;  // 48 or 44.1 kHz.
+        snprintf(out->codec, sizeof(out->codec), "DSD%u", out->sample_rate / base);
+        break;
+    }
+    }
 }
 
 bool decoderSeek(Decoder *d, uint64_t frame)
