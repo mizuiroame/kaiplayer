@@ -410,6 +410,22 @@ int main(int argc, char **argv)
             printf("style %d: %.2f ms per frame\n", style,
                    ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
         }
+        app.config.now_style = NOW_STYLE_CD;  // With the Settings panel open over it.
+        app.settings_open = true;
+        struct timespec t0, t1;
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+        for (int i = 0; i < 60; i++)
+            uiDraw(&app, &status, 0);
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        printf("CD with Settings open: %.2f ms per frame\n",
+               ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
+        app.settings_open = false;
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+        for (int i = 0; i < 60; i++)
+            gfxBlendRect(0, 0, GFX_WIDTH, GFX_HEIGHT, 0xFF000000u, 150);
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        printf("full-screen dim alone: %.2f ms\n",
+               ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
         gfxSetTarget(NULL, 0);
     }
     static const char *const STYLE_SHOTS[] = {"", "now_playing_vinyl", "now_playing_cd", "now_playing_cassette"};

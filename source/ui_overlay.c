@@ -13,7 +13,6 @@
 #define KAIPLAYER_VERSION "dev"
 #endif
 
-#define DIM_ALPHA 160
 #define MENU_W 640
 #define MENU_ROW_H 48
 #define MENU_VISIBLE 9
@@ -27,9 +26,9 @@
 #define NS_PER_MINUTE 60000000000ull
 
 // Darkens the screen; a tap there closes the overlay.
+// uiDraw has already dimmed what's behind (see uiOverlayOpen); taps on it close the overlay.
 static void dimScreen(void)
 {
-    gfxBlendRect(0, 0, GFX_WIDTH, GFX_HEIGHT, COLOR_SHADOW, DIM_ALPHA);
     uiHitAdd(0, 0, GFX_WIDTH, GFX_HEIGHT, HIT_BACKDROP, 0);
 }
 
@@ -328,6 +327,12 @@ static void drawAbout(void)
     for (size_t i = 0; i < sizeof(LINES) / sizeof(LINES[0]); i++, line_y += 28)
         fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, line_y, LINES[i], COLOR_TEXT);
     fontDraw(FONT_BOLD, 18, x + PANEL_PAD, y + ABOUT_H - 46, "github.com/mizuiroame/kaiplayer", COLOR_ACCENT);
+}
+
+bool uiOverlayOpen(const App *app)
+{
+    return app->keyboard_open || app->menu.open || app->picker_open || app->eq_open || app->about_open ||
+           app->settings_open;
 }
 
 void uiDrawOverlay(const App *app, uint64_t now_ns)

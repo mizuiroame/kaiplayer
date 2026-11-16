@@ -87,6 +87,10 @@ void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns);
 
 // The + menu and the keyboard, drawn over everything (ui_overlay.c).
 void uiDrawOverlay(const App *app, uint64_t now_ns);
+// True while a menu, panel or keyboard is over the view. What's behind it is
+// drawn dimmed by UI_DIM_ALPHA, once, and kept still until the overlay closes.
+bool uiOverlayOpen(const App *app);
+#define UI_DIM_ALPHA 160
 
 // The Now Playing view (ui_now.c).
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns);

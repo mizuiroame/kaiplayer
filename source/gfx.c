@@ -35,12 +35,17 @@ static bool clip(int *x, int *y, int *w, int *h)
     return true;
 }
 
+// color over *p with opacity alpha (0-255), in 8.8 fixed point (no divisions:
+// text, edges and layers blend this way, many pixels a frame).
 static inline void blendPixel(uint32_t *p, Color color, unsigned alpha)
 {
-    if (alpha >= 255)
+    if (alpha >= 255) {
         *p = color;
-    else if (alpha > 0)
-        *p = gfxMix(*p, color, alpha);
+    } else if (alpha > 0) {
+        uint32_t a = alpha + (alpha >> 7), inv = 256 - a, q = *p;
+        *p = 0xFF000000u | (((q & 0xFF00FF) * inv + (color & 0xFF00FF) * a) >> 8 & 0xFF00FF) |
+             (((q & 0x00FF00) * inv + (color & 0x00FF00) * a) >> 8 & 0x00FF00);
+    }
 }
 
 void gfxClear(Color color)
@@ -77,12 +82,19 @@ void gfxFillRect(int x, int y, int w, int h, Color color)
 void gfxBlendRect(int x, int y, int w, int h, Color color, unsigned alpha)
 {
     toFb(&x, &y, &w, &h);
-    if (!clip(&x, &y, &w, &h))
+    if (!clip(&x, &y, &w, &h) || alpha == 0)
         return;
+    // Red and blue blended together, then green, in 8.8 fixed point: no
+    // divisions, as this covers the whole screen under menus.
+    uint32_t a = alpha >= 255 ? 256 : alpha, inv = 256 - a;
+    uint32_t rb = (color & 0xFF00FF) * a, g = (color & 0x00FF00) * a;
     for (int py = y; py < y + h; py++) {
         uint32_t *row = g_pixels + (size_t)py * g_stride + x;
-        for (int i = 0; i < w; i++)
-            blendPixel(&row[i], color, alpha);
+        for (int i = 0; i < w; i++) {
+            uint32_t p = row[i];
+            row[i] = 0xFF000000u | (((p & 0xFF00FF) * inv + rb) >> 8 & 0xFF00FF) |
+                     (((p & 0x00FF00) * inv + g) >> 8 & 0x00FF00);
+        }
     }
 }
 
@@ -332,6 +344,14 @@ void gfxCopyFrame(const uint32_t *pixels)
         return;
     for (int y = 0; y < GFX_FB_HEIGHT; y++)
         memcpy(g_pixels + (size_t)y * g_stride, pixels + (size_t)y * GFX_FB_WIDTH, GFX_FB_WIDTH * sizeof(uint32_t));
+}
+
+void gfxSaveFrame(uint32_t *pixels)
+{
+    if (!g_pixels)
+        return;
+    for (int y = 0; y < GFX_FB_HEIGHT; y++)
+        memcpy(pixels + (size_t)y * GFX_FB_WIDTH, g_pixels + (size_t)y * g_stride, GFX_FB_WIDTH * sizeof(uint32_t));
 }
 
 void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels)

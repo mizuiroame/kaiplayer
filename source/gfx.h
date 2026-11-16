@@ -70,8 +70,10 @@ void gfxBlitRounded(int x, int y, int size, int image_size, const uint32_t *pixe
 void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, const uint32_t *pixels, float angle);
 // Draws a w x h image with its own alpha (0xAABBGGRR) at framebuffer pixels x, y.
 void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels);
-// Copies a whole GFX_FB_WIDTH x GFX_FB_HEIGHT image to the screen (a background).
+// Copies a whole GFX_FB_WIDTH x GFX_FB_HEIGHT image to the screen (a background),
+// or the screen into one.
 void gfxCopyFrame(const uint32_t *pixels);
+void gfxSaveFrame(uint32_t *pixels);
 // Draws color through an 8-bit coverage mask (used for text). Unlike the
 // rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

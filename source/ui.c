@@ -1,6 +1,7 @@
 #include "ui.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ui_common.h"
@@ -365,6 +366,31 @@ void uiDrawScreenOff(void)
                  GFX_RGB(0x30, 0x30, 0x36));
 }
 
+// What's behind an open overlay, dimmed, and what it showed: drawn again
+// only when one of these changes (a setting, the song), not every frame.
+typedef struct {
+    Config config;
+    size_t track;
+    PlayerState state;
+    int view;
+    const void *cover;  // The art arrives after the song changes.
+} Frozen;
+
+static uint32_t *g_frozen;
+static Frozen g_frozen_key;
+static bool g_frozen_ok;
+
+static bool frozenStill(const App *app, const PlayerStatus *status, const UiTrack *track, Frozen *key)
+{
+    memset(key, 0, sizeof(*key));
+    key->config = app->config;
+    key->track = status->track;
+    key->state = status->state;
+    key->view = app->view;
+    key->cover = track->cover;
+    return g_frozen_ok && memcmp(key, &g_frozen_key, sizeof(*key)) == 0;
+}
+
 void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     UiTrack track;
@@ -375,6 +401,16 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
+    bool overlay = uiOverlayOpen(app);
+    Frozen key;
+    if (overlay && frozenStill(app, status, &track, &key)) {
+        gfxCopyFrame(g_frozen);
+        uiDrawOverlay(app, now_ns);
+        drawFooter(app);
+        coverCacheUnlock();
+        artworkUnlock();
+        return;
+    }
     const uint32_t *background = backgroundPixels();
     if (background)
         gfxCopyFrame(background);
@@ -399,6 +435,17 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
         drawMiniPlayer(app, status, &track, now_ns);
     }
     drawHeader(app, now_ns);
+    g_frozen_ok = false;
+    if (overlay) {
+        gfxBlendRect(0, 0, GFX_WIDTH, GFX_HEIGHT, COLOR_SHADOW, UI_DIM_ALPHA);
+        if (!g_frozen)
+            g_frozen = malloc((size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT * sizeof(uint32_t));
+        if (g_frozen) {
+            gfxSaveFrame(g_frozen);
+            g_frozen_key = key;
+            g_frozen_ok = true;
+        }
+    }
     uiDrawOverlay(app, now_ns);
     drawFooter(app);  // Over the dimmed screen, so the overlay's help reads well.
     coverCacheUnlock();
