@@ -97,6 +97,20 @@ void uiLoadSong(const char *path, UiSong *song)
         snprintf(song->title, sizeof(song->title), "%s", song->meta.title);
 }
 
+#define PLACEHOLDER_W 220
+
+void uiDrawSongTitle(const UiSong *song, FontFace face, int x, int y, int max_width, Color color)
+{
+    if (song->loaded) {
+        fontDrawClipped(face, TEXT_ROW, x, y, max_width, song->title, color);
+        return;
+    }
+    int w = fontTextWidth(face, TEXT_ROW, song->title);
+    w = w < PLACEHOLDER_W ? w : PLACEHOLDER_W;
+    // Light enough to show on the selected row too.
+    gfxFillRoundRect(x, y + 9, w < max_width ? w : max_width, 14, 7, gfxMix(COLOR_SURFACE_HI, COLOR_FAINT, 110));
+}
+
 void uiDrawSongColumns(const UiSong *song, int y)
 {
     if (!song->loaded)
@@ -125,8 +139,8 @@ void uiDrawTrackRow(const TrackRow *row)
         int number_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, digits);
         fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN + 46 - number_w, y + 11, digits, COLOR_FAINT);
     }
-    fontDrawClipped(row->current || row->selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
-                    COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), song.title, row->current ? COLOR_ACCENT : COLOR_TEXT);
+    uiDrawSongTitle(&song, row->current || row->selected ? FONT_BOLD : FONT_REGULAR, MARGIN + 66, y + 8,
+                    COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), row->current ? COLOR_ACCENT : COLOR_TEXT);
     uiDrawSongColumns(&song, y);
     uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, row->index, row->add_focused);
 }

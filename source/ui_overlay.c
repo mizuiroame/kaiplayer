@@ -3,6 +3,7 @@
 
 #include "settings.h"
 #include "theme.h"
+#include "ui_buttons.h"
 #include "ui_common.h"
 #include "ui_hit.h"
 
@@ -137,8 +138,10 @@ static void drawSettings(const App *app, uint64_t now_ns)
         if (editable) {
             gfxFillTriangleLeft(value_x - 22, row_y + 17, 10, 16, COLOR_DIM);
             gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 17, 10, 16, COLOR_DIM);
-            uiHitAdd(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6, HIT_SETTING, i);
+        } else if (selected) {  // About: A opens it.
+            uiDrawButton(value_x - 34, (float)row_y + 25.0f, "A", COLOR_SURFACE, COLOR_TEXT);
         }
+        uiHitAdd(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6, HIT_SETTING, i);
     }
     fontDrawClipped(FONT_REGULAR, 16, x + PANEL_PAD, y + h - 40, SETTINGS_W - 2 * PANEL_PAD,
                     "Open source (MIT)  ·  github.com/mizuiroame/kaiplayer", COLOR_FAINT);
@@ -244,6 +247,38 @@ static void drawEqualizer(const App *app)
     fontDraw(FONT_REGULAR, 16, x + PANEL_PAD, y + EQ_H - 42, "Hz  ·  +12 to -12 dB", COLOR_FAINT);
 }
 
+#define ABOUT_W 700
+#define ABOUT_H 470
+
+static void drawAbout(void)
+{
+    static const char *const LINES[] = {
+        "A music player for Switch 2 homebrew on kaiHEN.",
+        "Plays MP3, FLAC, Ogg Vorbis and WAV from your SD card, with",
+        "playlists, an equalizer, ReplayGain and album art.",
+        "",
+        "Free and open source under the MIT license.",
+        "Not affiliated with or endorsed by Nintendo.",
+    };
+    int x = (GFX_WIDTH - ABOUT_W) / 2, y = (GFX_HEIGHT - ABOUT_H) / 2;
+    dimScreen();
+    panel(x, y, ABOUT_W, ABOUT_H);
+    // A big note in the accent color, beside the name and version.
+    gfxFillRoundRect(x + PANEL_PAD, y + 32, 84, 84, 20, COLOR_SURFACE_HI);
+    uiDrawNoteIcon(x + PANEL_PAD + 18, y + 50, 48, COLOR_ACCENT);
+    int text_x = x + PANEL_PAD + 108;
+    fontDraw(FONT_BOLD, 34, text_x, y + 36, "KaiPlayer", COLOR_TEXT);
+    fontDraw(FONT_REGULAR, 20, text_x, y + 84, "Version " KAIPLAYER_VERSION, COLOR_DIM);
+
+    int line_y = y + 150;
+    fontDraw(FONT_REGULAR, 18, x + PANEL_PAD, line_y, "Made by", COLOR_DIM);
+    fontDraw(FONT_BOLD, 26, x + PANEL_PAD, line_y + 24, "Mizuiro", COLOR_ACCENT);
+    line_y += 82;
+    for (size_t i = 0; i < sizeof(LINES) / sizeof(LINES[0]); i++, line_y += 28)
+        fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, line_y, LINES[i], COLOR_TEXT);
+    fontDraw(FONT_BOLD, 18, x + PANEL_PAD, y + ABOUT_H - 46, "github.com/mizuiroame/kaiplayer", COLOR_ACCENT);
+}
+
 void uiDrawOverlay(const App *app, uint64_t now_ns)
 {
     if (app->keyboard_open)
@@ -252,6 +287,8 @@ void uiDrawOverlay(const App *app, uint64_t now_ns)
         drawMenu(&app->menu);
     else if (app->eq_open)
         drawEqualizer(app);
+    else if (app->about_open)
+        drawAbout();
     else if (app->settings_open)
         drawSettings(app, now_ns);
 }

@@ -223,7 +223,7 @@ close with **B**.
 | ReplayGain (even loudness) | Off (default), Track or Album |
 | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
 | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
-| About | The KaiPlayer version |
+| About | The KaiPlayer version; **A** shows more about the app and its author |
 
 **Sleep timer:** press **A** (or tap the row) to type the minutes on the
 number pad, or use ← → to change it by 5 minutes. **0** turns it off. When

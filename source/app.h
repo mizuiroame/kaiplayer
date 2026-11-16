@@ -98,6 +98,7 @@ typedef struct {
     bool settings_open;
     SettingRow settings_cursor;
     bool eq_open;               // The equalizer editor (over Settings).
+    bool about_open;            // About KaiPlayer (over Settings).
     int eq_band;                // Selected band in the editor.
     bool screen_off;            // Screen off while music plays.
     bool touch_wakes;           // The touch that woke the screen: ignore until released.

@@ -276,6 +276,11 @@ bool appHandleOverlay(App *app, uint64_t pressed)
         appHandleEqualizer(app, pressed);
         return true;
     }
+    if (app->about_open) {
+        if (pressed & (HidNpadButton_A | HidNpadButton_B | HidNpadButton_Plus))
+            app->about_open = false;  // Back to Settings.
+        return true;
+    }
     if (app->settings_open) {
         appHandleSettings(app, pressed);
         return true;

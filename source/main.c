@@ -206,7 +206,7 @@ static void saveSettings(App *app)
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open;
 }
 
 // Screen off: any button or touch brings it back, and that input does

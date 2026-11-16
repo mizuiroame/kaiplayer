@@ -18,7 +18,7 @@ static bool g_full_hd;  // Seen coordinates beyond 1280x720: scale them down.
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open;
 }
 
 static bool isOverlayTarget(HitKind kind)

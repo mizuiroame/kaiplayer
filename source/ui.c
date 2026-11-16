@@ -73,8 +73,11 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
         if (is_song)
             uiLoadSong(path, &song);
         int name_w = is_song ? COLUMN_ARTIST_X - 24 - (MARGIN + 44) : GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W;
-        fontDrawClipped(i == b->cursor || current ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8, name_w,
-                        is_song ? song.title : e->name, e->is_dir ? COLOR_FOLDER : current ? COLOR_ACCENT : COLOR_TEXT);
+        FontFace face = i == b->cursor || current ? FONT_BOLD : FONT_REGULAR;
+        if (is_song)
+            uiDrawSongTitle(&song, face, MARGIN + 44, y + 8, name_w, current ? COLOR_ACCENT : COLOR_TEXT);
+        else
+            fontDrawClipped(face, TEXT_ROW, MARGIN + 44, y + 8, name_w, e->name, COLOR_FOLDER);
         if (is_song)
             uiDrawSongColumns(&song, y);
         uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
@@ -314,6 +317,8 @@ static const char *footerHelp(const App *app)
     };
     if (app->keyboard_open)
         return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
+    if (app->about_open)
+        return "[A][B] back";
     if (app->eq_open)
         return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)

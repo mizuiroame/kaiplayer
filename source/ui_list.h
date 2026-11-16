@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "font.h"
 #include "gfx.h"
 #include "metacache.h"
 
@@ -49,6 +50,9 @@ typedef struct {
 } UiSong;
 
 void uiLoadSong(const char *path, UiSong *song);
+// The song's title, or, while its tags are still being read, a soft bar in
+// its place (so the file name doesn't flash before the title).
+void uiDrawSongTitle(const UiSong *song, FontFace face, int x, int y, int max_width, Color color);
 // The artist and album in their columns (empty until loaded).
 void uiDrawSongColumns(const UiSong *song, int y);
 // "Artist" and "Album" above the columns, on the subtitle line.
