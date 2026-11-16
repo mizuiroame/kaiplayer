@@ -457,7 +457,6 @@ followed by the file size.
 |---------|----------|
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
 | A file or folder doesn't appear | If its name has accents (á, ñ…), Japanese or other non-ASCII characters, rename it with plain letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
-| "N items hidden by the console" | That folder has files or folders with accents or other non-ASCII characters in their names, which Switch 2 can't list. Rename them (or upload with `tools/kaiupload.py`). |
 | "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This can happen with non-ASCII file names. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
 | No cover | The file has no embedded cover and its folder has no `cover.jpg` (or similar), or the image is larger than 4096×4096 or 8 MB. |

@@ -30,15 +30,10 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
         path_x += back_w + 12;
         path_w -= back_w + 12;
     }
-    char hidden[96];
-    bool has_hidden = app->hidden_count > 0 && strcmp(app->hidden_checked, b->path) == 0;
-    if (has_hidden)
-        snprintf(hidden, sizeof(hidden), "%ld item%s hidden by the console: accents in the name", app->hidden_count,
-                 app->hidden_count == 1 ? "" : "s");
-    bool warned = b->incomplete || has_hidden;
+    bool warned = b->incomplete;
     if (warned) {
-        // The console returned an error while listing, or left names out.
-        const char *WARNING = b->incomplete ? "Some items in this folder could not be read" : hidden;
+        // The console returned an error while listing: some names may be missing.
+        static const char WARNING[] = "Some items in this folder could not be read";
         int warning_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, WARNING);
         fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
         path_w -= warning_w + 24;

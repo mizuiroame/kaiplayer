@@ -121,8 +121,6 @@ typedef struct {
     View view;
     Browser browser;
     LibraryTab library;
-    char hidden_checked[UTIL_PATH_MAX];  // The folder hidden_count is for.
-    long hidden_count;          // Entries the console has but didn't list (non-ASCII names).
     History history;            // Plays, for Home.
     HomeTracker home_tracker;
     Home home;                  // Home's rows, from the catalog and history.

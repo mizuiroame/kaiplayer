@@ -46,7 +46,7 @@ bool browserOpen(Browser *b, const char *path)
         return false;
 
     BrowserEntry *entries = NULL;
-    size_t count = 0, capacity = 0, listed = 0;
+    size_t count = 0, capacity = 0;
     bool ok = true, incomplete = false;
     while (ok) {
         if (count >= BROWSER_MAX_ENTRIES) {
@@ -59,8 +59,6 @@ bool browserOpen(Browser *b, const char *path)
             incomplete = errno != 0;  // NULL with errno set is a read error, not the end.
             break;
         }
-        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
-            listed++;  // Hidden files count; "." and ".." aren't entries.
         if (entry->d_name[0] == '.')
             continue;
         bool is_dir = utilEntryIsDir(path, entry);
@@ -82,7 +80,6 @@ bool browserOpen(Browser *b, const char *path)
     b->count = count;
     b->cursor = 0;
     b->incomplete = incomplete;
-    b->listed = listed;
     return true;
 }
 
