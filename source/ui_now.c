@@ -11,6 +11,7 @@
 #define INFO_X 560
 #define INFO_W 640
 #define PROGRESS_Y 384
+#define PROGRESS_REST_ALPHA 70
 #define TRANSPORT_Y 476
 #define TOGGLES_Y 564
 #define BACKDROP_STRENGTH 110
@@ -50,7 +51,8 @@ static void drawProgress(const App *app, const PlayerStatus *status)
     if (fraction > 1.0)
         fraction = 1.0;
     int filled = (int)(INFO_W * fraction);
-    gfxFillRoundRect(INFO_X, PROGRESS_Y, INFO_W, 6, 3, COLOR_SURFACE_HI);
+    // The rest of the song: translucent white, so it shows over any cover tint.
+    gfxBlendRect(INFO_X, PROGRESS_Y + 1, INFO_W, 4, COLOR_TEXT, PROGRESS_REST_ALPHA);
     uiHitAdd(INFO_X - 12, PROGRESS_Y - 18, INFO_W + 24, 42, HIT_SEEK, 0);  // 12 px slack: app_touch.c
     if (filled > 0)
         gfxFillRoundRect(INFO_X, PROGRESS_Y, filled, 6, 3, COLOR_ACCENT);
