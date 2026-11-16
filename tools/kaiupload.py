@@ -10,6 +10,8 @@ changed. KaiPlayer still shows the real titles from the tags.
     python kaiupload.py 192.168.1.50 "G:/Music/Red Hot Chili Peppers" /music
     python kaiupload.py 192.168.1.50 "G:/Music/Album" /music --dry-run
 
+Run it from PowerShell or cmd: Git Bash turns "/music" into a Windows path.
+
 Names: accents are dropped (Canción -> Cancion, Ñandú -> Nandu); other
 characters such as Japanese become "_" (04 みずいろの雨.mp3 -> 04 _.mp3).
 Files already on the console with the same size are skipped, so an
@@ -43,22 +45,23 @@ def ascii_name(name: str) -> str:
     decomposed = unicodedata.normalize("NFKD", name.translate(PUNCTUATION))
     stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
     clean = SAFE.sub("_", stripped)
-    clean = re.sub(r"_+", "_", clean).strip(" .")
+    clean = re.sub(r"_+", "_", clean).strip(" ")
+    clean = clean.rstrip(".")  # A leading dot may be all that's left of the stem.
     stem, dot, ext = clean.rpartition(".")
-    if dot and not stem.strip("_ "):
+    if dot and not stem.strip("_ ."):
         clean = "track" + dot + ext  # Nothing readable was left.
     return clean or "untitled"
 
 
-def unique_names(names: list[str]) -> dict[str, str]:
+def unique_names(names: list[str], dirs: set[str] | None = None) -> dict[str, str]:
     """Maps each local name to an ASCII name, unique among its siblings."""
     taken: set[str] = set()
     result = {}
     for name in sorted(names):
         candidate = ascii_name(name)
         stem, dot, ext = candidate.rpartition(".")
-        if not dot:
-            stem, ext = candidate, ""
+        if not dot or (dirs and name in dirs):  # Folders have no extension.
+            stem, dot, ext = candidate, "", ""
         n = 2
         while candidate.lower() in taken:
             candidate = f"{stem} ({n}){dot}{ext}"
@@ -76,12 +79,16 @@ def remote_size(ftp: ftplib.FTP, path: str) -> int | None:
 
 
 def ensure_dir(ftp: ftplib.FTP | None, path: str) -> None:
+    """Creates path and any missing parents."""
     if ftp is None:
         return
-    try:
-        ftp.mkd(path)
-    except ftplib.error_perm:
-        pass  # Already there.
+    current = ""
+    for part in path.strip("/").split("/"):
+        current += "/" + part
+        try:
+            ftp.mkd(current)
+        except ftplib.error_perm:
+            pass  # Already there.
 
 
 def upload_tree(ftp: ftplib.FTP | None, local: Path, remote: str) -> tuple[int, int]:
@@ -89,7 +96,7 @@ def upload_tree(ftp: ftplib.FTP | None, local: Path, remote: str) -> tuple[int, 
     uploaded = skipped = 0
     ensure_dir(ftp, remote)
     entries = list(local.iterdir())
-    names = unique_names([e.name for e in entries])
+    names = unique_names([e.name for e in entries], {e.name for e in entries if e.is_dir()})
     for entry in sorted(entries, key=lambda e: e.name):
         target = posixpath.join(remote, names[entry.name])
         if entry.is_dir():
@@ -139,6 +146,7 @@ def main() -> int:
             ftp.connect(args.host, args.port, timeout=30)
             ftp.login(args.user, args.password)
             ftp.encoding = "utf-8"
+            ftp.voidcmd("TYPE I")  # Some servers only answer SIZE in binary mode.
             ensure_dir(ftp, args.remote)
             uploaded, skipped = upload_tree(ftp, args.local, remote)
     except (OSError, ftplib.Error) as e:

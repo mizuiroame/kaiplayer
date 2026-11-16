@@ -257,8 +257,9 @@ static void runLoop(App *app)
             waking = true;
         // The press that wakes the screen does nothing else: buttons only
         // act again once every button has been let go.
+        app->buttons_down = padGetButtonsDown(&pad);
         if (waking) {
-            waking = held != 0;
+            waking = (held & ~BUTTONS_STICKS) != 0;
             pressed = 0;
         }
         if (screen_off) {

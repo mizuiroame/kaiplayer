@@ -82,6 +82,7 @@ typedef struct {
     Config config;
     size_t queue_cursor;
     Focus focus;
+    uint64_t buttons_down;      // Pressed this frame, without auto-repeat.
     char playing_playlist[PLAYLIST_NAME_MAX + 1];  // Where the queue came from; empty for a folder.
     BarControl bar_control;     // Selected player bar control, with FOCUS_PLAYER.
     PlaylistsTab playlists;

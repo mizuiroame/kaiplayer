@@ -10,6 +10,10 @@
 // The right stick: up/down move a list by a page, left/right seek.
 #define BUTTONS_PAGE_UP HidNpadButton_StickRUp
 #define BUTTONS_PAGE_DOWN HidNpadButton_StickRDown
+// Stick directions, which drift and are never "let go" exactly.
+#define BUTTONS_STICKS (HidNpadButton_StickLLeft | HidNpadButton_StickLUp | HidNpadButton_StickLRight | \
+                        HidNpadButton_StickLDown | HidNpadButton_StickRLeft | HidNpadButton_StickRUp | \
+                        HidNpadButton_StickRRight | HidNpadButton_StickRDown)
 // Not a console button: appFocusFilter sets it when → presses the selected
 // row's button (add to a playlist, or remove from one).
 #define BUTTON_ROW_ACTION (1ull << 62)

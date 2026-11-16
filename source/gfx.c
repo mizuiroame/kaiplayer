@@ -265,6 +265,8 @@ void gfxBlit(int x, int y, int size, int image_size, const uint32_t *pixels)
 {
     int w = size, h = size;
     toFb(&x, &y, &w, &h);
+    if (image_size == gfxToFb(size))
+        w = h = image_size;  // Made for this size: copy it 1:1.
     int cx = x, cy = y, cw = w, ch = h;
     if (!pixels || image_size <= 0 || !clip(&cx, &cy, &cw, &ch))
         return;

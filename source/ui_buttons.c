@@ -25,7 +25,7 @@ static bool isShoulder(const char *key)
 
 static bool isDirection(const char *key)
 {
-    return strchr("<>^v", key[0]) != NULL;
+    return key[0] && strchr("<>^v", key[0]) != NULL;
 }
 
 int uiButtonWidth(const char *key)

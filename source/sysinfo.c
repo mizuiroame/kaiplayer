@@ -1,6 +1,5 @@
 #include "sysinfo.h"
 
-#include <stdio.h>
 #include <time.h>
 
 #include <switch.h>
@@ -50,8 +49,6 @@ static void readBattery(SysInfo *info)
     bool has_charger = R_SUCCEEDED(psmGetChargerType(&charger));
     bool has_supplied = R_SUCCEEDED(psmIsEnoughPowerSupplied(&supplied));
     info->charging = (has_charger && charger != PsmChargerType_Unconnected) || (has_supplied && supplied);
-    snprintf(info->power_raw, sizeof(info->power_raw), "charger %d, supplied %d", has_charger ? (int)charger : -1,
-             has_supplied ? (int)supplied : -1);
 }
 
 void sysinfoGet(SysInfo *info, uint64_t now_ns)

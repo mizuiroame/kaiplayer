@@ -11,7 +11,6 @@ typedef struct {
     bool has_battery;
     int battery_percent;
     bool charging;
-    char power_raw[64];  // What each power query answered, for bug reports (About).
 } SysInfo;
 
 void sysinfoInit(void);
