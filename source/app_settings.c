@@ -5,7 +5,9 @@
 
 #include "app.h"
 #include "app_buttons.h"
+#include "background.h"
 #include "keyboard_system.h"
+#include "nowstyle.h"
 #include "player.h"
 #include "resume.h"
 #include "screen.h"
@@ -80,6 +82,28 @@ static void stepEqualizer(App *app, int delta)
         app->config.eq_preset = index - 1;
 }
 
+// Steps through "the cover colors" and the images in <music>/Backgrounds.
+static void stepBackground(App *app, int delta)
+{
+    static char names[BACKGROUND_MAX_IMAGES][BACKGROUND_NAME_MAX];
+    int count = (int)backgroundList(app->config.library, names, BACKGROUND_MAX_IMAGES);
+    if (count == 0) {
+        app->config.background[0] = '\0';
+        appToast(app, app->config.library[0] ? "Put JPEG or PNG images in a Backgrounds folder in your music folder."
+                                             : "Choose your music folder first.");
+        return;
+    }
+    int index = 0;  // 0 is the cover colors, then the images.
+    for (int i = 0; i < count; i++) {
+        if (strcmp(names[i], app->config.background) == 0)
+            index = i + 1;
+    }
+    index = ((index + delta) % (count + 1) + count + 1) % (count + 1);
+    snprintf(app->config.background, sizeof(app->config.background), "%s", index ? names[index - 1] : "");
+    if (!backgroundLoad(app->config.library, app->config.background))
+        appToast(app, "Could not read that image (JPEG or PNG, up to 4096 x 4096).");
+}
+
 void appChangeSetting(App *app, SettingRow row, int delta)
 {
     switch (row) {
@@ -109,6 +133,14 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         break;
     case SETTING_ACCENT:
         app->config.accent = ((app->config.accent + delta) % THEME_ACCENT_COUNT + THEME_ACCENT_COUNT) % THEME_ACCENT_COUNT;
+        configSave(&app->config);
+        break;
+    case SETTING_NOW_STYLE:
+        app->config.now_style = ((app->config.now_style + delta) % NOW_STYLE_COUNT + NOW_STYLE_COUNT) % NOW_STYLE_COUNT;
+        configSave(&app->config);
+        break;
+    case SETTING_BACKGROUND:
+        stepBackground(app, delta);
         configSave(&app->config);
         break;
     case SETTING_SCREEN_OFF:

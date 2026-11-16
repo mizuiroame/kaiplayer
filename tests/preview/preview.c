@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/stat.h>
 
 #include "app.h"
 #include "artwork.h"
@@ -15,6 +17,8 @@
 #include "player.h"
 #include "theme.h"
 #include "ui.h"
+#include "ui_nowstyle.h"
+#include "nowstyle.h"
 
 static const char *const TRACKS[] = {
     "sdmc:/Music/Aurora Fields/01 - Morning Light.flac",
@@ -390,6 +394,79 @@ int main(int argc, char **argv)
     app.view = VIEW_NOW_PLAYING;
     snprintf(app.playing_playlist, sizeof(app.playing_playlist), "%s", "Road Trip 2026");
     render(argv[1], "now_playing", &app, &status);
+    for (int i = 0; i < 6; i++)  // Turn the discs a little, so the previews show them turned.
+        uiNowStyleSpin(true, 1000000000ull + i * 200000000ull);
+    if (getenv("KAIPLAYER_BENCH")) {  // Milliseconds to draw a Now Playing frame, per style.
+        static uint32_t frame[GFX_FB_WIDTH * GFX_FB_HEIGHT];
+        gfxSetTarget(frame, GFX_FB_WIDTH);
+        for (int style = 0; style < NOW_STYLE_COUNT; style++) {
+            app.config.now_style = style;
+            uiDraw(&app, &status, 0);  // Builds the cached layers.
+            struct timespec t0, t1;
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+            for (int i = 0; i < 60; i++)
+                uiDraw(&app, &status, 0);
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            printf("style %d: %.2f ms per frame\n", style,
+                   ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
+        }
+        app.config.now_style = NOW_STYLE_CD;  // With the Settings panel open over it.
+        app.settings_open = true;
+        struct timespec t0, t1;
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+        for (int i = 0; i < 60; i++)
+            uiDraw(&app, &status, 0);
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        printf("CD with Settings open: %.2f ms per frame\n",
+               ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
+        app.settings_open = false;
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+        for (int i = 0; i < 60; i++)
+            gfxBlendRect(0, 0, GFX_WIDTH, GFX_HEIGHT, 0xFF000000u, 150);
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        printf("full-screen dim alone: %.2f ms\n",
+               ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
+        gfxSetTarget(NULL, 0);
+    }
+    static const char *const STYLE_SHOTS[] = {"", "now_playing_vinyl", "now_playing_cd", "now_playing_cassette"};
+    for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {
+        app.config.now_style = style;
+        render(argv[1], STYLE_SHOTS[style], &app, &status);
+    }
+    // A background picture: the sample cover, as if it were in Music/Backgrounds.
+    if (argc > 2) {
+        char folder[512], cover[512];
+        snprintf(folder, sizeof(folder), "%s/bg", argv[1]);
+        mkdir(folder, 0777);
+        snprintf(folder, sizeof(folder), "%s/bg/" BACKGROUND_FOLDER_NAME, argv[1]);
+        mkdir(folder, 0777);
+        snprintf(cover, sizeof(cover), "%s/cover.jpg", folder);
+        FILE *in = fopen("assets/cover.jpg", "rb"), *out = fopen(cover, "wb");
+        int ch;
+        while (in && out && (ch = fgetc(in)) != EOF)
+            fputc(ch, out);
+        if (in) fclose(in);
+        if (out) fclose(out);
+        snprintf(folder, sizeof(folder), "%s/bg", argv[1]);
+        if (backgroundLoad(folder, "cover.jpg")) {
+            render(argv[1], "now_playing_background", &app, &status);
+            app.config.now_style = NOW_STYLE_COVER;
+            app.view = VIEW_QUEUE;
+            render(argv[1], "queue_background", &app, &status);
+            app.view = VIEW_NOW_PLAYING;
+            backgroundLoad(folder, "");
+        }
+    }
+    for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {  // Under Settings: drawn, then kept.
+        static const char *const FIRST[] = {"", "settings_vinyl", "settings_cd", "settings_cassette"};
+        static const char *const KEPT[] = {"", "settings_vinyl_kept", "settings_cd_kept", "settings_cassette_kept"};
+        app.config.now_style = style;
+        app.settings_open = true;
+        render(argv[1], FIRST[style], &app, &status);
+        render(argv[1], KEPT[style], &app, &status);
+        app.settings_open = false;
+    }
+    app.config.now_style = NOW_STYLE_COVER;
     app.playing_playlist[0] = '\0';
     status.repeat = REPEAT_ONE;
     status.shuffle = false;

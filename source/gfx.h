@@ -64,6 +64,21 @@ void gfxBlit(int x, int y, int size, int image_size, const uint32_t *pixels);
 // The same with rounded corners (radius; size / 2 makes a circle). Images
 // not made for this size fall back to gfxBlit's square.
 void gfxBlitRounded(int x, int y, int size, int image_size, const uint32_t *pixels, int radius);
+// Draws an image (turned by angle, radians clockwise) into the ring between
+// hole and radius around (cx, cy), its center at the center and its edges at
+// the edge: a record's label, a CD's print. Layout units.
+void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, const uint32_t *pixels, float angle);
+// Draws a w x h image with its own alpha (0xAABBGGRR) at framebuffer pixels x, y.
+void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels);
+// Copies a whole GFX_FB_WIDTH x GFX_FB_HEIGHT image to the screen (a background),
+// or the screen into one.
+void gfxCopyFrame(const uint32_t *pixels);
+void gfxSaveFrame(uint32_t *pixels);
+// Copies w x h framebuffer pixels at x, y into out (off-screen ones as 0).
+void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out);
+// Limits drawing to a layout rectangle (not gfxBlitDisc or text), until gfxResetClip.
+void gfxSetClip(int x, int y, int w, int h);
+void gfxResetClip(void);
 // Draws color through an 8-bit coverage mask (used for text). Unlike the
 // rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

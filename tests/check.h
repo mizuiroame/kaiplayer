@@ -28,3 +28,4 @@ void testMeta(void);
 void testCatalog(void);
 void testHome(void);
 void testDsd(void);
+void testStyles(void);

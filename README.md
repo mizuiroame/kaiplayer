@@ -11,6 +11,13 @@ their tags.
 |-------------|---------|-------|
 | ![Now Playing](docs/screenshots/now_playing.png) | ![Library](docs/screenshots/library.png) | ![Queue](docs/screenshots/queue.png) |
 
+Now Playing can also show the song on a turning **record**, a **CD** or a
+**cassette**, and every view can have a **picture of yours** behind it:
+
+| Vinyl record | CD | Cassette |
+|--------------|----|----------|
+| ![Vinyl record](docs/screenshots/now_playing_vinyl.png) | ![CD](docs/screenshots/now_playing_cd.png) | ![Cassette](docs/screenshots/now_playing_cassette.png) |
+
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
 
@@ -291,6 +298,8 @@ close with **B**.
 | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
 | ReplayGain (even loudness) | Off (default), Track, Album or Auto |
 | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
+| Now Playing style | Cover (default), Vinyl record, CD or Cassette |
+| Background | Cover colors (default), or a picture from your `Backgrounds` folder |
 | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
 | About | The KaiPlayer version; **A** shows more about the app and its author |
 
@@ -331,6 +340,27 @@ next song.
 **Accent color:** the color of the highlights, buttons and progress bar.
 **From cover** takes a bright version of the most prominent color in the
 playing song's album art; black-and-white covers give a silver accent.
+
+**Now Playing style:** how Now Playing shows the song.
+
+| Style | What you see |
+|-------|--------------|
+| **Cover** | The album art, large |
+| **Vinyl record** | A black record with the album art as its label, turning at 33⅓ rpm, with the tonearm on it |
+| **CD** | A CD with the album art printed on it, turning |
+| **Cassette** | A cassette with the title on its label, the artist and album written on its lines, the album art and the song's length beside the window; its reels turn, and the tape winds from the left reel to the right one as the song plays |
+
+They turn only while a song plays, and stop when you pause.
+
+**Background:** instead of the dark background tinted with the album's
+colors, show a picture of yours behind every view. Put JPEG or PNG images (up
+to 4096 × 4096 pixels) in a folder called **Backgrounds** inside your music
+folder (for example `sdmc:/Music/Backgrounds/`), then choose one here with
+← →; **Cover colors** goes back to the tinted background. KaiPlayer crops the
+picture to fill the screen, blurs it and darkens it, so text stays readable
+over it. Use plain file names (no accents): the console hides the others.
+
+![A background picture behind Now Playing](docs/screenshots/background.png)
 
 **Screen off while playing:** after that long without touching the console
 while music plays, the screen turns off to save battery and the music keeps
@@ -601,6 +631,9 @@ source/
   gfx_switch.c    the console framebuffer
   font.c          anti-aliased text with the embedded fonts
   ui*.c           the tabs, the menu and the keyboard
+  ui_nowstyle.c   Now Playing's record and CD (ui_cassette.c: the cassette)
+  background.c    the background picture: crop, blur and darken
+  plainname.c     plain file names the console can list (playlists)
   catalog*.c      the library: artists, albums and songs from the tags (and its cache)
   covercache.c    album covers for Home and the album rows
   history.c home.c  plays, and the Home tab's rows

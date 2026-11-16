@@ -5,6 +5,7 @@
 
 static uint32_t *g_pixels;
 static uint32_t g_stride;  // In pixels.
+static int g_clip_x0, g_clip_y0, g_clip_x1 = GFX_FB_WIDTH, g_clip_y1 = GFX_FB_HEIGHT;  // Framebuffer pixels.
 
 void gfxSetTarget(uint32_t *pixels, uint32_t stride)
 {
@@ -26,21 +27,26 @@ Color gfxMix(Color a, Color b, unsigned t)
 // Clips a framebuffer rectangle to the screen. False if nothing is left.
 static bool clip(int *x, int *y, int *w, int *h)
 {
-    int x0 = *x < 0 ? 0 : *x, y0 = *y < 0 ? 0 : *y;
-    int x1 = *x + *w > GFX_FB_WIDTH ? GFX_FB_WIDTH : *x + *w;
-    int y1 = *y + *h > GFX_FB_HEIGHT ? GFX_FB_HEIGHT : *y + *h;
+    int x0 = *x < g_clip_x0 ? g_clip_x0 : *x, y0 = *y < g_clip_y0 ? g_clip_y0 : *y;
+    int x1 = *x + *w > g_clip_x1 ? g_clip_x1 : *x + *w;
+    int y1 = *y + *h > g_clip_y1 ? g_clip_y1 : *y + *h;
     if (!g_pixels || x1 <= x0 || y1 <= y0)
         return false;
     *x = x0, *y = y0, *w = x1 - x0, *h = y1 - y0;
     return true;
 }
 
+// color over *p with opacity alpha (0-255), in 8.8 fixed point (no divisions:
+// text, edges and layers blend this way, many pixels a frame).
 static inline void blendPixel(uint32_t *p, Color color, unsigned alpha)
 {
-    if (alpha >= 255)
+    if (alpha >= 255) {
         *p = color;
-    else if (alpha > 0)
-        *p = gfxMix(*p, color, alpha);
+    } else if (alpha > 0) {
+        uint32_t a = alpha + (alpha >> 7), inv = 256 - a, q = *p;
+        *p = 0xFF000000u | (((q & 0xFF00FF) * inv + (color & 0xFF00FF) * a) >> 8 & 0xFF00FF) |
+             (((q & 0x00FF00) * inv + (color & 0x00FF00) * a) >> 8 & 0x00FF00);
+    }
 }
 
 void gfxClear(Color color)
@@ -77,12 +83,19 @@ void gfxFillRect(int x, int y, int w, int h, Color color)
 void gfxBlendRect(int x, int y, int w, int h, Color color, unsigned alpha)
 {
     toFb(&x, &y, &w, &h);
-    if (!clip(&x, &y, &w, &h))
+    if (!clip(&x, &y, &w, &h) || alpha == 0)
         return;
+    // Red and blue blended together, then green, in 8.8 fixed point: no
+    // divisions, as this covers the whole screen under menus.
+    uint32_t a = alpha >= 255 ? 256 : alpha, inv = 256 - a;
+    uint32_t rb = (color & 0xFF00FF) * a, g = (color & 0x00FF00) * a;
     for (int py = y; py < y + h; py++) {
         uint32_t *row = g_pixels + (size_t)py * g_stride + x;
-        for (int i = 0; i < w; i++)
-            blendPixel(&row[i], color, alpha);
+        for (int i = 0; i < w; i++) {
+            uint32_t p = row[i];
+            row[i] = 0xFF000000u | (((p & 0xFF00FF) * inv + rb) >> 8 & 0xFF00FF) |
+                     (((p & 0x00FF00) * inv + g) >> 8 & 0x00FF00);
+        }
     }
 }
 
@@ -323,5 +336,135 @@ void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, C
         uint32_t *dst = g_pixels + (size_t)(cy + row) * g_stride + cx;
         for (int i = 0; i < cw; i++)
             blendPixel(&dst[i], color, m[i]);
+    }
+}
+
+void gfxCopyFrame(const uint32_t *pixels)
+{
+    if (!g_pixels)
+        return;
+    for (int y = 0; y < GFX_FB_HEIGHT; y++)
+        memcpy(g_pixels + (size_t)y * g_stride, pixels + (size_t)y * GFX_FB_WIDTH, GFX_FB_WIDTH * sizeof(uint32_t));
+}
+
+void gfxSetClip(int x, int y, int w, int h)
+{
+    toFb(&x, &y, &w, &h);
+    g_clip_x0 = x < 0 ? 0 : x;
+    g_clip_y0 = y < 0 ? 0 : y;
+    g_clip_x1 = x + w > GFX_FB_WIDTH ? GFX_FB_WIDTH : x + w;
+    g_clip_y1 = y + h > GFX_FB_HEIGHT ? GFX_FB_HEIGHT : y + h;
+}
+
+void gfxResetClip(void)
+{
+    g_clip_x0 = g_clip_y0 = 0;
+    g_clip_x1 = GFX_FB_WIDTH;
+    g_clip_y1 = GFX_FB_HEIGHT;
+}
+
+void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out)
+{
+    for (int py = 0; py < h; py++) {
+        for (int px = 0; px < w; px++) {
+            int sx = x + px, sy = y + py;
+            bool inside = g_pixels && sx >= 0 && sy >= 0 && sx < GFX_FB_WIDTH && sy < GFX_FB_HEIGHT;
+            out[(size_t)py * w + px] = inside ? g_pixels[(size_t)sy * g_stride + sx] | 0xFF000000u : 0;
+        }
+    }
+}
+
+void gfxSaveFrame(uint32_t *pixels)
+{
+    if (!g_pixels)
+        return;
+    for (int y = 0; y < GFX_FB_HEIGHT; y++)
+        memcpy(pixels + (size_t)y * GFX_FB_WIDTH, g_pixels + (size_t)y * g_stride, GFX_FB_WIDTH * sizeof(uint32_t));
+}
+
+void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels)
+{
+    int cx = x, cy = y, cw = w, ch = h;
+    if (!clip(&cx, &cy, &cw, &ch))
+        return;
+    for (int py = cy; py < cy + ch; py++) {
+        const uint32_t *src = pixels + (size_t)(py - y) * w + (cx - x);
+        uint32_t *row = g_pixels + (size_t)py * g_stride + cx;
+        for (int i = 0; i < cw; i++)
+            blendPixel(&row[i], src[i] | 0xFF000000u, src[i] >> 24);
+    }
+}
+
+// The pixel at (u, v) in 16.16 fixed point, blending its four neighbours.
+static uint32_t sampleBilinear(const uint32_t *pixels, int size, int32_t u, int32_t v)
+{
+    int x = u >> 16, y = v >> 16;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x > size - 2) x = size - 2;
+    if (y > size - 2) y = size - 2;
+    uint32_t fx = (uint32_t)(u >> 8) & 0xFF, fy = (uint32_t)(v >> 8) & 0xFF;
+    const uint32_t *p = pixels + (size_t)y * size + x;
+    uint32_t a = p[0], b = p[1], c = p[size], d = p[size + 1];
+    uint32_t rb = ((a & 0xFF00FF) * (256 - fx) + (b & 0xFF00FF) * fx) >> 8 & 0xFF00FF;
+    uint32_t g = ((a & 0xFF00) * (256 - fx) + (b & 0xFF00) * fx) >> 8 & 0xFF00;
+    uint32_t rb2 = ((c & 0xFF00FF) * (256 - fx) + (d & 0xFF00FF) * fx) >> 8 & 0xFF00FF;
+    uint32_t g2 = ((c & 0xFF00) * (256 - fx) + (d & 0xFF00) * fx) >> 8 & 0xFF00;
+    rb = (rb * (256 - fy) + rb2 * fy) >> 8 & 0xFF00FF;
+    g = (g * (256 - fy) + g2 * fy) >> 8 & 0xFF00;
+    return 0xFF000000u | rb | g;
+}
+
+// The part of a row inside a ring: from x0 to x1 (exclusive), clipped.
+static bool ringSpan(float cx, float dy, float outer, int *x0, int *x1)
+{
+    float reach = outer * outer - dy * dy;
+    if (reach < 0.0f)
+        return false;
+    float half = sqrtf(reach);
+    *x0 = (int)floorf(cx - half) - 1;
+    *x1 = (int)ceilf(cx + half) + 1;
+    if (*x0 < 0) *x0 = 0;
+    if (*x1 > GFX_FB_WIDTH) *x1 = GFX_FB_WIDTH;
+    return *x0 < *x1;
+}
+
+void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, const uint32_t *pixels, float angle)
+{
+    if (!g_pixels || !pixels || image_size < 2)
+        return;
+    cx *= GFX_SCALE, cy *= GFX_SCALE, radius *= GFX_SCALE, hole *= GFX_SCALE;
+    // The image's center at the disc's center, its edge at the disc's edge, turned by angle.
+    // Positions step in 16.16 fixed point; only pixels near an edge work out their coverage.
+    float scale = image_size / (2.0f * radius), c = cosf(angle) * scale, s = sinf(angle) * scale;
+    float half = image_size / 2.0f - 0.5f;
+    float solid_out = (radius - 0.5f) * (radius - 0.5f), solid_in = (hole + 0.5f) * (hole + 0.5f);
+    float edge_out = (radius + 0.5f) * (radius + 0.5f), edge_in = hole > 0.5f ? (hole - 0.5f) * (hole - 0.5f) : 0.0f;
+    int32_t du = (int32_t)(c * 65536.0f), dv = (int32_t)(-s * 65536.0f);
+    int y0 = (int)floorf(cy - radius) - 1, y1 = (int)ceilf(cy + radius) + 1;
+    if (y0 < 0) y0 = 0;
+    if (y1 > GFX_FB_HEIGHT) y1 = GFX_FB_HEIGHT;
+    for (int py = y0; py < y1; py++) {
+        float dy = py + 0.5f - cy;
+        int x0, x1;
+        if (!ringSpan(cx, dy, radius + 0.5f, &x0, &x1))
+            continue;
+        float dx = x0 + 0.5f - cx;
+        int32_t u = (int32_t)((half + c * dx + s * dy) * 65536.0f);
+        int32_t v = (int32_t)((half - s * dx + c * dy) * 65536.0f);
+        uint32_t *row = g_pixels + (size_t)py * g_stride;
+        for (int px = x0; px < x1; px++, dx += 1.0f, u += du, v += dv) {
+            float d2 = dx * dx + dy * dy;
+            if (d2 >= edge_out || d2 <= edge_in)
+                continue;
+            uint32_t color = sampleBilinear(pixels, image_size, u, v);
+            if (d2 <= solid_out && d2 >= solid_in) {
+                row[px] = color;
+                continue;
+            }
+            float d = sqrtf(d2);
+            float cover = clampf(radius - d + 0.5f, 0.0f, 1.0f) * clampf(d - hole + 0.5f, 0.0f, 1.0f);
+            blendPixel(&row[px], color, (unsigned)(cover * 255.0f));
+        }
     }
 }
