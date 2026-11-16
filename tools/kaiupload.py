@@ -29,9 +29,18 @@ from pathlib import Path
 SAFE = re.compile(r"[^A-Za-z0-9 _.,()'&!+\-\[\]]+")
 
 
+# Typographic punctuation with a plain ASCII look-alike.
+PUNCTUATION = str.maketrans({
+    "‘": "'", "’": "'", "‚": "'", "′": "'",
+    "“": "'", "”": "'", "„": "'", "«": "'", "»": "'",
+    "‐": "-", "‑": "-", "‒": "-", "–": "-", "—": "-",
+    "…": "...", "¿": "", "¡": "",
+})
+
+
 def ascii_name(name: str) -> str:
     """An ASCII version of a file or folder name."""
-    decomposed = unicodedata.normalize("NFKD", name)
+    decomposed = unicodedata.normalize("NFKD", name.translate(PUNCTUATION))
     stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
     clean = SAFE.sub("_", stripped)
     clean = re.sub(r"_+", "_", clean).strip(" .")
