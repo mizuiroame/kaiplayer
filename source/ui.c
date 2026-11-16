@@ -291,8 +291,8 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     int time_x = GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line);
     fontDraw(FONT_REGULAR, 20, time_x, MINI_Y + 14, line, COLOR_TEXT);
 
-    char format[32];  // "FLAC 24/96" before the time, in a quiet pill.
-    decoderFormatLabel(&status->format, true, format, sizeof(format));
+    char format[48];  // "FLAC · 24-bit · 96 kHz" before the time, in a quiet pill.
+    decoderFormatLabel(&status->format, format, sizeof(format));
     if (format[0]) {
         int w = fontTextWidth(FONT_BOLD, 13, format) + 16;
         gfxFillRoundRect(time_x - w - 12, MINI_Y + 15, w, 22, 11, COLOR_SURFACE_HI);

@@ -76,23 +76,22 @@ static void drawBackdrop(const UiTrack *track)
     gfxGradientV(0, 0, GFX_WIDTH, CONTENT_BOTTOM, gfxMix(COLOR_BG, tint, strength), COLOR_BG);
 }
 
-// The file's format beside the heading, in a quiet pill: "FLAC · 24-bit · 96 kHz".
-static void drawFormat(const PlayerStatus *status, int x)
+// The file's format in a quiet pill above the progress bar's right end, over
+// the song's length: "FLAC · 24-bit · 96 kHz".
+static void drawFormat(const PlayerStatus *status)
 {
     char label[48];
-    decoderFormatLabel(&status->format, false, label, sizeof(label));
+    decoderFormatLabel(&status->format, label, sizeof(label));
     if (!label[0])
         return;
-    int w = fontTextWidth(FONT_BOLD, 13, label) + 20;
-    gfxFillRoundRect(x, 146, w, 24, 12, COLOR_SURFACE_HI);
-    fontDrawMiddle(FONT_BOLD, 13, x + 10, 158.0f, label, COLOR_DIM);
+    int w = fontTextWidth(FONT_BOLD, 13, label) + 20, x = INFO_X + INFO_W - w;
+    gfxFillRoundRect(x, PROGRESS_Y - 36, w, 24, 12, COLOR_SURFACE_HI);
+    fontDrawMiddle(FONT_BOLD, 13, x + 10, PROGRESS_Y - 24.0f, label, COLOR_DIM);
 }
 
 static void drawInfo(const PlayerStatus *status, const UiTrack *track, const char *playlist)
 {
-    const char *heading = status->state == PLAYER_PAUSED ? "PAUSED" : "NOW PLAYING";
-    fontDraw(FONT_BOLD, 15, INFO_X, 150, heading, COLOR_DIM);
-    drawFormat(status, INFO_X + fontTextWidth(FONT_BOLD, 15, heading) + 14);
+    fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? "PAUSED" : "NOW PLAYING", COLOR_DIM);
     fontDrawClipped(FONT_BOLD, 44, INFO_X, 172, INFO_W, track->title, track->has_track ? COLOR_TEXT : COLOR_DIM);
     const char *artist = track->artist[0] ? track->artist : "Unknown artist";
     if (track->has_track)
@@ -205,6 +204,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
     }
     drawInfo(status, track, app->playing_playlist);
     drawProgress(app, status);
+    drawFormat(status);
     drawTransport(status);
     drawToggles(status, app->focus == FOCUS_ADD);
     if (app->toast[0] && now_ns < app->toast_until_ns)

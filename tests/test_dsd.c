@@ -72,10 +72,10 @@ static void checkRejects(void)
     CHECK(decoderOpen(path) == NULL);
 }
 
-static bool label(const AudioFormat *f, bool compact, const char *expected)
+static bool label(const AudioFormat *f, const char *expected)
 {
     char out[48];
-    decoderFormatLabel(f, compact, out, sizeof(out));
+    decoderFormatLabel(f, out, sizeof(out));
     return strcmp(out, expected) == 0;
 }
 
@@ -100,10 +100,10 @@ static void testFormats(void)
     checkFormat(FIXTURES "/tone.dsf", "DSD64", 2822400, 0);
     checkFormat(FIXTURES "/tone.dff", "DSD64", 2822400, 0);
     AudioFormat flac = {"FLAC", 96000, 24}, mp3 = {"MP3", 44100, 0}, dsd = {"DSD128", 5644800, 0}, none = {"", 0, 0};
-    CHECK(label(&flac, false, "FLAC · 24-bit · 96 kHz") && label(&flac, true, "FLAC 24/96"));
-    CHECK(label(&mp3, false, "MP3 · 44.1 kHz") && label(&mp3, true, "MP3 44.1"));
-    CHECK(label(&dsd, false, "DSD128 · 5.6 MHz") && label(&dsd, true, "DSD128"));
-    CHECK(label(&none, false, "") && label(&none, true, ""));
+    CHECK(label(&flac, "FLAC · 24-bit · 96 kHz"));
+    CHECK(label(&mp3, "MP3 · 44.1 kHz"));
+    CHECK(label(&dsd, "DSD128 · 5.6 MHz"));
+    CHECK(label(&none, ""));
 }
 
 void testDsd(void)

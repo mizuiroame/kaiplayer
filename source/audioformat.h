@@ -12,6 +12,5 @@ typedef struct {
     unsigned bits;         // Per sample for PCM; 0 for lossy formats and DSD.
 } AudioFormat;
 
-// "FLAC · 24-bit · 96 kHz", "MP3 · 44.1 kHz", "DSD64 · 2.8 MHz"; with
-// compact, "FLAC 24/96", "MP3 44.1", "DSD64". Empty for no format.
-void decoderFormatLabel(const AudioFormat *f, bool compact, char *out, size_t size);
+// "FLAC · 24-bit · 96 kHz", "MP3 · 44.1 kHz", "DSD64 · 2.8 MHz". Empty for no format.
+void decoderFormatLabel(const AudioFormat *f, char *out, size_t size);
