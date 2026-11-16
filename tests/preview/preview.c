@@ -49,6 +49,15 @@ bool playerQueueTrack(size_t pos, size_t *track)
     return true;
 }
 
+// Fake tags for the list columns: songs in "Aurora Fields" have an album.
+bool metaLookup(const char *path, char *artist, size_t artist_size, char *album, size_t album_size)
+{
+    bool aurora = strstr(path, "Aurora") != NULL;
+    snprintf(artist, artist_size, "%s", aurora ? "Aurora Fields" : strstr(path, "Night") ? "The Night Drive Band" : "");
+    snprintf(album, album_size, "%s", aurora ? "Paper Boats & Other Stories" : "");
+    return true;
+}
+
 bool screenHasBacklightControl(void)
 {
     return true;

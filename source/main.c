@@ -12,6 +12,7 @@
 #include "font.h"
 #include "gfx.h"
 #include "input.h"
+#include "meta.h"
 #include "player.h"
 #include "screen.h"
 #include "sysinfo.h"
@@ -297,6 +298,7 @@ int main(int argc, char **argv)
         return 1;
     }
     artworkInit();
+    metaInit();
     sysinfoInit();
     screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
@@ -315,6 +317,7 @@ int main(int argc, char **argv)
         appletSetMediaPlaybackState(false);
         playerExit();
     }
+    metaExit();
     artworkExit();
     sysinfoExit();
     screenExit();

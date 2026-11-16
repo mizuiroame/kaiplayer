@@ -19,7 +19,7 @@
 
 static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue", "Now Playing"};
 
-static void drawBrowser(const App *app)
+static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     const Browser *b = &app->browser;
     int path_x = MARGIN, path_w = GFX_WIDTH - 2 * MARGIN;
@@ -37,11 +37,21 @@ static void drawBrowser(const App *app)
         fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
         path_w -= warning_w + 24;
     }
+    bool has_songs = false;
+    for (size_t i = 0; i < b->count && !has_songs; i++)
+        has_songs = !b->entries[i].is_dir;
+    if (has_songs && !b->incomplete) {
+        uiDrawColumnHeaders();
+        path_w = COLUMN_ARTIST_X - 24 - path_x;
+    }
     fontDrawClipped(FONT_REGULAR, TEXT_SMALL, path_x, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
     if (b->count == 0) {
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, "This folder has no subfolders or music.", COLOR_DIM);
         return;
     }
+    char playing[UTIL_PATH_MAX] = "", path[UTIL_PATH_MAX];
+    if (status->state != PLAYER_STOPPED)
+        playerTrackPath(status->track, playing, sizeof(playing));
     size_t first = uiFirstVisible(b->cursor, b->count);
     uiHitListArea();
     for (size_t i = first; i < b->count && i < first + UI_LIST_ROWS; i++) {
@@ -50,27 +60,36 @@ static void drawBrowser(const App *app)
         uiHitRow(y, i);
         if (i == b->cursor)
             uiDrawSelection(y, COLOR_ACCENT);
+        bool is_song = !e->is_dir && utilJoinPath(path, sizeof(path), b->path, e->name);
+        bool current = is_song && playing[0] && strcmp(path, playing) == 0;
         if (e->is_dir)
             uiDrawFolderIcon(MARGIN + 4, y + 13, COLOR_FOLDER);
+        else if (current)
+            uiDrawPlayingBars(MARGIN + 6, y + 12, status->state == PLAYER_PLAYING, now_ns);
         else
             uiDrawNoteIcon(MARGIN + 4, y + 10, 24, COLOR_ACCENT);
-        fontDrawClipped(i == b->cursor ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
-                        GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W, e->name, e->is_dir ? COLOR_FOLDER : COLOR_TEXT);
+        int name_w = is_song ? COLUMN_ARTIST_X - 24 - (MARGIN + 44) : GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W;
+        fontDrawClipped(i == b->cursor || current ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8, name_w,
+                        e->name, e->is_dir ? COLOR_FOLDER : current ? COLOR_ACCENT : COLOR_TEXT);
+        if (is_song)
+            uiDrawSongColumns(path, y);
         uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
     }
     uiDrawScrollbar(first, b->count);
 }
 
-// One row of the queue: pos is a position in the play order.
-static void drawQueueRow(size_t pos, int y, bool selected, bool current, bool add_focused)
+// One row of the queue: row.index is a position in the play order.
+static void drawQueueRow(TrackRow *row)
 {
     char path[UTIL_PATH_MAX];
     size_t track;
-    if (playerQueueTrack(pos, &track) && playerTrackPath(track, path, sizeof(path)))
-        uiDrawTrackRow(pos + 1, path, y, selected, current, pos, add_focused);
+    if (playerQueueTrack(row->index, &track) && playerTrackPath(track, path, sizeof(path))) {
+        row->path = path;
+        uiDrawTrackRow(row);
+    }
 }
 
-static void drawQueue(const App *app, const PlayerStatus *status)
+static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     if (status->track_count == 0) {
         uiDrawEmptyList("Queue is empty", "Pick a folder in Browse or a playlist, and press X to play it.");
@@ -81,6 +100,7 @@ static void drawQueue(const App *app, const PlayerStatus *status)
     snprintf(line, sizeof(line), "%zu tracks  ·  %s", status->track_count,
              status->shuffle ? "shuffled play order" : "in folder order");
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
+    uiDrawColumnHeaders();
 
     size_t cursor = app->queue_cursor < status->track_count ? app->queue_cursor : 0;
     size_t first = uiFirstVisible(cursor, status->track_count);
@@ -88,8 +108,12 @@ static void drawQueue(const App *app, const PlayerStatus *status)
     for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
         bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
         uiHitRow(LIST_Y + (int)(i - first) * ROW_H, i);
-        drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current,
-                     i == cursor && app->focus == FOCUS_ADD);
+        TrackRow row = {
+            .number = i + 1, .y = LIST_Y + (int)(i - first) * ROW_H, .index = i,
+            .selected = i == cursor, .current = current, .playing = status->state == PLAYER_PLAYING,
+            .add_focused = i == cursor && app->focus == FOCUS_ADD, .now_ns = now_ns,
+        };
+        drawQueueRow(&row);
     }
     uiDrawScrollbar(first, status->track_count);
 }
@@ -327,11 +351,11 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
             fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y,
                      "Audio unavailable: audout could not start.", COLOR_ERROR);
         else if (app->view == VIEW_BROWSER)
-            drawBrowser(app);
+            drawBrowser(app, status, now_ns);
         else if (app->view == VIEW_PLAYLISTS)
-            uiDrawPlaylists(app, status);
+            uiDrawPlaylists(app, status, now_ns);
         else
-            drawQueue(app, status);
+            drawQueue(app, status, now_ns);
         drawMiniPlayer(app, status, &track, now_ns);
     }
     drawHeader(app, now_ns);
