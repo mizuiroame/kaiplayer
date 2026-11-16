@@ -220,6 +220,10 @@ int main(int argc, char **argv)
     app.view = VIEW_QUEUE;
     app.queue_cursor = 3;
     render(argv[1], "queue", &app, &status);
+    app.focus = FOCUS_PLAYER;
+    app.bar_control = BAR_NEXT;
+    render(argv[1], "player_bar_focus", &app, &status);
+    app.focus = FOCUS_LIST;
     app.view = VIEW_NOW_PLAYING;
     render(argv[1], "now_playing", &app, &status);
 

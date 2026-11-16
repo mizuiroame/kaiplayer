@@ -180,8 +180,54 @@ static void drawHeader(const App *app, uint64_t now_ns)
     drawStatus(app, now_ns);
 }
 
+#define BAR_PREV_X 640
+#define BAR_CONTROL_GAP 76
+#define BAR_CY (MINI_Y + 46)
+#define FOCUS_RING 3
+
+static void drawBarSkip(int cx, int cy, bool next, Color color)
+{
+    if (next) {
+        gfxFillTriangleRight(cx - 10, cy - 10, 16, 20, color);
+        gfxFillRect(cx + 6, cy - 10, 4, 20, color);
+    } else {
+        gfxFillTriangleLeft(cx - 6, cy - 10, 16, 20, color);
+        gfxFillRect(cx - 10, cy - 10, 4, 20, color);
+    }
+}
+
+// A ring around the control that has the button focus.
+static void drawFocusRing(int x, int y, int w, int h, int radius)
+{
+    gfxFillRoundRect(x - FOCUS_RING, y - FOCUS_RING, w + 2 * FOCUS_RING, h + 2 * FOCUS_RING, radius + FOCUS_RING,
+                     COLOR_TEXT);
+    gfxFillRoundRect(x, y, w, h, radius, COLOR_SURFACE);
+}
+
+static void drawBarTransport(const PlayerStatus *status, int focused)
+{
+    int prev_x = BAR_PREV_X, play_x = prev_x + BAR_CONTROL_GAP, next_x = play_x + BAR_CONTROL_GAP;
+    if (focused == BAR_PREV || focused == BAR_NEXT)
+        drawFocusRing((focused == BAR_PREV ? prev_x : next_x) - 26, BAR_CY - 26, 52, 52, 26);
+    if (focused == BAR_PLAY)
+        drawFocusRing(play_x - 30, BAR_CY - 30, 60, 60, 30);
+    drawBarSkip(prev_x, BAR_CY, false, COLOR_TEXT);
+    drawBarSkip(next_x, BAR_CY, true, COLOR_TEXT);
+    gfxFillCircle(play_x, BAR_CY, 26, COLOR_ACCENT);
+    if (status->state == PLAYER_PLAYING) {
+        gfxFillRoundRect(play_x - 9, BAR_CY - 11, 6, 22, 2, COLOR_BG);
+        gfxFillRoundRect(play_x + 3, BAR_CY - 11, 6, 22, 2, COLOR_BG);
+    } else {
+        gfxFillTriangleRight(play_x - 7, BAR_CY - 12, 20, 24, COLOR_BG);
+    }
+    uiHitAdd(prev_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_PREV, 0);
+    uiHitAdd(play_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_PLAY, 0);
+    uiHitAdd(next_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_NEXT, 0);
+}
+
 static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
+    int focused = app->focus == FOCUS_PLAYER ? (int)app->bar_control : -1;
     gfxFillRect(0, MINI_Y, GFX_WIDTH, MINI_H, COLOR_SURFACE);
     gfxFillRect(0, MINI_Y, GFX_WIDTH, 3, COLOR_FAINT);
     uiHitAdd(0, MINI_Y, GFX_WIDTH, MINI_H, HIT_MINI_PLAYER, 0);
@@ -192,13 +238,14 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 
     uiDrawCover(MARGIN - 8, MINI_Y + 10, THUMB_SIZE, track->thumb);
     int text_x = MARGIN + THUMB_SIZE + 12;
-    int text_w = GFX_WIDTH - text_x - 380;
+    int text_w = BAR_PREV_X - 48 - text_x;
     fontDrawClipped(FONT_BOLD, 24, text_x, MINI_Y + 14, text_w, track->title,
                     track->has_track ? COLOR_TEXT : COLOR_DIM);
 
     bool toast = app->toast[0] && now_ns < app->toast_until_ns;
     const char *second = toast ? app->toast : track->artist[0] ? track->artist : track->folder;
     fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, second, toast ? COLOR_ERROR : COLOR_DIM);
+    drawBarTransport(status, focused);
 
     char elapsed[16], total[16], line[96];
     utilFormatTime(elapsed, sizeof(elapsed), status->position);
@@ -212,9 +259,13 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
     const char *repeat = uiRepeatLabel(status->repeat);
     int x = GFX_WIDTH - MARGIN - uiPillWidth(repeat);
+    if (focused == BAR_REPEAT)
+        drawFocusRing(x, MINI_Y + 48, uiPillWidth(repeat), 30, 15);
     uiDrawPill(x, MINI_Y + 48, repeat, status->repeat != REPEAT_OFF);
     uiHitAdd(x, MINI_Y + 40, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
     x -= uiPillWidth(shuffle) + 10;
+    if (focused == BAR_SHUFFLE)
+        drawFocusRing(x, MINI_Y + 48, uiPillWidth(shuffle), 30, 15);
     uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
     uiHitAdd(x, MINI_Y + 40, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
 }
@@ -222,9 +273,9 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "A open    B back    Right: add to playlist    X play folder    Y shuffle    − pause    + menu",
+        "A open    B back    Right: add to playlist    X play folder    Y shuffle    Down at the end: player    + menu",
         "A open    X play    Y shuffle    RS up/down: page    − pause    L/R track    + menu",
-        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    − pause    + menu",
+        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    Down at the end: player    + menu",
         "A pause    Left/Right seek    Down: add to playlist    X shuffle    Y repeat    + menu",
     };
     if (app->keyboard_open)
@@ -239,6 +290,8 @@ static const char *footerHelp(const App *app)
         return app->menu.kind == MENU_KIND_MAIN ? "A choose    B close    + exit..." : "A choose    B close";
     if (app->playlists.moving)
         return "Up/Down move the song    A or B done";
+    if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
+        return "Left/Right choose    A press    Up or B back to the list    − pause    L/R track";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
         return "A play from song    B back    Right: add to playlist    X play    Y shuffle    + menu";
     return HELP[app->view];

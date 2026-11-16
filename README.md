@@ -171,6 +171,11 @@ track comes from.
 song** plays the current song over and over. With **Shuffle on**, the Queue
 tab lists the songs in the shuffled order they will play in.
 
+The player bar under Browse, Playlists and Queue has ⏮ ⏯ ⏭, Shuffle and
+Repeat. To use them with the buttons, press ↓ on the last row of the list:
+← → choose a control, **A** presses it, and ↑ or **B** go back to the list.
+**−**, **L** and **R** also pause and change the song from anywhere.
+
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 **L** goes to the previous song.
 
@@ -184,8 +189,9 @@ Everything can also be done by touch:
   name) goes up a folder or back to the playlist list.
 - **+ buttons:** every song and folder row has a **+** that adds it to a
   playlist, and so does **+ Add to playlist** in Now Playing.
-- **Mini player:** tap it to open Now Playing. Tap **Shuffle** or **Repeat**
-  to change them.
+- **Player bar** (below Browse, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
+  play or pause, and skip. Tap **Shuffle** or **Repeat** to change them, or
+  anywhere else on the bar to open Now Playing.
 - **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point
   (or drag along it and let go where you want), and tap the Shuffle and
   Repeat buttons.

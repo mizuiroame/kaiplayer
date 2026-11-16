@@ -46,7 +46,7 @@ static void handleQueue(App *app, uint64_t pressed)
 {
     PlayerStatus status;
     playerGetStatus(&status);
-    pressed = appFocusFilter(app, pressed, app->queue_cursor, false, status.track_count > 0);
+    pressed = appFocusFilter(app, pressed, app->queue_cursor, status.track_count, false, status.track_count > 0);
     if (pressed & BUTTONS_UP) moveQueueCursor(app, -1, status.track_count);
     if (pressed & BUTTONS_DOWN) moveQueueCursor(app, 1, status.track_count);
     if (pressed & BUTTONS_PAGE_UP) moveQueueCursor(app, -PAGE_ROWS, status.track_count);

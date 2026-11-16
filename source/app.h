@@ -42,12 +42,24 @@ enum {
     MENU_KIND_EXIT,  // "Exit KaiPlayer?"
 };
 
-// What the buttons act on in a list: its rows, "< Back" or a row's "+".
+// What the buttons act on in a list: its rows, "< Back", a row's "+", or
+// the controls in the player bar below the list.
 typedef enum {
     FOCUS_LIST,
     FOCUS_BACK,
     FOCUS_ADD,
+    FOCUS_PLAYER,
 } Focus;
+
+// The player bar's controls, left to right.
+typedef enum {
+    BAR_PREV,
+    BAR_PLAY,
+    BAR_NEXT,
+    BAR_SHUFFLE,
+    BAR_REPEAT,
+    BAR_COUNT,
+} BarControl;
 
 // Where the songs for "add to playlist" come from.
 typedef enum {
@@ -70,6 +82,7 @@ typedef struct {
     Config config;
     size_t queue_cursor;
     Focus focus;
+    BarControl bar_control;     // Selected player bar control, with FOCUS_PLAYER.
     PlaylistsTab playlists;
     bool audio_ok;
     SysInfo sys;  // Clock and battery, refreshed by the main loop.
@@ -101,10 +114,11 @@ typedef struct {
 // Shows a short message above the player bar.
 void appToast(App *app, const char *message);
 
-// Moves the focus between a list, its "< Back" (Up from the first row) and
-// its rows' "+" (Right; Left returns). Returns the buttons left for the
-// list itself, without Left and Right.
-uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, bool has_back, bool has_add);
+// Moves the focus between a list, its "< Back" (Up from the first row), its
+// rows' "+" (Right; Left returns) and the player bar (Down from the last
+// row; Up returns). Returns the buttons left for the list itself, without
+// Left and Right.
+uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count, bool has_back, bool has_add);
 
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
 void appHandleBrowser(App *app, uint64_t pressed);

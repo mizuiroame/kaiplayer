@@ -53,7 +53,7 @@ void appHandleBrowser(App *app, uint64_t pressed)
     char parent[UTIL_PATH_MAX];
     snprintf(parent, sizeof(parent), "%s", b->path);
     bool has_back = utilParentPath(parent);
-    pressed = appFocusFilter(app, pressed, b->cursor, has_back, b->count > 0);
+    pressed = appFocusFilter(app, pressed, b->cursor, b->count, has_back, b->count > 0);
     if (pressed & BUTTONS_UP) browserMove(b, -1);
     if (pressed & BUTTONS_DOWN) browserMove(b, 1);
     if (pressed & BUTTONS_PAGE_UP) browserMove(b, -PAGE_ROWS);
