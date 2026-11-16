@@ -250,7 +250,7 @@ static void drawEqualizer(const App *app)
 #define ABOUT_W 700
 #define ABOUT_H 470
 
-static void drawAbout(void)
+static void drawAbout(const App *app)
 {
     static const char *const LINES[] = {
         "A music player for Switch 2 homebrew on kaiHEN.",
@@ -277,6 +277,12 @@ static void drawAbout(void)
     for (size_t i = 0; i < sizeof(LINES) / sizeof(LINES[0]); i++, line_y += 28)
         fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, line_y, LINES[i], COLOR_TEXT);
     fontDraw(FONT_BOLD, 18, x + PANEL_PAD, y + ABOUT_H - 46, "github.com/mizuiroame/kaiplayer", COLOR_ACCENT);
+    if (app->sys.has_battery) {  // Small, for bug reports about charging.
+        char power[96];
+        snprintf(power, sizeof(power), "Power: %s", app->sys.power_raw);
+        fontDraw(FONT_REGULAR, 14, x + ABOUT_W - PANEL_PAD - fontTextWidth(FONT_REGULAR, 14, power), y + ABOUT_H - 42,
+                 power, COLOR_FAINT);
+    }
 }
 
 void uiDrawOverlay(const App *app, uint64_t now_ns)
@@ -288,7 +294,7 @@ void uiDrawOverlay(const App *app, uint64_t now_ns)
     else if (app->eq_open)
         drawEqualizer(app);
     else if (app->about_open)
-        drawAbout();
+        drawAbout(app);
     else if (app->settings_open)
         drawSettings(app, now_ns);
 }

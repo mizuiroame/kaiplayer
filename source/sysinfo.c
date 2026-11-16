@@ -1,5 +1,6 @@
 #include "sysinfo.h"
 
+#include <stdio.h>
 #include <time.h>
 
 #include <switch.h>
@@ -42,13 +43,15 @@ static void readBattery(SysInfo *info)
     if (!info->has_battery)
         return;
     info->battery_percent = (int)percent;
-    // Ask several ways: not every call answers the same on Switch 2.
+    // The charger type, or else whether power is supplied. (The charge info
+    // struct is not used: its layout differs between firmwares, and on
+    // Switch 2 it read as charging after undocking.)
     bool supplied = false;
-    PsmBatteryChargeInfoFields fields;
-    info->charging = (R_SUCCEEDED(psmGetChargerType(&charger)) && charger != PsmChargerType_Unconnected) ||
-                     (R_SUCCEEDED(psmIsEnoughPowerSupplied(&supplied)) && supplied) ||
-                     (R_SUCCEEDED(psmGetBatteryChargeInfoFields(&fields)) &&
-                      (fields.battery_charging || fields.charger_type != PsmChargerType_Unconnected));
+    bool has_charger = R_SUCCEEDED(psmGetChargerType(&charger));
+    bool has_supplied = R_SUCCEEDED(psmIsEnoughPowerSupplied(&supplied));
+    info->charging = (has_charger && charger != PsmChargerType_Unconnected) || (has_supplied && supplied);
+    snprintf(info->power_raw, sizeof(info->power_raw), "charger %d, supplied %d", has_charger ? (int)charger : -1,
+             has_supplied ? (int)supplied : -1);
 }
 
 void sysinfoGet(SysInfo *info, uint64_t now_ns)
