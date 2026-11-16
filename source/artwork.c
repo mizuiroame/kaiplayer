@@ -6,6 +6,8 @@
 
 #include <switch.h>
 
+#include "gfx.h"
+
 #define THREAD_STACK_SIZE 0x10000
 #define THREAD_PRIORITY 0x30  // Below the UI and audio threads.
 
@@ -41,10 +43,9 @@ static Artwork *loadArtwork(const char *path)
     snprintf(a->artist, sizeof(a->artist), "%s", tags.artist[0] ? tags.artist : tags.album_artist);
     snprintf(a->album, sizeof(a->album), "%s", tags.album);
 
-    a->has_cover = coverDecode(tags.picture, tags.picture_size, &a->cover, ARTWORK_LARGE_SIZE,
-                               &a->thumb, ARTWORK_SMALL_SIZE) ||
-                   coverLoadFromFolder(path, &a->cover, ARTWORK_LARGE_SIZE,
-                                       &a->thumb, ARTWORK_SMALL_SIZE);
+    int large = gfxToFb(ARTWORK_LARGE_SIZE), small = gfxToFb(ARTWORK_SMALL_SIZE);  // Drawn 1:1.
+    a->has_cover = coverDecode(tags.picture, tags.picture_size, &a->cover, large, &a->thumb, small) ||
+                   coverLoadFromFolder(path, &a->cover, large, &a->thumb, small);
     tagsFree(&tags);
     return a;
 }

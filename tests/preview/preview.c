@@ -52,8 +52,12 @@ bool playerQueueTrack(size_t pos, size_t *track)
 
 // Fake tags for the lists: songs in "Aurora Fields" have full tags (the
 // title drops the track number), the others an artist or nothing.
+static bool g_meta_loading;  // Tags not read yet: rows show placeholders.
+
 bool metaLookup(const char *path, SongMeta *out)
 {
+    if (g_meta_loading)
+        return false;
     bool aurora = strstr(path, "Aurora") != NULL;
     const char *name = strrchr(path, '/') ? strrchr(path, '/') + 1 : path;
     const char *dash = strstr(name, " - ");
@@ -84,8 +88,8 @@ static bool writePpm(const char *path, const uint32_t *pixels)
     FILE *f = fopen(path, "wb");
     if (!f)
         return false;
-    fprintf(f, "P6\n%d %d\n255\n", GFX_WIDTH, GFX_HEIGHT);
-    for (int i = 0; i < GFX_WIDTH * GFX_HEIGHT; i++) {
+    fprintf(f, "P6\n%d %d\n255\n", GFX_FB_WIDTH, GFX_FB_HEIGHT);
+    for (int i = 0; i < GFX_FB_WIDTH * GFX_FB_HEIGHT; i++) {
         uint32_t p = pixels[i];
         unsigned char rgb[3] = {p & 0xFF, (p >> 8) & 0xFF, (p >> 16) & 0xFF};
         fwrite(rgb, 1, 3, f);
@@ -101,9 +105,9 @@ static void addEntry(Browser *b, const char *name, bool is_dir)
 
 static void render(const char *dir, const char *name, const App *app, const PlayerStatus *status)
 {
-    static uint32_t pixels[GFX_WIDTH * GFX_HEIGHT];
+    static uint32_t pixels[GFX_FB_WIDTH * GFX_FB_HEIGHT];
     char path[512];
-    gfxSetTarget(pixels, GFX_WIDTH);
+    gfxSetTarget(pixels, GFX_FB_WIDTH);
     uiDraw(app, status, 0);
     gfxSetTarget(NULL, 0);
     snprintf(path, sizeof(path), "%s/%s.ppm", dir, name);
@@ -117,8 +121,8 @@ static void loadArtwork(const char *cover_path)
     snprintf(g_art.title, sizeof(g_art.title), "%s", "Canción del Río (Versión Acústica Extendida)");
     snprintf(g_art.artist, sizeof(g_art.artist), "%s", "Aurora Fields");
     snprintf(g_art.album, sizeof(g_art.album), "%s", "Paper Boats & Other Stories");
-    g_art.has_cover = cover_path && coverLoadFromFolder(cover_path, &g_art.cover, ARTWORK_LARGE_SIZE,
-                                                         &g_art.thumb, ARTWORK_SMALL_SIZE);
+    g_art.has_cover = cover_path && coverLoadFromFolder(cover_path, &g_art.cover, gfxToFb(ARTWORK_LARGE_SIZE),
+                                                         &g_art.thumb, gfxToFb(ARTWORK_SMALL_SIZE));
     g_has_art = true;
 }
 
@@ -188,6 +192,9 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->settings_open = true;
     app->settings_cursor = SETTING_SLEEP;
     render(dir, "settings", app, status);
+    app->about_open = true;
+    render(dir, "about", app, status);
+    app->about_open = false;
     app->eq_open = true;
     app->config.eq_on = true;
     app->config.eq_preset = EQ_PRESET_ROCK;
@@ -236,12 +243,22 @@ int main(int argc, char **argv)
     app.view = VIEW_QUEUE;
     app.queue_cursor = 3;
     render(argv[1], "queue", &app, &status);
+    g_meta_loading = true;
+    render(argv[1], "queue_loading", &app, &status);
+    g_meta_loading = false;
     app.focus = FOCUS_PLAYER;
     app.bar_control = BAR_NEXT;
     render(argv[1], "player_bar_focus", &app, &status);
     app.focus = FOCUS_LIST;
     app.view = VIEW_NOW_PLAYING;
+    snprintf(app.playing_playlist, sizeof(app.playing_playlist), "%s", "Road Trip 2026");
     render(argv[1], "now_playing", &app, &status);
+    app.playing_playlist[0] = '\0';
+    status.repeat = REPEAT_ONE;
+    status.shuffle = false;
+    render(argv[1], "now_playing_repeat_one", &app, &status);
+    status.repeat = REPEAT_ALL;
+    status.shuffle = true;
 
     g_has_art = false;
     status.state = PLAYER_PAUSED;

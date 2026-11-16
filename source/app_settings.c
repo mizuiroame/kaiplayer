@@ -60,6 +60,8 @@ void appActivateSetting(App *app, SettingRow row)
         typeSleepMinutes(app);
     } else if (row == SETTING_EQUALIZER) {
         app->eq_open = true;  // The editor opens over Settings.
+    } else if (row == SETTING_ABOUT) {
+        app->about_open = true;
     } else {
         appChangeSetting(app, row, 1);
     }

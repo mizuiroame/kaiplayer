@@ -5,6 +5,7 @@
 
 #include "ui_common.h"
 #include "ui_hit.h"
+#include "ui_buttons.h"
 #include "ui_list.h"
 #include "screen.h"
 #include "theme.h"
@@ -72,8 +73,11 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
         if (is_song)
             uiLoadSong(path, &song);
         int name_w = is_song ? COLUMN_ARTIST_X - 24 - (MARGIN + 44) : GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W;
-        fontDrawClipped(i == b->cursor || current ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8, name_w,
-                        is_song ? song.title : e->name, e->is_dir ? COLOR_FOLDER : current ? COLOR_ACCENT : COLOR_TEXT);
+        FontFace face = i == b->cursor || current ? FONT_BOLD : FONT_REGULAR;
+        if (is_song)
+            uiDrawSongTitle(&song, face, MARGIN + 44, y + 8, name_w, current ? COLOR_ACCENT : COLOR_TEXT);
+        else
+            fontDrawClipped(face, TEXT_ROW, MARGIN + 44, y + 8, name_w, e->name, COLOR_FOLDER);
         if (is_song)
             uiDrawSongColumns(&song, y);
         uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
@@ -121,12 +125,8 @@ static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_n
     uiDrawScrollbar(first, status->track_count);
 }
 
-static void drawButtonHint(int x, int y, const char *label)
-{
-    int w = fontTextWidth(FONT_BOLD, 14, label) + 14;
-    gfxFillRoundRect(x, y, w, 22, 11, COLOR_SURFACE_HI);
-    fontDraw(FONT_BOLD, 14, x + 7, y + 2, label, COLOR_DIM);
-}
+#define TAB_TEXT_MIDDLE 28.5f  // Middle of the tab names' capitals.
+#define HINT_GAP 14
 
 // The tabs, centered, between the ZL and ZR hints.
 static void drawTabs(const App *app)
@@ -137,7 +137,7 @@ static void drawTabs(const App *app)
         total += widths[i] + (i > 0 ? TAB_GAP : 0);
     }
     int x = (GFX_WIDTH - total) / 2;
-    drawButtonHint(x - 48, 21, "ZL");
+    uiDrawButton(x - HINT_GAP - uiButtonWidth("ZL"), TAB_TEXT_MIDDLE, "ZL", COLOR_SURFACE_HI, COLOR_DIM);
     for (int i = 0; i < VIEW_COUNT; i++) {
         bool active = (int)app->view == i;
         fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, VIEW_NAMES[i], active ? COLOR_TEXT : COLOR_DIM);
@@ -146,7 +146,7 @@ static void drawTabs(const App *app)
             gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
         x += widths[i] + TAB_GAP;
     }
-    drawButtonHint(x - TAB_GAP + 16, 21, "ZR");
+    uiDrawButton(x - TAB_GAP + HINT_GAP, TAB_TEXT_MIDDLE, "ZR", COLOR_SURFACE_HI, COLOR_DIM);
 }
 
 // Battery outline with a fill for the charge; green while charging.
@@ -159,6 +159,14 @@ static void drawBattery(int x, int y, int percent, bool charging)
     int inner = 22 * (percent < 0 ? 0 : percent > 100 ? 100 : percent) / 100;
     if (inner > 0)
         gfxFillRoundRect(x + 4, y + 4, inner, 8, 2, fill);
+    if (charging) {  // A lightning bolt over the battery.
+        float cx = (float)x + 15.0f, cy = (float)y + 8.0f;
+        // Two halves that overlap in the middle, so no seam shows between them.
+        gfxTriangle(cx + 2.0f, cy - 8.0f, cx - 5.0f, cy + 1.5f, cx + 1.5f, cy + 1.5f, COLOR_BG);
+        gfxTriangle(cx - 2.0f, cy + 8.0f, cx + 5.0f, cy - 1.5f, cx - 1.5f, cy - 1.5f, COLOR_BG);
+        gfxTriangle(cx + 1.5f, cy - 6.0f, cx - 3.5f, cy + 1.0f, cx + 1.0f, cy + 1.0f, COLOR_TEXT);
+        gfxTriangle(cx - 1.5f, cy + 6.0f, cx + 3.5f, cy - 1.0f, cx - 1.0f, cy - 1.0f, COLOR_TEXT);
+    }
 }
 
 // Clock, battery and the sleep timer in the top right corner.
@@ -170,9 +178,9 @@ static void drawStatus(const App *app, uint64_t now_ns)
         char percent[8];
         snprintf(percent, sizeof(percent), "%d%%", sys->battery_percent);
         x -= 34;
-        drawBattery(x, 22, sys->battery_percent, sys->charging);
+        drawBattery(x, 20, sys->battery_percent, sys->charging);  // Centered on the text.
         x -= fontTextWidth(FONT_REGULAR, 17, percent) + 8;
-        fontDraw(FONT_REGULAR, 17, x, 19, percent, COLOR_DIM);
+        fontDraw(FONT_REGULAR, 17, x, 19, percent, sys->charging ? COLOR_CHARGING : COLOR_DIM);
         x -= 20;
     }
     if (sys->has_time) {
@@ -207,8 +215,8 @@ static void drawHeader(const App *app, uint64_t now_ns)
     drawStatus(app, now_ns);
 }
 
-#define BAR_PREV_X 640
 #define BAR_CONTROL_GAP 76
+#define BAR_PREV_X (GFX_WIDTH / 2 - BAR_CONTROL_GAP)  // Play in the middle of the screen.
 #define BAR_CY (MINI_Y + 46)
 #define FOCUS_RING 3
 
@@ -285,48 +293,52 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     // Shuffle and repeat as pills, lit in the accent color when on.
     const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
     const char *repeat = uiRepeatLabel(status->repeat);
-    int x = GFX_WIDTH - MARGIN - uiPillWidth(repeat);
+    PillIcon repeat_icon = status->repeat == REPEAT_ONE ? PILL_ICON_REPEAT_ONE : PILL_ICON_REPEAT;
+    int repeat_w = uiIconPillWidth(NULL, repeat), shuffle_w = uiIconPillWidth(NULL, shuffle);
+    int x = GFX_WIDTH - MARGIN - repeat_w;
     if (focused == BAR_REPEAT)
-        drawFocusRing(x, MINI_Y + 48, uiPillWidth(repeat), 30, 15);
-    uiDrawPill(x, MINI_Y + 48, repeat, status->repeat != REPEAT_OFF);
-    uiHitAdd(x, MINI_Y + 40, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
-    x -= uiPillWidth(shuffle) + 10;
+        drawFocusRing(x, MINI_Y + 48, repeat_w, 30, 15);
+    uiDrawIconPill(x, MINI_Y + 48, NULL, repeat_icon, repeat, status->repeat != REPEAT_OFF);
+    uiHitAdd(x, MINI_Y + 40, repeat_w, 46, HIT_REPEAT, 0);
+    x -= shuffle_w + 10;
     if (focused == BAR_SHUFFLE)
-        drawFocusRing(x, MINI_Y + 48, uiPillWidth(shuffle), 30, 15);
-    uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
-    uiHitAdd(x, MINI_Y + 40, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
+        drawFocusRing(x, MINI_Y + 48, shuffle_w, 30, 15);
+    uiDrawIconPill(x, MINI_Y + 48, NULL, PILL_ICON_SHUFFLE, shuffle, status->shuffle);
+    uiHitAdd(x, MINI_Y + 40, shuffle_w, 46, HIT_SHUFFLE, 0);
 }
 
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "A open    B back    Right: add to playlist    X play folder    Y shuffle    Down at the end: player    + menu",
-        "A open    X play    Y shuffle    RS up/down: page    − pause    L/R track    + menu",
-        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    Down at the end: player    + menu",
-        "A pause    Left/Right seek    Down: add to playlist    X shuffle    Y repeat    + menu",
+        "[A] open  [B] back  [>] add to playlist  [X] play folder  [Y] shuffle  [v] player  [+] menu",
+        "[A] open  [X] play  [Y] shuffle  [RS] page  [-] pause  [L][R] track  [+] menu",
+        "[A] play  [B] browse  [>] add to playlist  [X] shuffle  [Y] repeat  [v] player  [+] menu",
+        "[A] pause  [<>] seek  [B] add to playlist  [X] shuffle  [Y] repeat  [+] menu",
     };
     if (app->keyboard_open)
-        return "A type    B delete    X shift    Y space    + done    − cancel";
+        return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
+    if (app->about_open)
+        return "[A][B] back";
     if (app->eq_open)
-        return "Left/Right band    Up/Down gain    X preset    Y on/off    B back";
+        return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)
-        return "Up/Down choose    Left/Right or A change    B close";
+        return "[^v] choose  [<>][A] change  [B] close";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
-        return "A choose    B cancel    + exit";
+        return "[A] choose  [B] cancel  [+] exit";
     if (app->menu.open)
-        return app->menu.kind == MENU_KIND_MAIN ? "A choose    B close    + exit..." : "A choose    B close";
+        return app->menu.kind == MENU_KIND_MAIN ? "[A] choose  [B] close  [+] exit..." : "[A] choose  [B] close";
     if (app->playlists.moving)
-        return "Up/Down move the song    A or B done";
+        return "[^v] move the song  [A][B] done";
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
-        return "Left/Right choose    A press    Up or B back to the list    − pause    L/R track";
+        return "[<>] choose  [A] press  [^][B] back to the list  [-] pause  [L][R] track";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "A play from song    B back    Right: add to playlist    X play    Y shuffle    + menu";
+        return "[A] play from song  [B] back  [>] remove from playlist  [X] play  [Y] shuffle  [+] menu";
     return HELP[app->view];
 }
 
 static void drawFooter(const App *app)
 {
-    fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, footerHelp(app), COLOR_DIM);
+    uiDrawHelp(MARGIN, FOOTER_Y + 26.0f, GFX_WIDTH - 2 * MARGIN, footerHelp(app));
 }
 
 void uiDrawScreenOff(void)
@@ -344,7 +356,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiHitReset();
     const Artwork *art = artworkLock();
     uiResolveTrack(status, art, &track);
-    g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->average : 0, track.cover != NULL);
+    g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
     gfxClear(COLOR_BG);
     if (app->view == VIEW_NOW_PLAYING) {

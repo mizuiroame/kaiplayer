@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "font.h"
 #include "gfx.h"
 #include "metacache.h"
 
@@ -33,6 +34,7 @@ typedef struct {
     bool current;      // The song that is playing (or paused).
     bool playing;      // Animate the bars (false while paused).
     bool add_focused;
+    bool remove_button;  // Inside a playlist: the row button removes the song.
     uint64_t now_ns;
 } TrackRow;
 
@@ -49,6 +51,9 @@ typedef struct {
 } UiSong;
 
 void uiLoadSong(const char *path, UiSong *song);
+// The song's title, or, while its tags are still being read, a soft bar in
+// its place (so the file name doesn't flash before the title).
+void uiDrawSongTitle(const UiSong *song, FontFace face, int x, int y, int max_width, Color color);
 // The artist and album in their columns (empty until loaded).
 void uiDrawSongColumns(const UiSong *song, int y);
 // "Artist" and "Album" above the columns, on the subtitle line.
@@ -59,6 +64,8 @@ void uiDrawPlayingBars(int x, int y, bool playing, uint64_t now_ns);
 // "+" at the end of a row, for adding it to a playlist.
 #define ADD_BUTTON_W 44
 void uiDrawAddButton(int x, int y, size_t index, bool focused);
+// The same place, for removing a song from the open playlist.
+void uiDrawRemoveButton(int x, int y, size_t index, bool focused);
 // "< Back" at the start of the subtitle line. Returns its width.
 int uiDrawBackButton(int x, int y, bool focused);
 // Touch targets: the list area (for drags) and one row.

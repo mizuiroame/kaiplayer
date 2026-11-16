@@ -1,4 +1,6 @@
 // Starting playback, and resuming the last session.
+#include <stdio.h>
+
 #include <switch.h>
 
 #include "app.h"
@@ -13,7 +15,7 @@ static size_t g_saved_track = (size_t)-1;
 static PlayerState g_saved_state = PLAYER_STOPPED;
 static uint64_t g_next_save_ns;
 
-void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle)
+void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, const char *playlist)
 {
     if (tracks->count == 0) {
         appToast(app, "There are no songs to play.");
@@ -23,6 +25,8 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle)
         playerSetShuffle(true);
         start = (size_t)(armGetSystemTick() % tracks->count);
     }
+    snprintf(app->playing_playlist, sizeof(app->playing_playlist), "%s", playlist ? playlist : "");
+    playerSetMixedAlbums(playlist != NULL);
     playerPlay(tracks, start < tracks->count ? start : 0);  // The view stays where it is.
 }
 

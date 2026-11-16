@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <switch.h>
 
@@ -88,8 +89,10 @@ void metaExit(void)
 
 bool metaLookup(const char *path, SongMeta *out)
 {
-    if (!g_started)
-        return false;
+    if (!g_started) {  // No reader thread: never wait, use file names.
+        memset(out, 0, sizeof(*out));
+        return true;
+    }
     mutexLock(&g_lock);
     const MetaEntry *e = metaCacheGet(g_cache, path);
     if (e)

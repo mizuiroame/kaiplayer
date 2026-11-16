@@ -96,7 +96,7 @@ static void playPlaylist(App *app, size_t start, bool shuffle)
             : t->cursor < t->index.count && loadPlaylist(app, t->index.names[t->cursor], &copy);
     if (!ok)
         return;
-    appPlayTracks(app, &copy, start, shuffle);
+    appPlayTracks(app, &copy, start, shuffle, t->open ? t->name : t->index.names[t->cursor]);
     trackListFree(&copy);
 }
 
@@ -137,8 +137,8 @@ static void handleSongs(App *app, uint64_t pressed)
     if (pressed & BUTTONS_PAGE_UP) moveCursor(&t->track_cursor, -PAGE_ROWS, t->tracks.count);
     if (pressed & BUTTONS_PAGE_DOWN) moveCursor(&t->track_cursor, PAGE_ROWS, t->tracks.count);
     bool back = (pressed & HidNpadButton_B) || ((pressed & HidNpadButton_A) && app->focus == FOCUS_BACK);
-    if ((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD)
-        appAddToPlaylist(app, SRC_PLAYLIST_SONG);
+    if (pressed & BUTTON_ROW_ACTION)
+        appConfirmRemoveSong(app);  // Inside a playlist, the row button removes.
     else if ((pressed & HidNpadButton_A) && app->focus == FOCUS_LIST)
         playPlaylist(app, t->track_cursor, false);
     if (pressed & HidNpadButton_X) playPlaylist(app, 0, false);

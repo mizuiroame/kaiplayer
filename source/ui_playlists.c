@@ -49,6 +49,7 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus f
             .number = i + 1, .path = t->tracks.paths[i], .y = y, .index = i,
             .selected = selected && !t->moving, .current = current,
             .playing = status->state == PLAYER_PLAYING, .add_focused = selected && focus == FOCUS_ADD,
+            .remove_button = true,
             .now_ns = now_ns,
         };
         uiDrawTrackRow(&row);

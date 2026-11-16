@@ -42,7 +42,13 @@ static void readBattery(SysInfo *info)
     if (!info->has_battery)
         return;
     info->battery_percent = (int)percent;
-    info->charging = R_SUCCEEDED(psmGetChargerType(&charger)) && charger != PsmChargerType_Unconnected;
+    // The charger type, or else whether power is supplied. (The charge info
+    // struct is not used: its layout differs between firmwares, and on
+    // Switch 2 it read as charging after undocking.)
+    bool supplied = false;
+    bool has_charger = R_SUCCEEDED(psmGetChargerType(&charger));
+    bool has_supplied = R_SUCCEEDED(psmIsEnoughPowerSupplied(&supplied));
+    info->charging = (has_charger && charger != PsmChargerType_Unconnected) || (has_supplied && supplied);
 }
 
 void sysinfoGet(SysInfo *info, uint64_t now_ns)

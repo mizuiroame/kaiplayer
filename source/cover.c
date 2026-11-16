@@ -76,7 +76,40 @@ static bool scaleSquare(const uint8_t *rgba, int w, int h, int size, CoverImage 
     }
     uint64_t n = (uint64_t)size * size;
     out->average = packPixel((uint32_t)(total[0] / n), (uint32_t)(total[1] / n), (uint32_t)(total[2] / n));
+    out->vibrant = coverVibrantColor(out->pixels, (size_t)n);
     return true;
+}
+
+// Picks the most common vivid hue of the scaled image. Averaging the whole
+// cover mixes its colors into grey; this keeps the one that stands out.
+#define HUE_BINS 24
+#define MIN_VIVID_SHARE 0.03  // Of the image's pixels, weighted by vividness.
+
+uint32_t coverVibrantColor(const uint32_t *pixels, size_t count)
+{
+    double weight[HUE_BINS] = {0}, sum[HUE_BINS][3] = {{0}};
+    for (size_t i = 0; i < count; i++) {
+        int r = (int)(pixels[i] & 0xFF), g = (int)((pixels[i] >> 8) & 0xFF), b = (int)((pixels[i] >> 16) & 0xFF);
+        int max = r > g ? (r > b ? r : b) : (g > b ? g : b), min = r < g ? (r < b ? r : b) : (g < b ? g : b);
+        int delta = max - min;
+        if (max < 40 || delta * 4 < max)  // Too dark, or saturation under 25%.
+            continue;
+        double h = max == r ? (double)(g - b) / delta : max == g ? 2.0 + (double)(b - r) / delta
+                                                                 : 4.0 + (double)(r - g) / delta;
+        if (h < 0.0)
+            h += 6.0;
+        int bin = (int)(h / 6.0 * HUE_BINS) % HUE_BINS;
+        double w = (double)delta / 255.0 * (double)max / 255.0;  // Saturation x value, roughly.
+        weight[bin] += w;
+        sum[bin][0] += w * r, sum[bin][1] += w * g, sum[bin][2] += w * b;
+    }
+    int best = 0;
+    for (int i = 1; i < HUE_BINS; i++)
+        best = weight[i] > weight[best] ? i : best;
+    if (count == 0 || weight[best] < MIN_VIVID_SHARE * (double)count)
+        return 0;
+    return packPixel((uint32_t)(sum[best][0] / weight[best]), (uint32_t)(sum[best][1] / weight[best]),
+                     (uint32_t)(sum[best][2] / weight[best]));
 }
 
 bool coverDecode(const uint8_t *data, size_t size, CoverImage *large, int large_size,

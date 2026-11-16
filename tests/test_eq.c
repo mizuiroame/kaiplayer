@@ -5,6 +5,7 @@
 #include "check.h"
 #include "eq.h"
 #include "tags.h"
+#include "replaygain.h"
 #include "theme.h"
 
 #define RATE 48000.0
@@ -118,7 +119,9 @@ static void testTheme(void)
     CHECK(strcmp(themeAccentName(0), "Pink") == 0 && themeAccentName(THEME_ACCENT_COUNT)[0] == '\0');
     uint32_t pink = themeAccentColor(0, 0, false);
     CHECK(themeAccentColor(THEME_ACCENT_FROM_COVER, 0xFF808080u, false) == pink);  // No cover.
-    CHECK(themeAccentColor(THEME_ACCENT_FROM_COVER, 0xFF808080u, true) == pink);   // Grey: no hue.
+    uint32_t silver = themeAccentColor(THEME_ACCENT_FROM_COVER, 0, true);           // Black and white cover.
+    CHECK(silver != pink && (silver & 0xFF) == ((silver >> 16) & 0xFF) - 10);
+    CHECK(themeVivid(0xFF808080u) == silver);  // Grey: no hue to take.
     // A dark, dull blue cover becomes a bright, saturated blue.
     uint32_t vivid = themeAccentColor(THEME_ACCENT_FROM_COVER, 0xFF402010u, true);  // r=0x10 g=0x20 b=0x40
     unsigned r = vivid & 0xFF, g = (vivid >> 8) & 0xFF, b = (vivid >> 16) & 0xFF;
@@ -126,8 +129,30 @@ static void testTheme(void)
     CHECK(themeAccentColor(99, 0, false) == pink);  // Unknown accent.
 }
 
+static void testReplayGainChoice(void)
+{
+    TrackTags t;
+    tagsInit(&t);
+    t.has_track_gain = t.has_album_gain = true;
+    t.track_gain_db = -7.0f;
+    t.album_gain_db = -5.0f;
+    CHECK(replayGainDb(REPLAYGAIN_OFF, false, false, &t) == 0.0f);
+    CHECK(replayGainDb(REPLAYGAIN_TRACK, false, false, &t) == -7.0f);
+    CHECK(replayGainDb(REPLAYGAIN_ALBUM, true, true, &t) == -5.0f);
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, false, false, &t) == -5.0f);  // An album in order.
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, true, false, &t) == -7.0f);   // Shuffle.
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, false, true, &t) == -7.0f);   // A playlist.
+    t.has_album_gain = false;
+    CHECK(replayGainDb(REPLAYGAIN_ALBUM, false, false, &t) == -7.0f); // Falls back to track.
+    t.has_track_gain = false;
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, false, false, &t) == 0.0f);   // No tags.
+    CHECK(replayGainFactor(6.0f) == 1.0f && fabsf(replayGainFactor(-6.0f) - 0.501f) < 0.01f);
+    tagsFree(&t);
+}
+
 void testEq(void)
 {
+    testReplayGainChoice();
     testTheme();
     testFlat();
     testBoostAndCut();

@@ -5,6 +5,7 @@
 #define RGB(r, g, b) ((uint32_t)(0xFF000000u | ((uint32_t)(b) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(r)))
 #define MIN_SATURATION 0.55f
 #define MIN_VALUE 0.88f
+#define SILVER RGB(0xD8, 0xD8, 0xE2)  // For covers without color.
 
 static const char *const NAMES[THEME_ACCENT_COUNT] = {
     "Pink", "Blue", "Green", "Purple", "Orange", "Red", "From cover",
@@ -42,7 +43,7 @@ uint32_t themeVivid(uint32_t color)
     }
     float s = max > 0.0f ? delta / max : 0.0f;
     if (s < 0.08f)
-        return COLORS[0];  // A grey cover has no hue to take: keep pink.
+        return SILVER;  // A grey color has no hue to take.
     s = maxf(s, MIN_SATURATION);
     float v = maxf(max, MIN_VALUE);
     float c = v * s, x = c * (1.0f - fabsf(fmodf(h, 2.0f) - 1.0f)), m = v - c;
@@ -60,9 +61,9 @@ uint32_t themeVivid(uint32_t color)
                (uint32_t)((rgb[2] + m) * 255.0f + 0.5f));
 }
 
-uint32_t themeAccentColor(int accent, uint32_t cover_average, bool has_cover)
+uint32_t themeAccentColor(int accent, uint32_t cover_vibrant, bool has_cover)
 {
     if (accent == THEME_ACCENT_FROM_COVER)
-        return has_cover ? themeVivid(cover_average) : COLORS[0];
+        return !has_cover ? COLORS[0] : cover_vibrant ? themeVivid(cover_vibrant) : SILVER;
     return accent >= 0 && accent < THEME_ACCENT_FROM_COVER ? COLORS[accent] : COLORS[0];
 }

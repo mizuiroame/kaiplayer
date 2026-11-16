@@ -3,6 +3,7 @@
 
 #include "ui.h"
 #include "ui_common.h"
+#include "ui_buttons.h"
 #include "ui_hit.h"
 
 #define COVER_SIZE ARTWORK_LARGE_SIZE
@@ -11,6 +12,7 @@
 #define INFO_X 560
 #define INFO_W 640
 #define PROGRESS_Y 384
+#define PROGRESS_REST_ALPHA 70
 #define TRANSPORT_Y 476
 #define TOGGLES_Y 564
 #define BACKDROP_STRENGTH 110
@@ -24,7 +26,7 @@ static void drawBackdrop(const UiTrack *track)
     gfxGradientV(0, 0, GFX_WIDTH, CONTENT_BOTTOM, gfxMix(COLOR_BG, tint, strength), COLOR_BG);
 }
 
-static void drawInfo(const PlayerStatus *status, const UiTrack *track)
+static void drawInfo(const PlayerStatus *status, const UiTrack *track, const char *playlist)
 {
     fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? "PAUSED" : "NOW PLAYING", COLOR_DIM);
     fontDrawClipped(FONT_BOLD, 44, INFO_X, 172, INFO_W, track->title, track->has_track ? COLOR_TEXT : COLOR_DIM);
@@ -34,10 +36,11 @@ static void drawInfo(const PlayerStatus *status, const UiTrack *track)
     if (track->album[0])
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 276, INFO_W, track->album, COLOR_DIM);
 
-    if (status->track_count > 0) {
-        char line[UTIL_PATH_MAX + 48];
-        snprintf(line, sizeof(line), "Track %zu of %zu  ·  %s", status->queue_pos + 1, status->track_count,
-                 track->folder);
+    if (status->track_count > 0) {  // With the playlist's name when it came from one.
+        char line[PLAYLIST_NAME_MAX + 64];
+        int n = snprintf(line, sizeof(line), "Track %zu of %zu", status->queue_pos + 1, status->track_count);
+        if (playlist[0] && n > 0 && (size_t)n < sizeof(line))
+            snprintf(line + n, sizeof(line) - (size_t)n, "  ·  %s", playlist);
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 314, INFO_W, line, COLOR_DIM);
     }
 }
@@ -50,7 +53,8 @@ static void drawProgress(const App *app, const PlayerStatus *status)
     if (fraction > 1.0)
         fraction = 1.0;
     int filled = (int)(INFO_W * fraction);
-    gfxFillRoundRect(INFO_X, PROGRESS_Y, INFO_W, 6, 3, COLOR_SURFACE_HI);
+    // The rest of the song: translucent white, so it shows over any cover tint.
+    gfxBlendRect(INFO_X, PROGRESS_Y + 1, INFO_W, 4, COLOR_TEXT, PROGRESS_REST_ALPHA);
     uiHitAdd(INFO_X - 12, PROGRESS_Y - 18, INFO_W + 24, 42, HIT_SEEK, 0);  // 12 px slack: app_touch.c
     if (filled > 0)
         gfxFillRoundRect(INFO_X, PROGRESS_Y, filled, 6, 3, COLOR_ACCENT);
@@ -79,7 +83,7 @@ static void drawSkipIcon(int cx, int cy, bool next, Color color)
 
 static void drawHint(int cx, int y, const char *label)
 {
-    fontDraw(FONT_BOLD, 17, cx - fontTextWidth(FONT_BOLD, 17, label) / 2, y, label, COLOR_DIM);
+    uiDrawButtonCentered((float)cx, (float)y + 11.0f, label, COLOR_SURFACE_HI, COLOR_TEXT);
 }
 
 static void drawTransport(const PlayerStatus *status)
@@ -105,19 +109,21 @@ static void drawTransport(const PlayerStatus *status)
 static void drawToggles(const PlayerStatus *status, bool add_focused)
 {
     int x = INFO_X;
-    const char *shuffle = status->shuffle ? "X  Shuffle on" : "X  Shuffle off";
-    uiDrawPill(x, TOGGLES_Y, shuffle, status->shuffle);
-    uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
-    x += uiPillWidth(shuffle) + 12;
-    char repeat[32];
-    snprintf(repeat, sizeof(repeat), "Y  %s", uiRepeatLabel(status->repeat));
-    uiDrawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
-    uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
+    const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
+    int shuffle_w = uiIconPillWidth("X", shuffle);
+    uiDrawIconPill(x, TOGGLES_Y, "X", PILL_ICON_SHUFFLE, shuffle, status->shuffle);
+    uiHitAdd(x, TOGGLES_Y - 8, shuffle_w, 46, HIT_SHUFFLE, 0);
+    x += shuffle_w + 12;
+    const char *repeat = uiRepeatLabel(status->repeat);
+    int repeat_w = uiIconPillWidth("Y", repeat);
+    uiDrawIconPill(x, TOGGLES_Y, "Y", status->repeat == REPEAT_ONE ? PILL_ICON_REPEAT_ONE : PILL_ICON_REPEAT, repeat,
+                   status->repeat != REPEAT_OFF);
+    uiHitAdd(x, TOGGLES_Y - 8, repeat_w, 46, HIT_REPEAT, 0);
     if (status->track_count > 0) {  // Add the current song to a playlist.
-        static const char ADD[] = "+  Add to playlist";
-        x += uiPillWidth(repeat) + 12;
-        uiDrawPill(x, TOGGLES_Y, ADD, add_focused);
-        uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(ADD), 46, HIT_ADD, -1);
+        static const char ADD[] = "Add to playlist";
+        x += repeat_w + 12;
+        uiDrawIconPill(x, TOGGLES_Y, "B", PILL_ICON_PLAYLIST_ADD, ADD, add_focused);
+        uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth("B", ADD), 46, HIT_ADD, -1);
     }
 }
 
@@ -128,7 +134,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
         gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE,
                      COLOR_SHADOW, SHADOW_ALPHA);
     uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
-    drawInfo(status, track);
+    drawInfo(status, track, app->playing_playlist);
     drawProgress(app, status);
     drawTransport(status);
     drawToggles(status, app->focus == FOCUS_ADD);

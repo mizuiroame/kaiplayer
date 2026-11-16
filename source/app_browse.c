@@ -27,7 +27,7 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
         size_t found = trackListFind(&list, path);
         start = found < list.count ? found : 0;
     }
-    appPlayTracks(app, &list, start, shuffle);
+    appPlayTracks(app, &list, start, shuffle, NULL);
     snprintf(app->config.folder, sizeof(app->config.folder), "%s", folder);
     configSave(&app->config);
 }
@@ -58,12 +58,12 @@ void appHandleBrowser(App *app, uint64_t pressed)
     if (pressed & BUTTONS_DOWN) browserMove(b, 1);
     if (pressed & BUTTONS_PAGE_UP) browserMove(b, -PAGE_ROWS);
     if (pressed & BUTTONS_PAGE_DOWN) browserMove(b, PAGE_ROWS);
+    if (pressed & BUTTON_ROW_ACTION)
+        appAddToPlaylist(app, SRC_BROWSE_ENTRY);
     if (pressed & HidNpadButton_A) {
         if (app->focus == FOCUS_BACK) {
             browserGoUp(b);
             app->focus = FOCUS_LIST;
-        } else if (app->focus == FOCUS_ADD) {
-            appAddToPlaylist(app, SRC_BROWSE_ENTRY);
         } else {
             openSelected(app);
         }

@@ -58,6 +58,23 @@ const char *uiRepeatLabel(RepeatMode repeat);
 int uiPillWidth(const char *label);
 void uiDrawPill(int x, int y, const char *label, bool on);
 
+typedef enum {
+    PILL_ICON_SHUFFLE,     // Crossed arrows.
+    PILL_ICON_REPEAT,      // Arrows in a circle.
+    PILL_ICON_REPEAT_ONE,  // The same, with a 1 inside.
+    PILL_ICON_PLAYLIST_ADD,
+} PillIcon;
+
+// "Add to playlist": a list with a plus, in a box of about 20 * scale.
+void uiDrawPlaylistAddIcon(float cx, float cy, float scale, Color color);
+// "Remove from playlist": the same list with a minus.
+void uiDrawPlaylistRemoveIcon(float cx, float cy, float scale, Color color);
+
+// A pill with an icon before the label, and an optional button hint
+// ("X") before the icon.
+int uiIconPillWidth(const char *hint, const char *label);
+void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *label, bool on);
+
 // The Playlists tab (ui_playlists.c).
 void uiDrawPlaylists(const App *app, const PlayerStatus *status, uint64_t now_ns);
 

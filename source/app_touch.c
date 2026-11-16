@@ -18,7 +18,7 @@ static bool g_full_hd;  // Seen coordinates beyond 1280x720: scale them down.
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open;
 }
 
 static bool isOverlayTarget(HitKind kind)
@@ -49,7 +49,7 @@ static void addFromRow(App *app, int index)
     case VIEW_QUEUE: appAddToPlaylist(app, SRC_QUEUE_ENTRY); break;
     case VIEW_PLAYLISTS:
         if (app->playlists.open)
-            appAddToPlaylist(app, SRC_PLAYLIST_SONG);
+            appConfirmRemoveSong(app);
         break;
     default: break;
     }

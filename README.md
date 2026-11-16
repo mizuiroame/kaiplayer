@@ -73,12 +73,14 @@ let it replace the old one.
 2. Drag your album folders into it. Subfolders (artist, album and so on) are
    fine.
 
-> **Use Latin letters in file and folder names.** On Switch 2, a file or
-> folder whose name has Japanese (or other non-Latin) characters is saved,
-> but no app can list it, KaiPlayer included. Rename such files on your PC
-> before uploading them, for example `04 みずいろの雨.mp3` →
-> `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the song's real title,
-> artist and album, in Japanese, from its tags. See
+> **Use plain letters (A–Z, no accents) in file and folder names.** On
+> Switch 2, a file or folder whose name has any character outside basic
+> ASCII (accents such as `á é ñ ü`, or Japanese) is saved, but no app can
+> list it, KaiPlayer included. Rename such files on your PC before uploading
+> them, for example `06 Canción.mp3` → `06 Cancion.mp3` or
+> `04 みずいろの雨.mp3` → `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the
+> song's real title, artist and album, with accents or in Japanese, from its
+> tags. See
 > [File names and tags](#file-names-and-tags).
 
 ### 4. Play it
@@ -123,10 +125,10 @@ you where you are; open Now Playing with **ZR** or by tapping the player bar.
 
 | Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **+ Add to playlist**, ↑ leaves it |
-| →  / ←    | Select the row's **+** / back to the row | Same, inside a playlist | Same                 | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song (or press the selected **‹ Back** or **+**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **+** is selected) |
-| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Back to Browse             |
+| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
+| →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
+| A         | Open folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
+| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Add the song to a playlist |
 | X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
 | Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
 
@@ -151,7 +153,8 @@ In every tab:
 | Queue       | Save the whole queue as a playlist |
 | All         | Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
 
-Adding songs to a playlist isn't in the menu: use the **+** buttons (see
+Adding songs to a playlist isn't in the menu: use the add-to-playlist
+buttons, a list with a small plus (see
 [Playlists](#playlists)).
 
 Use ↑ ↓ and **A** to choose, and **B** to close the menu. To exit, press
@@ -194,8 +197,9 @@ Everything can also be done by touch:
 - **Lists:** tap a song to play it, or a folder or playlist to open it. Drag
   up or down to scroll. **‹ Back** (next to the folder path, or the playlist
   name) goes up a folder or back to the playlist list.
-- **+ buttons:** every song and folder row has a **+** that adds it to a
-  playlist, and so does **+ Add to playlist** in Now Playing.
+- **Add-to-playlist buttons:** every song and folder row ends with a button
+  (a list with a small plus) that adds it to a playlist, and so does **Add
+  to playlist** in Now Playing.
 - **Player bar** (below Browse, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
   play or pause, and skip. Tap **Shuffle** or **Repeat** to change them, or
   anywhere else on the bar to open Now Playing.
@@ -216,10 +220,10 @@ close with **B**.
 | Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
 | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
-| ReplayGain (even loudness) | Off (default), Track or Album |
+| ReplayGain (even loudness) | Off (default), Track, Album or Auto |
 | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
 | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
-| About | The KaiPlayer version |
+| About | The KaiPlayer version; **A** shows more about the app and its author |
 
 **Sleep timer:** press **A** (or tap the row) to type the minutes on the
 number pad, or use ← → to change it by 5 minutes. **0** turns it off. When
@@ -249,19 +253,22 @@ the editor, with 10 bands from 31 Hz to 16 kHz and ±12 dB each:
 FLAC and Ogg, `TXXX` frames in MP3) that tools such as foobar2000, MusicBrainz
 Picard or `loudgain` write. **Track** levels every song; **Album** keeps the
 differences between songs of an album (and uses the track gain if a song has
-no album gain). Songs without these tags play as they are. KaiPlayer only
+no album gain). **Auto** picks for you: album gain when you play a folder in
+order, and track gain for playlists and shuffle, where songs from different
+albums follow each other. Songs without these tags play as they are. KaiPlayer only
 turns songs down, never up, so nothing clips. A new mode applies from the
 next song.
 
 **Accent color:** the color of the highlights, buttons and progress bar.
-**From cover** takes a bright version of the playing song's album art color.
+**From cover** takes a bright version of the most prominent color in the
+playing song's album art; black-and-white covers give a silver accent.
 
 **Screen off while playing:** after that long without touching the console
 while music plays, the screen turns off to save battery and the music keeps
 playing. You can also turn it off at once with **+ → Turn screen off**. Any
 button or a touch turns it back on; that press does nothing else. Menus
-don't turn it off while they are open. If the console doesn't let homebrew
-control the backlight, the screen goes black instead.
+don't turn it off while they are open. Docked, or if the console doesn't let
+homebrew control the backlight, the screen goes black instead.
 
 ### Playlists
 
@@ -273,19 +280,21 @@ playlists made on your PC into that folder.
 - **Create one:** in the Playlists tab, press **+** and choose
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
   **New playlist...**.
-- **Add songs:** tap the **+** on a song or folder in Browse (a folder adds
-  all its songs, subfolders included), on a song in Queue or in another
-  playlist, or **+ Add to playlist** in Now Playing. Then pick the playlist,
-  or **New playlist...**. With buttons, select the row, press **→** to
-  select its **+**, then **A** (in Now Playing, **↓** then **A**). Songs
-  already in the playlist aren't added twice.
+- **Add songs:** tap the add-to-playlist button on a song or folder in
+  Browse (a folder adds all its songs, subfolders included) or on a song in
+  Queue, or **Add to playlist** in Now Playing. Then pick the playlist, or
+  **New playlist...**. With buttons, select the row and press **→** (in Now
+  Playing, press **B**). Songs already in the playlist aren't added twice.
 - **Save the queue:** in Queue, press **+** and choose **Save queue as
   playlist**.
 - **Play:** in the Playlists tab, **X** plays a playlist, **Y** shuffles it,
   and **A** opens it to play from a song.
 - **Reorder:** open a playlist, select a song, press **+** and choose **Move
   song**. Move it with ↑ ↓ and press **A** to place it.
-- **Remove a song, rename or delete a playlist:** with **+** in the
+- **Remove a song:** inside a playlist, each song's row button (a list
+  with a minus) removes it from the playlist after you confirm; the file
+  stays on the card. It is also in the **+** menu.
+- **Rename or delete a playlist:** with **+** in the
   Playlists tab. Deleting a playlist doesn't delete any songs.
 
 Playlist names are typed on the console's own keyboard, in its Latin layout.
@@ -348,19 +357,37 @@ Text in tags and file names can be in any language:
 - **Japanese (kanji and kana), Chinese and Korean** are drawn with the fonts
   built into the console.
 
-**File and folder names, however, must use Latin letters.** This is a
+**File and folder names, however, must use plain ASCII letters.** This is a
 limitation of the console, not of KaiPlayer: on Switch 2, a file or folder
-whose name has Japanese characters is written correctly, but directory
-listings leave it out. FTP listings, OunceShell and KaiPlayer all list folders
-the same way, so the file is invisible in all of them, even though it is on
-the card. Accented Latin letters (á, ñ, ü) haven't been tested yet.
+whose name has any non-ASCII character (accented letters such as á, é, ñ or
+ü, or Japanese) is written correctly, but directory listings leave it out.
+FTP listings, OunceShell and KaiPlayer all list folders the same way, so the
+file is invisible in all of them, even though it is on the card.
 
 Because KaiPlayer shows the title, artist and album from the tags, the file
 name doesn't matter much. A file renamed `04 Mizuiro no Ame.mp3` is still
 shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, with its
 embedded cover.
 
-If you already uploaded a file with a Japanese name, it is on the card but
+**Upload with plain names, without renaming your files.** FileZilla can't
+rename files as it uploads them, so the repository includes a small script,
+[`tools/kaiupload.py`](tools/kaiupload.py) (Python 3.8 or later, nothing to
+install). It uploads a folder over FTP and gives the copies on the console
+plain names; the files on your computer are not changed:
+
+```
+python kaiupload.py 192.168.1.50 "G:\Music\Spanish album" /music --port 5000
+```
+
+Use the IP address and port that OunceShell's FTP screen shows (the same
+ones you use in FileZilla); add `--user` and `--password` if your FTP server
+asks for them. Accents are dropped (`06 Canción.mp3` → `06 Cancion.mp3`,
+`Ñandú` → `Nandu`), and characters such as Japanese become `_`
+(`04 みずいろの雨.mp3` → `04 _.mp3`). Run it with `--dry-run` first to see
+the names it will use. Files already on the console with the same size are
+skipped, so you can run it again after adding songs or if an upload stops.
+
+If you already uploaded a file with such a name, it is on the card but
 hidden. You can rename or delete it with FileZilla's
 **Server → Enter custom command** (use the folder that holds it as the
 current remote folder):
@@ -384,8 +411,8 @@ followed by the file size.
 | Problem | Solution |
 |---------|----------|
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
-| A file or folder doesn't appear | If its name has Japanese or other non-Latin characters, rename it with Latin letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
-| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This happens with non-Latin file names. |
+| A file or folder doesn't appear | If its name has accents (á, ñ…), Japanese or other non-ASCII characters, rename it with plain letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
+| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This can happen with non-ASCII file names. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
 | No cover | The file has no embedded cover and its folder has no `cover.jpg` (or similar), or the image is larger than 4096×4096 or 8 MB. |
 | `?` in titles | The character isn't in KaiPlayer's font or in the console's fonts. |
@@ -502,6 +529,7 @@ source/
 data/           Noto Sans Regular and Bold, embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
 tests/          host tests, fuzzer, fixtures and the UI preview
+tools/          kaiupload.py: FTP upload with names the console can list
 icon.jpg        256×256 icon for hbmenu
 ```
 
@@ -512,7 +540,7 @@ icon.jpg        256×256 icon for hbmenu
 - Pause and track changes have about 140 ms of latency, the size of the audio
   buffers.
 - A play list holds up to 8192 tracks, from up to 8 levels of subfolders.
-- Files and folders with non-Latin names (for example Japanese) are left out
+- Files and folders with non-ASCII names (accented letters or Japanese) are left out
   of directory listings on Switch 2, in every app. Opening them by path
   works (FTP `SIZE` finds them), so the console's directory read seems to
   stop at such entries. KaiPlayer can't list what the console doesn't return;

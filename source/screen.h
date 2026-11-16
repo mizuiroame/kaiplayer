@@ -1,6 +1,6 @@
-// Turning the screen off while music plays, to save battery. It uses the
-// backlight service when the console allows it; otherwise the app only
-// draws a black screen.
+// Turning the screen off while music plays, to save battery. In handheld
+// mode it uses the backlight service when the console allows it; docked, or
+// without it, the app only draws a black screen.
 #pragma once
 
 #include <stdbool.h>

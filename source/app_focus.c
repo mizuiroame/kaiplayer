@@ -57,9 +57,10 @@ uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count,
         app->focus = FOCUS_BACK;  // Keeps any "+" focus out of the way.
         pressed &= ~BUTTONS_UP;
     }
-    if ((pressed & BUTTONS_RIGHT) && has_add && app->focus == FOCUS_LIST)
-        app->focus = FOCUS_ADD;
-    if ((pressed & BUTTONS_LEFT) && app->focus == FOCUS_ADD)
-        app->focus = FOCUS_LIST;
-    return pressed & ~(BUTTONS_LEFT | BUTTONS_RIGHT);
+    if (app->focus == FOCUS_ADD)
+        app->focus = FOCUS_LIST;  // → now acts at once, so the "+" is never left selected.
+    // → presses the row's button straight away, once per press (holding it
+    // doesn't page through the picker or dialog it opens).
+    uint64_t row_action = (pressed & app->buttons_down & BUTTONS_RIGHT) && has_add ? BUTTON_ROW_ACTION : 0;
+    return (pressed & ~(BUTTONS_LEFT | BUTTONS_RIGHT)) | row_action;
 }

@@ -82,6 +82,8 @@ typedef struct {
     Config config;
     size_t queue_cursor;
     Focus focus;
+    uint64_t buttons_down;      // Pressed this frame, without auto-repeat.
+    char playing_playlist[PLAYLIST_NAME_MAX + 1];  // Where the queue came from; empty for a folder.
     BarControl bar_control;     // Selected player bar control, with FOCUS_PLAYER.
     PlaylistsTab playlists;
     bool audio_ok;
@@ -98,6 +100,7 @@ typedef struct {
     bool settings_open;
     SettingRow settings_cursor;
     bool eq_open;               // The equalizer editor (over Settings).
+    bool about_open;            // About KaiPlayer (over Settings).
     int eq_band;                // Selected band in the editor.
     bool screen_off;            // Screen off while music plays.
     bool touch_wakes;           // The touch that woke the screen: ignore until released.
@@ -114,10 +117,10 @@ typedef struct {
 // Shows a short message above the player bar.
 void appToast(App *app, const char *message);
 
-// Moves the focus between a list, its "< Back" (Up from the first row), its
-// rows' "+" (Right; Left returns) and the player bar (Down from the last
-// row; Up returns). Returns the buttons left for the list itself, without
-// Left and Right.
+// Moves the focus between a list, its "< Back" (Up from the first row) and
+// the player bar (Down from the last row; Up returns). Returns the buttons
+// left for the list itself, without Left and Right; Right on a row becomes
+// BUTTON_ROW_ACTION, its add (or remove) button.
 uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count, bool has_back, bool has_add);
 
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
@@ -131,13 +134,17 @@ void appPlaylistsClose(App *app);
 void appPlaylistsReloadIfOpen(App *app, const char *name);
 // Puts the cursor on the playlist called `name`, if it exists.
 void appPlaylistsSelect(App *app, const char *name);
-void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle);
+// playlist: the playlist the songs come from, or NULL for a folder. Now
+// Playing shows its name, and Auto ReplayGain treats it as mixed albums.
+void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, const char *playlist);
 
 // The + menu, its dialogs and the keyboard. appOpenMenu builds the menu for
 // the current tab; appHandleOverlay returns true while an overlay is open.
 void appOpenMenu(App *app);
 // Collects the songs from source and opens the playlist picker.
 void appAddToPlaylist(App *app, AddSource source);
+// Asks to confirm removing the selected song from the open playlist.
+void appConfirmRemoveSong(App *app);
 bool appHandleOverlay(App *app, uint64_t pressed);
 
 // Switches tabs, refreshing what the new tab shows.
