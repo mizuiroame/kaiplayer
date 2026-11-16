@@ -41,6 +41,7 @@ static bool g_eq_enabled;
 static int g_eq_gains[EQ_BANDS];
 static bool g_eq_changed = true;
 static ReplayGainMode g_replaygain;
+static bool g_mixed_albums;
 
 // Owned by the audio thread: the equalizer and the current track's gain.
 static Eq g_eq;
@@ -77,6 +78,7 @@ static float replayGainFor(const char *path)
 {
     mutexLock(&g_lock);
     ReplayGainMode mode = g_replaygain;
+    bool shuffle = g_shuffle, mixed = g_mixed_albums;
     mutexUnlock(&g_lock);
     if (mode == REPLAYGAIN_OFF)
         return 1.0f;
@@ -84,14 +86,9 @@ static float replayGainFor(const char *path)
     tagsInit(&tags);
     tags.skip_picture = true;
     tagsRead(path, &tags);
-    float db = 0.0f;
-    if (mode == REPLAYGAIN_ALBUM && tags.has_album_gain)
-        db = tags.album_gain_db;
-    else if (tags.has_track_gain)
-        db = tags.track_gain_db;
+    float db = replayGainDb(mode, shuffle, mixed, &tags);
     tagsFree(&tags);
-    // Without peak data a boost could clip: positive gains are not applied.
-    return db < 0.0f ? powf(10.0f, db / 20.0f) : 1.0f;
+    return replayGainFactor(db);
 }
 
 // Opens the queue's current track, skipping files that fail to open.
@@ -553,6 +550,13 @@ void playerSetReplayGain(ReplayGainMode mode)
 {
     mutexLock(&g_lock);
     g_replaygain = mode;
+    mutexUnlock(&g_lock);
+}
+
+void playerSetMixedAlbums(bool mixed)
+{
+    mutexLock(&g_lock);
+    g_mixed_albums = mixed;
     mutexUnlock(&g_lock);
 }
 

@@ -5,6 +5,7 @@
 #include "check.h"
 #include "eq.h"
 #include "tags.h"
+#include "replaygain.h"
 #include "theme.h"
 
 #define RATE 48000.0
@@ -128,8 +129,30 @@ static void testTheme(void)
     CHECK(themeAccentColor(99, 0, false) == pink);  // Unknown accent.
 }
 
+static void testReplayGainChoice(void)
+{
+    TrackTags t;
+    tagsInit(&t);
+    t.has_track_gain = t.has_album_gain = true;
+    t.track_gain_db = -7.0f;
+    t.album_gain_db = -5.0f;
+    CHECK(replayGainDb(REPLAYGAIN_OFF, false, false, &t) == 0.0f);
+    CHECK(replayGainDb(REPLAYGAIN_TRACK, false, false, &t) == -7.0f);
+    CHECK(replayGainDb(REPLAYGAIN_ALBUM, true, true, &t) == -5.0f);
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, false, false, &t) == -5.0f);  // An album in order.
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, true, false, &t) == -7.0f);   // Shuffle.
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, false, true, &t) == -7.0f);   // A playlist.
+    t.has_album_gain = false;
+    CHECK(replayGainDb(REPLAYGAIN_ALBUM, false, false, &t) == -7.0f); // Falls back to track.
+    t.has_track_gain = false;
+    CHECK(replayGainDb(REPLAYGAIN_AUTO, false, false, &t) == 0.0f);   // No tags.
+    CHECK(replayGainFactor(6.0f) == 1.0f && fabsf(replayGainFactor(-6.0f) - 0.501f) < 0.01f);
+    tagsFree(&t);
+}
+
 void testEq(void)
 {
+    testReplayGainChoice();
     testTheme();
     testFlat();
     testBoostAndCut();

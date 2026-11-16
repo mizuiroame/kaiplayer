@@ -132,7 +132,9 @@ void appPlaylistsClose(App *app);
 void appPlaylistsReloadIfOpen(App *app, const char *name);
 // Puts the cursor on the playlist called `name`, if it exists.
 void appPlaylistsSelect(App *app, const char *name);
-void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle);
+// mixed_albums: the songs come from different albums (a playlist), for
+// Auto ReplayGain.
+void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, bool mixed_albums);
 
 // The + menu, its dialogs and the keyboard. appOpenMenu builds the menu for
 // the current tab; appHandleOverlay returns true while an overlay is open.

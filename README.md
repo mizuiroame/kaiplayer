@@ -220,7 +220,7 @@ close with **B**.
 | Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
 | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
-| ReplayGain (even loudness) | Off (default), Track or Album |
+| ReplayGain (even loudness) | Off (default), Track, Album or Auto |
 | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
 | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
 | About | The KaiPlayer version; **A** shows more about the app and its author |
@@ -253,7 +253,9 @@ the editor, with 10 bands from 31 Hz to 16 kHz and ±12 dB each:
 FLAC and Ogg, `TXXX` frames in MP3) that tools such as foobar2000, MusicBrainz
 Picard or `loudgain` write. **Track** levels every song; **Album** keeps the
 differences between songs of an album (and uses the track gain if a song has
-no album gain). Songs without these tags play as they are. KaiPlayer only
+no album gain). **Auto** picks for you: album gain when you play a folder in
+order, and track gain for playlists and shuffle, where songs from different
+albums follow each other. Songs without these tags play as they are. KaiPlayer only
 turns songs down, never up, so nothing clips. A new mode applies from the
 next song.
 

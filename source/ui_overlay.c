@@ -99,7 +99,7 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         snprintf(out, size, "%s", app->config.eq_on ? eqPresetName((EqPreset)app->config.eq_preset) : "Off");
         break;
     case SETTING_REPLAYGAIN: {
-        static const char *const MODES[] = {"Off", "Track", "Album"};
+        static const char *const MODES[REPLAYGAIN_MODE_COUNT] = {"Off", "Track", "Album", "Auto"};
         snprintf(out, size, "%s", MODES[app->config.replaygain % REPLAYGAIN_MODE_COUNT]);
         break;
     }

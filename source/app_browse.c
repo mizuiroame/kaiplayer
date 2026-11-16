@@ -27,7 +27,7 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
         size_t found = trackListFind(&list, path);
         start = found < list.count ? found : 0;
     }
-    appPlayTracks(app, &list, start, shuffle);
+    appPlayTracks(app, &list, start, shuffle, false);
     snprintf(app->config.folder, sizeof(app->config.folder), "%s", folder);
     configSave(&app->config);
 }
