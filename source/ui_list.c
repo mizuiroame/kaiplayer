@@ -59,6 +59,15 @@ void uiDrawAddButton(int x, int y, size_t index, bool focused)
     uiHitAdd(x, y, ADD_BUTTON_W, ROW_H, HIT_ADD, (int)index);
 }
 
+void uiDrawRemoveButton(int x, int y, size_t index, bool focused)
+{
+    int cx = x + ADD_BUTTON_W / 2, cy = y + ROW_H / 2;
+    Color mark = focused ? COLOR_BG : COLOR_DIM;
+    gfxFillCircle(cx, cy, focused ? 16 : 14, focused ? COLOR_ERROR : COLOR_SURFACE_HI);
+    uiDrawPlaylistRemoveIcon((float)cx, (float)cy, 0.75f, mark);
+    uiHitAdd(x, y, ADD_BUTTON_W, ROW_H, HIT_ADD, (int)index);  // The tab decides what the button does.
+}
+
 int uiDrawBackButton(int x, int y, bool focused)
 {
     static const char LABEL[] = "Back";
@@ -142,7 +151,10 @@ void uiDrawTrackRow(const TrackRow *row)
     uiDrawSongTitle(&song, row->current || row->selected ? FONT_BOLD : FONT_REGULAR, MARGIN + 66, y + 8,
                     COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), row->current ? COLOR_ACCENT : COLOR_TEXT);
     uiDrawSongColumns(&song, y);
-    uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, row->index, row->add_focused);
+    if (row->remove_button)
+        uiDrawRemoveButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, row->index, row->add_focused);
+    else
+        uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, row->index, row->add_focused);
 }
 
 void uiHitListArea(void)

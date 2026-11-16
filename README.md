@@ -128,7 +128,7 @@ you where you are; open Now Playing with **ZR** or by tapping the player bar.
 | ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
 | →  / ←    | Select the row's add-to-playlist button / back to the row | Same, inside a playlist | Same                 | Rewind / fast-forward 10 s |
 | A         | Open folder / play from song (or press the selected **‹ Back** or add-to-playlist button) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
-| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Back to Browse             |
+| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Add the song to a playlist |
 | X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
 | Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
 
@@ -290,7 +290,10 @@ playlists made on your PC into that folder.
   and **A** opens it to play from a song.
 - **Reorder:** open a playlist, select a song, press **+** and choose **Move
   song**. Move it with ↑ ↓ and press **A** to place it.
-- **Remove a song, rename or delete a playlist:** with **+** in the
+- **Remove a song:** inside a playlist, each song's row button (a list
+  with a minus) removes it from the playlist after you confirm; the file
+  stays on the card. It is also in the **+** menu.
+- **Rename or delete a playlist:** with **+** in the
   Playlists tab. Deleting a playlist doesn't delete any songs.
 
 Playlist names are typed on the console's own keyboard, in its Latin layout.

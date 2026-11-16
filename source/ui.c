@@ -313,7 +313,7 @@ static const char *footerHelp(const App *app)
         "[A] open  [B] back  [>] add to playlist  [X] play folder  [Y] shuffle  [v] player  [+] menu",
         "[A] open  [X] play  [Y] shuffle  [RS] page  [-] pause  [L][R] track  [+] menu",
         "[A] play  [B] browse  [>] add to playlist  [X] shuffle  [Y] repeat  [v] player  [+] menu",
-        "[A] pause  [<>] seek  [v] add to playlist  [X] shuffle  [Y] repeat  [+] menu",
+        "[A] pause  [<>] seek  [B] add to playlist  [X] shuffle  [Y] repeat  [+] menu",
     };
     if (app->keyboard_open)
         return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
@@ -332,7 +332,7 @@ static const char *footerHelp(const App *app)
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return "[<>] choose  [A] press  [^][B] back to the list  [-] pause  [L][R] track";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "[A] play from song  [B] back  [>] add to playlist  [X] play  [Y] shuffle  [+] menu";
+        return "[A] play from song  [B] back  [>] remove from playlist  [X] play  [Y] shuffle  [+] menu";
     return HELP[app->view];
 }
 

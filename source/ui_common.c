@@ -120,13 +120,13 @@ static void drawShuffleIcon(float x, float y, Color color)
 // A circle open at the top right, with an arrow going clockwise.
 static void drawRepeatIcon(float x, float y, bool one, Color color)
 {
-    float cx = x + 10, cy = y + 10, r = 7.0f;
+    float cx = x + 10, cy = y + 10, r = one ? 8.0f : 7.0f;
     float start = -1.05f, end = start + 2.0f * (float)M_PI - 0.95f;
     gfxArc(cx, cy, r, 2.2f, start, end, color);
     float ex = cx + r * cosf(end), ey = cy + r * sinf(end);
     drawArrowHead(ex - sinf(end) * 4.0f, ey + cosf(end) * 4.0f, -sinf(end), cosf(end), color);
     if (one)
-        fontDraw(FONT_BOLD, 12, (int)cx - fontTextWidth(FONT_BOLD, 12, "1") / 2, (int)cy - 8, "1", color);
+        fontDrawCentered(FONT_BOLD, 10, cx, cy + 0.5f, "1", color);
 }
 
 void uiDrawPlaylistAddIcon(float cx, float cy, float scale, Color color)
@@ -137,6 +137,15 @@ void uiDrawPlaylistAddIcon(float cx, float cy, float scale, Color color)
     gfxLine(cx - 8 * s, cy + 4 * s, cx - 1 * s, cy + 4 * s, t, color);
     gfxLine(cx + 1.5f * s, cy + 4 * s, cx + 8.5f * s, cy + 4 * s, t, color);
     gfxLine(cx + 5 * s, cy + 0.5f * s, cx + 5 * s, cy + 7.5f * s, t, color);
+}
+
+void uiDrawPlaylistRemoveIcon(float cx, float cy, float scale, Color color)
+{
+    float s = scale, t = 1.9f * scale;
+    gfxLine(cx - 8 * s, cy - 6 * s, cx + 5 * s, cy - 6 * s, t, color);
+    gfxLine(cx - 8 * s, cy - 1 * s, cx + 5 * s, cy - 1 * s, t, color);
+    gfxLine(cx - 8 * s, cy + 4 * s, cx - 1 * s, cy + 4 * s, t, color);
+    gfxLine(cx + 1.5f * s, cy + 4 * s, cx + 8.5f * s, cy + 4 * s, t, color);
 }
 
 int uiIconPillWidth(const char *hint, const char *label)

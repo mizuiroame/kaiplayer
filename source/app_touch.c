@@ -49,7 +49,7 @@ static void addFromRow(App *app, int index)
     case VIEW_QUEUE: appAddToPlaylist(app, SRC_QUEUE_ENTRY); break;
     case VIEW_PLAYLISTS:
         if (app->playlists.open)
-            appAddToPlaylist(app, SRC_PLAYLIST_SONG);
+            appConfirmRemoveSong(app);
         break;
     default: break;
     }

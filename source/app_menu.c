@@ -7,6 +7,7 @@
 #include "app_buttons.h"
 #include "app_keyboard.h"
 #include "library.h"
+#include "meta.h"
 #include "player.h"
 
 #define MENU_PAGE 8
@@ -25,7 +26,8 @@ typedef enum {
     ACT_DELETE_CONFIRMED,
     ACT_CANCEL,
     ACT_MOVE_SONG,
-    ACT_REMOVE_SONG,
+    ACT_REMOVE_SONG,    // Asks to confirm.
+    ACT_REMOVE_CONFIRMED,
 } MenuAction;
 
 // The playlist the menu acts on: the open one, or the selected one.
@@ -106,11 +108,46 @@ static bool collectSongs(App *app, AddSource source)
     return false;
 }
 
+#define SONG_TITLE_MAX 44  // Room left for a title in a menu heading.
+
+// Drops a UTF-8 character cut off at the end of s.
+static void trimPartialUtf8(char *s)
+{
+    size_t len = strlen(s), start = len;
+    while (start > 0 && ((unsigned char)s[start - 1] & 0xC0) == 0x80)
+        start--;  // Back over continuation bytes to the character's lead byte.
+    if (start == 0 || ((unsigned char)s[start - 1] & 0x80) == 0)
+        return;   // Ends in ASCII.
+    unsigned char lead = (unsigned char)s[start - 1];
+    size_t need = lead >= 0xF0 ? 4 : lead >= 0xE0 ? 3 : 2;
+    if (len - (start - 1) < need)
+        s[start - 1] = '\0';
+}
+
+// A song's title from its tags, or its file name without the extension,
+// shortened to fit a menu heading.
+static void songTitle(const char *path, char out[SONG_TITLE_MAX])
+{
+    const size_t size = SONG_TITLE_MAX;
+    static SongMeta meta;  // Big; menus run on the UI thread.
+    if (metaLookup(path, &meta) && meta.title[0]) {
+        snprintf(out, size, "%.43s", meta.title);
+    } else {
+        snprintf(out, size, "%.43s", utilFileName(path));
+        char *dot = strrchr(out, '.');
+        if (dot && dot != out)
+            *dot = '\0';
+    }
+    trimPartialUtf8(out);
+}
+
 static void openPicker(App *app)
 {
-    char title[MENU_LABEL_MAX];
-    if (app->pending.count == 1)
-        snprintf(title, sizeof(title), "Add \"%s\" to", utilFileName(app->pending.paths[0]));
+    char title[MENU_LABEL_MAX], song[SONG_TITLE_MAX];
+    if (app->pending.count == 1) {
+        songTitle(app->pending.paths[0], song);
+        snprintf(title, sizeof(title), "Add \"%s\" to", song);
+    }
     else
         snprintf(title, sizeof(title), "Add %zu songs to", app->pending.count);
     appPlaylistsRefresh(app);
@@ -126,12 +163,17 @@ static void addPendingTo(App *app, const char *name)
 {
     int added = playlistAddTracks(name, &app->pending);
     char message[160];
-    if (added < 0)
+    char song[SONG_TITLE_MAX];
+    if (added < 0) {
         snprintf(message, sizeof(message), "Could not add to \"%s\".", name);
-    else if (added == 0)
+    } else if (added == 0) {
         snprintf(message, sizeof(message), "Already in \"%s\".", name);
-    else
-        snprintf(message, sizeof(message), "Added %d song%s to \"%s\".", added, added == 1 ? "" : "s", name);
+    } else if (app->pending.count == 1) {
+        songTitle(app->pending.paths[0], song);
+        snprintf(message, sizeof(message), "Added \"%s\" to \"%s\".", song, name);
+    } else {
+        snprintf(message, sizeof(message), "Added %d songs to \"%s\".", added, name);
+    }
     appToast(app, message);
     if (added > 0)
         appPlaylistsReloadIfOpen(app, name);
@@ -175,17 +217,34 @@ static void deletePlaylist(App *app)
     appPlaylistsRefresh(app);
 }
 
+void appConfirmRemoveSong(App *app)
+{
+    const PlaylistsTab *t = &app->playlists;
+    if (!t->open || t->track_cursor >= t->tracks.count)
+        return;
+    char song[SONG_TITLE_MAX], title[MENU_LABEL_MAX];
+    songTitle(t->tracks.paths[t->track_cursor], song);
+    snprintf(title, sizeof(title), "Remove \"%s\" from this playlist?", song);
+    menuOpen(&app->menu, title);
+    menuAdd(&app->menu, "Remove", ACT_REMOVE_CONFIRMED, 0);
+    menuAdd(&app->menu, "Cancel", ACT_CANCEL, 0);
+}
+
 static void removeSong(App *app)
 {
     PlaylistsTab *t = &app->playlists;
-    char path[UTIL_PATH_MAX];
+    if (t->track_cursor >= t->tracks.count)
+        return;
+    char path[UTIL_PATH_MAX], song[SONG_TITLE_MAX], message[160];
+    songTitle(t->tracks.paths[t->track_cursor], song);
     trackListRemove(&t->tracks, t->track_cursor);
     if (t->track_cursor >= t->tracks.count && t->track_cursor > 0)
         t->track_cursor--;
     if (playlistPathFor(t->name, path, sizeof(path)) && playlistSave(path, &t->tracks))
-        appToast(app, "Removed from the playlist.");
+        snprintf(message, sizeof(message), "Removed \"%s\" from \"%s\".", song, t->name);
     else
-        appToast(app, "Could not save the playlist.");
+        snprintf(message, sizeof(message), "Could not save the playlist.");
+    appToast(app, message);
 }
 
 static void saveQueue(App *app)
@@ -230,7 +289,8 @@ static void runItem(App *app, const MenuItem *item)
         app->playlists.moving = true;
         appToast(app, "Move the song with Up/Down, then press A.");
         break;
-    case ACT_REMOVE_SONG: removeSong(app); break;
+    case ACT_REMOVE_SONG: appConfirmRemoveSong(app); break;
+    case ACT_REMOVE_CONFIRMED: removeSong(app); break;
     }
 }
 

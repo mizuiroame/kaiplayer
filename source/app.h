@@ -139,6 +139,8 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle);
 void appOpenMenu(App *app);
 // Collects the songs from source and opens the playlist picker.
 void appAddToPlaylist(App *app, AddSource source);
+// Asks to confirm removing the selected song from the open playlist.
+void appConfirmRemoveSong(App *app);
 bool appHandleOverlay(App *app, uint64_t pressed);
 
 // Switches tabs, refreshing what the new tab shows.

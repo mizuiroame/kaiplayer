@@ -67,6 +67,8 @@ typedef enum {
 
 // "Add to playlist": a list with a plus, in a box of about 20 * scale.
 void uiDrawPlaylistAddIcon(float cx, float cy, float scale, Color color);
+// "Remove from playlist": the same list with a minus.
+void uiDrawPlaylistRemoveIcon(float cx, float cy, float scale, Color color);
 
 // A pill with an icon before the label, and an optional button hint
 // ("X") before the icon.

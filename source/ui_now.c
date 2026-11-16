@@ -121,8 +121,8 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
     if (status->track_count > 0) {  // Add the current song to a playlist.
         static const char ADD[] = "Add to playlist";
         x += repeat_w + 12;
-        uiDrawIconPill(x, TOGGLES_Y, NULL, PILL_ICON_PLAYLIST_ADD, ADD, add_focused);
-        uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth(NULL, ADD), 46, HIT_ADD, -1);
+        uiDrawIconPill(x, TOGGLES_Y, "B", PILL_ICON_PLAYLIST_ADD, ADD, add_focused);
+        uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth("B", ADD), 46, HIT_ADD, -1);
     }
 }
 
