@@ -138,7 +138,7 @@ typedef struct {
     PlaylistsTab playlists;
     bool audio_ok;
     SysInfo sys;  // Clock and battery, refreshed by the main loop.
-    char toast[160];
+    char toast[320];
     uint64_t toast_until_ns;
 
     Menu menu;              // The + menu and the dialogs it opens.

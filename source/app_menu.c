@@ -181,7 +181,7 @@ static void openPicker(App *app)
 static void addPendingTo(App *app, const char *name)
 {
     int added = playlistAddTracks(name, &app->pending);
-    char message[160];
+    char message[320];
     char song[SONG_TITLE_MAX];
     if (added < 0) {
         snprintf(message, sizeof(message), "Could not add to \"%s\".", name);
@@ -229,7 +229,7 @@ static void confirmExit(App *app)
 static void deletePlaylist(App *app)
 {
     const char *name = currentPlaylist(app);
-    char message[160];
+    char message[320];
     snprintf(message, sizeof(message), playlistDelete(name) ? "Deleted \"%s\"." : "Could not delete \"%s\".", name);
     appToast(app, message);
     appPlaylistsClose(app);
@@ -254,7 +254,7 @@ static void removeSong(App *app)
     PlaylistsTab *t = &app->playlists;
     if (t->track_cursor >= t->tracks.count)
         return;
-    char path[UTIL_PATH_MAX], song[SONG_TITLE_MAX], message[160];
+    char path[UTIL_PATH_MAX], song[SONG_TITLE_MAX], message[320];
     songTitle(t->tracks.paths[t->track_cursor], song);
     trackListRemove(&t->tracks, t->track_cursor);
     if (t->track_cursor >= t->tracks.count && t->track_cursor > 0)
