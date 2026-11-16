@@ -118,8 +118,8 @@ and WMA won't be added, because they need paid licenses.
 ## Controls
 
 KaiPlayer has four tabs: **Browse**, **Playlists**, **Queue** and **Now
-Playing**. Press **ZL** / **ZR** to move between them. When you start playing
-music, KaiPlayer switches to Now Playing.
+Playing**. Press **ZL** / **ZR** to move between them. Starting a song keeps
+you where you are; open Now Playing with **ZR** or by tapping the player bar.
 
 | Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|

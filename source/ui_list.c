@@ -10,6 +10,9 @@
 
 #define COLUMN_END (GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W - 12)
 #define COLUMN_GAP 24
+#define TEXT_COLUMN 20
+// Brighter than COLOR_DIM: small grey text on the dark rows looked soft.
+#define COLOR_COLUMN GFX_RGB(0xCC, 0xCC, 0xD6)
 #define BAR_W 4
 #define BAR_STEP 7
 #define BAR_MAX_H 20
@@ -94,10 +97,10 @@ void uiDrawSongColumns(const char *path, int y)
     char folder[UTIL_PATH_MAX], title[UTIL_PATH_MAX];
     if (!album[0])  // No tag: the folder is the best guess.
         uiSplitTrackPath(path, title, folder);
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, COLUMN_ARTIST_X, y + 11, COLUMN_ALBUM_X - COLUMN_ARTIST_X - COLUMN_GAP,
-                    artist, COLOR_DIM);
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, COLUMN_ALBUM_X, y + 11, COLUMN_END - COLUMN_ALBUM_X,
-                    album[0] ? album : folder, album[0] ? COLOR_DIM : COLOR_FAINT);
+    fontDrawClipped(FONT_REGULAR, TEXT_COLUMN, COLUMN_ARTIST_X, y + 10, COLUMN_ALBUM_X - COLUMN_ARTIST_X - COLUMN_GAP,
+                    artist, COLOR_COLUMN);
+    fontDrawClipped(FONT_REGULAR, TEXT_COLUMN, COLUMN_ALBUM_X, y + 10, COLUMN_END - COLUMN_ALBUM_X,
+                    album[0] ? album : folder, album[0] ? COLOR_COLUMN : COLOR_DIM);
 }
 
 void uiDrawTrackRow(const TrackRow *row)

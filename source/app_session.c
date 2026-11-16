@@ -23,8 +23,7 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle)
         playerSetShuffle(true);
         start = (size_t)(armGetSystemTick() % tracks->count);
     }
-    playerPlay(tracks, start < tracks->count ? start : 0);
-    app->view = VIEW_NOW_PLAYING;
+    playerPlay(tracks, start < tracks->count ? start : 0);  // The view stays where it is.
 }
 
 void appRestoreSession(App *app, bool play)
