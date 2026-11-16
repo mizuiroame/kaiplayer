@@ -73,12 +73,14 @@ let it replace the old one.
 2. Drag your album folders into it. Subfolders (artist, album and so on) are
    fine.
 
-> **Use Latin letters in file and folder names.** On Switch 2, a file or
-> folder whose name has Japanese (or other non-Latin) characters is saved,
-> but no app can list it, KaiPlayer included. Rename such files on your PC
-> before uploading them, for example `04 みずいろの雨.mp3` →
-> `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the song's real title,
-> artist and album, in Japanese, from its tags. See
+> **Use plain letters (A–Z, no accents) in file and folder names.** On
+> Switch 2, a file or folder whose name has any character outside basic
+> ASCII (accents such as `á é ñ ü`, or Japanese) is saved, but no app can
+> list it, KaiPlayer included. Rename such files on your PC before uploading
+> them, for example `06 Canción.mp3` → `06 Cancion.mp3` or
+> `04 みずいろの雨.mp3` → `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the
+> song's real title, artist and album, with accents or in Japanese, from its
+> tags. See
 > [File names and tags](#file-names-and-tags).
 
 ### 4. Play it
@@ -349,19 +351,19 @@ Text in tags and file names can be in any language:
 - **Japanese (kanji and kana), Chinese and Korean** are drawn with the fonts
   built into the console.
 
-**File and folder names, however, must use Latin letters.** This is a
+**File and folder names, however, must use plain ASCII letters.** This is a
 limitation of the console, not of KaiPlayer: on Switch 2, a file or folder
-whose name has Japanese characters is written correctly, but directory
-listings leave it out. FTP listings, OunceShell and KaiPlayer all list folders
-the same way, so the file is invisible in all of them, even though it is on
-the card. Accented Latin letters (á, ñ, ü) haven't been tested yet.
+whose name has any non-ASCII character (accented letters such as á, é, ñ or
+ü, or Japanese) is written correctly, but directory listings leave it out.
+FTP listings, OunceShell and KaiPlayer all list folders the same way, so the
+file is invisible in all of them, even though it is on the card.
 
 Because KaiPlayer shows the title, artist and album from the tags, the file
 name doesn't matter much. A file renamed `04 Mizuiro no Ame.mp3` is still
 shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, with its
 embedded cover.
 
-If you already uploaded a file with a Japanese name, it is on the card but
+If you already uploaded a file with such a name, it is on the card but
 hidden. You can rename or delete it with FileZilla's
 **Server → Enter custom command** (use the folder that holds it as the
 current remote folder):
@@ -385,8 +387,8 @@ followed by the file size.
 | Problem | Solution |
 |---------|----------|
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
-| A file or folder doesn't appear | If its name has Japanese or other non-Latin characters, rename it with Latin letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
-| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This happens with non-Latin file names. |
+| A file or folder doesn't appear | If its name has accents (á, ñ…), Japanese or other non-ASCII characters, rename it with plain letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
+| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This can happen with non-ASCII file names. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
 | No cover | The file has no embedded cover and its folder has no `cover.jpg` (or similar), or the image is larger than 4096×4096 or 8 MB. |
 | `?` in titles | The character isn't in KaiPlayer's font or in the console's fonts. |
@@ -513,7 +515,7 @@ icon.jpg        256×256 icon for hbmenu
 - Pause and track changes have about 140 ms of latency, the size of the audio
   buffers.
 - A play list holds up to 8192 tracks, from up to 8 levels of subfolders.
-- Files and folders with non-Latin names (for example Japanese) are left out
+- Files and folders with non-ASCII names (accented letters or Japanese) are left out
   of directory listings on Switch 2, in every app. Opening them by path
   works (FTP `SIZE` finds them), so the console's directory read seems to
   stop at such entries. KaiPlayer can't list what the console doesn't return;

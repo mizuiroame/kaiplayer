@@ -1,10 +1,12 @@
 #include "ui_common.h"
 
-Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
-
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "meta.h"
+
+Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
 
 void uiSplitTrackPath(const char *path, char *title, char *folder)
 {
@@ -32,7 +34,24 @@ void uiResolveTrack(const PlayerStatus *status, const Artwork *art, UiTrack *tra
         return;
     }
     uiSplitTrackPath(path, track->title, track->folder);
-    if (!art || strcmp(art->path, path) != 0)
+    if (art && strcmp(art->path, path) != 0) {
+        // The new song's artwork is still loading: keep the last cover (and
+        // so the accent) instead of flashing the placeholder, and take the
+        // text from the list cache if it has it.
+        if (art->has_cover) {
+            track->cover = &art->cover;
+            track->thumb = &art->thumb;
+        }
+        static SongMeta meta;  // Big; the UI draws on one thread.
+        if (metaLookup(path, &meta)) {
+            if (meta.title[0])
+                snprintf(track->title, sizeof(track->title), "%s", meta.title);
+            snprintf(track->artist, sizeof(track->artist), "%s", meta.artist);
+            snprintf(track->album, sizeof(track->album), "%s", meta.album);
+        }
+        return;
+    }
+    if (!art)
         return;
     if (art->title[0])
         snprintf(track->title, sizeof(track->title), "%s", art->title);
