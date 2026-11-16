@@ -1,17 +1,18 @@
-// Now Playing's record, CD and cassette. What doesn't turn (the record's
-// grooves and shine, the CD's plastic) is drawn once into an image; each
-// frame only turns the cover on top. They turn only while a song plays.
+// Now Playing's record and CD (the cassette is in ui_cassette.c). What
+// doesn't turn (the record's grooves and shine, the CD's plastic) is drawn
+// once into an image; each frame only turns the cover on top. They turn only
+// while a song plays.
 #include <math.h>
 #include <stdlib.h>
 
 #include "nowstyle.h"
 #include "ui_common.h"
+#include "ui_cassette.h"
 #include "ui_nowstyle.h"
 
 #define TAU 6.2831853f
 #define VINYL_RPS 0.25f  // A turn every 4 s: calmer on screen than a real 33 1/3 rpm.
 #define CD_RPS 0.2f
-#define TAPE_SPEED 26.0f                     // Layout pixels of tape per second, for the reels.
 #define MAX_FRAME_SECONDS 0.25               // After a pause or another view, don't jump.
 
 #define VINYL_LABEL 0.34f  // Radii as fractions of the disc's.
@@ -166,73 +167,8 @@ static void drawCd(int x, int y, int size, const UiTrack *track, double spin)
         drawLayer(&g_cd_gloss, cx, cy);
 }
 
-// One reel in the cassette's window: the wound tape and the turning hub.
-static void drawReel(float cx, float cy, float tape_radius, float angle)
-{
-    gfxArc(cx, cy, tape_radius / 2.0f, tape_radius, 0.0f, TAU, GFX_RGB(0x4A, 0x33, 0x26));
-    gfxArc(cx, cy, 8.5f, 17.0f, 0.0f, TAU, GFX_RGB(0xEE, 0xEE, 0xF0));
-    gfxArc(cx, cy, 5.0f, 10.0f, 0.0f, TAU, GFX_RGB(0x26, 0x26, 0x2A));
-    for (int i = 0; i < 6; i++) {  // The teeth that grip the spindle.
-        float a = angle + i * TAU / 6.0f;
-        gfxLine(cx + cosf(a) * 7.0f, cy + sinf(a) * 7.0f, cx + cosf(a) * 12.0f, cy + sinf(a) * 12.0f, 3.0f,
-                GFX_RGB(0xEE, 0xEE, 0xF0));
-    }
-}
-
-static void drawCassette(int x, int y, int size, const UiTrack *track, double spin, double progress)
-{
-    int w = size, h = size * 64 / 100;
-    y += (size - h) / 2;
-    Color shell = GFX_RGB(0x2A, 0x2A, 0x30), paper = GFX_RGB(0xEE, 0xE8, 0xDA);
-    Color band = track->cover ? (track->cover->vibrant ? track->cover->vibrant : track->cover->average)
-                              : COLOR_ACCENT;
-    gfxFillRoundRect(x, y, w, h, 16, shell);
-
-    // The reels first; the label is drawn around the window, so it hides
-    // the tape that wouldn't show.
-    int win_x = x + w * 28 / 100, win_y = y + h * 42 / 100, win_w = w * 44 / 100, win_h = h * 26 / 100;
-    float left_x = x + w * 0.33f, right_x = x + w * 0.67f, reel_y = win_y + win_h / 2.0f;
-    float empty = 19.0f, full = w * 0.14f;
-    float done = (float)(progress < 0.0 ? 0.0 : progress > 1.0 ? 1.0 : progress);
-    float left_r = sqrtf(empty * empty + (1.0f - done) * (full * full - empty * empty));
-    float right_r = sqrtf(empty * empty + done * (full * full - empty * empty));
-    gfxFillRect(win_x, win_y, win_w, win_h, GFX_RGB(0x14, 0x14, 0x18));
-    drawReel(left_x, reel_y, left_r, (float)fmod(spin * TAPE_SPEED / left_r, TAU));
-    drawReel(right_x, reel_y, right_r, (float)fmod(spin * TAPE_SPEED / right_r, TAU));
-
-    int lx = x + 18, ly = y + 16, lw = w - 36, lh = h * 64 / 100;
-    gfxFillRect(x + 40, ly + lh, w - 80, y + h - 8 - ly - lh, shell);  // Hides a full reel below the label.
-    gfxFillRect(lx, ly, lw, win_y - ly, paper);                              // Above the window.
-    gfxFillRect(lx, win_y + win_h, lw, ly + lh - win_y - win_h, paper);      // Below it.
-    gfxFillRect(lx, win_y, win_x - lx, win_h, paper);                        // Left of it.
-    gfxFillRect(win_x + win_w, win_y, lx + lw - win_x - win_w, win_h, paper); // Right of it.
-    gfxFillRect(lx, ly, lw, 30, band);
-    unsigned luma = ((band & 0xFF) * 3 + (band >> 8 & 0xFF) * 6 + (band >> 16 & 0xFF)) / 10;
-    Color ink = luma > 150 ? GFX_RGB(0x22, 0x22, 0x26) : GFX_RGB(0xFF, 0xFF, 0xFF);  // Readable on the band.
-    fontDraw(FONT_BOLD, 18, lx + 12, ly + 5, "A", ink);
-    fontDrawClipped(FONT_BOLD, 18, lx + 36, ly + 5, lw - 48, track->title, ink);
-    if (track->artist[0])
-        fontDrawClipped(FONT_REGULAR, 16, lx + 12, ly + 38, lw - 24, track->artist, GFX_RGB(0x3A, 0x3A, 0x40));
-    if (track->cover) {  // The cover, small, on the label's right.
-        int thumb = win_h + 8;
-        uiDrawCover(win_x + win_w + (lx + lw - win_x - win_w - thumb) / 2, win_y - 4, thumb, track->cover);
-    }
-    gfxFillRoundRect(win_x - 4, win_y - 4, win_w + 8, 4, 2, GFX_RGB(0x9A, 0x96, 0x8C));  // The window's frame.
-    gfxFillRoundRect(win_x - 4, win_y + win_h, win_w + 8, 4, 2, GFX_RGB(0x9A, 0x96, 0x8C));
-
-    // The bottom edge, where the tape shows, with its holes and the screws.
-    int bx = x + w * 18 / 100, by = y + h - h * 22 / 100, bw = w * 64 / 100;
-    gfxFillRoundRect(bx, by, bw, h * 22 / 100 - 6, 10, GFX_RGB(0x22, 0x22, 0x27));
-    for (int i = 0; i < 4; i++)
-        gfxArc(bx + bw * (0.18f + 0.213f * i), by + h * 0.10f, 3.0f, 6.0f, 0.0f, TAU, GFX_RGB(0x0E, 0x0E, 0x10));
-    float screws[5][2] = {{x + 12.0f, y + 12.0f}, {x + w - 12.0f, y + 12.0f}, {x + 12.0f, y + h - 12.0f},
-                          {x + w - 12.0f, y + h - 12.0f}, {x + w / 2.0f, y + h - 12.0f}};
-    for (int i = 0; i < 5; i++)
-        gfxArc(screws[i][0], screws[i][1], 2.5f, 5.0f, 0.0f, TAU, GFX_RGB(0x6A, 0x6A, 0x72));
-}
-
 bool uiDrawNowStyle(int style, int x, int y, int size, const UiTrack *track, bool playing, uint64_t now_ns,
-                    double progress)
+                    double position, double duration)
 {
     if (style == NOW_STYLE_COVER)
         return false;
@@ -242,6 +178,6 @@ bool uiDrawNowStyle(int style, int x, int y, int size, const UiTrack *track, boo
     else if (style == NOW_STYLE_CD)
         drawCd(x, y, size, track, spin);
     else
-        drawCassette(x, y, size, track, spin, progress);
+        uiDrawCassette(x, y, size, track, spin, position, duration);
     return true;
 }

@@ -74,6 +74,11 @@ void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels);
 // or the screen into one.
 void gfxCopyFrame(const uint32_t *pixels);
 void gfxSaveFrame(uint32_t *pixels);
+// Copies w x h framebuffer pixels at x, y into out (off-screen ones as 0).
+void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out);
+// Limits drawing to a layout rectangle (not gfxBlitDisc or text), until gfxResetClip.
+void gfxSetClip(int x, int y, int w, int h);
+void gfxResetClip(void);
 // Draws color through an 8-bit coverage mask (used for text). Unlike the
 // rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

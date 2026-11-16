@@ -7,9 +7,10 @@
 #include "ui_common.h"
 
 // Draws the style in the size x size box of the cover. False for the plain
-// cover, which the caller draws. progress (0-1) winds the cassette's tape.
+// cover, which the caller draws. position and duration (seconds) wind the
+// cassette's tape.
 bool uiDrawNowStyle(int style, int x, int y, int size, const UiTrack *track, bool playing, uint64_t now_ns,
-                    double progress);
+                    double position, double duration);
 
 // Seconds the discs and reels have turned: time passes only while playing.
 double uiNowStyleSpin(bool playing, uint64_t now_ns);

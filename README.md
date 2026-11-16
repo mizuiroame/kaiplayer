@@ -341,7 +341,7 @@ playing song's album art; black-and-white covers give a silver accent.
 | **Cover** | The album art, large |
 | **Vinyl record** | A black record with the album art as its label, turning at 33⅓ rpm, with the tonearm on it |
 | **CD** | A CD with the album art printed on it, turning |
-| **Cassette** | A cassette with the title and artist on its label and the album art beside the window; its reels turn, and the tape winds from the left reel to the right one as the song plays |
+| **Cassette** | A cassette with the title on its label, the artist and album written on its lines, the album art and the song's length beside the window; its reels turn, and the tape winds from the left reel to the right one as the song plays |
 
 They turn only while a song plays, and stop when you pause.
 
@@ -622,7 +622,7 @@ source/
   gfx_switch.c    the console framebuffer
   font.c          anti-aliased text with the embedded fonts
   ui*.c           the tabs, the menu and the keyboard
-  ui_nowstyle.c   Now Playing's record, CD and cassette
+  ui_nowstyle.c   Now Playing's record and CD (ui_cassette.c: the cassette)
   background.c    the background picture: crop, blur and darken
   plainname.c     plain file names the console can list (playlists)
   catalog*.c      the library: artists, albums and songs from the tags (and its cache)

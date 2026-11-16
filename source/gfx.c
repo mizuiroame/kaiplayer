@@ -5,6 +5,7 @@
 
 static uint32_t *g_pixels;
 static uint32_t g_stride;  // In pixels.
+static int g_clip_x0, g_clip_y0, g_clip_x1 = GFX_FB_WIDTH, g_clip_y1 = GFX_FB_HEIGHT;  // Framebuffer pixels.
 
 void gfxSetTarget(uint32_t *pixels, uint32_t stride)
 {
@@ -26,9 +27,9 @@ Color gfxMix(Color a, Color b, unsigned t)
 // Clips a framebuffer rectangle to the screen. False if nothing is left.
 static bool clip(int *x, int *y, int *w, int *h)
 {
-    int x0 = *x < 0 ? 0 : *x, y0 = *y < 0 ? 0 : *y;
-    int x1 = *x + *w > GFX_FB_WIDTH ? GFX_FB_WIDTH : *x + *w;
-    int y1 = *y + *h > GFX_FB_HEIGHT ? GFX_FB_HEIGHT : *y + *h;
+    int x0 = *x < g_clip_x0 ? g_clip_x0 : *x, y0 = *y < g_clip_y0 ? g_clip_y0 : *y;
+    int x1 = *x + *w > g_clip_x1 ? g_clip_x1 : *x + *w;
+    int y1 = *y + *h > g_clip_y1 ? g_clip_y1 : *y + *h;
     if (!g_pixels || x1 <= x0 || y1 <= y0)
         return false;
     *x = x0, *y = y0, *w = x1 - x0, *h = y1 - y0;
@@ -344,6 +345,33 @@ void gfxCopyFrame(const uint32_t *pixels)
         return;
     for (int y = 0; y < GFX_FB_HEIGHT; y++)
         memcpy(g_pixels + (size_t)y * g_stride, pixels + (size_t)y * GFX_FB_WIDTH, GFX_FB_WIDTH * sizeof(uint32_t));
+}
+
+void gfxSetClip(int x, int y, int w, int h)
+{
+    toFb(&x, &y, &w, &h);
+    g_clip_x0 = x < 0 ? 0 : x;
+    g_clip_y0 = y < 0 ? 0 : y;
+    g_clip_x1 = x + w > GFX_FB_WIDTH ? GFX_FB_WIDTH : x + w;
+    g_clip_y1 = y + h > GFX_FB_HEIGHT ? GFX_FB_HEIGHT : y + h;
+}
+
+void gfxResetClip(void)
+{
+    g_clip_x0 = g_clip_y0 = 0;
+    g_clip_x1 = GFX_FB_WIDTH;
+    g_clip_y1 = GFX_FB_HEIGHT;
+}
+
+void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out)
+{
+    for (int py = 0; py < h; py++) {
+        for (int px = 0; px < w; px++) {
+            int sx = x + px, sy = y + py;
+            bool inside = g_pixels && sx >= 0 && sy >= 0 && sx < GFX_FB_WIDTH && sy < GFX_FB_HEIGHT;
+            out[(size_t)py * w + px] = inside ? g_pixels[(size_t)sy * g_stride + sx] | 0xFF000000u : 0;
+        }
+    }
 }
 
 void gfxSaveFrame(uint32_t *pixels)

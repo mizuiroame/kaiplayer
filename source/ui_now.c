@@ -133,9 +133,8 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
     drawBackdrop(track);
-    double progress = status->duration > 0 ? status->position / status->duration : 0.0;
     if (!uiDrawNowStyle(app->config.now_style, COVER_X, COVER_Y, COVER_SIZE, track,
-                        status->state == PLAYER_PLAYING, now_ns, progress)) {
+                        status->state == PLAYER_PLAYING, now_ns, status->position, status->duration)) {
         if (track->cover)  // The placeholder has round corners and no shadow.
             gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE,
                          COLOR_SHADOW, SHADOW_ALPHA);
