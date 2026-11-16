@@ -113,22 +113,40 @@ else.
 | **FLAC**       | `.flac`        | Lossless, 8 to 32 bits.                               |
 | **Ogg Vorbis** | `.ogg`, `.oga` | Vorbis only. `.ogg` files that contain Opus don't play. |
 | **WAV**        | `.wav`         | PCM, IEEE float, A-law and µ-law.                     |
-| **DSD**        | `.dsf`, `.dff` | DSD64 to DSD512, played as PCM (see below). Not DST-compressed `.dff`. |
+| **DSD**        | `.dsf`, `.dff` | DSD64 to DSD512, converted to PCM. See [DSD](#dsd-dsf-dff). |
 
 - **Sample rates:** any sample rate works (44.1 kHz, 48 kHz, 96 kHz and so on).
   KaiPlayer converts it to the console's 48 kHz.
 - **Channels:** mono is played on both channels. For files with more than two
   channels, KaiPlayer plays the front left and front right channels.
-- **DSD (`.dsf`, `.dff`)** is converted to PCM as it plays, not sent to the
-  console as DSD (it can't take DSD): KaiPlayer filters the 1-bit stream
-  (everything above about 38 kHz, where DSD's noise is) and turns it into
-  88.2 kHz PCM (96 kHz for DSD at multiples of 48 kHz), which then goes to
-  48 kHz like any other file. SACD's full level is half of PCM's, so DSD
-  plays about 6 dB quieter than a CD-level track; with ReplayGain on and
-  tagged files, the levels usually even out.
 
 **Not supported yet:** Opus, AAC/M4A, ALAC, WMA and DRM-protected files. AAC
 and WMA won't be added, because they need paid licenses.
+
+### DSD (.dsf, .dff)
+
+KaiPlayer plays DSD files **by converting them to PCM as they play**. The
+console's audio output only takes PCM, so there is no native DSD and no DoP:
+what you hear is 48 kHz PCM, like every other format on the console.
+
+| | |
+|---|---|
+| **Plays** | `.dsf` (DSF) and `.dff` (DSDIFF), uncompressed |
+| **Rates** | DSD64, DSD128 and DSD256 (tested on the console); DSD512 also opens. Both the 44.1 kHz family (2.8, 5.6, 11.2 MHz) and the 48 kHz family (3.1, 6.1, 12.3 MHz) |
+| **Channels** | Stereo or mono; from multichannel files (up to 6 channels), the front left and right |
+| **Tags** | The ID3v2 tag of `.dsf` files (title, artist, album, cover, ReplayGain); `.dff` files only when they carry an `ID3 ` chunk |
+| **Doesn't play** | DST-compressed `.dff` (common in SACD rips: convert them to uncompressed DSF or DFF first), SACD `.iso` images, DSD in WavPack (`.wv`) |
+
+**How it's converted.** A low-pass filter removes what's above about 38 kHz
+(where DSD keeps its noise) and the 1-bit stream becomes 88.2 kHz PCM
+(96 kHz for the 48 kHz family), which then goes to 48 kHz like any other
+file. The decoder is KaiPlayer's own (`source/dsd.c`), written from the
+published DSF and DSDIFF format descriptions; it uses no third-party code.
+
+**Volume.** A SACD's full level is half of PCM's full scale, so DSD plays
+about **6 dB quieter** than a CD-level track. KaiPlayer leaves it that way so
+loud passages never clip. With ReplayGain on and tagged files, the levels
+usually even out.
 
 ---
 
@@ -351,11 +369,14 @@ the first time; the old files stay where they were.
 - **Rename or delete a playlist:** with **+** in the
   Playlists tab. Deleting a playlist doesn't delete any songs.
 
-Playlist names are typed on the console's own keyboard, in its Latin layout.
-Names may use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`: names
-with other characters would be hidden on Switch 2 (see
-[File names and tags](#file-names-and-tags)). If a name isn't accepted, the
-keyboard opens again with the reason.
+Playlist names are typed on the console's own keyboard and can have **any
+characters**: accents (`Español`), Japanese (`松原みき`) and so on, up to 48.
+Since the console hides files whose names have such characters (see
+[File names and tags](#file-names-and-tags)), the file gets a plain version
+of the name (`Espanol.m3u8`, or `Playlist.m3u8` when nothing readable is
+left) and the real name is kept inside it, in a `#PLAYLIST:` line that other
+players ignore. Names can't start with a dot or contain `/` or `\`. If a
+name isn't accepted, the keyboard opens again with the reason.
 
 If a playlist names a song that is no longer on the card, KaiPlayer skips it
 when playing.
@@ -485,8 +506,8 @@ followed by the file size.
 | `?` in titles | The character isn't in KaiPlayer's font or in the console's fonts. |
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
 | The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
-| A playlist name isn't accepted | Use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`, up to 48 characters, and a name no other playlist has. |
-| A playlist made on the PC doesn't appear | It must be in the `Playlists` folder of your music folder, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
+| A playlist name isn't accepted | Use up to 48 characters, without `/` or `\`, not starting with a dot, and a name no other playlist has (capitals don't count: `Mix` and `mix` are the same). |
+| A playlist made on the PC doesn't appear | It must be in the `Playlists` folder of your music folder, end in `.m3u` or `.m3u8`, and have a plain file name (no accents): the console hides the others. To show a name with accents, add a line `#PLAYLIST:Name` at the top. |
 | Taps land in the wrong place | Please open an issue with your console model and where you tapped. The buttons always work. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
@@ -662,13 +683,16 @@ instead of a public issue.
   sponsored by Nintendo Co., Ltd. or its subsidiaries.
 - **Trademarks.** "Nintendo", "Nintendo Switch" and "Switch 2" are trademarks
   of their owners. They are used here only to say which hardware this program
-  works with.
+  works with. "Direct Stream Digital", "DSD" and "Super Audio CD" are
+  trademarks of their owners, used only to name the file formats KaiPlayer
+  plays.
 - **No Nintendo material.** This repository and its releases contain no
   Nintendo code, SDK, firmware, cryptographic keys, games, or graphics or audio
   assets. KaiPlayer is built only with open-source tools and libraries.
 - **No circumvention.** KaiPlayer does not circumvent any technical protection
   measure, and it can't be used to copy or run commercial software. It plays
-  the audio files that users put on their own card.
+  the audio files that users put on their own card. It doesn't read SACD
+  discs or disc images, and it doesn't decode DST-compressed DSD.
 - **User responsibility.** Only play music you have the right to listen to.
   Running homebrew (kaiHEN) can put your console at risk, can affect its
   warranty and can go against the manufacturer's terms of service. You do it at
