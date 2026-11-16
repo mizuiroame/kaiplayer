@@ -62,7 +62,11 @@ typedef enum {
     PILL_ICON_SHUFFLE,     // Crossed arrows.
     PILL_ICON_REPEAT,      // Arrows in a circle.
     PILL_ICON_REPEAT_ONE,  // The same, with a 1 inside.
+    PILL_ICON_PLAYLIST_ADD,
 } PillIcon;
+
+// "Add to playlist": a list with a plus, in a box of about 20 * scale.
+void uiDrawPlaylistAddIcon(float cx, float cy, float scale, Color color);
 
 // A pill with an icon before the label, and an optional button hint
 // ("X") before the icon.

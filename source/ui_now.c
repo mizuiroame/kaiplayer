@@ -3,6 +3,7 @@
 
 #include "ui.h"
 #include "ui_common.h"
+#include "ui_buttons.h"
 #include "ui_hit.h"
 
 #define COVER_SIZE ARTWORK_LARGE_SIZE
@@ -81,7 +82,7 @@ static void drawSkipIcon(int cx, int cy, bool next, Color color)
 
 static void drawHint(int cx, int y, const char *label)
 {
-    fontDraw(FONT_BOLD, 17, cx - fontTextWidth(FONT_BOLD, 17, label) / 2, y, label, COLOR_DIM);
+    uiDrawButtonCentered((float)cx, (float)y + 11.0f, label, COLOR_SURFACE_HI, COLOR_TEXT);
 }
 
 static void drawTransport(const PlayerStatus *status)
@@ -118,10 +119,10 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
                    status->repeat != REPEAT_OFF);
     uiHitAdd(x, TOGGLES_Y - 8, repeat_w, 46, HIT_REPEAT, 0);
     if (status->track_count > 0) {  // Add the current song to a playlist.
-        static const char ADD[] = "+  Add to playlist";
+        static const char ADD[] = "Add to playlist";
         x += repeat_w + 12;
-        uiDrawPill(x, TOGGLES_Y, ADD, add_focused);
-        uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(ADD), 46, HIT_ADD, -1);
+        uiDrawIconPill(x, TOGGLES_Y, NULL, PILL_ICON_PLAYLIST_ADD, ADD, add_focused);
+        uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth(NULL, ADD), 46, HIT_ADD, -1);
     }
 }
 

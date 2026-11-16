@@ -55,8 +55,7 @@ void uiDrawAddButton(int x, int y, size_t index, bool focused)
     int cx = x + ADD_BUTTON_W / 2, cy = y + ROW_H / 2;
     Color mark = focused ? COLOR_BG : COLOR_DIM;
     gfxFillCircle(cx, cy, focused ? 16 : 14, focused ? COLOR_ACCENT : COLOR_SURFACE_HI);
-    gfxFillRect(cx - 7, cy - 1, 14, 3, mark);
-    gfxFillRect(cx - 1, cy - 7, 3, 14, mark);
+    uiDrawPlaylistAddIcon((float)cx, (float)cy, 0.75f, mark);
     uiHitAdd(x, y, ADD_BUTTON_W, ROW_H, HIT_ADD, (int)index);
 }
 
@@ -65,9 +64,10 @@ int uiDrawBackButton(int x, int y, bool focused)
     static const char LABEL[] = "Back";
     int w = fontTextWidth(FONT_BOLD, 17, LABEL) + 44;
     Color text = focused ? COLOR_BG : COLOR_TEXT;
+    float mid = (float)y + 15.0f;
     gfxFillRoundRect(x, y, w, 30, 15, focused ? COLOR_ACCENT : COLOR_SURFACE_HI);
-    gfxFillTriangleLeft(x + 12, y + 8, 9, 14, text);
-    fontDraw(FONT_BOLD, 17, x + 28, y + 4, LABEL, text);
+    gfxTriangle((float)x + 12.0f, mid, (float)x + 21.0f, mid - 6.5f, (float)x + 21.0f, mid + 6.5f, text);
+    fontDrawMiddle(FONT_BOLD, 17, x + 28, mid, LABEL, text);
     uiHitAdd(x - 8, y - 10, w + 16, 50, HIT_BACK, 0);
     return w;
 }

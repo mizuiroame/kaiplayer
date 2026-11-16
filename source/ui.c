@@ -5,6 +5,7 @@
 
 #include "ui_common.h"
 #include "ui_hit.h"
+#include "ui_buttons.h"
 #include "ui_list.h"
 #include "screen.h"
 #include "theme.h"
@@ -121,12 +122,8 @@ static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_n
     uiDrawScrollbar(first, status->track_count);
 }
 
-static void drawButtonHint(int x, int y, const char *label)
-{
-    int w = fontTextWidth(FONT_BOLD, 14, label) + 14;
-    gfxFillRoundRect(x, y, w, 22, 11, COLOR_SURFACE_HI);
-    fontDraw(FONT_BOLD, 14, x + 7, y + 2, label, COLOR_DIM);
-}
+#define TAB_TEXT_MIDDLE 28.5f  // Middle of the tab names' capitals.
+#define HINT_GAP 14
 
 // The tabs, centered, between the ZL and ZR hints.
 static void drawTabs(const App *app)
@@ -137,7 +134,7 @@ static void drawTabs(const App *app)
         total += widths[i] + (i > 0 ? TAB_GAP : 0);
     }
     int x = (GFX_WIDTH - total) / 2;
-    drawButtonHint(x - 48, 21, "ZL");
+    uiDrawButton(x - HINT_GAP - uiButtonWidth("ZL"), TAB_TEXT_MIDDLE, "ZL", COLOR_SURFACE_HI, COLOR_DIM);
     for (int i = 0; i < VIEW_COUNT; i++) {
         bool active = (int)app->view == i;
         fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, VIEW_NAMES[i], active ? COLOR_TEXT : COLOR_DIM);
@@ -146,7 +143,7 @@ static void drawTabs(const App *app)
             gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
         x += widths[i] + TAB_GAP;
     }
-    drawButtonHint(x - TAB_GAP + 16, 21, "ZR");
+    uiDrawButton(x - TAB_GAP + HINT_GAP, TAB_TEXT_MIDDLE, "ZR", COLOR_SURFACE_HI, COLOR_DIM);
 }
 
 // Battery outline with a fill for the charge; green while charging.
@@ -215,8 +212,8 @@ static void drawHeader(const App *app, uint64_t now_ns)
     drawStatus(app, now_ns);
 }
 
-#define BAR_PREV_X 640
 #define BAR_CONTROL_GAP 76
+#define BAR_PREV_X (GFX_WIDTH / 2 - BAR_CONTROL_GAP)  // Play in the middle of the screen.
 #define BAR_CY (MINI_Y + 46)
 #define FOCUS_RING 3
 
@@ -310,33 +307,33 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "A open    B back    Right: add to playlist    X play folder    Y shuffle    Down at the end: player    + menu",
-        "A open    X play    Y shuffle    RS up/down: page    − pause    L/R track    + menu",
-        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    Down at the end: player    + menu",
-        "A pause    Left/Right seek    Down: add to playlist    X shuffle    Y repeat    + menu",
+        "[A] open  [B] back  [>] add to playlist  [X] play folder  [Y] shuffle  [v] player  [+] menu",
+        "[A] open  [X] play  [Y] shuffle  [RS] page  [-] pause  [L][R] track  [+] menu",
+        "[A] play  [B] browse  [>] add to playlist  [X] shuffle  [Y] repeat  [v] player  [+] menu",
+        "[A] pause  [<>] seek  [v] add to playlist  [X] shuffle  [Y] repeat  [+] menu",
     };
     if (app->keyboard_open)
-        return "A type    B delete    X shift    Y space    + done    − cancel";
+        return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
     if (app->eq_open)
-        return "Left/Right band    Up/Down gain    X preset    Y on/off    B back";
+        return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)
-        return "Up/Down choose    Left/Right or A change    B close";
+        return "[^v] choose  [<>][A] change  [B] close";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
-        return "A choose    B cancel    + exit";
+        return "[A] choose  [B] cancel  [+] exit";
     if (app->menu.open)
-        return app->menu.kind == MENU_KIND_MAIN ? "A choose    B close    + exit..." : "A choose    B close";
+        return app->menu.kind == MENU_KIND_MAIN ? "[A] choose  [B] close  [+] exit..." : "[A] choose  [B] close";
     if (app->playlists.moving)
-        return "Up/Down move the song    A or B done";
+        return "[^v] move the song  [A][B] done";
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
-        return "Left/Right choose    A press    Up or B back to the list    − pause    L/R track";
+        return "[<>] choose  [A] press  [^][B] back to the list  [-] pause  [L][R] track";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "A play from song    B back    Right: add to playlist    X play    Y shuffle    + menu";
+        return "[A] play from song  [B] back  [>] add to playlist  [X] play  [Y] shuffle  [+] menu";
     return HELP[app->view];
 }
 
 static void drawFooter(const App *app)
 {
-    fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, footerHelp(app), COLOR_DIM);
+    uiDrawHelp(MARGIN, FOOTER_Y + 26.0f, GFX_WIDTH - 2 * MARGIN, footerHelp(app));
 }
 
 void uiDrawScreenOff(void)

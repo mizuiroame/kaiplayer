@@ -31,7 +31,8 @@ typedef struct {
 
 typedef struct {
     stbtt_fontinfo info;
-    int ascent;  // In font units.
+    int ascent;       // In font units.
+    int cap_height;   // Height of "H", in font units.
     bool ok;
 } Face;
 
@@ -56,8 +57,9 @@ static bool initFace(Face *f, const unsigned char *data)
     int offset = stbtt_GetFontOffsetForIndex(data, 0);
     f->ok = offset >= 0 && stbtt_InitFont(&f->info, data, offset) != 0;
     if (f->ok) {
-        int descent, gap;
+        int descent, gap, x0, y0, x1, y1;
         stbtt_GetFontVMetrics(&f->info, &f->ascent, &descent, &gap);
+        f->cap_height = stbtt_GetCodepointBox(&f->info, 'H', &x0, &y0, &x1, &y1) ? y1 : f->ascent * 7 / 10;
     }
     return f->ok;
 }
@@ -193,15 +195,11 @@ int fontTextWidth(FontFace face, int px, const char *utf8)
     return (int)ceilf(x / GFX_SCALE);
 }
 
-// Draws up to max_width (layout) pixels of text; returns the width used.
-// Every glyph, fallbacks included, sits on the face's baseline. The work is
-// done in framebuffer pixels.
-static float drawRun(FontFace face, int px, float x, int y, const char *utf8, float max_width, Color color)
+// Draws up to max_width framebuffer pixels of text from x on a baseline (both
+// framebuffer pixels, px too); returns the width used. Every glyph,
+// fallbacks included, sits on the face's baseline.
+static float drawRunFb(FontFace face, int px, float x, int baseline, const char *utf8, float max_width, Color color)
 {
-    px = fbPx(px);
-    x *= GFX_SCALE;
-    max_width *= GFX_SCALE;
-    int baseline = gfxToFb(y) + (int)lroundf(g_faces[face].ascent * scaleFor(face, px));
     float start = x;
     PrevGlyph prev = NO_PREV;
     while (*utf8) {
@@ -213,7 +211,55 @@ static float drawRun(FontFace face, int px, float x, int y, const char *utf8, fl
         x = next_x + g->advance;
         prev = (PrevGlyph){g->file, g->glyph};
     }
-    return (x - start) / GFX_SCALE;
+    return x - start;
+}
+
+// The same in layout pixels, with the line box starting at y.
+static float drawRun(FontFace face, int px, float x, int y, const char *utf8, float max_width, Color color)
+{
+    px = fbPx(px);
+    int baseline = gfxToFb(y) + (int)lroundf(g_faces[face].ascent * scaleFor(face, px));
+    return drawRunFb(face, px, x * GFX_SCALE, baseline, utf8, max_width * GFX_SCALE, color) / GFX_SCALE;
+}
+
+// Baseline (framebuffer pixels) that puts the capitals' middle at cy (layout).
+static int middleBaseline(FontFace face, int fb_px, float cy)
+{
+    return (int)lroundf(cy * GFX_SCALE + g_faces[face].cap_height * scaleFor(face, fb_px) / 2.0f);
+}
+
+int fontDrawMiddle(FontFace face, int px, int x, float cy, const char *utf8, Color color)
+{
+    if (!g_faces[face].ok)
+        return 0;
+    int fb_px = fbPx(px);
+    float w = drawRunFb(face, fb_px, x * GFX_SCALE, middleBaseline(face, fb_px, cy), utf8, GFX_FB_WIDTH * 4.0f, color);
+    return (int)ceilf(w / GFX_SCALE);
+}
+
+void fontDrawCentered(FontFace face, int px, float cx, float cy, const char *utf8, Color color)
+{
+    if (!g_faces[face].ok)
+        return;
+    int fb_px = fbPx(px);
+    // The ink runs from the first glyph's left edge to the last one's right.
+    float x = 0.0f, left = 0.0f, right = 0.0f;
+    bool first = true;
+    PrevGlyph prev = NO_PREV;
+    for (const char *p = utf8; *p;) {
+        Glyph *g = getGlyph(face, fb_px, utilNextCodePoint(&p));
+        x += kerning(fb_px, prev, g);
+        if (g->w > 0) {
+            if (first)
+                left = x + g->xoff;
+            right = x + g->xoff + g->w;
+            first = false;
+        }
+        x += g->advance;
+        prev = (PrevGlyph){g->file, g->glyph};
+    }
+    float start = cx * GFX_SCALE - (left + right) / 2.0f;
+    drawRunFb(face, fb_px, start, middleBaseline(face, fb_px, cy), utf8, GFX_FB_WIDTH * 4.0f, color);
 }
 
 int fontDraw(FontFace face, int px, int x, int y, const char *utf8, Color color)

@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "meta.h"
+#include "ui_buttons.h"
 
 Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
 
@@ -128,10 +129,20 @@ static void drawRepeatIcon(float x, float y, bool one, Color color)
         fontDraw(FONT_BOLD, 12, (int)cx - fontTextWidth(FONT_BOLD, 12, "1") / 2, (int)cy - 8, "1", color);
 }
 
+void uiDrawPlaylistAddIcon(float cx, float cy, float scale, Color color)
+{
+    float s = scale, t = 1.9f * scale;
+    gfxLine(cx - 8 * s, cy - 6 * s, cx + 5 * s, cy - 6 * s, t, color);
+    gfxLine(cx - 8 * s, cy - 1 * s, cx + 5 * s, cy - 1 * s, t, color);
+    gfxLine(cx - 8 * s, cy + 4 * s, cx - 1 * s, cy + 4 * s, t, color);
+    gfxLine(cx + 1.5f * s, cy + 4 * s, cx + 8.5f * s, cy + 4 * s, t, color);
+    gfxLine(cx + 5 * s, cy + 0.5f * s, cx + 5 * s, cy + 7.5f * s, t, color);
+}
+
 int uiIconPillWidth(const char *hint, const char *label)
 {
     int w = 2 * PILL_PAD + ICON_SIZE + ICON_GAP + fontTextWidth(FONT_BOLD, PILL_TEXT, label);
-    return hint ? w + fontTextWidth(FONT_BOLD, PILL_TEXT, hint) + HINT_GAP : w;
+    return hint ? w + uiButtonWidth(hint) + HINT_GAP : w;
 }
 
 void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *label, bool on)
@@ -140,20 +151,25 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
     Color fg = on ? COLOR_ACCENT : COLOR_DIM;
     gfxFillRoundRect(x, y, uiIconPillWidth(hint, label), 30, 15, bg);
     int cx = x + PILL_PAD;
-    if (hint)
-        cx += fontDraw(FONT_BOLD, PILL_TEXT, cx, y + 6, hint, fg) + HINT_GAP;
+    float mid = (float)y + 15.0f;
+    if (hint) {
+        uiDrawButton(cx - 6, mid, hint, COLOR_BG, fg);  // The badge sits close to the pill's edge.
+        cx += uiButtonWidth(hint) - 6 + HINT_GAP;
+    }
     if (icon == PILL_ICON_SHUFFLE)
         drawShuffleIcon((float)cx, (float)y + 5, fg);
+    else if (icon == PILL_ICON_PLAYLIST_ADD)
+        uiDrawPlaylistAddIcon((float)cx + ICON_SIZE / 2.0f, mid, 0.9f, fg);
     else
         drawRepeatIcon((float)cx, (float)y + 5, icon == PILL_ICON_REPEAT_ONE, fg);
-    fontDraw(FONT_BOLD, PILL_TEXT, cx + ICON_SIZE + ICON_GAP, y + 6, label, fg);
+    fontDrawMiddle(FONT_BOLD, PILL_TEXT, cx + ICON_SIZE + ICON_GAP, mid, label, fg);
 }
 
 void uiDrawPill(int x, int y, const char *label, bool on)
 {
     int w = uiPillWidth(label);
     gfxFillRoundRect(x, y, w, 30, 15, on ? gfxMix(COLOR_SURFACE_HI, COLOR_ACCENT, 70) : COLOR_SURFACE_HI);
-    fontDraw(FONT_BOLD, PILL_TEXT, x + PILL_PAD, y + 6, label, on ? COLOR_ACCENT : COLOR_DIM);
+    fontDrawMiddle(FONT_BOLD, PILL_TEXT, x + PILL_PAD, (float)y + 15.0f, label, on ? COLOR_ACCENT : COLOR_DIM);
 }
 
 const char *uiRepeatLabel(RepeatMode repeat)

@@ -125,9 +125,9 @@ you where you are; open Now Playing with **ZR** or by tapping the player bar.
 
 | Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **+ Add to playlist**, ↑ leaves it |
-| →  / ←    | Select the row's **+** / back to the row | Same, inside a playlist | Same                 | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song (or press the selected **‹ Back** or **+**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **+** is selected) |
+| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
+| →  / ←    | Select the row's add-to-playlist button / back to the row | Same, inside a playlist | Same                 | Rewind / fast-forward 10 s |
+| A         | Open folder / play from song (or press the selected **‹ Back** or add-to-playlist button) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
 | B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Back to Browse             |
 | X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
 | Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
@@ -153,7 +153,8 @@ In every tab:
 | Queue       | Save the whole queue as a playlist |
 | All         | Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
 
-Adding songs to a playlist isn't in the menu: use the **+** buttons (see
+Adding songs to a playlist isn't in the menu: use the add-to-playlist
+buttons, a list with a small plus (see
 [Playlists](#playlists)).
 
 Use ↑ ↓ and **A** to choose, and **B** to close the menu. To exit, press
@@ -196,8 +197,9 @@ Everything can also be done by touch:
 - **Lists:** tap a song to play it, or a folder or playlist to open it. Drag
   up or down to scroll. **‹ Back** (next to the folder path, or the playlist
   name) goes up a folder or back to the playlist list.
-- **+ buttons:** every song and folder row has a **+** that adds it to a
-  playlist, and so does **+ Add to playlist** in Now Playing.
+- **Add-to-playlist buttons:** every song and folder row ends with a button
+  (a list with a small plus) that adds it to a playlist, and so does **Add
+  to playlist** in Now Playing.
 - **Player bar** (below Browse, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
   play or pause, and skip. Tap **Shuffle** or **Repeat** to change them, or
   anywhere else on the bar to open Now Playing.
@@ -276,11 +278,11 @@ playlists made on your PC into that folder.
 - **Create one:** in the Playlists tab, press **+** and choose
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
   **New playlist...**.
-- **Add songs:** tap the **+** on a song or folder in Browse (a folder adds
+- **Add songs:** tap the add-to-playlist button on a song or folder in Browse (a folder adds
   all its songs, subfolders included), on a song in Queue or in another
-  playlist, or **+ Add to playlist** in Now Playing. Then pick the playlist,
+  playlist, or **Add to playlist** in Now Playing. Then pick the playlist,
   or **New playlist...**. With buttons, select the row, press **→** to
-  select its **+**, then **A** (in Now Playing, **↓** then **A**). Songs
+  select its add-to-playlist button, then **A** (in Now Playing, **↓** then **A**). Songs
   already in the playlist aren't added twice.
 - **Save the queue:** in Queue, press **+** and choose **Save queue as
   playlist**.
