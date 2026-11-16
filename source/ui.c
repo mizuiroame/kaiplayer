@@ -405,6 +405,8 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     Frozen key;
     if (overlay && frozenStill(app, status, &track, &key)) {
         gfxCopyFrame(g_frozen);
+        if (app->view == VIEW_NOW_PLAYING)
+            uiNowPlayingUnderOverlay(app, status, &track, now_ns);
         uiDrawOverlay(app, now_ns);
         drawFooter(app);
         coverCacheUnlock();

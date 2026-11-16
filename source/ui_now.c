@@ -1,10 +1,12 @@
 // The Now Playing view: large cover, tags, progress and transport controls.
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "ui.h"
 #include "ui_common.h"
 #include "ui_buttons.h"
 #include "ui_hit.h"
+#include "nowstyle.h"
 #include "ui_nowstyle.h"
 
 #define COVER_SIZE ARTWORK_LARGE_SIZE
@@ -19,6 +21,51 @@
 #define BACKDROP_STRENGTH 110
 #define SHADOW_OFFSET 10
 #define SHADOW_ALPHA 110
+// Around the cover's box: where a record (with its tonearm), CD or cassette
+// (with its shadow) is drawn. Kept clear of the song details on the right.
+#define STYLE_AREA_X (COVER_X - 24)
+#define STYLE_AREA_Y (COVER_Y - 24)
+#define STYLE_AREA_W (COVER_SIZE + 64)
+#define STYLE_AREA_H (COVER_SIZE + 48)
+
+// What's behind the record or CD while an overlay is open, so it can keep
+// turning under the overlay: see uiNowPlayingUnderOverlay.
+static uint32_t *g_style_backdrop;
+static bool g_style_backdrop_ok;
+
+static void styleAreaFb(int *x, int *y, int *w, int *h)
+{
+    *x = gfxToFb(STYLE_AREA_X), *y = gfxToFb(STYLE_AREA_Y);
+    *w = gfxToFb(STYLE_AREA_X + STYLE_AREA_W) - *x, *h = gfxToFb(STYLE_AREA_Y + STYLE_AREA_H) - *y;
+}
+
+static void saveStyleBackdrop(void)
+{
+    int x, y, w, h;
+    styleAreaFb(&x, &y, &w, &h);
+    if (!g_style_backdrop)
+        g_style_backdrop = malloc((size_t)w * h * sizeof(uint32_t));
+    if (g_style_backdrop)
+        gfxSaveRectFb(x, y, w, h, g_style_backdrop);
+    g_style_backdrop_ok = g_style_backdrop != NULL;
+}
+
+static bool drawStyle(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
+{
+    return uiDrawNowStyle(app->config.now_style, COVER_X, COVER_Y, COVER_SIZE, track,
+                          status->state == PLAYER_PLAYING, now_ns, status->position, status->duration);
+}
+
+void uiNowPlayingUnderOverlay(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
+{
+    if (app->config.now_style == NOW_STYLE_COVER || !g_style_backdrop_ok)
+        return;
+    int x, y, w, h;
+    styleAreaFb(&x, &y, &w, &h);
+    gfxDrawImageFb(x, y, w, h, g_style_backdrop);
+    drawStyle(app, status, track, now_ns);
+    gfxBlendRect(STYLE_AREA_X, STYLE_AREA_Y, STYLE_AREA_W, STYLE_AREA_H, COLOR_SHADOW, UI_DIM_ALPHA);
+}
 
 static void drawBackdrop(const UiTrack *track)
 {
@@ -133,8 +180,10 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
     drawBackdrop(track);
-    if (!uiDrawNowStyle(app->config.now_style, COVER_X, COVER_Y, COVER_SIZE, track,
-                        status->state == PLAYER_PLAYING, now_ns, status->position, status->duration)) {
+    g_style_backdrop_ok = false;
+    if (uiOverlayOpen(app) && app->config.now_style != NOW_STYLE_COVER)
+        saveStyleBackdrop();  // This frame is kept under the overlay; the record keeps turning on it.
+    if (!drawStyle(app, status, track, now_ns)) {
         if (track->cover)  // The placeholder has round corners and no shadow.
             gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE,
                          COLOR_SHADOW, SHADOW_ALPHA);

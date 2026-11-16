@@ -457,6 +457,15 @@ int main(int argc, char **argv)
             backgroundLoad(folder, "");
         }
     }
+    for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {  // Under Settings: drawn, then kept.
+        static const char *const FIRST[] = {"", "settings_vinyl", "settings_cd", "settings_cassette"};
+        static const char *const KEPT[] = {"", "settings_vinyl_kept", "settings_cd_kept", "settings_cassette_kept"};
+        app.config.now_style = style;
+        app.settings_open = true;
+        render(argv[1], FIRST[style], &app, &status);
+        render(argv[1], KEPT[style], &app, &status);
+        app.settings_open = false;
+    }
     app.config.now_style = NOW_STYLE_COVER;
     app.playing_playlist[0] = '\0';
     status.repeat = REPEAT_ONE;

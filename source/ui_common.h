@@ -94,3 +94,6 @@ bool uiOverlayOpen(const App *app);
 
 // The Now Playing view (ui_now.c).
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns);
+// Over the kept, dimmed view under an overlay: draws the record, CD or
+// cassette again, turned to now and dimmed, so it keeps turning.
+void uiNowPlayingUnderOverlay(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns);
