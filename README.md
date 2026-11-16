@@ -6,9 +6,9 @@ card and KaiPlayer plays the music in it.
 
 ![Now Playing](docs/screenshots/now_playing.png)
 
-| Browse | Playlists | Queue |
+| Library | Playlists | Queue |
 |--------|-----------|-------|
-| ![Browse](docs/screenshots/browse.png) | ![Playlists](docs/screenshots/playlists.png) | ![Queue](docs/screenshots/queue.png) |
+| ![Library](docs/screenshots/browse.png) | ![Playlists](docs/screenshots/playlists.png) | ![Queue](docs/screenshots/queue.png) |
 
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
@@ -86,12 +86,16 @@ let it replace the old one.
 ### 4. Play it
 
 1. Open hbmenu (launch a game while holding **R**) and select **KaiPlayer**.
-2. Use the D-pad to go to your music folder.
-3. Press **X** to play the whole folder, subfolders included. Or press **A**
-   on a song to start from that song.
+2. The first time, KaiPlayer asks where your music is: open your music
+   folder (for example `Music`) with **A** and press **X** to use it.
+   KaiPlayer only shows that folder and the ones inside it. You can change
+   it later in **+ → Settings → Music folder**.
+3. KaiPlayer reads your songs' tags in the background and builds your
+   library. Open **Library → Artists** or **Albums**, pick one and press
+   **X** to play it, or **A** on a song to start from there.
 
-KaiPlayer remembers the last folder and the shuffle and repeat modes. It
-saves them in `sdmc:/config/kaiplayer/settings.txt`.
+KaiPlayer remembers the music folder and the shuffle and repeat modes in
+`sdmc:/config/kaiplayer/settings.txt`.
 
 ---
 
@@ -119,18 +123,18 @@ and WMA won't be added, because they need paid licenses.
 
 ## Controls
 
-KaiPlayer has four tabs: **Browse**, **Playlists**, **Queue** and **Now
-Playing**. Press **ZL** / **ZR** to move between them. Starting a song keeps
+KaiPlayer has five tabs: **Home**, **Library**, **Playlists**, **Queue** and
+**Now Playing**. Press **ZL** / **ZR** to move between them. Starting a song keeps
 you where you are; open Now Playing with **ZR** or by tapping the player bar.
 
-| Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
+| Button    | Library                      | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
 | ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
 | →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
-| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Add the song to a playlist |
-| X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
-| Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
+| A         | Open an artist, album or folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
+| B         | Back (up a page or a folder) | Back to the playlist list    | Back to Library            | Add the song to a playlist |
+| X         | Play the artist, album, list or folder | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
+| Y         | Shuffle it                   | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
 
 In every tab:
 
@@ -142,6 +146,38 @@ In every tab:
 | RS ← →  | Rewind / fast-forward 10 s |
 | RS ↑ ↓  | Previous / next page of a list |
 | +       | Open the menu. Press **+** again to exit KaiPlayer: it asks you to confirm. |
+
+### Home
+
+**Home** is the first tab. It shows rows of cards with their covers:
+
+- **Your top artists:** the ones you play most.
+- **Recently played albums** and **Recently played artists**.
+- **Recent playlists.**
+
+Before you have played anything, it shows albums from your library. Use the
+D-pad to move between cards and rows, **A** to open one, **X** to play it and
+**Y** to shuffle it, or tap a card. A song counts as played after 30 seconds
+(half of a song shorter than a minute). The plays are kept in
+`sdmc:/config/kaiplayer/history.txt`; delete that file to start over.
+
+### Library
+
+**Library** organizes your music folder like a music app:
+
+- **Artists:** each artist's albums, newest last. **X** plays everything by
+  the artist.
+- **Albums:** every album, with its cover. Its songs go in track order.
+- **Songs:** every song by title.
+- **Folders:** the folders of your music folder, as they are on the card.
+
+Artists and albums come from the tags (album artist, artist, album, track
+and disc numbers, year). Songs without tags are grouped by folder, as
+`Artist/Album/song.mp3`. KaiPlayer keeps the library in
+`sdmc:/config/kaiplayer/catalog.txt` so it shows at once next time, and
+updates it in the background, reading only new or changed files; the
+progress shows at the top right. **+ → Update the library now** checks the
+folder again after you add music.
 
 ### The + menu
 
@@ -170,7 +206,7 @@ the card, KaiPlayer skips the system and homebrew folders there (`switch`,
 sound effects don't end up in the queue. The queue shows the folder each
 track comes from.
 
-Song rows in Browse, Playlists and Queue show the song's **title**,
+Song rows in Library, Playlists and Queue show the song's **title**,
 **Artist** and **Album** from its tags, like Now Playing. They are read in
 the background, so they appear a moment after a list opens; until then, and
 for songs without tags, the row shows the file name (and the folder name in
@@ -181,7 +217,7 @@ that is playing has moving bars next to its name (still while paused).
 song** plays the current song over and over. With **Shuffle on**, the Queue
 tab lists the songs in the shuffled order they will play in.
 
-The player bar under Browse, Playlists and Queue has ⏮ ⏯ ⏭, Shuffle and
+The player bar under Home, Library, Playlists and Queue has ⏮ ⏯ ⏭, Shuffle and
 Repeat. To use them with the buttons, press ↓ on the last row of the list:
 ← → choose a control, **A** presses it, and ↑ or **B** go back to the list.
 **−**, **L** and **R** also pause and change the song from anywhere.
@@ -200,7 +236,7 @@ Everything can also be done by touch:
 - **Add-to-playlist buttons:** every song and folder row ends with a button
   (a list with a small plus) that adds it to a playlist, and so does **Add
   to playlist** in Now Playing.
-- **Player bar** (below Browse, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
+- **Player bar** (below Home, Library, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
   play or pause, and skip. Tap **Shuffle** or **Repeat** to change them, or
   anywhere else on the bar to open Now Playing.
 - **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point
@@ -216,6 +252,7 @@ close with **B**.
 
 | Setting | Values |
 |---------|--------|
+| Music folder | The folder KaiPlayer shows; **A** chooses another |
 | Sleep timer | Off, or any number of minutes up to 600 |
 | Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
@@ -281,7 +318,7 @@ playlists made on your PC into that folder.
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
   **New playlist...**.
 - **Add songs:** tap the add-to-playlist button on a song or folder in
-  Browse (a folder adds all its songs, subfolders included) or on a song in
+  Library (an artist, album or folder adds all its songs) or on a song in
   Queue, or **Add to playlist** in Now Playing. Then pick the playlist, or
   **New playlist...**. With buttons, select the row and press **→** (in Now
   Playing, press **B**). Songs already in the playlist aren't added twice.
@@ -318,7 +355,7 @@ playing, and when you exit.
 ### Song details and album art
 
 Now Playing shows the album cover, title, artist and album. The mini player
-at the bottom of Browse and Queue shows a small cover, the title and the
+at the bottom of Home, Library and Queue shows a small cover, the title and the
 artist.
 
 KaiPlayer reads the song details from the file's tags:
@@ -512,6 +549,9 @@ source/
   gfx_switch.c    the console framebuffer
   font.c          anti-aliased text with the embedded fonts
   ui*.c           the tabs, the menu and the keyboard
+  catalog*.c      the library: artists, albums and songs from the tags (and its cache)
+  covercache.c    album covers for Home and the album rows
+  history.c home.c  plays, and the Home tab's rows
   config.c        settings saved on the SD card
   input.c         button auto-repeat
   tracklist.c     lists of song paths (folders, playlists, the queue)
