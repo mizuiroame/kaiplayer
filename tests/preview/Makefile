@@ -4,7 +4,7 @@ CC      ?= gcc
 SRC     := ../../source
 OUT     := build
 CFLAGS  := -std=gnu11 -O1 -g -Wall -Wextra -I$(SRC) -I../../third_party -I$(OUT)
-UI_SRC  := gfx.c font.c ui.c ui_now.c ui_common.c ui_list.c ui_playlists.c ui_overlay.c ui_buttons.c ui_library.c library_tab.c catalog.c ui_home.c home.c history.c \
+UI_SRC  := gfx.c font.c ui.c ui_now.c ui_nowstyle.c background.c ui_common.c ui_list.c ui_playlists.c ui_overlay.c ui_buttons.c ui_library.c library_tab.c catalog.c ui_home.c home.c history.c \
            keyboard.c menu.c settings.c ui_hit.c theme.c eq.c util.c cover.c image_impl.c
 
 .PHONY: run clean

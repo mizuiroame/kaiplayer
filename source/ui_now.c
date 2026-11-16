@@ -5,6 +5,7 @@
 #include "ui_common.h"
 #include "ui_buttons.h"
 #include "ui_hit.h"
+#include "ui_nowstyle.h"
 
 #define COVER_SIZE ARTWORK_LARGE_SIZE
 #define COVER_X 96
@@ -21,6 +22,8 @@
 
 static void drawBackdrop(const UiTrack *track)
 {
+    if (backgroundPixels())
+        return;  // The user's picture shows instead.
     Color tint = track->cover ? track->cover->average : COLOR_ACCENT;
     unsigned strength = track->cover ? BACKDROP_STRENGTH : 40;
     gfxGradientV(0, 0, GFX_WIDTH, CONTENT_BOTTOM, gfxMix(COLOR_BG, tint, strength), COLOR_BG);
@@ -130,10 +133,14 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
     drawBackdrop(track);
-    if (track->cover)  // The placeholder has round corners and no shadow.
-        gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE,
-                     COLOR_SHADOW, SHADOW_ALPHA);
-    uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
+    double progress = status->duration > 0 ? status->position / status->duration : 0.0;
+    if (!uiDrawNowStyle(app->config.now_style, COVER_X, COVER_Y, COVER_SIZE, track,
+                        status->state == PLAYER_PLAYING, now_ns, progress)) {
+        if (track->cover)  // The placeholder has round corners and no shadow.
+            gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE,
+                         COLOR_SHADOW, SHADOW_ALPHA);
+        uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
+    }
     drawInfo(status, track, app->playing_playlist);
     drawProgress(app, status);
     drawTransport(status);

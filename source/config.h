@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "background.h"
 #include "eq.h"
 #include "queue.h"
 #include "util.h"
@@ -28,6 +29,8 @@ typedef struct {
     int replaygain;              // ReplayGainMode.
     int accent;                  // Theme accent, see theme.h.
     int screen_off_minutes;      // Turn the screen off after this long idle while playing; 0 never.
+    int now_style;               // NowStyle: cover, vinyl, CD or cassette.
+    char background[BACKGROUND_NAME_MAX];  // An image in <library>/Backgrounds; empty for the cover colors.
 } Config;
 
 // Fills defaults, then overrides them with the saved file if it exists.

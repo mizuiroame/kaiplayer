@@ -375,7 +375,11 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
-    gfxClear(COLOR_BG);
+    const uint32_t *background = backgroundPixels();
+    if (background)
+        gfxCopyFrame(background);
+    else
+        gfxClear(COLOR_BG);
     if (app->view == VIEW_NOW_PLAYING) {
         uiDrawNowPlaying(app, status, &track, now_ns);
     } else {

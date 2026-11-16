@@ -325,3 +325,70 @@ void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, C
             blendPixel(&dst[i], color, m[i]);
     }
 }
+
+void gfxCopyFrame(const uint32_t *pixels)
+{
+    if (!g_pixels)
+        return;
+    for (int y = 0; y < GFX_FB_HEIGHT; y++)
+        memcpy(g_pixels + (size_t)y * g_stride, pixels + (size_t)y * GFX_FB_WIDTH, GFX_FB_WIDTH * sizeof(uint32_t));
+}
+
+void gfxDrawImageFb(int x, int y, int w, int h, const uint32_t *pixels)
+{
+    int cx = x, cy = y, cw = w, ch = h;
+    if (!clip(&cx, &cy, &cw, &ch))
+        return;
+    for (int py = cy; py < cy + ch; py++) {
+        const uint32_t *src = pixels + (size_t)(py - y) * w + (cx - x);
+        uint32_t *row = g_pixels + (size_t)py * g_stride + cx;
+        for (int i = 0; i < cw; i++)
+            blendPixel(&row[i], src[i] | 0xFF000000u, src[i] >> 24);
+    }
+}
+
+// The pixel at (u, v) in 16.16 fixed point, blending its four neighbours.
+static uint32_t sampleBilinear(const uint32_t *pixels, int size, int32_t u, int32_t v)
+{
+    int x = u >> 16, y = v >> 16;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x > size - 2) x = size - 2;
+    if (y > size - 2) y = size - 2;
+    uint32_t fx = (uint32_t)(u >> 8) & 0xFF, fy = (uint32_t)(v >> 8) & 0xFF;
+    const uint32_t *p = pixels + (size_t)y * size + x;
+    uint32_t a = p[0], b = p[1], c = p[size], d = p[size + 1];
+    uint32_t rb = ((a & 0xFF00FF) * (256 - fx) + (b & 0xFF00FF) * fx) >> 8 & 0xFF00FF;
+    uint32_t g = ((a & 0xFF00) * (256 - fx) + (b & 0xFF00) * fx) >> 8 & 0xFF00;
+    uint32_t rb2 = ((c & 0xFF00FF) * (256 - fx) + (d & 0xFF00FF) * fx) >> 8 & 0xFF00FF;
+    uint32_t g2 = ((c & 0xFF00) * (256 - fx) + (d & 0xFF00) * fx) >> 8 & 0xFF00;
+    rb = (rb * (256 - fy) + rb2 * fy) >> 8 & 0xFF00FF;
+    g = (g * (256 - fy) + g2 * fy) >> 8 & 0xFF00;
+    return 0xFF000000u | rb | g;
+}
+
+void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, const uint32_t *pixels, float angle)
+{
+    cx *= GFX_SCALE, cy *= GFX_SCALE, radius *= GFX_SCALE, hole *= GFX_SCALE;
+    int x = (int)floorf(cx - radius) - 1, y = (int)floorf(cy - radius) - 1;
+    int w = (int)ceilf(2.0f * radius) + 3, h = w;
+    if (!pixels || image_size < 2 || !clip(&x, &y, &w, &h))
+        return;
+    // The image's center at the disc's center, its edge at the disc's edge, turned by angle.
+    float scale = image_size / (2.0f * radius), c = cosf(angle) * scale, s = sinf(angle) * scale;
+    float half = image_size / 2.0f;
+    for (int py = y; py < y + h; py++) {
+        float dy = py + 0.5f - cy;
+        uint32_t *row = g_pixels + (size_t)py * g_stride;
+        for (int px = x; px < x + w; px++) {
+            float dx = px + 0.5f - cx, d = sqrtf(dx * dx + dy * dy);
+            float cover = clampf(radius - d + 0.5f, 0.0f, 1.0f) * clampf(d - hole + 0.5f, 0.0f, 1.0f);
+            if (cover <= 0.0f)
+                continue;
+            float u = half + c * dx + s * dy, v = half - s * dx + c * dy;
+            uint32_t color = sampleBilinear(pixels, image_size, (int32_t)(u * 65536.0f) - 32768,
+                                            (int32_t)(v * 65536.0f) - 32768);
+            blendPixel(&row[px], color, (unsigned)(cover * 255.0f));
+        }
+    }
+}

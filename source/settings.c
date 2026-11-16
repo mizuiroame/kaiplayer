@@ -2,7 +2,7 @@
 
 static const char *const ROW_LABELS[SETTING_COUNT] = {
     "Music folder", "Sleep timer", "Resume where you left off", "Clock", "Equalizer", "ReplayGain (even loudness)",
-    "Accent color", "Screen off while playing", "About",
+    "Accent color", "Now Playing style", "Background", "Screen off while playing", "About",
 };
 
 int settingsSleepClamp(long minutes)

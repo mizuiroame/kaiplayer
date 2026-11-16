@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "app.h"
 #include "artwork.h"
@@ -15,6 +16,8 @@
 #include "player.h"
 #include "theme.h"
 #include "ui.h"
+#include "ui_nowstyle.h"
+#include "nowstyle.h"
 
 static const char *const TRACKS[] = {
     "sdmc:/Music/Aurora Fields/01 - Morning Light.flac",
@@ -390,6 +393,38 @@ int main(int argc, char **argv)
     app.view = VIEW_NOW_PLAYING;
     snprintf(app.playing_playlist, sizeof(app.playing_playlist), "%s", "Road Trip 2026");
     render(argv[1], "now_playing", &app, &status);
+    for (int i = 0; i < 6; i++)  // Turn the discs a little, so the previews show them turned.
+        uiNowStyleSpin(true, 1000000000ull + i * 200000000ull);
+    static const char *const STYLE_SHOTS[] = {"", "now_playing_vinyl", "now_playing_cd", "now_playing_cassette"};
+    for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {
+        app.config.now_style = style;
+        render(argv[1], STYLE_SHOTS[style], &app, &status);
+    }
+    // A background picture: the sample cover, as if it were in Music/Backgrounds.
+    if (argc > 2) {
+        char folder[512], cover[512];
+        snprintf(folder, sizeof(folder), "%s/bg", argv[1]);
+        mkdir(folder, 0777);
+        snprintf(folder, sizeof(folder), "%s/bg/" BACKGROUND_FOLDER_NAME, argv[1]);
+        mkdir(folder, 0777);
+        snprintf(cover, sizeof(cover), "%s/cover.jpg", folder);
+        FILE *in = fopen("assets/cover.jpg", "rb"), *out = fopen(cover, "wb");
+        int ch;
+        while (in && out && (ch = fgetc(in)) != EOF)
+            fputc(ch, out);
+        if (in) fclose(in);
+        if (out) fclose(out);
+        snprintf(folder, sizeof(folder), "%s/bg", argv[1]);
+        if (backgroundLoad(folder, "cover.jpg")) {
+            render(argv[1], "now_playing_background", &app, &status);
+            app.config.now_style = NOW_STYLE_COVER;
+            app.view = VIEW_QUEUE;
+            render(argv[1], "queue_background", &app, &status);
+            app.view = VIEW_NOW_PLAYING;
+            backgroundLoad(folder, "");
+        }
+    }
+    app.config.now_style = NOW_STYLE_COVER;
     app.playing_playlist[0] = '\0';
     status.repeat = REPEAT_ONE;
     status.shuffle = false;

@@ -1,6 +1,7 @@
 // The + menu, Settings and the on-screen keyboard, drawn over the current tab.
 #include <stdio.h>
 
+#include "nowstyle.h"
 #include "settings.h"
 #include "theme.h"
 #include "ui_buttons.h"
@@ -17,7 +18,7 @@
 #define MENU_ROW_H 48
 #define MENU_VISIBLE 9
 #define SETTINGS_W 760
-#define SETTINGS_ROW_H 56
+#define SETTINGS_ROW_H 48
 #define KEY_W 76
 #define KEY_H 56
 #define KEY_GAP 8
@@ -111,6 +112,10 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         break;
     }
     case SETTING_ACCENT: snprintf(out, size, "%s", themeAccentName(app->config.accent)); break;
+    case SETTING_NOW_STYLE: snprintf(out, size, "%s", nowStyleName(app->config.now_style)); break;
+    case SETTING_BACKGROUND:
+        snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : "Cover colors");
+        break;
     case SETTING_SCREEN_OFF:
         if (app->config.screen_off_minutes)
             snprintf(out, size, "After %d min idle", app->config.screen_off_minutes);
@@ -136,17 +141,17 @@ static void drawSettings(const App *app, uint64_t now_ns)
         bool editable = settingsRowEditable((SettingRow)i);
         if (selected)
             drawRowHighlight(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6);
-        fontDraw(selected ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD, row_y + 12,
+        fontDraw(selected ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD, row_y + 8,
                  settingsRowLabel((SettingRow)i), COLOR_TEXT);
         settingValue(app, (SettingRow)i, now_ns, value, sizeof(value));
         int value_w = fontTextWidth(FONT_BOLD, 20, value);
         int value_x = x + SETTINGS_W - PANEL_PAD - value_w - (editable ? 24 : 0);
-        fontDraw(FONT_BOLD, 20, value_x, row_y + 13, value, editable ? COLOR_ACCENT : COLOR_DIM);
+        fontDraw(FONT_BOLD, 20, value_x, row_y + 9, value, editable ? COLOR_ACCENT : COLOR_DIM);
         if (editable) {
-            gfxFillTriangleLeft(value_x - 22, row_y + 17, 10, 16, COLOR_DIM);
-            gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 17, 10, 16, COLOR_DIM);
+            gfxFillTriangleLeft(value_x - 22, row_y + 13, 10, 16, COLOR_DIM);
+            gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 13, 10, 16, COLOR_DIM);
         } else if (selected) {  // About: A opens it.
-            uiDrawButton(value_x - 34, (float)row_y + 25.0f, "A", COLOR_SURFACE, COLOR_TEXT);
+            uiDrawButton(value_x - 34, (float)row_y + 21.0f, "A", COLOR_SURFACE, COLOR_TEXT);
         }
         uiHitAdd(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6, HIT_SETTING, i);
     }

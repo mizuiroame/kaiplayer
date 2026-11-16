@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "nowstyle.h"
 #include "player.h"
 #include "theme.h"
 
@@ -66,6 +67,10 @@ static void applyLine(Config *c, char *line)
         c->accent = clampInt(atoi(value), 0, THEME_ACCENT_COUNT - 1);
     } else if (strcmp(key, "screen_off") == 0) {
         c->screen_off_minutes = clampInt(atoi(value), 0, 60);
+    } else if (strcmp(key, "now_style") == 0) {
+        c->now_style = clampInt(atoi(value), 0, NOW_STYLE_COUNT - 1);
+    } else if (strcmp(key, "background") == 0 && strlen(value) < sizeof(c->background) && !strchr(value, '/')) {
+        strcpy(c->background, value);
     } else if (strcmp(key, "repeat") == 0) {
         int r = atoi(value);
         if (r >= 0 && r < REPEAT_MODE_COUNT)
@@ -86,6 +91,8 @@ void configLoad(Config *c)
     c->replaygain = 0;
     c->accent = 0;
     c->screen_off_minutes = 0;
+    c->now_style = NOW_STYLE_COVER;
+    c->background[0] = '\0';
     c->repeat = REPEAT_ALL;
 
     FILE *f = fopen(CONFIG_FILE, "r");
@@ -121,6 +128,9 @@ bool configSave(const Config *c)
     fprintf(f, "eq_on=%d\neq_preset=%d\neq_gains=", c->eq_on ? 1 : 0, c->eq_preset);
     for (int b = 0; b < EQ_BANDS; b++)
         fprintf(f, b ? ",%d" : "%d", c->eq_gains[b]);
-    fprintf(f, "\nreplaygain=%d\naccent=%d\nscreen_off=%d\n", c->replaygain, c->accent, c->screen_off_minutes);
+    fprintf(f, "\nreplaygain=%d\naccent=%d\nscreen_off=%d\nnow_style=%d\n", c->replaygain, c->accent,
+            c->screen_off_minutes, c->now_style);
+    if (c->background[0] && !strpbrk(c->background, "\r\n/"))
+        fprintf(f, "background=%s\n", c->background);
     return fclose(f) == 0;
 }
