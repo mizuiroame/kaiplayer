@@ -202,16 +202,27 @@ int fontTextWidth(FontFace face, int px, const char *utf8)
 // fallbacks included, sits on the face's baseline.
 static float drawRunFb(FontFace face, int px, float x, int baseline, const char *utf8, float max_width, Color color)
 {
-    float start = x;
+    float start = x, detail = gfxDetail();
+    int fine_px = detail > 1.0f ? (int)lroundf(px * detail) : px;
+    if (fine_px > 255)
+        fine_px = 255;
     PrevGlyph prev = NO_PREV;
     while (*utf8) {
-        Glyph *g = getGlyph(face, px, utilNextCodePoint(&utf8));
-        float next_x = x + kerning(px, prev, g);
-        if (next_x + g->advance - start > max_width)
+        uint32_t cp = utilNextCodePoint(&utf8);
+        Glyph *g = getGlyph(face, px, cp);
+        float next_x = x + kerning(px, prev, g), advance = g->advance;
+        if (next_x + advance - start > max_width)
             break;
-        gfxBlendMask((int)lroundf(next_x) + g->xoff, baseline + g->yoff, g->w, g->h, g->bitmap, g->w, color);
-        x = next_x + g->advance;
         prev = (PrevGlyph){g->file, g->glyph};
+        if (fine_px == px) {
+            gfxBlendMask((int)lroundf(next_x) + g->xoff, baseline + g->yoff, g->w, g->h, g->bitmap, g->w, color);
+        } else {  // The same glyph rasterized for the screen's resolution, in the same place.
+            Glyph *f = getGlyph(face, fine_px, cp);
+            float scale = (float)px / fine_px;
+            gfxBlendMaskScaled(lroundf(next_x) + f->xoff * scale, baseline + f->yoff * scale, f->w * scale,
+                               f->h * scale, f->bitmap, f->w, f->h, f->w, color);
+        }
+        x = next_x + advance;
     }
     return x - start;
 }

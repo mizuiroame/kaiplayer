@@ -47,8 +47,9 @@ static const char *const FRAGMENT_SHADER =
     "uniform sampler2D atlas;\n"
     "uniform vec4 clip_rect;\n"   // x0, y0, x1, y1.
     "uniform float clip_radius;\n"
+    "uniform float px;\n"        // Screen pixels per framebuffer pixel: edges a screen pixel wide.
     "out vec4 out_color;\n"
-    "float cover(float d) { return clamp(d + 0.5, 0.0, 1.0); }\n"
+    "float cover(float d) { return clamp(d * px + 0.5, 0.0, 1.0); }\n"
     "float roundBox(vec2 p, vec4 r, float radius) {\n"  // Distance inside a rounded rectangle.
     "    vec2 c = clamp(p, r.xy + radius, r.zw - radius);\n"
     "    vec2 q = p - c;\n"
@@ -113,7 +114,8 @@ typedef struct {
 } Glyph;
 
 static GLuint g_program, g_vao, g_vbo, g_atlas;
-static GLint g_u_clip, g_u_clip_radius;
+static GLint g_u_clip, g_u_clip_radius, g_u_px;
+static float g_detail = 1.0f;
 static float *g_vertices;
 static int g_count;               // Vertices batched.
 static const Texture *g_bound;    // The image the batch uses, if any.
@@ -321,18 +323,29 @@ static const Glyph *glyphFor(const uint8_t *mask, int w, int h, int stride)
     return NULL;
 }
 
+float gfxDetail(void)
+{
+    return g_detail;
+}
+
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color)
 {
-    if (!mask || w <= 0 || h <= 0)
+    gfxBlendMaskScaled((float)x, (float)y, (float)w, (float)h, mask, w, h, stride, color);
+}
+
+void gfxBlendMaskScaled(float x, float y, float w, float h, const uint8_t *mask, int mask_w, int mask_h, int stride,
+                        Color color)
+{
+    if (!mask || mask_w <= 0 || mask_h <= 0)
         return;
-    const Glyph *g = glyphFor(mask, w, h, stride);
+    const Glyph *g = glyphFor(mask, mask_w, mask_h, stride);
     if (!g)
         return;
     if (g_count + 6 > MAX_VERTICES)
         flush();
     float c[4], a[4] = {0}, b[4] = {0, 0, 0, KIND_GLYPH};
     colorOf(color, 255, c);
-    float x0 = (float)x, y0 = (float)y, x1 = (float)(x + w), y1 = (float)(y + h);
+    float x0 = x, y0 = y, x1 = x + w, y1 = y + h;
     vertex(x0, y0, g->u0, g->v0, c, a, b);
     vertex(x1, y0, g->u1, g->v0, c, a, b);
     vertex(x0, y1, g->u0, g->v1, c, a, b);
@@ -552,6 +565,7 @@ bool gfxGlSetup(void)
     glUniform1i(glGetUniformLocation(g_program, "atlas"), 1);
     g_u_clip = glGetUniformLocation(g_program, "clip_rect");
     g_u_clip_radius = glGetUniformLocation(g_program, "clip_radius");
+    g_u_px = glGetUniformLocation(g_program, "px");
 
     glGenVertexArrays(1, &g_vao);
     glBindVertexArray(g_vao);
@@ -605,6 +619,12 @@ void gfxGlBeginFrame(int width, int height)
 {
     glViewport(0, 0, width, height);
     glUseProgram(g_program);
+    float detail = height > GFX_FB_HEIGHT ? (float)height / GFX_FB_HEIGHT : 1.0f;
+    if (detail != g_detail) {
+        g_detail = detail;
+        gfxForgetMasks();  // Glyphs come at a new size now.
+    }
+    glUniform1f(g_u_px, (float)height / GFX_FB_HEIGHT);
     glBindVertexArray(g_vao);
     g_bound = NULL;
     g_count = 0;

@@ -327,7 +327,8 @@ static const char *footerHelp(const App *app)
     if (app->eq_open)
         return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)
-        return "[^v] choose  [<>][A] change  [B] close";
+        return app->settings_page == SETTINGS_PAGE_MAIN ? "[^v] choose  [>][A] open  [B] close"
+                                                        : "[^v] choose  [<>][A] change  [B] back";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
         return "[A] choose  [B] cancel  [+] exit";
     if (app->menu.open)

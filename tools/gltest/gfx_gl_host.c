@@ -14,6 +14,8 @@
 static uint32_t *g_target;
 static uint32_t g_stride;
 static GLuint g_fbo;
+static int g_width = GFX_FB_WIDTH, g_height = GFX_FB_HEIGHT;  // GLTEST_HEIGHT=1440 draws as docked at 1440p.
+static int g_frames;
 
 static bool setup(void)
 {
@@ -31,10 +33,15 @@ static bool setup(void)
     EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attributes);
     if (context == EGL_NO_CONTEXT || !eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, context))
         return false;
+    const char *height = getenv("GLTEST_HEIGHT");
+    if (height && atoi(height) > 0) {
+        g_height = atoi(height);
+        g_width = g_height * 16 / 9;
+    }
     GLuint color;
     glGenRenderbuffers(1, &color);
     glBindRenderbuffer(GL_RENDERBUFFER, color);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, GFX_FB_WIDTH, GFX_FB_HEIGHT);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, g_width, g_height);
     glGenFramebuffers(1, &g_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, g_fbo);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color);
@@ -58,15 +65,30 @@ void gfxSetTarget(uint32_t *pixels, uint32_t stride)
         g_target = pixels;
         g_stride = stride;
         glBindFramebuffer(GL_FRAMEBUFFER, g_fbo);
-        gfxGlBeginFrame(GFX_FB_WIDTH, GFX_FB_HEIGHT);
+        gfxGlBeginFrame(g_width, g_height);
         return;
     }
     gfxGlEndFrame();
-    // GL's rows go bottom up.
-    static uint32_t rows[GFX_FB_WIDTH * GFX_FB_HEIGHT];
-    glReadPixels(0, 0, GFX_FB_WIDTH, GFX_FB_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, rows);
+    // GL's rows go bottom up. At another size, the frame is also saved whole
+    // (tools/gltest/build/hi_frameNN.ppm) and the 1920x1080 target gets its nearest pixels.
+    static uint32_t rows[3840 * 2160];
+    glReadPixels(0, 0, g_width, g_height, GL_RGBA, GL_UNSIGNED_BYTE, rows);
     for (int y = 0; y < GFX_FB_HEIGHT; y++)
-        for (int x = 0; x < GFX_FB_WIDTH; x++)
-            g_target[(size_t)y * g_stride + x] = rows[(size_t)(GFX_FB_HEIGHT - 1 - y) * GFX_FB_WIDTH + x] | 0xFF000000u;
+        for (int x = 0; x < GFX_FB_WIDTH; x++) {
+            int sy = g_height - 1 - y * g_height / GFX_FB_HEIGHT, sx = x * g_width / GFX_FB_WIDTH;
+            g_target[(size_t)y * g_stride + x] = rows[(size_t)sy * g_width + sx] | 0xFF000000u;
+        }
+    if (g_height != GFX_FB_HEIGHT) {
+        char path[64];
+        snprintf(path, sizeof(path), "../../tools/gltest/build/hi_frame%02d.ppm", g_frames++);  // Run from tests/preview.
+        FILE *f = fopen(path, "wb");
+        if (f) {
+            fprintf(f, "P6\n%d %d\n255\n", g_width, g_height);
+            for (int y = g_height - 1; y >= 0; y--)
+                for (int x = 0; x < g_width; x++)
+                    fwrite(&rows[(size_t)y * g_width + x], 1, 3, f);
+            fclose(f);
+        }
+    }
     g_target = NULL;
 }

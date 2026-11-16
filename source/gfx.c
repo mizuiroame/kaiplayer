@@ -383,6 +383,18 @@ void gfxForgetMasks(void)
 {
 }
 
+float gfxDetail(void)
+{
+    return 1.0f;
+}
+
+void gfxBlendMaskScaled(float x, float y, float w, float h, const uint8_t *mask, int mask_w, int mask_h, int stride,
+                        Color color)
+{
+    (void)w, (void)h;
+    gfxBlendMask((int)lroundf(x), (int)lroundf(y), mask_w, mask_h, mask, stride, color);
+}
+
 void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out)
 {
     for (int py = 0; py < h; py++) {

@@ -283,8 +283,15 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->sleep_deadline_ns = 24ull * 60000000000ull;
     app->view = VIEW_NOW_PLAYING;
     app->settings_open = true;
-    app->settings_cursor = SETTING_SLEEP;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_PLAYBACK;
     render(dir, "settings", app, status);
+    app->settings_page = SETTINGS_PAGE_DISPLAY;
+    app->settings_cursor = SETTING_NOW_STYLE;
+    render(dir, "settings_display", app, status);
+    app->settings_page = SETTINGS_PAGE_PLAYBACK;
+    app->settings_cursor = SETTING_SLEEP;
+    render(dir, "settings_playback", app, status);
     app->about_open = true;
     render(dir, "about", app, status);
     app->about_open = false;

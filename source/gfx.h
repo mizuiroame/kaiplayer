@@ -87,6 +87,13 @@ void gfxResetClip(void);
 bool gfxCanReadBack(void);
 // The glyph bitmaps given to gfxBlendMask were freed (font.c's cache).
 void gfxForgetMasks(void);
+// Screen pixels per framebuffer pixel: 1, or more when the GPU draws at a
+// higher resolution (1.33 at 1440p, 2 at 2160p). Text is rasterized this
+// much finer and drawn with gfxBlendMaskScaled, so it stays sharp.
+float gfxDetail(void);
+// A mask_w x mask_h mask drawn over w x h framebuffer pixels at x, y.
+void gfxBlendMaskScaled(float x, float y, float w, float h, const uint8_t *mask, int mask_w, int mask_h, int stride,
+                        Color color);
 // Draws color through an 8-bit coverage mask (used for text). Unlike the
 // rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

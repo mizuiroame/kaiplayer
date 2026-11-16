@@ -2,8 +2,47 @@
 
 static const char *const ROW_LABELS[SETTING_COUNT] = {
     "Music folder", "Sleep timer", "Resume where you left off", "Clock", "Equalizer", "ReplayGain (even loudness)",
-    "Accent color", "Now Playing style", "Background", "Screen off while playing", "About",
+    "Accent color", "Now Playing style", "Background", "Screen off while playing", "About", "Playback", "Display",
 };
+
+static const SettingRow MAIN_ROWS[] = {SETTING_LIBRARY, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY, SETTING_ABOUT};
+static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_EQUALIZER, SETTING_REPLAYGAIN};
+static const SettingRow DISPLAY_ROWS[] = {SETTING_ACCENT, SETTING_NOW_STYLE, SETTING_BACKGROUND, SETTING_CLOCK,
+                                          SETTING_SCREEN_OFF};
+
+#define COUNT_OF(a) ((int)(sizeof(a) / sizeof((a)[0])))
+
+int settingsPageRows(SettingsPage page, SettingRow rows[SETTINGS_PAGE_MAX_ROWS])
+{
+    const SettingRow *from = page == SETTINGS_PAGE_PLAYBACK ? PLAYBACK_ROWS
+                           : page == SETTINGS_PAGE_DISPLAY  ? DISPLAY_ROWS
+                                                            : MAIN_ROWS;
+    int count = page == SETTINGS_PAGE_PLAYBACK ? COUNT_OF(PLAYBACK_ROWS)
+              : page == SETTINGS_PAGE_DISPLAY  ? COUNT_OF(DISPLAY_ROWS)
+                                               : COUNT_OF(MAIN_ROWS);
+    for (int i = 0; i < count; i++)
+        rows[i] = from[i];
+    return count;
+}
+
+SettingsPage settingsRowPage(SettingRow row)
+{
+    return row == SETTING_OPEN_PLAYBACK ? SETTINGS_PAGE_PLAYBACK
+         : row == SETTING_OPEN_DISPLAY  ? SETTINGS_PAGE_DISPLAY
+                                        : SETTINGS_PAGE_MAIN;
+}
+
+SettingRow settingsPageRow(SettingsPage page)
+{
+    return page == SETTINGS_PAGE_PLAYBACK ? SETTING_OPEN_PLAYBACK
+         : page == SETTINGS_PAGE_DISPLAY  ? SETTING_OPEN_DISPLAY
+                                          : SETTING_LIBRARY;
+}
+
+const char *settingsPageTitle(SettingsPage page)
+{
+    return page == SETTINGS_PAGE_PLAYBACK ? "Playback" : page == SETTINGS_PAGE_DISPLAY ? "Display" : "Settings";
+}
 
 int settingsSleepClamp(long minutes)
 {
@@ -42,5 +81,6 @@ const char *settingsRowLabel(SettingRow row)
 
 bool settingsRowEditable(SettingRow row)
 {
-    return row != SETTING_ABOUT && row != SETTING_LIBRARY;  // Those open with A.
+    // Those open with A: About, the folder picker and the pages.
+    return row != SETTING_ABOUT && row != SETTING_LIBRARY && settingsRowPage(row) == SETTINGS_PAGE_MAIN;
 }

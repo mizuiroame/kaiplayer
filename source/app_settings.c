@@ -24,7 +24,16 @@ static uint64_t nowNs(void)
 void appOpenSettings(App *app)
 {
     app->settings_open = true;
-    app->settings_cursor = SETTING_SLEEP;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_PLAYBACK;
+}
+
+static void openPage(App *app, SettingsPage page)
+{
+    SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
+    settingsPageRows(page, rows);
+    app->settings_page = page;
+    app->settings_cursor = rows[0];
 }
 
 static void setSleep(App *app, int minutes)
@@ -58,7 +67,9 @@ void appApplyAudioSettings(App *app)
 
 void appActivateSetting(App *app, SettingRow row)
 {
-    if (row == SETTING_SLEEP) {
+    if (settingsRowPage(row) != SETTINGS_PAGE_MAIN) {
+        openPage(app, settingsRowPage(row));
+    } else if (row == SETTING_SLEEP) {
         typeSleepMinutes(app);
     } else if (row == SETTING_EQUALIZER) {
         app->eq_open = true;  // The editor opens over Settings.
@@ -154,20 +165,36 @@ void appChangeSetting(App *app, SettingRow row, int delta)
 
 void appHandleSettings(App *app, uint64_t pressed)
 {
-    int cursor = (int)app->settings_cursor;
+    SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
+    int count = settingsPageRows(app->settings_page, rows), index = 0;
+    for (int i = 0; i < count; i++) {
+        if (rows[i] == app->settings_cursor)
+            index = i;
+    }
     if (pressed & BUTTONS_UP)
-        cursor = cursor > 0 ? cursor - 1 : 0;
+        index = index > 0 ? index - 1 : 0;
     if (pressed & BUTTONS_DOWN)
-        cursor = cursor + 1 < SETTING_COUNT ? cursor + 1 : SETTING_COUNT - 1;
-    app->settings_cursor = (SettingRow)cursor;
-    if (pressed & HidNpadButton_A)
+        index = index + 1 < count ? index + 1 : count - 1;
+    app->settings_cursor = rows[index];
+    bool opens = settingsRowPage(app->settings_cursor) != SETTINGS_PAGE_MAIN;
+    if (pressed & HidNpadButton_A || (opens && pressed & BUTTONS_RIGHT)) {
         appActivateSetting(app, app->settings_cursor);
+        return;
+    }
     if (pressed & BUTTONS_RIGHT)
         appChangeSetting(app, app->settings_cursor, 1);
     if (pressed & BUTTONS_LEFT)
         appChangeSetting(app, app->settings_cursor, -1);
-    if (pressed & (HidNpadButton_B | HidNpadButton_Plus))
+    if (pressed & HidNpadButton_Plus) {
         app->settings_open = false;
+    } else if (pressed & HidNpadButton_B) {
+        if (app->settings_page == SETTINGS_PAGE_MAIN) {
+            app->settings_open = false;
+        } else {  // Back to the main page, on the row of the page left.
+            app->settings_cursor = settingsPageRow(app->settings_page);
+            app->settings_page = SETTINGS_PAGE_MAIN;
+        }
+    }
 }
 
 void appScreenOff(App *app)

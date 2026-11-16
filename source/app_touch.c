@@ -25,7 +25,7 @@ static bool isOverlayTarget(HitKind kind)
 {
     return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING ||
            kind == HIT_EQ_BAND || kind == HIT_EQ_PRESET || kind == HIT_EQ_TOGGLE || kind == HIT_PICKER_ROW ||
-           kind == HIT_PICKER_USE;
+           kind == HIT_PICKER_USE || kind == HIT_BACK;  // Back: a Settings page's header.
 }
 
 // The gain at height y on a slider: the top is +12 dB, the bottom -12 dB.
