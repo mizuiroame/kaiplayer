@@ -363,6 +363,24 @@ name doesn't matter much. A file renamed `04 Mizuiro no Ame.mp3` is still
 shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, with its
 embedded cover.
 
+**Upload with plain names, without renaming your files.** FileZilla can't
+rename files as it uploads them, so the repository includes a small script,
+[`tools/kaiupload.py`](tools/kaiupload.py) (Python 3.8 or later, nothing to
+install). It uploads a folder over FTP and gives the copies on the console
+plain names; the files on your computer are not changed:
+
+```
+python kaiupload.py 192.168.1.50 "G:\Music\Spanish album" /music --port 5000
+```
+
+Use the IP address and port that OunceShell's FTP screen shows (the same
+ones you use in FileZilla); add `--user` and `--password` if your FTP server
+asks for them. Accents are dropped (`06 Canción.mp3` → `06 Cancion.mp3`,
+`Ñandú` → `Nandu`), and characters such as Japanese become `_`
+(`04 みずいろの雨.mp3` → `04 _.mp3`). Run it with `--dry-run` first to see
+the names it will use. Files already on the console with the same size are
+skipped, so you can run it again after adding songs or if an upload stops.
+
 If you already uploaded a file with such a name, it is on the card but
 hidden. You can rename or delete it with FileZilla's
 **Server → Enter custom command** (use the folder that holds it as the
@@ -505,6 +523,7 @@ source/
 data/           Noto Sans Regular and Bold, embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
 tests/          host tests, fuzzer, fixtures and the UI preview
+tools/          kaiupload.py: FTP upload with names the console can list
 icon.jpg        256×256 icon for hbmenu
 ```
 
