@@ -149,8 +149,9 @@ static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
 
 void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
-    const LibraryPage *p = appLibraryPage((App *)app);
     const Catalog *c = catalogLock();
+    appLibrarySync((App *)app, c);
+    const LibraryPage *p = appLibraryPage((App *)app);
     drawSubtitle(app, c, p);
     size_t count = appLibraryCount(app, c);
     if (p->level != LIB_ROOT && count == 0) {

@@ -23,8 +23,10 @@ static bool g_started, g_running;
 static char g_root[UTIL_PATH_MAX];  // Requested root.
 static bool g_pending;
 static Catalog *g_current;          // Published; read under g_lock.
+static Mutex g_progress_lock;     // Separate: read while the catalog is locked.
 static bool g_scanning;
 static size_t g_done, g_total;
+static unsigned g_generation;   // Bumped by each publish.
 
 static bool restartRequested(void)
 {
@@ -36,6 +38,8 @@ static bool restartRequested(void)
 
 static void publish(Catalog *fresh)
 {
+    if (fresh)
+        fresh->generation = ++g_generation ? g_generation : ++g_generation;  // Never 0.
     mutexLock(&g_lock);
     Catalog *old = g_current;
     g_current = fresh;
@@ -112,10 +116,9 @@ static Catalog *scan(const char *root, const Catalog *previous)
     TrackList files;
     if (!libraryScan(&files, root, true))
         return NULL;
-    mutexLock(&g_lock);
-    g_done = 0;
+    mutexLock(&g_progress_lock);
     g_total = files.count;
-    mutexUnlock(&g_lock);
+    mutexUnlock(&g_progress_lock);
 
     Catalog *fresh = malloc(sizeof(Catalog));
     TrackTags *tags = malloc(sizeof(TrackTags));
@@ -128,9 +131,9 @@ static Catalog *scan(const char *root, const Catalog *previous)
             break;
         }
         ok = addFile(fresh, previous, files.paths[i], root, tags);
-        mutexLock(&g_lock);
+        mutexLock(&g_progress_lock);
         g_done = i + 1;
-        mutexUnlock(&g_lock);
+        mutexUnlock(&g_progress_lock);
     }
     trackListFree(&files);
     free(tags);
@@ -156,8 +159,11 @@ static void workerMain(void *arg)
         }
         snprintf(root, sizeof(root), "%s", g_root);
         g_pending = false;
-        g_scanning = true;
         mutexUnlock(&g_lock);
+        mutexLock(&g_progress_lock);
+        g_scanning = true;
+        g_done = g_total = 0;
+        mutexUnlock(&g_progress_lock);
 
         // Another folder: its catalog starts over. Only this thread replaces
         // or frees g_current, so it can also read it unlocked below.
@@ -176,8 +182,10 @@ static void workerMain(void *arg)
             publish(fresh);
         }
 
-        mutexLock(&g_lock);
+        mutexLock(&g_progress_lock);
         g_scanning = false;
+        mutexUnlock(&g_progress_lock);
+        mutexLock(&g_lock);
     }
     mutexUnlock(&g_lock);
 }
@@ -185,6 +193,7 @@ static void workerMain(void *arg)
 bool catalogScanInit(void)
 {
     mutexInit(&g_lock);
+    mutexInit(&g_progress_lock);
     condvarInit(&g_wake);
     g_running = true;
     if (R_FAILED(threadCreate(&g_thread, workerMain, NULL, NULL, THREAD_STACK_SIZE, THREAD_PRIORITY, -2))) {
@@ -238,10 +247,10 @@ void catalogUnlock(void)
 
 bool catalogScanProgress(size_t *done, size_t *total)
 {
-    mutexLock(&g_lock);
+    mutexLock(&g_progress_lock);
     bool busy = g_scanning;
     *done = g_done;
     *total = g_total;
-    mutexUnlock(&g_lock);
+    mutexUnlock(&g_progress_lock);
     return busy;
 }

@@ -14,7 +14,7 @@ static void push(App *app, LibraryLevel level, size_t arg)
 {
     LibraryTab *t = &app->library;
     if (t->depth < LIBRARY_DEPTH_MAX)
-        t->stack[t->depth++] = (LibraryPage){level, arg, 0};
+        t->stack[t->depth++] = (LibraryPage){.level = level, .arg = arg};  // Its name is filled in by appLibrarySync.
     app->focus = FOCUS_LIST;
 }
 
@@ -86,7 +86,7 @@ bool appLibrarySongs(App *app, const Catalog *c, bool whole_page, TrackList *out
 static void play(App *app, bool whole_page, bool shuffle)
 {
     const Catalog *c = catalogLock();
-    TrackList list;
+    TrackList list = {0};
     size_t start = 0;
     bool ok = c && appLibrarySongs(app, c, whole_page, &list, &start);
     const LibraryPage *p = appLibraryPage(app);
@@ -152,6 +152,8 @@ void appHandleLibrary(App *app, uint64_t pressed)
         return;
     }
     const Catalog *c = catalogLock();
+    appLibrarySync(app, c);
+    p = appLibraryPage(app);
     size_t count = appLibraryCount(app, c);
     catalogUnlock();
     bool has_back = app->library.depth > 1;

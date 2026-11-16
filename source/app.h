@@ -58,11 +58,14 @@ typedef struct {
     LibraryLevel level;
     size_t arg;
     size_t cursor;
+    char name[TAGS_TEXT_MAX];    // The artist's name, or the album's title,
+    char artist[TAGS_TEXT_MAX];  // and its artist: arg found again after a rescan.
 } LibraryPage;
 
 typedef struct {
     LibraryPage stack[LIBRARY_DEPTH_MAX];  // stack[depth - 1] is shown.
     int depth;
+    unsigned generation;  // The catalog the pages' indexes belong to.
 } LibraryTab;
 
 // Which song is playing, to count it as played once.
@@ -121,8 +124,8 @@ typedef struct {
     History history;            // Plays, for Home.
     HomeTracker home_tracker;
     Home home;                  // Home's rows, from the catalog and history.
-    const Catalog *home_catalog;
-    size_t home_songs, home_history;
+    unsigned home_generation;   // The catalog Home's rows were made from.
+    size_t home_history;        // History length Home's rows were made from.
     bool home_ready;
     int home_row;               // Selected row (HomeRowKind) and card in each.
     size_t home_col[HOME_ROW_COUNT];
@@ -187,6 +190,9 @@ LibraryPage *appLibraryPage(App *app);
 // Rows on the current page (c may be NULL while the catalog loads).
 size_t appLibraryCount(const App *app, const Catalog *c);
 void appLibraryBack(App *app);
+// Keeps the pages pointing at the same artists and albums when the catalog
+// is replaced (a rescan), and the cursors inside the lists. c may be NULL.
+void appLibrarySync(App *app, const Catalog *c);
 void appHandleLibrary(App *app, uint64_t pressed);
 // The songs of the selected row, or of the whole page, in play order; start
 // is the selected song's place in them.

@@ -58,6 +58,8 @@ static char *copyClean(const char *s)
 
 bool catalogAddFields(Catalog *c, const CatalogSong *f)
 {
+    if (strpbrk(f->path, "\t\r\n"))
+        return true;  // Such a name can't be kept in the cache file: left out.
     if (c->song_count == c->song_capacity) {
         size_t grown = c->song_capacity ? c->song_capacity * 2 : 256;
         CatalogSong *songs = realloc(c->songs, grown * sizeof(CatalogSong));
@@ -67,7 +69,7 @@ bool catalogAddFields(Catalog *c, const CatalogSong *f)
         c->song_capacity = grown;
     }
     CatalogSong s = {
-        .path = copyClean(f->path), .title = copyClean(f->title), .artist = copyClean(f->artist),
+        .path = strdup(f->path), .title = copyClean(f->title), .artist = copyClean(f->artist),
         .album_artist = copyClean(f->album_artist), .album = copyClean(f->album),
         .track = f->track, .disc = f->disc, .year = f->year, .size = f->size,
     };

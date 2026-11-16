@@ -45,6 +45,7 @@ typedef struct {
     CatalogArtist *artists;  // Sorted by name.
     size_t artist_count;
     size_t *songs_by_title;  // Song indexes for the "Songs" list.
+    unsigned generation;     // Set when published; indexes from another generation are stale.
 } Catalog;
 
 void catalogInit(Catalog *c);

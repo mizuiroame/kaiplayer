@@ -322,7 +322,7 @@ int main(int argc, char **argv)
     app.view = VIEW_BROWSER;
     snprintf(app.config.library, sizeof(app.config.library), "%s", "sdmc:/Music");
     app.library.depth = 1;
-    app.library.stack[0] = (LibraryPage){LIB_FOLDERS, 0, 0};  // Library > Folders.
+    app.library.stack[0] = (LibraryPage){.level = LIB_FOLDERS};  // Library > Folders.
     render(argv[1], "browse", &app, &status);
 
     // The Library tab's pages.
@@ -343,17 +343,17 @@ int main(int argc, char **argv)
     render(argv[1], "home_scrolled", &app, &status);
     app.view = VIEW_BROWSER;
     app.library.depth = 1;
-    app.library.stack[0] = (LibraryPage){LIB_ROOT, 0, 0};
+    app.library.stack[0] = (LibraryPage){.level = LIB_ROOT};
     g_scan_busy = true;
     render(argv[1], "library", &app, &status);
     g_scan_busy = false;
-    app.library.stack[1] = (LibraryPage){LIB_ARTISTS, 0, 1};
+    app.library.stack[1] = (LibraryPage){.level = LIB_ARTISTS, .cursor = 1};
     app.library.depth = 2;
     render(argv[1], "library_artists", &app, &status);
-    app.library.stack[2] = (LibraryPage){LIB_ARTIST, 0, 0};
+    app.library.stack[2] = (LibraryPage){.level = LIB_ARTIST};
     app.library.depth = 3;
     render(argv[1], "library_artist", &app, &status);
-    app.library.stack[3] = (LibraryPage){LIB_ALBUM, g_catalog.artists[0].albums[1], 2};
+    app.library.stack[3] = (LibraryPage){.level = LIB_ALBUM, .arg = g_catalog.artists[0].albums[1]};
     app.library.depth = 4;
     render(argv[1], "library_album", &app, &status);
     app.library.stack[0].level = LIB_FOLDERS;  // The rest of the scenes show Folders.

@@ -63,10 +63,14 @@ static void drawCard(const Home *home, const Catalog *c, HomeRowKind row, size_t
         subtitle = "Playlist";
     } else if (row == HOME_RECENT_ALBUMS) {
         size_t album = home->rows[row].items[i];
+        if (album >= c->album_count)
+            return;
         drawCover(c, album, x, y, false);
         title = c->albums[album].title;
         subtitle = c->artists[c->albums[album].artist].name;
     } else {
+        if (home->rows[row].items[i] >= c->artist_count)
+            return;
         const CatalogArtist *a = &c->artists[home->rows[row].items[i]];
         drawCover(c, a->albums[a->album_count - 1], x, y, true);  // Their latest album.
         title = a->name;

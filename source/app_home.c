@@ -44,6 +44,12 @@ void appRecordPlay(App *app, HistoryKind kind, const char *key)
     }
 }
 
+// How long a song plays before it counts: 30 s, or half of a short song.
+static double needed(const PlayerStatus *status)
+{
+    return status->duration > 0 && status->duration < 2 * PLAY_SECONDS ? status->duration / 2 : PLAY_SECONDS;
+}
+
 void appTrackPlays(App *app, const PlayerStatus *status)
 {
     HomeTracker *t = &app->home_tracker;
@@ -53,11 +59,10 @@ void appTrackPlays(App *app, const PlayerStatus *status)
         t->generation = status->generation;
         t->track = status->track;
         t->armed = true;
-    } else if (status->position < RESTART_SECONDS) {
+    } else if (!t->armed && status->position < RESTART_SECONDS && status->position < needed(status)) {
         t->armed = true;  // The same song from its start again (repeat song).
     }
-    double needed = status->duration > 0 && status->duration < 2 * PLAY_SECONDS ? status->duration / 2 : PLAY_SECONDS;
-    if (!t->armed || status->position < needed)
+    if (!t->armed || status->position < needed(status))
         return;
     t->armed = false;
     char path[UTIL_PATH_MAX];
@@ -77,10 +82,11 @@ static int nextRow(const Home *home, int row, int step)
 static void openLibraryPage(App *app, LibraryLevel list, size_t list_row, LibraryLevel page, size_t arg)
 {
     LibraryTab *t = &app->library;
-    t->stack[0] = (LibraryPage){LIB_ROOT, 0, list == LIB_ARTISTS ? 0 : 1};
-    t->stack[1] = (LibraryPage){list, 0, list_row};
-    t->stack[2] = (LibraryPage){page, arg, 0};
+    t->stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = list == LIB_ARTISTS ? 0 : 1};
+    t->stack[1] = (LibraryPage){.level = list, .cursor = list_row};
+    t->stack[2] = (LibraryPage){.level = page, .arg = arg};
     t->depth = 3;
+    t->generation = app->home_generation;
     app->focus = FOCUS_LIST;
     appSetView(app, VIEW_BROWSER);
 }
