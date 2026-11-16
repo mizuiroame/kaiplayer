@@ -11,6 +11,13 @@ their tags.
 |-------------|---------|-------|
 | ![Now Playing](docs/screenshots/now_playing.png) | ![Library](docs/screenshots/library.png) | ![Queue](docs/screenshots/queue.png) |
 
+Now Playing can also show the song on a turning **record**, a **CD** or a
+**cassette**, and every view can have a **picture of yours** behind it:
+
+| Vinyl record | CD | Cassette |
+|--------------|----|----------|
+| ![Vinyl record](docs/screenshots/now_playing_vinyl.png) | ![CD](docs/screenshots/now_playing_cd.png) | ![Cassette](docs/screenshots/now_playing_cassette.png) |
+
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
 
@@ -352,6 +359,8 @@ folder (for example `sdmc:/Music/Backgrounds/`), then choose one here with
 ← →; **Cover colors** goes back to the tinted background. KaiPlayer crops the
 picture to fill the screen, blurs it and darkens it, so text stays readable
 over it. Use plain file names (no accents): the console hides the others.
+
+![A background picture behind Now Playing](docs/screenshots/background.png)
 
 **Screen off while playing:** after that long without touching the console
 while music plays, the screen turns off to save battery and the music keeps
