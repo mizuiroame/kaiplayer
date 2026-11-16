@@ -111,8 +111,8 @@ static void stepBackground(App *app, int delta)
     }
     index = ((index + delta) % (count + 1) + count + 1) % (count + 1);
     snprintf(app->config.background, sizeof(app->config.background), "%s", index ? names[index - 1] : "");
-    if (!backgroundLoad(app->config.library, app->config.background))
-        appToast(app, "Could not read that image (JPEG or PNG, up to 4096 x 4096).");
+    if (!backgroundLoad(app->config.library, app->config.background, app->config.background_blur))
+        appToast(app, "Could not read that image (JPEG or PNG, up to 50 megapixels).");
 }
 
 void appChangeSetting(App *app, SettingRow row, int delta)
@@ -152,6 +152,12 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         break;
     case SETTING_BACKGROUND:
         stepBackground(app, delta);
+        configSave(&app->config);
+        break;
+    case SETTING_BACKGROUND_BLUR:
+        app->config.background_blur = ((app->config.background_blur + delta) % BLUR_COUNT + BLUR_COUNT) % BLUR_COUNT;
+        if (app->config.background[0])  // Made again from the file, with the new blur.
+            backgroundLoad(app->config.library, app->config.background, app->config.background_blur);
         configSave(&app->config);
         break;
     case SETTING_SCREEN_OFF:

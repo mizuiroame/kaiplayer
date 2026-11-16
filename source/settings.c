@@ -2,13 +2,13 @@
 
 static const char *const ROW_LABELS[SETTING_COUNT] = {
     "Music folder", "Sleep timer", "Resume where you left off", "Clock", "Equalizer", "ReplayGain (even loudness)",
-    "Accent color", "Now Playing style", "Background", "Screen off while playing", "About", "Playback", "Display",
+    "Accent color", "Now Playing style", "Background", "Background blur", "Screen off while playing", "About", "Playback", "Display",
 };
 
 static const SettingRow MAIN_ROWS[] = {SETTING_LIBRARY, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY, SETTING_ABOUT};
 static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_EQUALIZER, SETTING_REPLAYGAIN};
-static const SettingRow DISPLAY_ROWS[] = {SETTING_ACCENT, SETTING_NOW_STYLE, SETTING_BACKGROUND, SETTING_CLOCK,
-                                          SETTING_SCREEN_OFF};
+static const SettingRow DISPLAY_ROWS[] = {SETTING_ACCENT,          SETTING_NOW_STYLE, SETTING_BACKGROUND,
+                                          SETTING_BACKGROUND_BLUR, SETTING_CLOCK,     SETTING_SCREEN_OFF};
 
 #define COUNT_OF(a) ((int)(sizeof(a) / sizeof((a)[0])))
 

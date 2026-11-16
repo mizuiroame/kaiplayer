@@ -64,7 +64,7 @@ static void copyOldPlaylists(void)
 
 void appUsePlaylistFolder(App *app)
 {
-    backgroundLoad(app->config.library, app->config.background);  // Its folder is in the music folder.
+    backgroundLoad(app->config.library, app->config.background, app->config.background_blur);  // Its folder is in the music folder.
     if (!app->config.library[0]) {
         playlistSetRoot(PLAYLIST_ROOT);
         return;

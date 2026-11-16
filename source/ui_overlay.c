@@ -115,6 +115,7 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_BACKGROUND:
         snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : "Cover colors");
         break;
+    case SETTING_BACKGROUND_BLUR: snprintf(out, size, "%s", backgroundBlurName(app->config.background_blur)); break;
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
     case SETTING_SCREEN_OFF:

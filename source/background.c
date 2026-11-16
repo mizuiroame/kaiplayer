@@ -11,10 +11,20 @@
 #include "stb_image.h"
 #include "util.h"
 
-#define FILE_MAX (16u << 20)
-#define SMALL_DIVISOR 4      // Blurred at a quarter of the screen size, then scaled up: smooth and quick.
-#define BLUR_RADIUS 5
+#define FILE_MAX (40u << 20)
 #define BLUR_PASSES 3        // Three box blurs look like a Gaussian one.
+
+// Each blur level: the picture is worked on at the screen's size divided by
+// divisor (a blur of its own once scaled up, and quicker), then box-blurred.
+static const struct {
+    int divisor, radius;
+} BLUR_LEVELS[BLUR_COUNT] = {{1, 0}, {2, 3}, {4, 5}, {4, 12}};
+
+const char *backgroundBlurName(int blur)
+{
+    static const char *const NAMES[BLUR_COUNT] = {"Off", "Low", "Medium", "High"};
+    return blur >= 0 && blur < BLUR_COUNT ? NAMES[blur] : NAMES[BLUR_MEDIUM];
+}
 #define IMAGE_WEIGHT 90      // Of 255: how much of the picture shows through the dark base.
 #define BASE_COLOR 0xFF141212u  // COLOR_BG (0x12, 0x12, 0x14).
 
@@ -84,17 +94,17 @@ static void shrinkToFill(const uint8_t *rgba, int w, int h, float *out, int ow, 
 }
 
 // One box blur along rows (step 3) or columns (step 3 * width), edges held.
-static void boxBlur(float *img, float *tmp, int count, int length, size_t step, size_t next)
+static void boxBlur(float *img, float *tmp, int count, int length, size_t step, size_t next, int radius)
 {
     for (int line = 0; line < count; line++) {
         float *base = img + line * next;
         for (int c = 0; c < 3; c++) {
             float sum = 0.0f;
-            for (int i = -BLUR_RADIUS; i <= BLUR_RADIUS; i++)
+            for (int i = -radius; i <= radius; i++)
                 sum += base[(size_t)(i < 0 ? 0 : i >= length ? length - 1 : i) * step + c];
             for (int i = 0; i < length; i++) {
-                tmp[i] = sum / (2 * BLUR_RADIUS + 1);
-                int out = i - BLUR_RADIUS, in = i + BLUR_RADIUS + 1;
+                tmp[i] = sum / (2 * radius + 1);
+                int out = i - radius, in = i + radius + 1;
                 sum += base[(size_t)(in >= length ? length - 1 : in) * step + c] -
                        base[(size_t)(out < 0 ? 0 : out) * step + c];
             }
@@ -105,9 +115,12 @@ static void boxBlur(float *img, float *tmp, int count, int length, size_t step, 
 }
 
 bool backgroundMake(const uint8_t *rgba, int w, int h, uint32_t *out, int out_w, int out_h, uint32_t base,
-                    unsigned dim)
+                    unsigned dim, int blur)
 {
-    int sw = out_w / SMALL_DIVISOR, sh = out_h / SMALL_DIVISOR;
+    if (blur < 0 || blur >= BLUR_COUNT)
+        blur = BLUR_MEDIUM;
+    const int divisor = BLUR_LEVELS[blur].divisor, radius = BLUR_LEVELS[blur].radius;
+    int sw = out_w / divisor, sh = out_h / divisor;
     float *small = malloc((size_t)sw * sh * 3 * sizeof(float));
     float *tmp = malloc((size_t)(sw > sh ? sw : sh) * sizeof(float));
     if (!small || !tmp || sw < 2 || sh < 2) {
@@ -116,18 +129,18 @@ bool backgroundMake(const uint8_t *rgba, int w, int h, uint32_t *out, int out_w,
         return false;
     }
     shrinkToFill(rgba, w, h, small, sw, sh);
-    for (int pass = 0; pass < BLUR_PASSES; pass++) {
-        boxBlur(small, tmp, sh, sw, 3, (size_t)sw * 3);
-        boxBlur(small, tmp, sw, sh, (size_t)sw * 3, 3);
+    for (int pass = 0; radius > 0 && pass < BLUR_PASSES; pass++) {
+        boxBlur(small, tmp, sh, sw, 3, (size_t)sw * 3, radius);
+        boxBlur(small, tmp, sw, sh, (size_t)sw * 3, 3, radius);
     }
     float keep = dim / 255.0f, br = (float)(base & 0xFF), bg = (float)(base >> 8 & 0xFF),
           bb = (float)(base >> 16 & 0xFF);
     for (int y = 0; y < out_h; y++) {
-        float fy = (y + 0.5f) / SMALL_DIVISOR - 0.5f;
+        float fy = (y + 0.5f) / divisor - 0.5f;
         int y0 = fy < 0.0f ? 0 : (int)fy, y1 = y0 + 1 < sh ? y0 + 1 : sh - 1;
         float ty = fy < 0.0f ? 0.0f : fy - y0;
         for (int x = 0; x < out_w; x++) {
-            float fx = (x + 0.5f) / SMALL_DIVISOR - 0.5f;
+            float fx = (x + 0.5f) / divisor - 0.5f;
             int x0 = fx < 0.0f ? 0 : (int)fx, x1 = x0 + 1 < sw ? x0 + 1 : sw - 1;
             float tx = fx < 0.0f ? 0.0f : fx - x0;
             const float *a = small + ((size_t)y0 * sw + x0) * 3, *b = small + ((size_t)y0 * sw + x1) * 3;
@@ -168,7 +181,7 @@ static uint8_t *readFile(const char *path, size_t *size)
     return data;
 }
 
-bool backgroundLoad(const char *library, const char *name)
+bool backgroundLoad(const char *library, const char *name, int blur)
 {
     g_loaded = false;
     char folder[UTIL_PATH_MAX], path[UTIL_PATH_MAX];
@@ -181,13 +194,14 @@ bool backgroundLoad(const char *library, const char *name)
     uint8_t *data = readFile(path, &size);
     int w = 0, h = 0, channels = 0;
     bool ok = data && stbi_info_from_memory(data, (int)size, &w, &h, &channels) && w > 0 && h > 0 &&
-              w <= COVER_MAX_DIMENSION && h <= COVER_MAX_DIMENSION;
+              w <= BACKGROUND_MAX_DIMENSION && h <= BACKGROUND_MAX_DIMENSION &&
+              (uint64_t)w * (uint64_t)h <= BACKGROUND_MAX_PIXELS;
     uint8_t *rgba = ok ? stbi_load_from_memory(data, (int)size, &w, &h, &channels, 4) : NULL;
     free(data);
     if (rgba && !g_frame)
         g_frame = malloc((size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT * sizeof(uint32_t));
     ok = rgba && g_frame &&
-         backgroundMake(rgba, w, h, g_frame, GFX_FB_WIDTH, GFX_FB_HEIGHT, BASE_COLOR, IMAGE_WEIGHT);
+         backgroundMake(rgba, w, h, g_frame, GFX_FB_WIDTH, GFX_FB_HEIGHT, BASE_COLOR, IMAGE_WEIGHT, blur);
     if (rgba)
         stbi_image_free(rgba);
     g_loaded = ok;

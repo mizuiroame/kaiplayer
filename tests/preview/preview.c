@@ -484,13 +484,17 @@ int main(int argc, char **argv)
         if (in) fclose(in);
         if (out) fclose(out);
         snprintf(folder, sizeof(folder), "%s/bg", argv[1]);
-        if (backgroundLoad(folder, "cover.jpg")) {
+        if (backgroundLoad(folder, "cover.jpg", BLUR_MEDIUM)) {
             render(argv[1], "now_playing_background", &app, &status);
             app.config.now_style = NOW_STYLE_COVER;
             app.view = VIEW_QUEUE;
             render(argv[1], "queue_background", &app, &status);
+            backgroundLoad(folder, "cover.jpg", BLUR_OFF);
+            render(argv[1], "queue_background_sharp", &app, &status);
+            backgroundLoad(folder, "cover.jpg", BLUR_HIGH);
+            render(argv[1], "queue_background_high", &app, &status);
             app.view = VIEW_NOW_PLAYING;
-            backgroundLoad(folder, "");
+            backgroundLoad(folder, "", BLUR_MEDIUM);
         }
     }
     for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {  // Under Settings: drawn, then kept.

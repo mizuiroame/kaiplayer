@@ -300,6 +300,7 @@ close with **B**.
 | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
 | Now Playing style | Cover (default), Vinyl record, CD or Cassette |
 | Background | Cover colors (default), or a picture from your `Backgrounds` folder |
+| Background blur | Off, Low, Medium (default) or High |
 | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
 | About | The KaiPlayer version; **A** shows more about the app and its author |
 
@@ -354,11 +355,12 @@ They turn only while a song plays, and stop when you pause.
 
 **Background:** instead of the dark background tinted with the album's
 colors, show a picture of yours behind every view. Put JPEG or PNG images (up
-to 4096 × 4096 pixels) in a folder called **Backgrounds** inside your music
+to 50 megapixels: photos from a phone or a camera are fine) in a folder called **Backgrounds** inside your music
 folder (for example `sdmc:/Music/Backgrounds/`), then choose one here with
 ← →; **Cover colors** goes back to the tinted background. KaiPlayer crops the
 picture to fill the screen, blurs it and darkens it, so text stays readable
-over it. Use plain file names (no accents): the console hides the others.
+over it. **Background blur** sets how much: **Off** keeps it sharp, **High**
+turns it into soft color. Use plain file names (no accents): the console hides the others.
 
 ![A background picture behind Now Playing](docs/screenshots/background.png)
 
