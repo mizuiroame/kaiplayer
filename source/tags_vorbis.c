@@ -135,6 +135,17 @@ void tagsApplyComment(const char *comment, size_t length, TrackTags *t)
         setTextField(t->album, value, value_len);
     else if (keyIs(comment, key_len, "ALBUMARTIST"))
         setTextField(t->album_artist, value, value_len);
+    else if (keyIs(comment, key_len, "TRACKNUMBER") || keyIs(comment, key_len, "DISCNUMBER") ||
+             keyIs(comment, key_len, "DATE")) {
+        char number[32];
+        size_t n = value_len < sizeof(number) - 1 ? value_len : sizeof(number) - 1;
+        memcpy(number, value, n);
+        number[n] = '\0';
+        int *field = keyIs(comment, key_len, "TRACKNUMBER") ? &t->track_number
+                   : keyIs(comment, key_len, "DISCNUMBER")  ? &t->disc_number
+                                                            : &t->year;
+        *field = tagsNumber(number);
+    }
     else if (keyIs(comment, key_len, "REPLAYGAIN_TRACK_GAIN") || keyIs(comment, key_len, "REPLAYGAIN_ALBUM_GAIN")) {
         char name[MAX_KEY + 1], number[32];
         memcpy(name, comment, key_len);

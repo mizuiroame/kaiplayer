@@ -25,3 +25,4 @@ void testPlaylists(void);
 void testTouch(void);
 void testEq(void);
 void testMeta(void);
+void testCatalog(void);

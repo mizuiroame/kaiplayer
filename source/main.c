@@ -13,6 +13,7 @@
 #include "gfx.h"
 #include "input.h"
 #include "meta.h"
+#include "catalog_scan.h"
 #include "player.h"
 #include "screen.h"
 #include "sysinfo.h"
@@ -106,9 +107,18 @@ void appActivateRow(App *app, size_t index, bool select_only)
     // The index comes from the last frame; a list that shrank since makes it stale.
     switch (app->view) {
     case VIEW_BROWSER:
-        if (index >= app->browser.count)
-            return;
-        app->browser.cursor = index;
+        if (appLibraryPage(app)->level == LIB_FOLDERS) {
+            if (index >= app->browser.count)
+                return;
+            app->browser.cursor = index;
+        } else {
+            const Catalog *c = catalogLock();
+            size_t count = appLibraryCount(app, c);
+            catalogUnlock();
+            if (index >= count)
+                return;
+            appLibraryPage(app)->cursor = index;
+        }
         break;
     case VIEW_PLAYLISTS:
         if (t->moving || index >= (t->open ? t->tracks.count : t->index.count))
@@ -154,7 +164,7 @@ void appDispatchButtons(App *app, uint64_t pressed)
         return;
     }
     switch (app->view) {
-    case VIEW_BROWSER: appHandleBrowser(app, pressed); break;
+    case VIEW_BROWSER: appHandleLibrary(app, pressed); break;
     case VIEW_PLAYLISTS: appHandlePlaylists(app, pressed); break;
     case VIEW_QUEUE: handleQueue(app, pressed); break;
     default: handleNowPlaying(app, pressed); break;
@@ -315,6 +325,9 @@ int main(int argc, char **argv)
     }
     artworkInit();
     metaInit();
+    catalogScanInit();
+    if (app.config.library[0])
+        catalogScanStart(app.config.library);
     sysinfoInit();
     screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
@@ -333,6 +346,7 @@ int main(int argc, char **argv)
         appletSetMediaPlaybackState(false);
         playerExit();
     }
+    catalogScanExit();
     metaExit();
     artworkExit();
     sysinfoExit();

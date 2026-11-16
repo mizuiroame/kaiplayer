@@ -46,7 +46,9 @@ static void addFromRow(App *app, int index)
     }
     appActivateRow(app, (size_t)index, true);
     switch (app->view) {
-    case VIEW_BROWSER: appAddToPlaylist(app, SRC_BROWSE_ENTRY); break;
+    case VIEW_BROWSER:
+        appAddToPlaylist(app, appLibraryPage(app)->level == LIB_FOLDERS ? SRC_BROWSE_ENTRY : SRC_LIBRARY_ENTRY);
+        break;
     case VIEW_QUEUE: appAddToPlaylist(app, SRC_QUEUE_ENTRY); break;
     case VIEW_PLAYLISTS:
         if (app->playlists.open)

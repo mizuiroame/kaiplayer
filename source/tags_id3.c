@@ -12,11 +12,11 @@
 #define ID3V1_FIELD 30
 
 typedef struct {
-    const char *title, *artist, *album, *album_artist, *picture, *user_text;
+    const char *title, *artist, *album, *album_artist, *picture, *user_text, *track, *disc, *year, *date;
 } FrameIds;
 
-static const FrameIds IDS_V22 = {"TT2", "TP1", "TAL", "TP2", "PIC", "TXX"};
-static const FrameIds IDS_V23 = {"TIT2", "TPE1", "TALB", "TPE2", "APIC", "TXXX"};
+static const FrameIds IDS_V22 = {"TT2", "TP1", "TAL", "TP2", "PIC", "TXX", "TRK", "TPA", "TYE", "TYE"};
+static const FrameIds IDS_V23 = {"TIT2", "TPE1", "TALB", "TPE2", "APIC", "TXXX", "TRCK", "TPOS", "TYER", "TDRC"};
 
 // Undoes ID3 unsynchronization in place: drops each 0x00 that follows 0xFF.
 static size_t resynchronize(uint8_t *data, size_t size)
@@ -89,6 +89,16 @@ static void parseUserTextFrame(const uint8_t *body, size_t size, TrackTags *t)
     tagsApplyReplayGain(name, value, t);
 }
 
+// A numeric text frame ("3/12", "2019"): its leading number.
+static int numberFrame(const uint8_t *body, size_t size)
+{
+    char text[32];
+    if (size < 2)
+        return 0;
+    textToUtf8(body + 1, size - 1, body[0], text, sizeof(text));
+    return tagsNumber(text);
+}
+
 static void parseFrame(const uint8_t *id, const uint8_t *body, size_t size, bool v22, TrackTags *t)
 {
     const FrameIds *ids = v22 ? &IDS_V22 : &IDS_V23;
@@ -105,6 +115,12 @@ static void parseFrame(const uint8_t *id, const uint8_t *body, size_t size, bool
         parsePictureFrame(body, size, v22, t);
     else if (memcmp(id, ids->user_text, n) == 0)
         parseUserTextFrame(body, size, t);
+    else if (memcmp(id, ids->track, n) == 0)
+        t->track_number = numberFrame(body, size);
+    else if (memcmp(id, ids->disc, n) == 0)
+        t->disc_number = numberFrame(body, size);
+    else if (memcmp(id, ids->year, n) == 0 || memcmp(id, ids->date, n) == 0)
+        t->year = numberFrame(body, size);
 }
 
 // Strips the per-frame extras of v2.3/v2.4. Returns false for frames we skip

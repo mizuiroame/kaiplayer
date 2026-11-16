@@ -17,6 +17,9 @@ typedef struct {
     char artist[TAGS_TEXT_MAX];
     char album[TAGS_TEXT_MAX];
     char album_artist[TAGS_TEXT_MAX];
+    int track_number;  // 0 if unknown ("3/12" is 3).
+    int disc_number;
+    int year;
     uint8_t *picture;  // JPEG or PNG bytes, or NULL.
     size_t picture_size;
     int picture_type;  // ID3/FLAC picture type; 3 is the front cover.
@@ -39,6 +42,10 @@ void tagsParseId3v2(const uint8_t *data, size_t size, TrackTags *t);
 void tagsParseId3v1(const uint8_t *data, size_t size, TrackTags *t);
 // The body of a FLAC VORBIS_COMMENT block (vendor, then the comments).
 void tagsParseVorbisComments(const uint8_t *data, size_t size, TrackTags *t);
+// The leading number of a tag value: "3/12" is 3, "2019-05-01" is 2019,
+// anything else 0.
+int tagsNumber(const char *value);
+
 // A ReplayGain field ("REPLAYGAIN_TRACK_GAIN" or "..._ALBUM_GAIN", any case)
 // with its value ("-6.54 dB"). Other names are ignored.
 void tagsApplyReplayGain(const char *name, const char *value, TrackTags *t);

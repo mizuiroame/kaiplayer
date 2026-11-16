@@ -57,7 +57,8 @@ bool appBrowseCanGoUp(const App *app)
 void appHandleBrowser(App *app, uint64_t pressed)
 {
     Browser *b = &app->browser;
-    bool has_back = appBrowseCanGoUp(app);
+    bool can_go_up = appBrowseCanGoUp(app);
+    bool has_back = true;  // At the music folder, Back returns to Library.
     pressed = appFocusFilter(app, pressed, b->cursor, b->count, has_back, b->count > 0);
     if (pressed & BUTTONS_UP) browserMove(b, -1);
     if (pressed & BUTTONS_DOWN) browserMove(b, 1);
@@ -67,14 +68,18 @@ void appHandleBrowser(App *app, uint64_t pressed)
         appAddToPlaylist(app, SRC_BROWSE_ENTRY);
     if (pressed & HidNpadButton_A) {
         if (app->focus == FOCUS_BACK) {
-            if (has_back)
+            if (can_go_up)
                 browserGoUp(b);
+            else
+                appLibraryBack(app);
             app->focus = FOCUS_LIST;
         } else {
             openSelected(app);
         }
     }
-    if ((pressed & HidNpadButton_B) && has_back) {
+    if ((pressed & HidNpadButton_B) && !can_go_up) {
+        appLibraryBack(app);
+    } else if (pressed & HidNpadButton_B) {
         browserGoUp(b);
         app->focus = FOCUS_LIST;
     }

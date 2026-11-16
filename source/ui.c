@@ -18,13 +18,13 @@
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 #define NS_PER_MINUTE 60000000000ull
 
-static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue", "Now Playing"};
+static const char *const VIEW_NAMES[VIEW_COUNT] = {"Library", "Playlists", "Queue", "Now Playing"};
 
 static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     const Browser *b = &app->browser;
     int path_x = MARGIN, path_w = GFX_WIDTH - 2 * MARGIN;
-    if (appBrowseCanGoUp(app)) {  // Not at the music folder: a touch way up.
+    {  // Back: up a folder, or to the Library at the music folder.
         int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, app->focus == FOCUS_BACK);
         path_x += back_w + 12;
         path_w -= back_w + 12;
@@ -332,6 +332,17 @@ static const char *footerHelp(const App *app)
         return "[^v] move the song  [A][B] done";
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return "[<>] choose  [A] press  [^][B] back to the list  [-] pause  [L][R] track";
+    if (app->view == VIEW_BROWSER) {
+        switch (appLibraryPage((App *)app)->level) {
+        case LIB_ROOT: return "[A] open  [v] player  [+] menu";
+        case LIB_ARTISTS:
+        case LIB_ALBUMS: return "[A] open  [B] back  [>] add to playlist  [X] play  [Y] shuffle  [+] menu";
+        case LIB_ARTIST: return "[A] open album  [B] back  [>] add to playlist  [X] play artist  [Y] shuffle  [+] menu";
+        case LIB_ALBUM:
+        case LIB_SONGS: return "[A] play from song  [B] back  [>] add to playlist  [X] play all  [Y] shuffle  [+] menu";
+        default: break;
+        }
+    }
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
         return "[A] play from song  [B] back  [>] remove from playlist  [X] play  [Y] shuffle  [+] menu";
     return HELP[app->view];
@@ -366,8 +377,10 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
         if (!app->audio_ok)
             fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y,
                      "Audio unavailable: audout could not start.", COLOR_ERROR);
-        else if (app->view == VIEW_BROWSER)
+        else if (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_FOLDERS)
             drawBrowser(app, status, now_ns);
+        else if (app->view == VIEW_BROWSER)
+            uiDrawLibrary(app, status, now_ns);
         else if (app->view == VIEW_PLAYLISTS)
             uiDrawPlaylists(app, status, now_ns);
         else

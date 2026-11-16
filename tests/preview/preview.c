@@ -7,6 +7,7 @@
 
 #include "app.h"
 #include "artwork.h"
+#include "catalog_scan.h"
 #include "font.h"
 #include "meta.h"
 #include "gfx.h"
@@ -67,6 +68,49 @@ bool metaLookup(const char *path, SongMeta *out)
              aurora ? "Aurora Fields" : strstr(path, "Night") ? "The Night Drive Band" : "");
     snprintf(out->album, sizeof(out->album), "%s", aurora ? "Paper Boats & Other Stories" : "");
     return true;
+}
+
+// The library: a catalog built from the fake tracks' made-up tags.
+static Catalog g_catalog;
+static bool g_scan_busy;
+
+const Catalog *catalogLock(void)
+{
+    return &g_catalog;
+}
+
+void catalogUnlock(void)
+{
+}
+
+bool catalogScanProgress(size_t *done, size_t *total)
+{
+    *done = 312;
+    *total = 480;
+    return g_scan_busy;
+}
+
+static void buildCatalog(void)
+{
+    static const struct { const char *artist, *album; int year; } META[] = {
+        {"Aurora Fields", "Paper Boats & Other Stories", 2024}, {"Aurora Fields", "Paper Boats & Other Stories", 2024},
+        {"Aurora Fields", "Paper Boats & Other Stories", 2024}, {"Aurora Fields", "Neon Harbor (Single)", 2025},
+        {"The Night Drive Band", "Night Drive", 2019}, {"The Night Drive Band", "Night Drive", 2019},
+        {"The Night Drive Band", "Glass City", 2022}, {"八神純子", "東京の夜", 1983}, {"八神純子", "東京の夜", 1983},
+    };
+    catalogInit(&g_catalog);
+    for (size_t i = 0; i < TRACK_COUNT; i++) {
+        static TrackTags t;  // No picture, so nothing to free.
+        memset(&t, 0, sizeof(t));
+        const char *name = strrchr(TRACKS[i], '/') + 1, *dash = strstr(name, " - ");
+        snprintf(t.title, sizeof(t.title), "%.*s", (int)strcspn(dash + 3, "."), dash + 3);
+        snprintf(t.artist, sizeof(t.artist), "%s", META[i].artist);
+        snprintf(t.album, sizeof(t.album), "%s", META[i].album);
+        t.year = META[i].year;
+        t.track_number = atoi(name);
+        catalogAdd(&g_catalog, TRACKS[i], 1000, &t, "sdmc:/Music");
+    }
+    catalogBuild(&g_catalog);
 }
 
 // The parts of app_folder.c and app_browse.c that drawing uses.
@@ -258,7 +302,28 @@ int main(int argc, char **argv)
 
     app.view = VIEW_BROWSER;
     snprintf(app.config.library, sizeof(app.config.library), "%s", "sdmc:/Music");
+    app.library.depth = 1;
+    app.library.stack[0] = (LibraryPage){LIB_FOLDERS, 0, 0};  // Library > Folders.
     render(argv[1], "browse", &app, &status);
+
+    // The Library tab's pages.
+    buildCatalog();
+    app.library.depth = 1;
+    app.library.stack[0] = (LibraryPage){LIB_ROOT, 0, 0};
+    g_scan_busy = true;
+    render(argv[1], "library", &app, &status);
+    g_scan_busy = false;
+    app.library.stack[1] = (LibraryPage){LIB_ARTISTS, 0, 1};
+    app.library.depth = 2;
+    render(argv[1], "library_artists", &app, &status);
+    app.library.stack[2] = (LibraryPage){LIB_ARTIST, 0, 0};
+    app.library.depth = 3;
+    render(argv[1], "library_artist", &app, &status);
+    app.library.stack[3] = (LibraryPage){LIB_ALBUM, g_catalog.artists[0].albums[1], 2};
+    app.library.depth = 4;
+    render(argv[1], "library_album", &app, &status);
+    app.library.stack[0].level = LIB_FOLDERS;  // The rest of the scenes show Folders.
+    app.library.depth = 1;
 
     // The welcome screen: choosing the music folder.
     snprintf(app.picker.path, sizeof(app.picker.path), "%s", "sdmc:/");

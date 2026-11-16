@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "browser.h"
+#include "catalog.h"
 #include "config.h"
 #include "keyboard.h"
 #include "menu.h"
@@ -17,7 +18,7 @@
 #include "tracklist.h"
 
 typedef enum {
-    VIEW_BROWSER,
+    VIEW_BROWSER,  // The Library tab (its Folders page is the old Browse).
     VIEW_PLAYLISTS,
     VIEW_QUEUE,
     VIEW_NOW_PLAYING,
@@ -34,6 +35,31 @@ typedef struct {
     size_t track_cursor;
     bool moving;                        // Up/Down move the selected song.
 } PlaylistsTab;
+
+// The Library tab's pages. Root lists Artists, Albums, Songs and Folders.
+typedef enum {
+    LIB_ROOT,
+    LIB_ARTISTS,
+    LIB_ARTIST,   // arg: artist index; lists the artist's albums.
+    LIB_ALBUMS,
+    LIB_ALBUM,    // arg: album index; lists its songs.
+    LIB_SONGS,
+    LIB_FOLDERS,  // The folder browser.
+} LibraryLevel;
+
+#define LIB_ROOT_ROWS 4
+#define LIBRARY_DEPTH_MAX 6
+
+typedef struct {
+    LibraryLevel level;
+    size_t arg;
+    size_t cursor;
+} LibraryPage;
+
+typedef struct {
+    LibraryPage stack[LIBRARY_DEPTH_MAX];  // stack[depth - 1] is shown.
+    int depth;
+} LibraryTab;
 
 // Menus that the app treats specially. Others are MENU_KIND_OTHER.
 enum {
@@ -67,6 +93,7 @@ typedef enum {
     SRC_QUEUE_ENTRY,    // The selected song in Queue.
     SRC_NOW_PLAYING,    // The current song.
     SRC_PLAYLIST_SONG,  // The selected song of the open playlist.
+    SRC_LIBRARY_ENTRY,  // The selected artist, album or song in Library.
 } AddSource;
 
 // What the on-screen keyboard is typing a name for.
@@ -79,6 +106,7 @@ typedef enum {
 typedef struct {
     View view;
     Browser browser;
+    LibraryTab library;
     Config config;
     size_t queue_cursor;
     Focus focus;
@@ -134,6 +162,16 @@ void appHandleFolderPicker(App *app, uint64_t pressed);
 // Picker rows are folders only: how many of the listing's entries those are.
 size_t appPickerFolderCount(const App *app);
 void appPickerChoose(App *app);  // Use the folder the picker is in.
+
+// The Library tab (app_library.c, library_tab.c).
+LibraryPage *appLibraryPage(App *app);
+// Rows on the current page (c may be NULL while the catalog loads).
+size_t appLibraryCount(const App *app, const Catalog *c);
+void appLibraryBack(App *app);
+void appHandleLibrary(App *app, uint64_t pressed);
+// The songs of the selected row, or of the whole page, in play order; start
+// is the selected song's place in them.
+bool appLibrarySongs(App *app, const Catalog *c, bool whole_page, TrackList *out, size_t *start);
 
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
 void appHandleBrowser(App *app, uint64_t pressed);

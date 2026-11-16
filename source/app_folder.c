@@ -4,6 +4,7 @@
 
 #include "app.h"
 #include "app_buttons.h"
+#include "catalog_scan.h"
 
 #define DEVICE_ROOT "sdmc:/"
 
@@ -38,6 +39,8 @@ void appPickerChoose(App *app)
     configSave(&app->config);
     browserOpen(&app->browser, app->config.library);
     app->picker_open = false;
+    app->library.depth = 0;  // Back to the Library's first page.
+    catalogScanStart(app->config.library);
     char message[96];
     snprintf(message, sizeof(message), "Music folder: %.60s", utilFileName(app->picker.path)[0]
                                                                ? utilFileName(app->picker.path) : app->picker.path);

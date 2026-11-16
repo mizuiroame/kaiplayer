@@ -78,6 +78,8 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
 
 // The Playlists tab (ui_playlists.c).
 void uiDrawPlaylists(const App *app, const PlayerStatus *status, uint64_t now_ns);
+// The Library tab's pages other than Folders (ui_library.c).
+void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns);
 
 // The + menu and the keyboard, drawn over everything (ui_overlay.c).
 void uiDrawOverlay(const App *app, uint64_t now_ns);
