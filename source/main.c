@@ -244,15 +244,23 @@ static void runLoop(App *app)
     inputRepeatInit(&repeat, BUTTONS_REPEATING);
     PlayerState last_state = PLAYER_STOPPED;
     char last_error[sizeof(((PlayerStatus *)0)->error)] = "";
+    bool waking = false;
 
     while (!app->quit && appletMainLoop()) {
         padUpdate(&pad);
         uint64_t now = nowNs();
-        uint64_t pressed = inputRepeatUpdate(&repeat, padGetButtonsDown(&pad), padGetButtons(&pad), now);
+        uint64_t held = padGetButtons(&pad);
+        uint64_t pressed = inputRepeatUpdate(&repeat, padGetButtonsDown(&pad), held, now);
         bool was_off = app->screen_off;
         bool screen_off = app->audio_ok && manageScreen(app, pressed, now);
         if (was_off && !app->screen_off)
-            inputRepeatInit(&repeat, BUTTONS_REPEATING);  // The waking press doesn't repeat.
+            waking = true;
+        // The press that wakes the screen does nothing else: buttons only
+        // act again once every button has been let go.
+        if (waking) {
+            waking = held != 0;
+            pressed = 0;
+        }
         if (screen_off) {
             appTickSleepTimer(app, now);
             syncWithPlayer(app, &last_state, last_error, sizeof(last_error));
