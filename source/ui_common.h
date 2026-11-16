@@ -63,6 +63,7 @@ typedef enum {
     PILL_ICON_REPEAT,      // Arrows in a circle.
     PILL_ICON_REPEAT_ONE,  // The same, with a 1 inside.
     PILL_ICON_PLAYLIST_ADD,
+    PILL_ICON_CHECK,
 } PillIcon;
 
 // "Add to playlist": a list with a plus, in a box of about 20 * scale.

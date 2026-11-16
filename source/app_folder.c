@@ -1,0 +1,67 @@
+// The music folder: chosen once (or from Settings), and Browse stays in it.
+#include <stdio.h>
+#include <string.h>
+
+#include "app.h"
+#include "app_buttons.h"
+
+#define DEVICE_ROOT "sdmc:/"
+
+const char *appMusicRoot(const App *app)
+{
+    return app->config.library[0] ? app->config.library : DEVICE_ROOT;
+}
+
+size_t appPickerFolderCount(const App *app)
+{
+    size_t n = 0;
+    while (n < app->picker.count && app->picker.entries[n].is_dir)
+        n++;  // Folders sort first.
+    return n;
+}
+
+void appOpenFolderPicker(App *app, bool first_run)
+{
+    const char *start = app->config.library[0] ? app->config.library : DEVICE_ROOT;
+    if (!browserOpen(&app->picker, start) && !browserOpen(&app->picker, DEVICE_ROOT)) {
+        appToast(app, "Could not read the SD card.");
+        return;
+    }
+    app->picker_open = true;
+    app->picker_first_run = first_run;
+}
+
+void appPickerChoose(App *app)
+{
+    snprintf(app->config.library, sizeof(app->config.library), "%s", app->picker.path);
+    snprintf(app->config.folder, sizeof(app->config.folder), "%s", app->picker.path);
+    configSave(&app->config);
+    browserOpen(&app->browser, app->config.library);
+    app->picker_open = false;
+    char message[96];
+    snprintf(message, sizeof(message), "Music folder: %.60s", utilFileName(app->picker.path)[0]
+                                                               ? utilFileName(app->picker.path) : app->picker.path);
+    appToast(app, message);
+}
+
+// A opens a folder, B goes up (or closes at the top), X uses this folder.
+void appHandleFolderPicker(App *app, uint64_t pressed)
+{
+    Browser *b = &app->picker;
+    size_t folders = appPickerFolderCount(app);
+    if ((pressed & BUTTONS_UP) && b->cursor > 0)
+        b->cursor--;
+    if ((pressed & BUTTONS_DOWN) && b->cursor + 1 < folders)
+        b->cursor++;
+    if ((pressed & HidNpadButton_A) && b->cursor < folders) {
+        char path[UTIL_PATH_MAX];
+        if (!utilJoinPath(path, sizeof(path), b->path, b->entries[b->cursor].name) || !browserOpen(b, path))
+            appToast(app, "Could not open the folder.");
+    }
+    if (pressed & HidNpadButton_B) {
+        if (!browserGoUp(b) && !app->picker_first_run)
+            app->picker_open = false;  // At the top: close (the first time, a folder is needed).
+    }
+    if (pressed & HidNpadButton_X)
+        appPickerChoose(app);
+}

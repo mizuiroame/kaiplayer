@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 typedef enum {
+    SETTING_LIBRARY,
     SETTING_SLEEP,
     SETTING_RESUME,
     SETTING_CLOCK,

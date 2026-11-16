@@ -167,7 +167,10 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
     }
     if (icon == PILL_ICON_SHUFFLE)
         drawShuffleIcon((float)cx, (float)y + 5, fg);
-    else if (icon == PILL_ICON_PLAYLIST_ADD)
+    else if (icon == PILL_ICON_CHECK) {
+        gfxLine((float)cx + 3, mid, (float)cx + 8, mid + 5, 2.4f, fg);
+        gfxLine((float)cx + 8, mid + 5, (float)cx + 17, mid - 5, 2.4f, fg);
+    } else if (icon == PILL_ICON_PLAYLIST_ADD)
         uiDrawPlaylistAddIcon((float)cx + ICON_SIZE / 2.0f, mid, 0.9f, fg);
     else
         drawRepeatIcon((float)cx, (float)y + 5, icon == PILL_ICON_REPEAT_ONE, fg);

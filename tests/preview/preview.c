@@ -69,6 +69,27 @@ bool metaLookup(const char *path, SongMeta *out)
     return true;
 }
 
+// The parts of app_folder.c and app_browse.c that drawing uses.
+const char *appMusicRoot(const App *app)
+{
+    return app->config.library[0] ? app->config.library : "sdmc:/";
+}
+
+size_t appPickerFolderCount(const App *app)
+{
+    size_t n = 0;
+    while (n < app->picker.count && app->picker.entries[n].is_dir)
+        n++;
+    return n;
+}
+
+bool appBrowseCanGoUp(const App *app)
+{
+    char parent[UTIL_PATH_MAX];
+    snprintf(parent, sizeof(parent), "%s", app->browser.path);
+    return utilParentPath(parent) && utilPathWithin(parent, appMusicRoot(app));
+}
+
 bool screenHasBacklightControl(void)
 {
     return true;
@@ -236,7 +257,19 @@ int main(int argc, char **argv)
     loadArtwork(argc > 2 ? argv[2] : NULL);
 
     app.view = VIEW_BROWSER;
+    snprintf(app.config.library, sizeof(app.config.library), "%s", "sdmc:/Music");
     render(argv[1], "browse", &app, &status);
+
+    // The welcome screen: choosing the music folder.
+    snprintf(app.picker.path, sizeof(app.picker.path), "%s", "sdmc:/");
+    addEntry(&app.picker, "Music", true);
+    addEntry(&app.picker, "Podcasts", true);
+    addEntry(&app.picker, "Nintendo", true);
+    addEntry(&app.picker, "switch", true);
+    addEntry(&app.picker, "notes.txt", false);
+    app.picker_open = app.picker_first_run = true;
+    render(argv[1], "folder_picker", &app, &status);
+    app.picker_open = false;
     app.focus = FOCUS_ADD;
     render(argv[1], "browse_focus_add", &app, &status);
     app.focus = FOCUS_LIST;

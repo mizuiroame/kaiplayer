@@ -16,6 +16,7 @@ typedef enum {
 
 typedef struct {
     char folder[UTIL_PATH_MAX];  // Last folder browsed.
+    char library[UTIL_PATH_MAX]; // The music folder; empty until chosen.
     bool shuffle;
     RepeatMode repeat;
     ResumeMode resume;           // What to do with the last queue at startup.

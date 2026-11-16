@@ -101,6 +101,9 @@ typedef struct {
     SettingRow settings_cursor;
     bool eq_open;               // The equalizer editor (over Settings).
     bool about_open;            // About KaiPlayer (over Settings).
+    bool picker_open;           // Choosing the music folder.
+    bool picker_first_run;      // The welcome version: no folder chosen yet.
+    Browser picker;             // The folders shown in the picker.
     int eq_band;                // Selected band in the editor.
     bool screen_off;            // Screen off while music plays.
     bool touch_wakes;           // The touch that woke the screen: ignore until released.
@@ -123,8 +126,19 @@ void appToast(App *app, const char *message);
 // BUTTON_ROW_ACTION, its add (or remove) button.
 uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count, bool has_back, bool has_add);
 
+// The music folder (app_folder.c): Browse stays inside it ("sdmc:/" until
+// one is chosen).
+const char *appMusicRoot(const App *app);
+void appOpenFolderPicker(App *app, bool first_run);
+void appHandleFolderPicker(App *app, uint64_t pressed);
+// Picker rows are folders only: how many of the listing's entries those are.
+size_t appPickerFolderCount(const App *app);
+void appPickerChoose(App *app);  // Use the folder the picker is in.
+
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
 void appHandleBrowser(App *app, uint64_t pressed);
+// False at the music folder: Browse doesn't go above it.
+bool appBrowseCanGoUp(const App *app);
 void appHandlePlaylists(App *app, uint64_t pressed);
 
 // Playlists tab helpers.

@@ -53,6 +53,16 @@ bool utilJoinPath(char *out, size_t size, const char *dir, const char *name)
     return written >= 0 && (size_t)written < size;
 }
 
+bool utilPathWithin(const char *path, const char *folder)
+{
+    size_t len = strlen(folder);
+    while (len > 0 && folder[len - 1] == '/')
+        len--;  // "sdmc:/music/" and "sdmc:/" compare without the slash.
+    if (strncmp(path, folder, len) != 0)
+        return false;
+    return path[len] == '\0' || path[len] == '/';
+}
+
 bool utilParentPath(char *path)
 {
     size_t len = strlen(path);

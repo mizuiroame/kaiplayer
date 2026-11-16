@@ -187,10 +187,17 @@ static void requestArtwork(const PlayerStatus *status)
     artworkRequest(path);
 }
 
+// Opens the last folder if it is inside the music folder, else the music
+// folder; with no music folder yet, asks for one.
 static void openStartFolder(App *app)
 {
-    if (!browserOpen(&app->browser, app->config.folder) && !browserOpen(&app->browser, "sdmc:/"))
+    const char *root = appMusicRoot(app);
+    bool inside = utilPathWithin(app->config.folder, root);
+    if (!(inside && browserOpen(&app->browser, app->config.folder)) && !browserOpen(&app->browser, root) &&
+        !browserOpen(&app->browser, "sdmc:/"))
         appToast(app, "Could not read the SD card.");
+    if (!app->config.library[0])
+        appOpenFolderPicker(app, true);
 }
 
 static void saveSettings(App *app)
@@ -206,7 +213,7 @@ static void saveSettings(App *app)
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open || app->picker_open;
 }
 
 // Screen off: any button or touch brings it back, and that input does

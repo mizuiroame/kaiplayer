@@ -332,6 +332,10 @@ bool appHandleOverlay(App *app, uint64_t pressed)
         handleMenu(app, pressed);
         return true;
     }
+    if (app->picker_open) {
+        appHandleFolderPicker(app, pressed);
+        return true;
+    }
     if (app->eq_open) {
         appHandleEqualizer(app, pressed);
         return true;

@@ -24,9 +24,7 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
 {
     const Browser *b = &app->browser;
     int path_x = MARGIN, path_w = GFX_WIDTH - 2 * MARGIN;
-    char parent[UTIL_PATH_MAX];
-    snprintf(parent, sizeof(parent), "%s", b->path);
-    if (utilParentPath(parent)) {  // Not at the root: a touch way up.
+    if (appBrowseCanGoUp(app)) {  // Not at the music folder: a touch way up.
         int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, app->focus == FOCUS_BACK);
         path_x += back_w + 12;
         path_w -= back_w + 12;
@@ -319,6 +317,9 @@ static const char *footerHelp(const App *app)
         return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
     if (app->about_open)
         return "[A][B] back";
+    if (app->picker_open)
+        return app->picker_first_run ? "[A] open  [B] up  [X] use this folder"
+                                     : "[A] open  [B] up or close  [X] use this folder";
     if (app->eq_open)
         return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)
