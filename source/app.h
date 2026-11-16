@@ -82,6 +82,7 @@ typedef struct {
     Config config;
     size_t queue_cursor;
     Focus focus;
+    char playing_playlist[PLAYLIST_NAME_MAX + 1];  // Where the queue came from; empty for a folder.
     BarControl bar_control;     // Selected player bar control, with FOCUS_PLAYER.
     PlaylistsTab playlists;
     bool audio_ok;
@@ -132,9 +133,9 @@ void appPlaylistsClose(App *app);
 void appPlaylistsReloadIfOpen(App *app, const char *name);
 // Puts the cursor on the playlist called `name`, if it exists.
 void appPlaylistsSelect(App *app, const char *name);
-// mixed_albums: the songs come from different albums (a playlist), for
-// Auto ReplayGain.
-void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, bool mixed_albums);
+// playlist: the playlist the songs come from, or NULL for a folder. Now
+// Playing shows its name, and Auto ReplayGain treats it as mixed albums.
+void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, const char *playlist);
 
 // The + menu, its dialogs and the keyboard. appOpenMenu builds the menu for
 // the current tab; appHandleOverlay returns true while an overlay is open.

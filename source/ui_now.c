@@ -26,7 +26,7 @@ static void drawBackdrop(const UiTrack *track)
     gfxGradientV(0, 0, GFX_WIDTH, CONTENT_BOTTOM, gfxMix(COLOR_BG, tint, strength), COLOR_BG);
 }
 
-static void drawInfo(const PlayerStatus *status, const UiTrack *track)
+static void drawInfo(const PlayerStatus *status, const UiTrack *track, const char *playlist)
 {
     fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? "PAUSED" : "NOW PLAYING", COLOR_DIM);
     fontDrawClipped(FONT_BOLD, 44, INFO_X, 172, INFO_W, track->title, track->has_track ? COLOR_TEXT : COLOR_DIM);
@@ -36,10 +36,11 @@ static void drawInfo(const PlayerStatus *status, const UiTrack *track)
     if (track->album[0])
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 276, INFO_W, track->album, COLOR_DIM);
 
-    if (status->track_count > 0) {
-        char line[UTIL_PATH_MAX + 48];
-        snprintf(line, sizeof(line), "Track %zu of %zu  ·  %s", status->queue_pos + 1, status->track_count,
-                 track->folder);
+    if (status->track_count > 0) {  // With the playlist's name when it came from one.
+        char line[PLAYLIST_NAME_MAX + 64];
+        int n = snprintf(line, sizeof(line), "Track %zu of %zu", status->queue_pos + 1, status->track_count);
+        if (playlist[0] && n > 0 && (size_t)n < sizeof(line))
+            snprintf(line + n, sizeof(line) - (size_t)n, "  ·  %s", playlist);
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 314, INFO_W, line, COLOR_DIM);
     }
 }
@@ -133,7 +134,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
         gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE,
                      COLOR_SHADOW, SHADOW_ALPHA);
     uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
-    drawInfo(status, track);
+    drawInfo(status, track, app->playing_playlist);
     drawProgress(app, status);
     drawTransport(status);
     drawToggles(status, app->focus == FOCUS_ADD);

@@ -251,7 +251,9 @@ int main(int argc, char **argv)
     render(argv[1], "player_bar_focus", &app, &status);
     app.focus = FOCUS_LIST;
     app.view = VIEW_NOW_PLAYING;
+    snprintf(app.playing_playlist, sizeof(app.playing_playlist), "%s", "Road Trip 2026");
     render(argv[1], "now_playing", &app, &status);
+    app.playing_playlist[0] = '\0';
     status.repeat = REPEAT_ONE;
     status.shuffle = false;
     render(argv[1], "now_playing_repeat_one", &app, &status);

@@ -96,7 +96,7 @@ static void playPlaylist(App *app, size_t start, bool shuffle)
             : t->cursor < t->index.count && loadPlaylist(app, t->index.names[t->cursor], &copy);
     if (!ok)
         return;
-    appPlayTracks(app, &copy, start, shuffle, true);
+    appPlayTracks(app, &copy, start, shuffle, t->open ? t->name : t->index.names[t->cursor]);
     trackListFree(&copy);
 }
 
