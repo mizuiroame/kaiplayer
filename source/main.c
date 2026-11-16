@@ -53,7 +53,7 @@ static void handleQueue(App *app, uint64_t pressed)
     if (pressed & BUTTONS_PAGE_UP) moveQueueCursor(app, -PAGE_ROWS, status.track_count);
     if (pressed & BUTTONS_PAGE_DOWN) moveQueueCursor(app, PAGE_ROWS, status.track_count);
     size_t track;
-    if ((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD)
+    if (pressed & BUTTON_ROW_ACTION)
         appAddToPlaylist(app, SRC_QUEUE_ENTRY);
     else if ((pressed & HidNpadButton_A) && playerQueueTrack(app->queue_cursor, &track))
         playerJumpTo(track);

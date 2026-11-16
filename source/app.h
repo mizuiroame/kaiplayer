@@ -116,10 +116,10 @@ typedef struct {
 // Shows a short message above the player bar.
 void appToast(App *app, const char *message);
 
-// Moves the focus between a list, its "< Back" (Up from the first row), its
-// rows' "+" (Right; Left returns) and the player bar (Down from the last
-// row; Up returns). Returns the buttons left for the list itself, without
-// Left and Right.
+// Moves the focus between a list, its "< Back" (Up from the first row) and
+// the player bar (Down from the last row; Up returns). Returns the buttons
+// left for the list itself, without Left and Right; Right on a row becomes
+// BUTTON_ROW_ACTION, its add (or remove) button.
 uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count, bool has_back, bool has_add);
 
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).

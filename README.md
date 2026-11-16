@@ -126,8 +126,8 @@ you where you are; open Now Playing with **ZR** or by tapping the player bar.
 | Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
 | ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
-| →  / ←    | Select the row's add-to-playlist button / back to the row | Same, inside a playlist | Same                 | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song (or press the selected **‹ Back** or add-to-playlist button) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
+| →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
+| A         | Open folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
 | B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Add the song to a playlist |
 | X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
 | Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
@@ -280,12 +280,11 @@ playlists made on your PC into that folder.
 - **Create one:** in the Playlists tab, press **+** and choose
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
   **New playlist...**.
-- **Add songs:** tap the add-to-playlist button on a song or folder in Browse (a folder adds
-  all its songs, subfolders included), on a song in Queue or in another
-  playlist, or **Add to playlist** in Now Playing. Then pick the playlist,
-  or **New playlist...**. With buttons, select the row, press **→** to
-  select its add-to-playlist button, then **A** (in Now Playing, **↓** then **A**). Songs
-  already in the playlist aren't added twice.
+- **Add songs:** tap the add-to-playlist button on a song or folder in
+  Browse (a folder adds all its songs, subfolders included) or on a song in
+  Queue, or **Add to playlist** in Now Playing. Then pick the playlist, or
+  **New playlist...**. With buttons, select the row and press **→** (in Now
+  Playing, press **B**). Songs already in the playlist aren't added twice.
 - **Save the queue:** in Queue, press **+** and choose **Save queue as
   playlist**.
 - **Play:** in the Playlists tab, **X** plays a playlist, **Y** shuffles it,
