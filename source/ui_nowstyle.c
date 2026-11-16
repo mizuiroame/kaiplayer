@@ -66,6 +66,7 @@ static bool makeLayer(Layer *layer, int radius, Shade shade)
     layer->size = layer->pixels ? size : 0;
     if (!layer->pixels)
         return false;
+    gfxImageChanged(layer->pixels);
     float c = size / 2.0f, rad = gfxToFb(radius);
     for (int y = 0; y < size; y++) {
         for (int x = 0; x < size; x++) {

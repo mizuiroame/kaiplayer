@@ -383,6 +383,11 @@ void gfxForgetMasks(void)
 {
 }
 
+void gfxImageChanged(const uint32_t *pixels)
+{
+    (void)pixels;  // The CPU reads images straight from their buffers.
+}
+
 float gfxDetail(void)
 {
     return 1.0f;

@@ -111,8 +111,13 @@ static void stepBackground(App *app, int delta)
     }
     index = ((index + delta) % (count + 1) + count + 1) % (count + 1);
     snprintf(app->config.background, sizeof(app->config.background), "%s", index ? names[index - 1] : "");
-    if (!backgroundLoad(app->config.library, app->config.background, app->config.background_blur))
-        appToast(app, "Could not read that image (JPEG or PNG, up to 50 megapixels).");
+    if (!backgroundLoad(app->config.library, app->config.background, app->config.background_blur)) {
+        char message[BACKGROUND_NAME_MAX + 80];
+        snprintf(message, sizeof(message), "Could not read %s (JPEG or PNG, up to 50 megapixels).",
+                 app->config.background);
+        appToast(app, message);
+        app->config.background[0] = '\0';  // Not kept: it would fail again at every start.
+    }
 }
 
 void appChangeSetting(App *app, SettingRow row, int delta)
@@ -156,8 +161,7 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         break;
     case SETTING_BACKGROUND_BLUR:
         app->config.background_blur = ((app->config.background_blur + delta) % BLUR_COUNT + BLUR_COUNT) % BLUR_COUNT;
-        if (app->config.background[0])  // Made again from the file, with the new blur.
-            backgroundLoad(app->config.library, app->config.background, app->config.background_blur);
+        backgroundSetBlur(app->config.background_blur);  // From the copy kept at the screen's size: quick.
         configSave(&app->config);
         break;
     case SETTING_SCREEN_OFF:

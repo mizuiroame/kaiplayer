@@ -87,6 +87,8 @@ void gfxResetClip(void);
 bool gfxCanReadBack(void);
 // The glyph bitmaps given to gfxBlendMask were freed (font.c's cache).
 void gfxForgetMasks(void);
+// An image's buffer got new pixels (or will be freed): the GPU drops its copy.
+void gfxImageChanged(const uint32_t *pixels);
 // Screen pixels per framebuffer pixel: 1, or more when the GPU draws at a
 // higher resolution (1.33 at 1440p, 2 at 2160p). Text is rasterized this
 // much finer and drawn with gfxBlendMaskScaled, so it stays sharp.

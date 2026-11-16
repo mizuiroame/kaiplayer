@@ -311,6 +311,28 @@ static void runLoop(App *app)
     }
 }
 
+// Shows why KaiPlayer can't start, on libnx's text console, until + is
+// pressed, and writes it to sdmc:/config/kaiplayer/error.txt.
+static void startupError(const char *message)
+{
+    FILE *f = fopen("sdmc:/config/kaiplayer/error.txt", "w");
+    if (f) {
+        fprintf(f, "%s\n", message);
+        fclose(f);
+    }
+    consoleInit(NULL);
+    printf("\n  %s\n\n  Details are in sdmc:/config/kaiplayer/error.txt.\n  Press + to exit.\n", message);
+    PadState pad;
+    padInitializeDefault(&pad);
+    while (appletMainLoop()) {
+        padUpdate(&pad);
+        if (padGetButtonsDown(&pad) & HidNpadButton_Plus)
+            break;
+        consoleUpdate(NULL);
+    }
+    consoleExit(NULL);
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -321,10 +343,13 @@ int main(int argc, char **argv)
     appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
-    if (!gfxInit())
+    if (!gfxInit()) {
+        startupError("KaiPlayer could not start drawing (the GPU or its window).");
         return 1;
+    }
     if (!fontInit()) {
         gfxExit();
+        startupError("KaiPlayer could not load its fonts.");
         return 1;
     }
     artworkInit();

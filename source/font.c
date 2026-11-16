@@ -11,7 +11,7 @@
 #include "stb_truetype.h"
 #include "util.h"
 
-#define CACHE_SLOTS 4096
+#define CACHE_SLOTS 8192  // Docked, each glyph is kept at two sizes (layout and screen).
 #define CACHE_MAX_USED (CACHE_SLOTS * 3 / 4)
 #define ELLIPSIS "\xE2\x80\xA6"
 #define MAX_FALLBACKS 6
@@ -21,7 +21,7 @@
 typedef struct {
     bool used;
     uint8_t face;
-    uint8_t px;
+    uint16_t px;
     uint8_t file;  // Font file the glyph comes from (a fallback if needed).
     uint32_t cp;
     int glyph;     // Glyph index in that file.
@@ -158,7 +158,7 @@ static Glyph *getGlyph(FontFace face, int px, uint32_t cp)
     for (;;) {
         Glyph *g = &g_cache[slot];
         if (!g->used) {
-            *g = (Glyph){.used = true, .face = (uint8_t)face, .px = (uint8_t)px, .cp = cp};
+            *g = (Glyph){.used = true, .face = (uint8_t)face, .px = (uint16_t)px, .cp = cp};
             renderGlyph(g, face, px, cp);
             g_cache_used++;
             return g;

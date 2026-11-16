@@ -28,8 +28,9 @@ const char *backgroundBlurName(int blur)
 #define IMAGE_WEIGHT 90      // Of 255: how much of the picture shows through the dark base.
 #define BASE_COLOR 0xFF141212u  // COLOR_BG (0x12, 0x12, 0x14).
 
-static uint32_t *g_frame;
-static bool g_loaded;
+static uint32_t *g_frame;   // The background as drawn.
+static uint8_t *g_source;   // The picture cropped to the screen's size, kept to blur it again.
+static bool g_loaded, g_have_source;
 
 const uint32_t *backgroundPixels(void)
 {
@@ -181,9 +182,49 @@ static uint8_t *readFile(const char *path, size_t *size)
     return data;
 }
 
+// Makes g_frame from g_source, and tells the GPU the picture changed (same buffer, new pixels).
+static bool remake(int blur)
+{
+    if (!g_frame)
+        g_frame = malloc((size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT * sizeof(uint32_t));
+    g_loaded = g_frame && g_have_source &&
+               backgroundMake(g_source, GFX_FB_WIDTH, GFX_FB_HEIGHT, g_frame, GFX_FB_WIDTH, GFX_FB_HEIGHT, BASE_COLOR,
+                              IMAGE_WEIGHT, blur);
+    if (g_frame)
+        gfxImageChanged(g_frame);
+    return g_loaded;
+}
+
+bool backgroundSetBlur(int blur)
+{
+    return g_have_source && remake(blur);
+}
+
+// Keeps the picture cropped and scaled to the screen's size, so the big
+// decoded image can go at once and the blur can change without reading the file.
+static bool keepSource(const uint8_t *rgba, int w, int h)
+{
+    size_t pixels = (size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT;
+    float *scaled = malloc(pixels * 3 * sizeof(float));
+    if (!g_source)
+        g_source = malloc(pixels * 4);
+    if (!scaled || !g_source) {
+        free(scaled);
+        return false;
+    }
+    shrinkToFill(rgba, w, h, scaled, GFX_FB_WIDTH, GFX_FB_HEIGHT);
+    for (size_t i = 0; i < pixels; i++) {
+        for (int c = 0; c < 3; c++)
+            g_source[i * 4 + c] = (uint8_t)(scaled[i * 3 + c] + 0.5f);
+        g_source[i * 4 + 3] = 255;
+    }
+    free(scaled);
+    return true;
+}
+
 bool backgroundLoad(const char *library, const char *name, int blur)
 {
-    g_loaded = false;
+    g_loaded = g_have_source = false;
     char folder[UTIL_PATH_MAX], path[UTIL_PATH_MAX];
     if (!name[0])
         return true;
@@ -198,12 +239,8 @@ bool backgroundLoad(const char *library, const char *name, int blur)
               (uint64_t)w * (uint64_t)h <= BACKGROUND_MAX_PIXELS;
     uint8_t *rgba = ok ? stbi_load_from_memory(data, (int)size, &w, &h, &channels, 4) : NULL;
     free(data);
-    if (rgba && !g_frame)
-        g_frame = malloc((size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT * sizeof(uint32_t));
-    ok = rgba && g_frame &&
-         backgroundMake(rgba, w, h, g_frame, GFX_FB_WIDTH, GFX_FB_HEIGHT, BASE_COLOR, IMAGE_WEIGHT, blur);
+    g_have_source = rgba && keepSource(rgba, w, h);
     if (rgba)
         stbi_image_free(rgba);
-    g_loaded = ok;
-    return ok;
+    return g_have_source && remake(blur);
 }

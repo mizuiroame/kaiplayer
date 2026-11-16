@@ -123,7 +123,7 @@ static Texture g_textures[TEXTURES];
 static unsigned g_frame;
 static float g_clip[4] = {0, 0, GFX_FB_WIDTH, GFX_FB_HEIGHT}, g_clip_radius;
 static Glyph g_glyphs[ATLAS_SLOTS];
-static int g_shelf_x, g_shelf_y, g_shelf_h;
+static int g_shelf_x, g_shelf_y, g_shelf_h, g_glyph_count;
 
 // --- The batch ---
 
@@ -223,6 +223,20 @@ static uint32_t signature(const uint32_t *pixels, int w, int h)
     return s;
 }
 
+void gfxImageChanged(const uint32_t *pixels)
+{
+    for (int i = 0; i < TEXTURES; i++) {
+        Texture *t = &g_textures[i];
+        if (t->texture && t->pixels == pixels) {
+            flush();
+            if (g_bound == t)
+                g_bound = NULL;
+            glDeleteTextures(1, &t->texture);
+            *t = (Texture){0};
+        }
+    }
+}
+
 static const Texture *textureFor(const uint32_t *pixels, int w, int h)
 {
     if (!pixels || w <= 0 || h <= 0)
@@ -273,11 +287,29 @@ static void image(float x0, float y0, float x1, float y1, const uint32_t *pixels
 
 // --- Glyphs ---
 
+// Empties the atlas, pixels too: the GPU blends a glyph's edge with the
+// texel beside it, which must be blank, not part of a glyph from before (as
+// after going from handheld to docked, when every glyph comes at a new size).
+static void clearAtlas(void)
+{
+    uint8_t *blank = calloc((size_t)ATLAS * ATLAS, 1);
+    if (!blank)
+        return;
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, g_atlas);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ATLAS, ATLAS, GL_RED, GL_UNSIGNED_BYTE, blank);
+    glActiveTexture(GL_TEXTURE0);
+    free(blank);
+}
+
 static void resetAtlas(void)
 {
     flush();
     memset(g_glyphs, 0, sizeof(g_glyphs));
-    g_shelf_x = g_shelf_y = g_shelf_h = 0;
+    g_shelf_x = g_shelf_y = g_shelf_h = g_glyph_count = 0;
+    clearAtlas();
 }
 
 void gfxForgetMasks(void)
@@ -287,6 +319,8 @@ void gfxForgetMasks(void)
 
 static const Glyph *glyphFor(const uint8_t *mask, int w, int h, int stride)
 {
+    if (w + 1 > ATLAS || h + 1 > ATLAS)
+        return NULL;  // Never fits: skip it rather than empty the atlas for nothing.
     uint32_t sig = (uint32_t)mask[0] | (uint32_t)mask[(size_t)(h - 1) * stride + w - 1] << 8 |
                    (uint32_t)mask[(size_t)(h / 2) * stride + w / 2] << 16;
     size_t slot = ((uintptr_t)mask >> 3 ^ (uintptr_t)w * 131 ^ (uintptr_t)h * 7919) % ATLAS_SLOTS;
@@ -302,7 +336,7 @@ static const Glyph *glyphFor(const uint8_t *mask, int w, int h, int stride)
             g_shelf_y += g_shelf_h + 1;
             g_shelf_h = 0;
         }
-        if (g_shelf_y + h + 1 > ATLAS || probe > ATLAS_SLOTS / 2) {
+        if (g_shelf_y + h + 1 > ATLAS || probe > 64 || g_glyph_count > ATLAS_SLOTS / 2) {
             resetAtlas();
             return glyphFor(mask, w, h, stride);
         }
@@ -313,6 +347,7 @@ static const Glyph *glyphFor(const uint8_t *mask, int w, int h, int stride)
         glTexSubImage2D(GL_TEXTURE_2D, 0, g_shelf_x, g_shelf_y, w, h, GL_RED, GL_UNSIGNED_BYTE, mask);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
         glActiveTexture(GL_TEXTURE0);
+        g_glyph_count++;
         *g = (Glyph){mask, w, h, sig, (float)g_shelf_x / ATLAS, (float)g_shelf_y / ATLAS,
                      (float)(g_shelf_x + w) / ATLAS, (float)(g_shelf_y + h) / ATLAS};
         g_shelf_x += w + 1;
@@ -582,11 +617,14 @@ bool gfxGlSetup(void)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, g_atlas);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, ATLAS, ATLAS, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // The same filter both ways: glyphs are drawn about 1:1, where the GPU's
+    // choice between the two would depend on where a glyph sits in the atlas.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glActiveTexture(GL_TEXTURE0);
+    clearAtlas();  // GL leaves a new texture's contents undefined.
 
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -618,6 +656,8 @@ void gfxGlTeardown(void)
 void gfxGlBeginFrame(int width, int height)
 {
     glViewport(0, 0, width, height);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);  // Never last frame's leftovers, whatever the view draws.
     glUseProgram(g_program);
     float detail = height > GFX_FB_HEIGHT ? (float)height / GFX_FB_HEIGHT : 1.0f;
     if (detail != g_detail) {

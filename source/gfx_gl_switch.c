@@ -68,7 +68,18 @@ void gfxBegin(void)
 void gfxEnd(void)
 {
     gfxGlEndFrame();
-    eglSwapBuffers(g_display, g_surface);
+    if (!eglSwapBuffers(g_display, g_surface)) {
+        // The window went away (going to or from the dock, sleep): make the surface again.
+        eglMakeCurrent(g_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglDestroySurface(g_display, g_surface);
+        EGLConfig config;
+        EGLint count = 0, id = 0;
+        eglQueryContext(g_display, g_context, EGL_CONFIG_ID, &id);
+        const EGLint attributes[] = {EGL_CONFIG_ID, id, EGL_NONE};
+        eglChooseConfig(g_display, attributes, &config, 1, &count);
+        g_surface = count ? eglCreateWindowSurface(g_display, config, nwindowGetDefault(), NULL) : EGL_NO_SURFACE;
+        eglMakeCurrent(g_display, g_surface, g_surface, g_context);
+    }
 }
 
 void gfxSetTarget(uint32_t *pixels, uint32_t stride)

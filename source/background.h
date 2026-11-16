@@ -33,6 +33,10 @@ size_t backgroundList(const char *library, char names[][BACKGROUND_NAME_MAX], si
 // (false for the latter).
 bool backgroundLoad(const char *library, const char *name, int blur);
 
+// Makes the loaded background again with another blur, from the copy kept
+// at the screen's size (no file read). False if there is none.
+bool backgroundSetBlur(int blur);
+
 // The background, GFX_FB_WIDTH x GFX_FB_HEIGHT pixels, or NULL for none.
 const uint32_t *backgroundPixels(void);
 

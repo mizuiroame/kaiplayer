@@ -7,6 +7,7 @@
 #include <GLES3/gl3.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "gfx.h"
 #include "gfx_gl.h"
@@ -65,7 +66,10 @@ void gfxSetTarget(uint32_t *pixels, uint32_t stride)
         g_target = pixels;
         g_stride = stride;
         glBindFramebuffer(GL_FRAMEBUFFER, g_fbo);
-        gfxGlBeginFrame(g_width, g_height);
+        // GLTEST_DOCKED_LATER=1: the first scene at 1080p, then the rest at the
+        // larger size, as when the console goes from handheld to the dock.
+        bool handheld_first = getenv("GLTEST_DOCKED_LATER") && g_frames == 0 && g_height != GFX_FB_HEIGHT;
+        gfxGlBeginFrame(handheld_first ? GFX_FB_WIDTH : g_width, handheld_first ? GFX_FB_HEIGHT : g_height);
         return;
     }
     gfxGlEndFrame();
@@ -84,9 +88,12 @@ void gfxSetTarget(uint32_t *pixels, uint32_t stride)
         FILE *f = fopen(path, "wb");
         if (f) {
             fprintf(f, "P6\n%d %d\n255\n", g_width, g_height);
-            for (int y = g_height - 1; y >= 0; y--)
+            static uint8_t line[3840 * 3];
+            for (int y = g_height - 1; y >= 0; y--) {
                 for (int x = 0; x < g_width; x++)
-                    fwrite(&rows[(size_t)y * g_width + x], 1, 3, f);
+                    memcpy(line + x * 3, &rows[(size_t)y * g_width + x], 3);
+                fwrite(line, 3, (size_t)g_width, f);
+            }
             fclose(f);
         }
     }
