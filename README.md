@@ -267,8 +267,8 @@ playing song's album art; black-and-white covers give a silver accent.
 while music plays, the screen turns off to save battery and the music keeps
 playing. You can also turn it off at once with **+ → Turn screen off**. Any
 button or a touch turns it back on; that press does nothing else. Menus
-don't turn it off while they are open. If the console doesn't let homebrew
-control the backlight, the screen goes black instead.
+don't turn it off while they are open. Docked, or if the console doesn't let
+homebrew control the backlight, the screen goes black instead.
 
 ### Playlists
 
