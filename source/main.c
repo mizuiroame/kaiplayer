@@ -71,8 +71,10 @@ static void handleNowPlaying(App *app, uint64_t pressed)
         appAddToPlaylist(app, SRC_NOW_PLAYING);
     if (pressed & HidNpadButton_A)
         playerTogglePause();
-    if (pressed & BUTTONS_LEFT) playerSeek(-SEEK_STEP_SECONDS);
-    if (pressed & BUTTONS_RIGHT) playerSeek(SEEK_STEP_SECONDS);
+    // The d-pad seeks here; the right stick does too, everywhere. The left
+    // stick does nothing, rather than repeat them.
+    if (pressed & HidNpadButton_Left) playerSeek(-SEEK_STEP_SECONDS);
+    if (pressed & HidNpadButton_Right) playerSeek(SEEK_STEP_SECONDS);
     if (pressed & HidNpadButton_X) playerToggleShuffle();
     if (pressed & HidNpadButton_Y) playerCycleRepeat();
 }
