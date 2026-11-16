@@ -35,7 +35,7 @@ static void dimScreen(void)
 static void panel(int x, int y, int w, int h)
 {
     gfxFillRoundRect(x, y, w, h, 16, COLOR_SURFACE);
-    uiHitAdd(x, y, w, h, HIT_LIST, 0);  // Taps on the panel itself do nothing.
+    uiHitAdd(x, y, w, h, HIT_PANEL, 0);  // Taps on the panel itself do nothing.
 }
 
 static int firstVisibleItem(int cursor, int count)
@@ -136,8 +136,9 @@ static void drawSettings(const App *app, uint64_t now_ns)
     dimScreen();
     panel(x, y, SETTINGS_W, h);
     int title_x = x + PANEL_PAD;
-    if (app->settings_page != SETTINGS_PAGE_MAIN)  // A page: back to the main one.
-        title_x += uiDrawBackButton(x + PANEL_PAD - 4, y + 18, false) + 12;
+    if (app->settings_page != SETTINGS_PAGE_MAIN) {  // A page: back to the main one.
+        title_x += uiDrawBackButtonHit(x + PANEL_PAD - 4, y + 18, false, HIT_OVERLAY_BACK) + 12;
+    }
     fontDraw(FONT_BOLD, 24, title_x, y + 22, settingsPageTitle(app->settings_page), COLOR_TEXT);
 
     char value[64];

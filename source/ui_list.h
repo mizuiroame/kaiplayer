@@ -8,6 +8,7 @@
 #include "font.h"
 #include "gfx.h"
 #include "metacache.h"
+#include "ui_hit.h"
 
 #define SUBTITLE_Y 76
 #define LIST_Y 108
@@ -71,6 +72,8 @@ void uiDrawAddButton(int x, int y, size_t index, bool focused);
 void uiDrawRemoveButton(int x, int y, size_t index, bool focused);
 // "< Back" at the start of the subtitle line. Returns its width.
 int uiDrawBackButton(int x, int y, bool focused);
+// The same, with the touch target it adds (HIT_OVERLAY_BACK in an overlay).
+int uiDrawBackButtonHit(int x, int y, bool focused, HitKind hit);
 // Touch targets: the list area (for drags) and one row.
 void uiHitListArea(void);
 void uiHitRow(int y, size_t index);
