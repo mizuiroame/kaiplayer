@@ -7,6 +7,7 @@
 #include "font_bold_ttf.h"
 #include "font_regular_ttf.h"
 #include "font_system.h"
+#include "gfx.h"
 #include "stb_truetype.h"
 #include "util.h"
 
@@ -96,6 +97,7 @@ int fontFallbackCount(void)
 
 static void flushCache(void)
 {
+    gfxForgetMasks();  // The bitmaps the GPU's atlas points to go.
     for (int i = 0; i < CACHE_SLOTS; i++)
         free(g_cache[i].bitmap);
     memset(g_cache, 0, sizeof(g_cache));

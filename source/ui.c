@@ -401,9 +401,10 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
-    bool overlay = uiOverlayOpen(app);
+    // Only the CPU keeps the view behind an overlay: the GPU draws it all again quickly.
+    bool overlay = uiOverlayOpen(app), keep = overlay && gfxCanReadBack();
     Frozen key;
-    if (overlay && frozenStill(app, status, &track, &key)) {
+    if (keep && frozenStill(app, status, &track, &key)) {
         gfxCopyFrame(g_frozen);
         if (app->view == VIEW_NOW_PLAYING)
             uiNowPlayingUnderOverlay(app, status, &track, now_ns);
@@ -438,8 +439,9 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     }
     drawHeader(app, now_ns);
     g_frozen_ok = false;
-    if (overlay) {
+    if (overlay)
         gfxBlendRect(0, 0, GFX_WIDTH, GFX_HEIGHT, COLOR_SHADOW, UI_DIM_ALPHA);
+    if (keep) {
         if (!g_frozen)
             g_frozen = malloc((size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT * sizeof(uint32_t));
         if (g_frozen) {

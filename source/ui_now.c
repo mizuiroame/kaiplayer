@@ -181,7 +181,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
 {
     drawBackdrop(track);
     g_style_backdrop_ok = false;
-    if (uiOverlayOpen(app) && app->config.now_style != NOW_STYLE_COVER)
+    if (uiOverlayOpen(app) && app->config.now_style != NOW_STYLE_COVER && gfxCanReadBack())
         saveStyleBackdrop();  // This frame is kept under the overlay; the record keeps turning on it.
     if (!drawStyle(app, status, track, now_ns)) {
         if (track->cover)  // The placeholder has round corners and no shadow.

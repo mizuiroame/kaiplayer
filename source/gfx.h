@@ -1,5 +1,6 @@
-// Software drawing into libnx's framebuffer: shapes, gradients and images.
-// Text is drawn by font.h on top of these.
+// Drawing: shapes, gradients and images. Text is drawn by font.h on top of
+// these. Two backends: gfx.c draws with the CPU (the host preview and tests,
+// and the console without KAIPLAYER_GPU); gfx_gl.c with the GPU.
 #pragma once
 
 #include <stdbool.h>
@@ -78,7 +79,14 @@ void gfxSaveFrame(uint32_t *pixels);
 void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out);
 // Limits drawing to a layout rectangle (not gfxBlitDisc or text), until gfxResetClip.
 void gfxSetClip(int x, int y, int w, int h);
+// The same with round corners of radius (the GPU; the CPU clips to the rectangle).
+void gfxSetClipRound(int x, int y, int w, int h, int radius);
 void gfxResetClip(void);
+// True if what's drawn can be read back (gfxSaveFrame, gfxSaveRectFb): the
+// CPU, where keeping finished parts of the screen saves time. Not the GPU.
+bool gfxCanReadBack(void);
+// The glyph bitmaps given to gfxBlendMask were freed (font.c's cache).
+void gfxForgetMasks(void);
 // Draws color through an 8-bit coverage mask (used for text). Unlike the
 // rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

@@ -1,4 +1,6 @@
 // The libnx side of gfx: a CPU framebuffer on the default window.
+#ifndef KAIPLAYER_GPU
+
 #include <switch.h>
 
 #include "gfx.h"
@@ -40,3 +42,5 @@ void gfxEnd(void)
     gfxSetTarget(NULL, 0);
     g_drawing = false;
 }
+
+#endif
