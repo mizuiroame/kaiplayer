@@ -285,16 +285,18 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     // Shuffle and repeat as pills, lit in the accent color when on.
     const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
     const char *repeat = uiRepeatLabel(status->repeat);
-    int x = GFX_WIDTH - MARGIN - uiPillWidth(repeat);
+    PillIcon repeat_icon = status->repeat == REPEAT_ONE ? PILL_ICON_REPEAT_ONE : PILL_ICON_REPEAT;
+    int repeat_w = uiIconPillWidth(NULL, repeat), shuffle_w = uiIconPillWidth(NULL, shuffle);
+    int x = GFX_WIDTH - MARGIN - repeat_w;
     if (focused == BAR_REPEAT)
-        drawFocusRing(x, MINI_Y + 48, uiPillWidth(repeat), 30, 15);
-    uiDrawPill(x, MINI_Y + 48, repeat, status->repeat != REPEAT_OFF);
-    uiHitAdd(x, MINI_Y + 40, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
-    x -= uiPillWidth(shuffle) + 10;
+        drawFocusRing(x, MINI_Y + 48, repeat_w, 30, 15);
+    uiDrawIconPill(x, MINI_Y + 48, NULL, repeat_icon, repeat, status->repeat != REPEAT_OFF);
+    uiHitAdd(x, MINI_Y + 40, repeat_w, 46, HIT_REPEAT, 0);
+    x -= shuffle_w + 10;
     if (focused == BAR_SHUFFLE)
-        drawFocusRing(x, MINI_Y + 48, uiPillWidth(shuffle), 30, 15);
-    uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
-    uiHitAdd(x, MINI_Y + 40, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
+        drawFocusRing(x, MINI_Y + 48, shuffle_w, 30, 15);
+    uiDrawIconPill(x, MINI_Y + 48, NULL, PILL_ICON_SHUFFLE, shuffle, status->shuffle);
+    uiHitAdd(x, MINI_Y + 40, shuffle_w, 46, HIT_SHUFFLE, 0);
 }
 
 static const char *footerHelp(const App *app)

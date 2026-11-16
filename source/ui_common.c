@@ -2,6 +2,7 @@
 
 Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
 
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -72,6 +73,61 @@ void uiDrawCover(int x, int y, int size, const CoverImage *cover)
 int uiPillWidth(const char *label)
 {
     return fontTextWidth(FONT_BOLD, PILL_TEXT, label) + 2 * PILL_PAD;
+}
+
+#define ICON_SIZE 20
+#define ICON_GAP 7
+#define HINT_GAP 9
+
+static void drawArrowHead(float tip_x, float tip_y, float dir_x, float dir_y, Color color)
+{
+    const float length = 5.5f, half = 4.5f;
+    float bx = tip_x - dir_x * length, by = tip_y - dir_y * length;
+    gfxTriangle(tip_x, tip_y, bx - dir_y * half, by + dir_x * half, bx + dir_y * half, by - dir_x * half, color);
+}
+
+// Two lines crossing left to right, each ending in an arrow.
+static void drawShuffleIcon(float x, float y, Color color)
+{
+    gfxLine(x + 1, y + 5, x + 13, y + 15, 2.2f, color);
+    gfxLine(x + 1, y + 15, x + 13, y + 5, 2.2f, color);
+    gfxLine(x + 13, y + 5, x + 15, y + 5, 2.2f, color);
+    gfxLine(x + 13, y + 15, x + 15, y + 15, 2.2f, color);
+    drawArrowHead(x + 20, y + 5, 1, 0, color);
+    drawArrowHead(x + 20, y + 15, 1, 0, color);
+}
+
+// A circle open at the top right, with an arrow going clockwise.
+static void drawRepeatIcon(float x, float y, bool one, Color color)
+{
+    float cx = x + 10, cy = y + 10, r = 7.0f;
+    float start = -1.05f, end = start + 2.0f * (float)M_PI - 0.95f;
+    gfxArc(cx, cy, r, 2.2f, start, end, color);
+    float ex = cx + r * cosf(end), ey = cy + r * sinf(end);
+    drawArrowHead(ex - sinf(end) * 4.0f, ey + cosf(end) * 4.0f, -sinf(end), cosf(end), color);
+    if (one)
+        fontDraw(FONT_BOLD, 12, (int)cx - fontTextWidth(FONT_BOLD, 12, "1") / 2, (int)cy - 8, "1", color);
+}
+
+int uiIconPillWidth(const char *hint, const char *label)
+{
+    int w = 2 * PILL_PAD + ICON_SIZE + ICON_GAP + fontTextWidth(FONT_BOLD, PILL_TEXT, label);
+    return hint ? w + fontTextWidth(FONT_BOLD, PILL_TEXT, hint) + HINT_GAP : w;
+}
+
+void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *label, bool on)
+{
+    Color bg = on ? gfxMix(COLOR_SURFACE_HI, COLOR_ACCENT, 70) : COLOR_SURFACE_HI;
+    Color fg = on ? COLOR_ACCENT : COLOR_DIM;
+    gfxFillRoundRect(x, y, uiIconPillWidth(hint, label), 30, 15, bg);
+    int cx = x + PILL_PAD;
+    if (hint)
+        cx += fontDraw(FONT_BOLD, PILL_TEXT, cx, y + 6, hint, fg) + HINT_GAP;
+    if (icon == PILL_ICON_SHUFFLE)
+        drawShuffleIcon((float)cx, (float)y + 5, fg);
+    else
+        drawRepeatIcon((float)cx, (float)y + 5, icon == PILL_ICON_REPEAT_ONE, fg);
+    fontDraw(FONT_BOLD, PILL_TEXT, cx + ICON_SIZE + ICON_GAP, y + 6, label, fg);
 }
 
 void uiDrawPill(int x, int y, const char *label, bool on)

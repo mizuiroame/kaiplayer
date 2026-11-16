@@ -39,6 +39,13 @@ void gfxGradientV(int x, int y, int w, int h, Color top, Color bottom);
 void gfxFillTriangleRight(int x, int y, int w, int h, Color color);
 void gfxFillTriangleLeft(int x, int y, int w, int h, Color color);
 
+// Anti-aliased strokes for icons. A line with round ends; an arc of a ring
+// from angle start to end (radians, clockwise on screen from 3 o'clock);
+// and any triangle.
+void gfxLine(float x0, float y0, float x1, float y1, float thickness, Color color);
+void gfxArc(float cx, float cy, float radius, float thickness, float start, float end, Color color);
+void gfxTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color);
+
 // Copies a size x size image.
 void gfxBlit(int x, int y, int size, const uint32_t *pixels);
 // Draws color through an 8-bit coverage mask (used for text).

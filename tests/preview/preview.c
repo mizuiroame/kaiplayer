@@ -242,6 +242,11 @@ int main(int argc, char **argv)
     app.focus = FOCUS_LIST;
     app.view = VIEW_NOW_PLAYING;
     render(argv[1], "now_playing", &app, &status);
+    status.repeat = REPEAT_ONE;
+    status.shuffle = false;
+    render(argv[1], "now_playing_repeat_one", &app, &status);
+    status.repeat = REPEAT_ALL;
+    status.shuffle = true;
 
     g_has_art = false;
     status.state = PLAYER_PAUSED;

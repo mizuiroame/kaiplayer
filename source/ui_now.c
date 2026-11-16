@@ -105,17 +105,19 @@ static void drawTransport(const PlayerStatus *status)
 static void drawToggles(const PlayerStatus *status, bool add_focused)
 {
     int x = INFO_X;
-    const char *shuffle = status->shuffle ? "X  Shuffle on" : "X  Shuffle off";
-    uiDrawPill(x, TOGGLES_Y, shuffle, status->shuffle);
-    uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
-    x += uiPillWidth(shuffle) + 12;
-    char repeat[32];
-    snprintf(repeat, sizeof(repeat), "Y  %s", uiRepeatLabel(status->repeat));
-    uiDrawPill(x, TOGGLES_Y, repeat, status->repeat != REPEAT_OFF);
-    uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
+    const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
+    int shuffle_w = uiIconPillWidth("X", shuffle);
+    uiDrawIconPill(x, TOGGLES_Y, "X", PILL_ICON_SHUFFLE, shuffle, status->shuffle);
+    uiHitAdd(x, TOGGLES_Y - 8, shuffle_w, 46, HIT_SHUFFLE, 0);
+    x += shuffle_w + 12;
+    const char *repeat = uiRepeatLabel(status->repeat);
+    int repeat_w = uiIconPillWidth("Y", repeat);
+    uiDrawIconPill(x, TOGGLES_Y, "Y", status->repeat == REPEAT_ONE ? PILL_ICON_REPEAT_ONE : PILL_ICON_REPEAT, repeat,
+                   status->repeat != REPEAT_OFF);
+    uiHitAdd(x, TOGGLES_Y - 8, repeat_w, 46, HIT_REPEAT, 0);
     if (status->track_count > 0) {  // Add the current song to a playlist.
         static const char ADD[] = "+  Add to playlist";
-        x += uiPillWidth(repeat) + 12;
+        x += repeat_w + 12;
         uiDrawPill(x, TOGGLES_Y, ADD, add_focused);
         uiHitAdd(x, TOGGLES_Y - 8, uiPillWidth(ADD), 46, HIT_ADD, -1);
     }

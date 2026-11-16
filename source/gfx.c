@@ -157,6 +157,85 @@ void gfxFillTriangleLeft(int x, int y, int w, int h, Color color)
     fillTriangle(x, y, w, h, color, true);
 }
 
+static float clampf(float v, float lo, float hi)
+{
+    return v < lo ? lo : v > hi ? hi : v;
+}
+
+// Calls shade on every pixel of the box around a shape, blending color by
+// the coverage it returns (0-1).
+typedef float (*Coverage)(float px, float py, const float *shape);
+
+static void fillShape(float x0, float y0, float x1, float y1, const float *shape, Coverage coverage, Color color)
+{
+    int x = (int)floorf(x0) - 1, y = (int)floorf(y0) - 1;
+    int w = (int)ceilf(x1) + 2 - x, h = (int)ceilf(y1) + 2 - y;
+    if (!clip(&x, &y, &w, &h))
+        return;
+    for (int py = y; py < y + h; py++) {
+        uint32_t *row = g_pixels + (size_t)py * g_stride;
+        for (int px = x; px < x + w; px++)
+            blendPixel(&row[px], color, (unsigned)(coverage(px + 0.5f, py + 0.5f, shape) * 255.0f));
+    }
+}
+
+// shape: x0, y0, x1, y1, half thickness.
+static float lineCoverage(float px, float py, const float *s)
+{
+    float dx = s[2] - s[0], dy = s[3] - s[1], len2 = dx * dx + dy * dy;
+    float t = len2 > 0.0f ? clampf(((px - s[0]) * dx + (py - s[1]) * dy) / len2, 0.0f, 1.0f) : 0.0f;
+    float ex = px - (s[0] + t * dx), ey = py - (s[1] + t * dy);
+    return clampf(s[4] - sqrtf(ex * ex + ey * ey) + 0.5f, 0.0f, 1.0f);
+}
+
+void gfxLine(float x0, float y0, float x1, float y1, float thickness, Color color)
+{
+    float r = thickness / 2.0f, s[5] = {x0, y0, x1, y1, r};
+    fillShape(fminf(x0, x1) - r, fminf(y0, y1) - r, fmaxf(x0, x1) + r, fmaxf(y0, y1) + r, s, lineCoverage, color);
+}
+
+// shape: cx, cy, radius, half thickness, start, sweep (0 to 2 pi).
+static float arcCoverage(float px, float py, const float *s)
+{
+    float dx = px - s[0], dy = py - s[1];
+    float angle = atan2f(dy, dx) - s[4];
+    angle = fmodf(angle, 2.0f * (float)M_PI);
+    if (angle < 0.0f)
+        angle += 2.0f * (float)M_PI;
+    if (angle > s[5])
+        return 0.0f;
+    float d = fabsf(sqrtf(dx * dx + dy * dy) - s[2]);
+    return clampf(s[3] - d + 0.5f, 0.0f, 1.0f);
+}
+
+void gfxArc(float cx, float cy, float radius, float thickness, float start, float end, Color color)
+{
+    float r = radius + thickness / 2.0f;
+    float s[6] = {cx, cy, radius, thickness / 2.0f, start, clampf(end - start, 0.0f, 2.0f * (float)M_PI)};
+    fillShape(cx - r, cy - r, cx + r, cy + r, s, arcCoverage, color);
+}
+
+// shape: the three corners. 4x4 samples per pixel.
+static float triangleCoverage(float px, float py, const float *s)
+{
+    int inside = 0;
+    for (int i = 0; i < 16; i++) {
+        float x = px - 0.5f + ((i & 3) + 0.5f) / 4.0f, y = py - 0.5f + ((i >> 2) + 0.5f) / 4.0f;
+        float e0 = (s[2] - s[0]) * (y - s[1]) - (s[3] - s[1]) * (x - s[0]);
+        float e1 = (s[4] - s[2]) * (y - s[3]) - (s[5] - s[3]) * (x - s[2]);
+        float e2 = (s[0] - s[4]) * (y - s[5]) - (s[1] - s[5]) * (x - s[4]);
+        inside += (e0 >= 0 && e1 >= 0 && e2 >= 0) || (e0 <= 0 && e1 <= 0 && e2 <= 0);
+    }
+    return (float)inside / 16.0f;
+}
+
+void gfxTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color)
+{
+    float s[6] = {x0, y0, x1, y1, x2, y2};
+    fillShape(fminf(x0, fminf(x1, x2)), fminf(y0, fminf(y1, y2)), fmaxf(x0, fmaxf(x1, x2)),
+              fmaxf(y0, fmaxf(y1, y2)), s, triangleCoverage, color);
+}
+
 void gfxBlit(int x, int y, int size, const uint32_t *pixels)
 {
     int cx = x, cy = y, w = size, h = size;
