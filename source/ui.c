@@ -315,11 +315,11 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "[A] open  [X] play  [Y] shuffle  [<>] choose  [v] next row  [+] menu",
-        "[A] open  [B] back  [>] add to playlist  [X] play folder  [Y] shuffle  [v] player  [+] menu",
-        "[A] open  [X] play  [Y] shuffle  [RS] page  [-] pause  [L][R] track  [+] menu",
-        "[A] play  [B] browse  [>] add to playlist  [X] shuffle  [Y] repeat  [v] player  [+] menu",
-        "[A] pause  [<>] seek  [B] add to playlist  [X] shuffle  [Y] repeat  [+] menu",
+        "[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu",
+        "[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu",
+        "[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu",
+        "[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu",
+        "[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu",
     };
     if (app->keyboard_open)
         return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
@@ -339,20 +339,20 @@ static const char *footerHelp(const App *app)
     if (app->playlists.moving)
         return "[^v] move the song  [A][B] done";
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
-        return "[<>] choose  [A] press  [^][B] back to the list  [-] pause  [L][R] track";
+        return "[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause";
     if (app->view == VIEW_BROWSER) {
         switch (appLibraryPage((App *)app)->level) {
-        case LIB_ROOT: return "[A] open  [v] player  [+] menu";
+        case LIB_ROOT: return "[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu";
         case LIB_ARTISTS:
-        case LIB_ALBUMS: return "[A] open  [B] back  [>] add to playlist  [X] play  [Y] shuffle  [+] menu";
-        case LIB_ARTIST: return "[A] open album  [B] back  [>] add to playlist  [X] play artist  [Y] shuffle  [+] menu";
+        case LIB_ALBUMS: return "[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
+        case LIB_ARTIST: return "[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track";
         case LIB_ALBUM:
-        case LIB_SONGS: return "[A] play from song  [B] back  [>] add to playlist  [X] play all  [Y] shuffle  [+] menu";
+        case LIB_SONGS: return "[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
         default: break;
         }
     }
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "[A] play from song  [B] back  [>] remove from playlist  [X] play  [Y] shuffle  [+] menu";
+        return "[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
     return HELP[app->view];
 }
 

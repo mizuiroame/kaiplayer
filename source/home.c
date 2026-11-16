@@ -84,6 +84,18 @@ void homeCompute(Home *home, const Catalog *c, const History *h)
     }
 }
 
+const HomeRowKind HOME_GRID[HOME_ROW_COUNT] = {
+    HOME_TOP_ARTISTS, HOME_RECENT_PLAYLISTS, HOME_RECENT_ALBUMS, HOME_RECENT_ARTISTS,
+};
+
+int homeGridPlace(HomeRowKind row)
+{
+    for (int i = 0; i < HOME_ROW_COUNT; i++)
+        if (HOME_GRID[i] == row)
+            return i;
+    return 0;
+}
+
 size_t homeRowCount(const Home *home, HomeRowKind row)
 {
     if (row == HOME_RECENT_PLAYLISTS)

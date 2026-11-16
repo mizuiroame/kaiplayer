@@ -129,9 +129,9 @@ you where you are; open Now Playing with **ZR** or by tapping the player bar.
 
 | Button    | Library                      | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
+| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | — |
 | →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
-| A         | Open an artist, album or folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
+| A         | Open an artist, album or folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume |
 | B         | Back (up a page or a folder) | Back to the playlist list    | Back to Library            | Add the song to a playlist |
 | X         | Play the artist, album, list or folder | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
 | Y         | Shuffle it                   | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
@@ -149,14 +149,16 @@ In every tab:
 
 ### Home
 
-**Home** is the first tab. It shows rows of cards with their covers:
+**Home** is the first tab: four sections of up to four cards each, with
+their covers, all on one screen:
 
-- **Your top artists:** the ones you play most.
-- **Recently played albums** and **Recently played artists**.
-- **Recent playlists.**
+| | |
+|---|---|
+| **Your top artists** (the ones you play most) | **Recent playlists** |
+| **Recent albums** | **Recent artists** |
 
 Before you have played anything, it shows albums from your library. Use the
-D-pad to move between cards and rows, **A** to open one, **X** to play it and
+D-pad or the left stick to move between cards and sections, **A** to open one, **X** to play it and
 **Y** to shuffle it, or tap a card. A song counts as played after 30 seconds
 (half of a song shorter than a minute). The plays are kept in
 `sdmc:/config/kaiplayer/history.txt`; delete that file to start over.

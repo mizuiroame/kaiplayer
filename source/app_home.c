@@ -70,15 +70,6 @@ void appTrackPlays(App *app, const PlayerStatus *status)
         appRecordPlay(app, HISTORY_SONG, path);
 }
 
-// The next row with items from row, going by step (+1 or -1); -1 if none.
-static int nextRow(const Home *home, int row, int step)
-{
-    for (int r = row + step; r >= 0 && r < HOME_ROW_COUNT; r += step)
-        if (homeRowCount(home, (HomeRowKind)r) > 0)
-            return r;
-    return -1;
-}
-
 static void openLibraryPage(App *app, LibraryLevel list, size_t list_row, LibraryLevel page, size_t arg)
 {
     LibraryTab *t = &app->library;
@@ -119,6 +110,19 @@ static void actOnCard(App *app, const Home *home, bool play, bool shuffle)
     }
 }
 
+// Moves to the section at grid place `place` if it has cards, keeping the
+// card position as close as it can. False if that section is empty.
+static bool goToPlace(App *app, const Home *home, int place, size_t col)
+{
+    HomeRowKind row = HOME_GRID[place];
+    size_t count = homeRowCount(home, row);
+    if (count == 0)
+        return false;
+    app->home_row = row;
+    app->home_col[row] = col < count ? col : count - 1;
+    return true;
+}
+
 void appHandleHome(App *app, uint64_t pressed)
 {
     if (app->focus == FOCUS_PLAYER) {  // The player bar under Home.
@@ -128,25 +132,30 @@ void appHandleHome(App *app, uint64_t pressed)
     const Catalog *c = catalogLock();
     const Home *home = appHome(app, c);
     catalogUnlock();
-    if (homeRowCount(home, (HomeRowKind)app->home_row) == 0) {
-        int first = nextRow(home, -1, 1);
-        app->home_row = first < 0 ? 0 : first;
+    if (homeRowCount(home, (HomeRowKind)app->home_row) == 0) {  // Start on the first section with cards.
+        for (int place = 0; place < HOME_ROW_COUNT && !goToPlace(app, home, place, 0); place++)
+            ;
     }
     HomeRowKind row = (HomeRowKind)app->home_row;
-    size_t count = homeRowCount(home, row);
-    if ((pressed & BUTTONS_LEFT) && app->home_col[row] > 0)
-        app->home_col[row]--;
-    if ((pressed & BUTTONS_RIGHT) && app->home_col[row] + 1 < count)
-        app->home_col[row]++;
-    if (pressed & BUTTONS_UP) {
-        int up = nextRow(home, app->home_row, -1);
-        app->home_row = up < 0 ? app->home_row : up;
+    int place = homeGridPlace(row);
+    size_t count = homeRowCount(home, row), col = app->home_col[row];
+    if (pressed & BUTTONS_LEFT) {
+        if (col > 0)
+            app->home_col[row]--;
+        else if (place & 1)  // From the right section to the left one's last card.
+            goToPlace(app, home, place ^ 1, HOME_ROW_MAX - 1);
     }
+    if (pressed & BUTTONS_RIGHT) {
+        if (col + 1 < count)
+            app->home_col[row]++;
+        else if (!(place & 1))
+            goToPlace(app, home, place ^ 1, 0);
+    }
+    if ((pressed & BUTTONS_UP) && (place & 2))
+        (void)(goToPlace(app, home, place ^ 2, col) || goToPlace(app, home, place ^ 3, col));
     if (pressed & BUTTONS_DOWN) {
-        int down = nextRow(home, app->home_row, 1);
-        if (down >= 0) {
-            app->home_row = down;
-        } else {  // Below the last row: the player bar.
+        bool moved = !(place & 2) && (goToPlace(app, home, place ^ 2, col) || goToPlace(app, home, place ^ 3, col));
+        if (!moved) {  // Below the bottom sections: the player bar.
             app->focus = FOCUS_PLAYER;
             app->bar_control = BAR_PLAY;
             return;

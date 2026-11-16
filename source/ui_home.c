@@ -10,21 +10,20 @@
 #include "ui_list.h"
 
 #define CARD COVERCACHE_CARD
-#define CARD_GAP 26
-#define CARD_STEP (CARD + CARD_GAP)
-#define SECTION_TOP 96
-#define SECTION_H 226       // Title, cards and their two lines of text.
+#define COLUMN_GAP 48
+#define SECTION_W ((GFX_WIDTH - 2 * MARGIN - COLUMN_GAP) / 2)
+#define CARD_STEP ((SECTION_W - CARD) / (HOME_ROW_MAX - 1))
+#define SECTION_TOP 92
+#define SECTION_H 236       // Title, cards and their two lines of text.
 #define SECTION_TITLE_H 40
-#define VISIBLE_SECTIONS 2
-#define VISIBLE_CARDS ((GFX_WIDTH - 2 * MARGIN + CARD_GAP) / CARD_STEP)
 #define FOCUS_RING 3
 
 static const char *sectionTitle(const Home *home, HomeRowKind row)
 {
     switch (row) {
     case HOME_TOP_ARTISTS: return "Your top artists";
-    case HOME_RECENT_ALBUMS: return home->albums_from_library ? "Albums in your library" : "Recently played albums";
-    case HOME_RECENT_ARTISTS: return "Recently played artists";
+    case HOME_RECENT_ALBUMS: return home->albums_from_library ? "Albums in your library" : "Recent albums";
+    case HOME_RECENT_ARTISTS: return "Recent artists";
     default: return "Recent playlists";
     }
 }
@@ -77,8 +76,8 @@ static void drawCard(const Home *home, const Catalog *c, HomeRowKind row, size_t
         snprintf(line, sizeof(line), "%zu song%s", a->song_count, a->song_count == 1 ? "" : "s");
         subtitle = line;
     }
-    fontDrawClipped(selected ? FONT_BOLD : FONT_REGULAR, 17, x, y + CARD + 10, CARD + 8, title, COLOR_TEXT);
-    fontDrawClipped(FONT_REGULAR, 15, x, y + CARD + 34, CARD + 8, subtitle, COLOR_DIM);
+    fontDrawClipped(selected ? FONT_BOLD : FONT_REGULAR, 17, x, y + CARD + 10, CARD + 4, title, COLOR_TEXT);
+    fontDrawClipped(FONT_REGULAR, 15, x, y + CARD + 34, CARD + 4, subtitle, COLOR_DIM);
 }
 
 static void drawEmpty(const Catalog *c)
@@ -92,38 +91,39 @@ static void drawEmpty(const Catalog *c)
     fontDraw(FONT_REGULAR, 21, MARGIN, 200, hint, COLOR_DIM);
 }
 
+// What an empty section says.
+static const char *sectionEmpty(HomeRowKind row)
+{
+    return row == HOME_RECENT_PLAYLISTS ? "Playlists you play show up here." : "Songs you play show up here.";
+}
+
 void uiDrawHome(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     (void)status;
     (void)now_ns;
     const Catalog *c = catalogLock();
     const Home *home = appHome((App *)app, c);
-    int rows[HOME_ROW_COUNT], row_count = 0, focused = 0;
-    for (int r = 0; r < HOME_ROW_COUNT; r++) {
-        if (homeRowCount(home, (HomeRowKind)r) == 0 || (r != HOME_RECENT_PLAYLISTS && !c))
-            continue;
-        if (r == app->home_row)
-            focused = row_count;
-        rows[row_count++] = r;
-    }
-    if (row_count == 0) {
+    bool any = false;
+    for (int r = 0; r < HOME_ROW_COUNT; r++)
+        any |= homeRowCount(home, (HomeRowKind)r) > 0;
+    if (!any || !c) {
         drawEmpty(c);
         catalogUnlock();
         return;
     }
-    // Keep the selected row on screen: it and the one after it.
-    int first = focused > row_count - VISIBLE_SECTIONS ? row_count - VISIBLE_SECTIONS : focused;
-    first = first < 0 ? 0 : first;
     bool list_focus = app->focus != FOCUS_PLAYER;
-    for (int v = first; v < row_count && v < first + VISIBLE_SECTIONS; v++) {
-        HomeRowKind row = (HomeRowKind)rows[v];
-        int y = SECTION_TOP + (v - first) * SECTION_H;
-        fontDraw(FONT_BOLD, 24, MARGIN, y, sectionTitle(home, row), COLOR_TEXT);
-        size_t count = homeRowCount(home, row), col = app->home_col[row];
-        size_t first_card = col >= (size_t)VISIBLE_CARDS ? col - VISIBLE_CARDS + 1 : 0;
-        for (size_t i = first_card; i < count && i < first_card + VISIBLE_CARDS; i++) {
-            int x = MARGIN + (int)(i - first_card) * CARD_STEP;
-            bool selected = list_focus && (int)row == app->home_row && i == col;
+    for (int place = 0; place < HOME_ROW_COUNT; place++) {
+        HomeRowKind row = HOME_GRID[place];
+        int x0 = MARGIN + (place & 1) * (SECTION_W + COLUMN_GAP), y = SECTION_TOP + (place >> 1) * SECTION_H;
+        fontDraw(FONT_BOLD, 22, x0, y, sectionTitle(home, row), COLOR_TEXT);
+        size_t count = homeRowCount(home, row);
+        if (count == 0) {
+            fontDraw(FONT_REGULAR, 18, x0, y + SECTION_TITLE_H + 10, sectionEmpty(row), COLOR_FAINT);
+            continue;
+        }
+        for (size_t i = 0; i < count; i++) {
+            int x = x0 + (int)i * CARD_STEP;
+            bool selected = list_focus && (int)row == app->home_row && i == app->home_col[row];
             drawCard(home, c, row, i, x, y + SECTION_TITLE_H, selected);
             uiHitAdd(x, y + SECTION_TITLE_H, CARD, CARD + 54, HIT_CARD, (int)row * HOME_ROW_MAX + (int)i);
         }

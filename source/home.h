@@ -8,7 +8,7 @@
 #include "history.h"
 #include "playlist.h"
 
-#define HOME_ROW_MAX 12
+#define HOME_ROW_MAX 4  // Cards per section: the four sections fit on one screen.
 
 typedef enum {
     HOME_TOP_ARTISTS,      // Most played.
@@ -34,3 +34,10 @@ typedef struct {
 void homeCompute(Home *home, const Catalog *c, const History *h);
 // How many items a row has.
 size_t homeRowCount(const Home *home, HomeRowKind row);
+
+// The sections on screen, as a 2x2 grid: top artists and playlists on top,
+// albums and artists below. HOME_GRID[i] is the section at place i (0 top
+// left, 1 top right, 2 bottom left, 3 bottom right).
+extern const HomeRowKind HOME_GRID[HOME_ROW_COUNT];
+// The place of a section in that grid.
+int homeGridPlace(HomeRowKind row);

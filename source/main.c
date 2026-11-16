@@ -66,13 +66,10 @@ static void handleQueue(App *app, uint64_t pressed)
 
 static void handleNowPlaying(App *app, uint64_t pressed)
 {
-    // B adds the song to a playlist. Down also selects "Add to playlist"
-    // (then A adds), and Up takes the focus back.
-    if (pressed & BUTTONS_DOWN) app->focus = FOCUS_ADD;
-    if (pressed & BUTTONS_UP) app->focus = FOCUS_LIST;
-    if (((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD) || (pressed & HidNpadButton_B))
+    // B adds the song to a playlist (or tap "Add to playlist").
+    if (pressed & HidNpadButton_B)
         appAddToPlaylist(app, SRC_NOW_PLAYING);
-    else if (pressed & HidNpadButton_A)
+    if (pressed & HidNpadButton_A)
         playerTogglePause();
     if (pressed & BUTTONS_LEFT) playerSeek(-SEEK_STEP_SECONDS);
     if (pressed & BUTTONS_RIGHT) playerSeek(SEEK_STEP_SECONDS);
