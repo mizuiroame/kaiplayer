@@ -17,9 +17,9 @@ static void testMake(void)
     for (int i = 0; i < 8; i++)
         memcpy(red + i * 4, (uint8_t[]){255, 0, 0, 255}, 4);
     uint32_t out[64 * 36];
-    CHECK(backgroundMake(red, 4, 2, out, 64, 36, BASE, 255));
+    CHECK(backgroundMake(red, 4, 2, out, 64, 36, BASE, 255, BLUR_MEDIUM));
     CHECK(out[0] == 0xFF0000FFu && out[64 * 36 - 1] == 0xFF0000FFu);
-    CHECK(backgroundMake(red, 4, 2, out, 64, 36, BASE, 0));
+    CHECK(backgroundMake(red, 4, 2, out, 64, 36, BASE, 0, BLUR_MEDIUM));
     CHECK(out[100] == BASE);
 
     // Black on the left, white on the right: still dark left and light right, blurred between.
@@ -27,9 +27,14 @@ static void testMake(void)
     for (int y = 0; y < 100; y++)
         for (int x = 0; x < 200; x++)
             memset(split + (y * 200 + x) * 4, x < 100 ? 0 : 255, 4);
-    CHECK(backgroundMake(split, 200, 100, out, 64, 36, 0xFF000000u, 255));
+    CHECK(backgroundMake(split, 200, 100, out, 64, 36, 0xFF000000u, 255, BLUR_MEDIUM));
     uint32_t left = out[18 * 64] & 0xFF, right = out[18 * 64 + 63] & 0xFF, middle = out[18 * 64 + 32] & 0xFF;
     CHECK(left < 40 && right > 215 && middle > 60 && middle < 195);
+
+    // Without blur the edge stays sharp: right beside it, still black and white.
+    CHECK(backgroundMake(split, 200, 100, out, 64, 36, 0xFF000000u, 255, BLUR_OFF));
+    CHECK((out[18 * 64 + 30] & 0xFF) < 20 && (out[18 * 64 + 33] & 0xFF) > 235);
+    CHECK(strcmp(backgroundBlurName(BLUR_HIGH), "High") == 0 && strcmp(backgroundBlurName(99), "Medium") == 0);
 }
 
 static void touchFile(const char *path)
@@ -54,16 +59,16 @@ static void testList(void)
     CHECK(strcmp(names[0], "A.JPG") == 0 && strcmp(names[1], "b.png") == 0);
     CHECK(backgroundList("", names, 8) == 0);
 
-    CHECK(!backgroundLoad(library, "b.png") && backgroundPixels() == NULL);  // Empty: not an image.
-    CHECK(backgroundLoad(library, "") && backgroundPixels() == NULL);        // The cover colors.
+    CHECK(!backgroundLoad(library, "b.png", BLUR_MEDIUM) && backgroundPixels() == NULL);  // Empty: not an image.
+    CHECK(backgroundLoad(library, "", BLUR_MEDIUM) && backgroundPixels() == NULL);        // The cover colors.
     FILE *in = fopen(FIXTURES "/small_cover.png", "rb"), *out = fopen(TMP_ROOT "/bglib/Backgrounds/c.png", "wb");
     int ch;
     while (in && out && (ch = fgetc(in)) != EOF)
         fputc(ch, out);
     if (in) fclose(in);
     if (out) fclose(out);
-    CHECK(backgroundLoad(library, "c.png") && backgroundPixels() != NULL);
-    CHECK(backgroundLoad(library, "") && backgroundPixels() == NULL);
+    CHECK(backgroundLoad(library, "c.png", BLUR_MEDIUM) && backgroundPixels() != NULL);
+    CHECK(backgroundLoad(library, "", BLUR_MEDIUM) && backgroundPixels() == NULL);
 }
 
 void testStyles(void)

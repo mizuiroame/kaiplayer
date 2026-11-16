@@ -24,7 +24,16 @@ static uint64_t nowNs(void)
 void appOpenSettings(App *app)
 {
     app->settings_open = true;
-    app->settings_cursor = SETTING_SLEEP;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_PLAYBACK;
+}
+
+static void openPage(App *app, SettingsPage page)
+{
+    SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
+    settingsPageRows(page, rows);
+    app->settings_page = page;
+    app->settings_cursor = rows[0];
 }
 
 static void setSleep(App *app, int minutes)
@@ -58,7 +67,9 @@ void appApplyAudioSettings(App *app)
 
 void appActivateSetting(App *app, SettingRow row)
 {
-    if (row == SETTING_SLEEP) {
+    if (settingsRowPage(row) != SETTINGS_PAGE_MAIN) {
+        openPage(app, settingsRowPage(row));
+    } else if (row == SETTING_SLEEP) {
         typeSleepMinutes(app);
     } else if (row == SETTING_EQUALIZER) {
         app->eq_open = true;  // The editor opens over Settings.
@@ -100,8 +111,13 @@ static void stepBackground(App *app, int delta)
     }
     index = ((index + delta) % (count + 1) + count + 1) % (count + 1);
     snprintf(app->config.background, sizeof(app->config.background), "%s", index ? names[index - 1] : "");
-    if (!backgroundLoad(app->config.library, app->config.background))
-        appToast(app, "Could not read that image (JPEG or PNG, up to 4096 x 4096).");
+    if (!backgroundLoad(app->config.library, app->config.background, app->config.background_blur)) {
+        char message[BACKGROUND_NAME_MAX + 80];
+        snprintf(message, sizeof(message), "Could not read %s (JPEG or PNG, up to 50 megapixels).",
+                 app->config.background);
+        appToast(app, message);
+        app->config.background[0] = '\0';  // Not kept: it would fail again at every start.
+    }
 }
 
 void appChangeSetting(App *app, SettingRow row, int delta)
@@ -143,6 +159,11 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         stepBackground(app, delta);
         configSave(&app->config);
         break;
+    case SETTING_BACKGROUND_BLUR:
+        app->config.background_blur = ((app->config.background_blur + delta) % BLUR_COUNT + BLUR_COUNT) % BLUR_COUNT;
+        backgroundSetBlur(app->config.background_blur);  // From the copy kept at the screen's size: quick.
+        configSave(&app->config);
+        break;
     case SETTING_SCREEN_OFF:
         app->config.screen_off_minutes = settingsScreenOffStep(app->config.screen_off_minutes, delta);
         configSave(&app->config);
@@ -154,20 +175,36 @@ void appChangeSetting(App *app, SettingRow row, int delta)
 
 void appHandleSettings(App *app, uint64_t pressed)
 {
-    int cursor = (int)app->settings_cursor;
+    SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
+    int count = settingsPageRows(app->settings_page, rows), index = 0;
+    for (int i = 0; i < count; i++) {
+        if (rows[i] == app->settings_cursor)
+            index = i;
+    }
     if (pressed & BUTTONS_UP)
-        cursor = cursor > 0 ? cursor - 1 : 0;
+        index = index > 0 ? index - 1 : 0;
     if (pressed & BUTTONS_DOWN)
-        cursor = cursor + 1 < SETTING_COUNT ? cursor + 1 : SETTING_COUNT - 1;
-    app->settings_cursor = (SettingRow)cursor;
-    if (pressed & HidNpadButton_A)
+        index = index + 1 < count ? index + 1 : count - 1;
+    app->settings_cursor = rows[index];
+    bool opens = settingsRowPage(app->settings_cursor) != SETTINGS_PAGE_MAIN;
+    if (pressed & HidNpadButton_A || (opens && pressed & BUTTONS_RIGHT)) {
         appActivateSetting(app, app->settings_cursor);
+        return;
+    }
     if (pressed & BUTTONS_RIGHT)
         appChangeSetting(app, app->settings_cursor, 1);
     if (pressed & BUTTONS_LEFT)
         appChangeSetting(app, app->settings_cursor, -1);
-    if (pressed & (HidNpadButton_B | HidNpadButton_Plus))
+    if (pressed & HidNpadButton_Plus) {
         app->settings_open = false;
+    } else if (pressed & HidNpadButton_B) {
+        if (app->settings_page == SETTINGS_PAGE_MAIN) {
+            app->settings_open = false;
+        } else {  // Back to the main page, on the row of the page left.
+            app->settings_cursor = settingsPageRow(app->settings_page);
+            app->settings_page = SETTINGS_PAGE_MAIN;
+        }
+    }
 }
 
 void appScreenOff(App *app)

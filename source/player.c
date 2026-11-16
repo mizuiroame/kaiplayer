@@ -34,6 +34,7 @@ static bool g_load_pending;
 static double g_seek_target = -1.0;
 static u64 g_played_frames;
 static double g_duration;
+static AudioFormat g_format;  // Of the file the decoder plays.
 static char g_error[160];
 static unsigned g_generation;
 static double g_seeking_to = -1.0;  // A seek the audio thread is running.
@@ -115,6 +116,7 @@ static bool loadCurrent(void)
             g_played_frames = 0;
             u64 total = decoderTotalFrames(d);
             g_duration = total ? (double)total / decoderSampleRate(d) : 0.0;
+            decoderFormat(d, &g_format);
             bool requested = attempt == 0 && !g_load_pending;
             mutexUnlock(&g_lock);
             installDecoder(d);
@@ -640,6 +642,7 @@ void playerGetStatus(PlayerStatus *out)
     out->duration = g_duration;
     out->shuffle = g_shuffle;
     out->repeat = g_repeat;
+    out->format = g_decoder ? g_format : (AudioFormat){0};
     snprintf(out->error, sizeof(out->error), "%s", g_error);
     mutexUnlock(&g_lock);
 }

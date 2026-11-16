@@ -29,8 +29,10 @@ typedef enum {
     HIT_EQ_PRESET,     // Next equalizer preset.
     HIT_EQ_TOGGLE,     // Equalizer on/off.
     HIT_PICKER_ROW,    // A folder in the music folder picker. arg: index.
-    HIT_PICKER_USE,
-    HIT_CARD,          // A Home card. arg: row * HOME_ROW_MAX + card.    // "Use this folder".
+    HIT_PICKER_USE,    // "Use this folder".
+    HIT_CARD,          // A Home card. arg: row * HOME_ROW_MAX + card.
+    HIT_OVERLAY_BACK,  // Like B in an overlay: a Settings page's Back.
+    HIT_PANEL,         // An overlay's panel: a tap on it does nothing (not the backdrop's close).
 } HitKind;
 
 typedef struct {
@@ -43,3 +45,11 @@ void uiHitReset(void);
 void uiHitAdd(int x, int y, int w, int h, HitKind kind, int arg);
 // The topmost region at (x, y), or NULL.
 const HitRegion *uiHitFind(int x, int y);
+
+// True for the targets of an overlay (menu, Settings, keyboard, equalizer,
+// picker): only they answer while one is open, and only the others when none is.
+bool uiHitIsOverlayTarget(HitKind kind);
+
+// The regions of the last frame, bottom first: for checks.
+int uiHitCount(void);
+const HitRegion *uiHitAt(int index);

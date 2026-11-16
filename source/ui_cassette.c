@@ -240,7 +240,8 @@ void uiDrawCassette(int x, int y, int size, const UiTrack *track, double spin, d
     Layout l = layoutFor(x, y, size);
     Color band = track->cover ? (track->cover->vibrant ? track->cover->vibrant : track->cover->average)
                               : COLOR_ACCENT;
-    if (!prepareStill(&l, track, band, duration)) {
+    bool kept = gfxCanReadBack();  // The GPU draws the cassette whole every frame instead.
+    if (!kept || !prepareStill(&l, track, band, duration)) {
         drawStill(&l, track, band, duration);  // Out of memory: draw it all every frame.
     } else {
         gfxDrawImageFb(g_still.fx, g_still.fy, g_still.fw, g_still.fh, g_still.pixels);
@@ -253,11 +254,11 @@ void uiDrawCassette(int x, int y, int size, const UiTrack *track, double spin, d
     float left_r = sqrtf(empty * empty + (1.0f - f) * (full * full - empty * empty));
     float right_r = sqrtf(empty * empty + f * (full * full - empty * empty));
     float cy = l.wy + l.wh / 2.0f, lx = l.x + l.w * 0.335f, rx = l.x + l.w * 0.665f;
-    gfxSetClip(l.wx, l.wy, l.ww, l.wh);
+    gfxSetClipRound(l.wx, l.wy, l.ww, l.wh, l.wh / 2);
     drawReel(lx, cy, left_r, (float)fmod(spin * TAPE_SPEED / left_r, TAU));
     drawReel(rx, cy, right_r, (float)fmod(spin * TAPE_SPEED / right_r, TAU));
     gfxResetClip();
-    if (g_still.corner_fb) {
+    if (kept && g_still.corner_fb) {
         int r = g_still.corner_fb;
         int wx = gfxToFb(l.wx), wy = gfxToFb(l.wy), wx1 = gfxToFb(l.wx + l.ww), wy1 = gfxToFb(l.wy + l.wh);
         for (int i = 0; i < 4; i++)

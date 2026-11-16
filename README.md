@@ -286,22 +286,25 @@ Everything can also be done by touch:
 
 ### Settings
 
-Open **+ → Settings**. Change a setting with ← → or **A** (or tap it), and
-close with **B**.
+Open **+ → Settings**. It opens on four rows: **Music folder**, **Playback**,
+**Display** and **About**. **A** or **→** opens Playback or Display, **B** (or
+the **Back** button) goes back, and **B** on the first page closes Settings.
+Change a setting with ← → or **A** (or tap it).
 
-| Setting | Values |
-|---------|--------|
-| Music folder | The folder KaiPlayer shows; **A** chooses another |
-| Sleep timer | Off, or any number of minutes up to 600 |
-| Resume where you left off | Keep playing (default), Paused or Off |
-| Clock | 24-hour (default) or 12-hour |
-| Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
-| ReplayGain (even loudness) | Off (default), Track, Album or Auto |
-| Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
-| Now Playing style | Cover (default), Vinyl record, CD or Cassette |
-| Background | Cover colors (default), or a picture from your `Backgrounds` folder |
-| Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
-| About | The KaiPlayer version; **A** shows more about the app and its author |
+| Page | Setting | Values |
+|------|---------|--------|
+| — | Music folder | The folder KaiPlayer shows; **A** chooses another |
+| Playback | Sleep timer | Off, or any number of minutes up to 600 |
+| Playback | Resume where you left off | Keep playing (default), Paused or Off |
+| Playback | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
+| Playback | ReplayGain (even loudness) | Off (default), Track, Album or Auto |
+| Display | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
+| Display | Now Playing style | Cover (default), Vinyl record, CD or Cassette |
+| Display | Background | Cover colors (default), or a picture from your `Backgrounds` folder |
+| Display | Background blur | Off, Low, Medium (default) or High |
+| Display | Clock | 24-hour (default) or 12-hour |
+| Display | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
+| — | About | The KaiPlayer version; **A** shows more about the app and its author |
 
 **Sleep timer:** press **A** (or tap the row) to type the minutes on the
 number pad, or use ← → to change it by 5 minutes. **0** turns it off. When
@@ -354,11 +357,12 @@ They turn only while a song plays, and stop when you pause.
 
 **Background:** instead of the dark background tinted with the album's
 colors, show a picture of yours behind every view. Put JPEG or PNG images (up
-to 4096 × 4096 pixels) in a folder called **Backgrounds** inside your music
+to 50 megapixels: photos from a phone or a camera are fine) in a folder called **Backgrounds** inside your music
 folder (for example `sdmc:/Music/Backgrounds/`), then choose one here with
 ← →; **Cover colors** goes back to the tinted background. KaiPlayer crops the
 picture to fill the screen, blurs it and darkens it, so text stays readable
-over it. Use plain file names (no accents): the console hides the others.
+over it. **Background blur** sets how much: **Off** keeps it sharp, **High**
+turns it into soft color. Use plain file names (no accents): the console hides the others.
 
 ![A background picture behind Now Playing](docs/screenshots/background.png)
 
@@ -419,6 +423,18 @@ Playing and keeps playing from that spot (or waits paused, if you chose
 **Paused** in Settings). It saves this in `sdmc:/config/kaiplayer/resume.m3u8` and
 `resume.txt` when the song changes, when you pause, every 30 seconds while
 playing, and when you exit.
+
+### Screen and resolution
+
+KaiPlayer draws with the console's GPU, at the screen's own resolution:
+1920 × 1080 handheld, and the TV's resolution docked (1440p and 4K TVs get
+text and edges drawn at their full sharpness). Going in and out of the dock,
+sleep, and turning the screen off while music plays all work. Album art and
+background pictures are made at 1080p and scaled up on bigger screens.
+
+Now Playing shows the song's format above the progress bar, and the player
+bar before the time: **FLAC · 24-bit · 96 kHz**, **MP3 · 44.1 kHz**,
+**DSD64 · 2.8 MHz** (bits only for lossless PCM formats).
 
 ### Song details and album art
 
@@ -627,8 +643,11 @@ source/
   cover.c         decodes and scales album art (JPEG / PNG)
   artwork.c       loads tags and covers on a background thread
   meta*.c         title, artist and album for the lists, read in the background
-  gfx.c           drawing: shapes, gradients, images
-  gfx_switch.c    the console framebuffer
+  gfx.h           drawing: shapes, gradients, images, text masks (layout units)
+  gfx_gl.c        ...with the GPU (OpenGL ES 3): the console's backend
+  gfx_gl_switch.c EGL on the console's window, at its resolution
+  gfx.c           ...with the CPU: the host preview and tests (GPU=0 on the console)
+  audioformat.c   the "FLAC · 24-bit · 96 kHz" label
   font.c          anti-aliased text with the embedded fonts
   ui*.c           the tabs, the menu and the keyboard
   ui_nowstyle.c   Now Playing's record and CD (ui_cassette.c: the cassette)
@@ -654,7 +673,8 @@ source/
 data/           Noto Sans Regular and Bold, embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
 tests/          host tests, fuzzer, fixtures and the UI preview
-tools/          kaiupload.py: FTP upload with names the console can list
+tools/          kaiupload.py (FTP upload with plain names), gltest (the GPU
+                backend checked against the CPU one), gpu-spike (a GPU test .nro)
 icon.jpg        256×256 icon for hbmenu
 ```
 

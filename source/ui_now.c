@@ -76,6 +76,19 @@ static void drawBackdrop(const UiTrack *track)
     gfxGradientV(0, 0, GFX_WIDTH, CONTENT_BOTTOM, gfxMix(COLOR_BG, tint, strength), COLOR_BG);
 }
 
+// The file's format in a quiet pill above the progress bar's right end, over
+// the song's length: "FLAC · 24-bit · 96 kHz".
+static void drawFormat(const PlayerStatus *status)
+{
+    char label[48];
+    decoderFormatLabel(&status->format, label, sizeof(label));
+    if (!label[0])
+        return;
+    int w = fontTextWidth(FONT_BOLD, 13, label) + 20, x = INFO_X + INFO_W - w;
+    gfxFillRoundRect(x, PROGRESS_Y - 36, w, 24, 12, COLOR_SURFACE_HI);
+    fontDrawMiddle(FONT_BOLD, 13, x + 10, PROGRESS_Y - 24.0f, label, COLOR_DIM);
+}
+
 static void drawInfo(const PlayerStatus *status, const UiTrack *track, const char *playlist)
 {
     fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? "PAUSED" : "NOW PLAYING", COLOR_DIM);
@@ -181,7 +194,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
 {
     drawBackdrop(track);
     g_style_backdrop_ok = false;
-    if (uiOverlayOpen(app) && app->config.now_style != NOW_STYLE_COVER)
+    if (uiOverlayOpen(app) && app->config.now_style != NOW_STYLE_COVER && gfxCanReadBack())
         saveStyleBackdrop();  // This frame is kept under the overlay; the record keeps turning on it.
     if (!drawStyle(app, status, track, now_ns)) {
         if (track->cover)  // The placeholder has round corners and no shadow.
@@ -191,6 +204,7 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
     }
     drawInfo(status, track, app->playing_playlist);
     drawProgress(app, status);
+    drawFormat(status);
     drawTransport(status);
     drawToggles(status, app->focus == FOCUS_ADD);
     if (app->toast[0] && now_ns < app->toast_until_ns)

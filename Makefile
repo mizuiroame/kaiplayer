@@ -45,7 +45,7 @@ DATA		:=	data
 INCLUDES	:=	include third_party
 APP_TITLE	:=	KaiPlayer
 APP_AUTHOR	:=	Mizuiro
-APP_VERSION	:=	0.9.0-beta
+APP_VERSION	:=	1.0.0-rc1
 #ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------
@@ -58,12 +58,21 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections -fstack-protector-strong -fwrapv \
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DKAIPLAYER_VERSION=\"$(APP_VERSION)\"
 
+# GPU=1 (the default) draws with OpenGL ES (gfx_gl.c); GPU=0 with the CPU (gfx.c).
+GPU	?=	1
+ifeq ($(GPU),1)
+CFLAGS	+=	-DKAIPLAYER_GPU
+endif
+
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 LIBS	:= -lnx -lm
+ifeq ($(GPU),1)
+LIBS	:= -lEGL $(LIBS)
+endif
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

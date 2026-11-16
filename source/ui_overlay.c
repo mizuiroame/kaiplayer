@@ -35,7 +35,7 @@ static void dimScreen(void)
 static void panel(int x, int y, int w, int h)
 {
     gfxFillRoundRect(x, y, w, h, 16, COLOR_SURFACE);
-    uiHitAdd(x, y, w, h, HIT_LIST, 0);  // Taps on the panel itself do nothing.
+    uiHitAdd(x, y, w, h, HIT_PANEL, 0);  // Taps on the panel itself do nothing.
 }
 
 static int firstVisibleItem(int cursor, int count)
@@ -115,6 +115,9 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_BACKGROUND:
         snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : "Cover colors");
         break;
+    case SETTING_BACKGROUND_BLUR: snprintf(out, size, "%s", backgroundBlurName(app->config.background_blur)); break;
+    case SETTING_OPEN_PLAYBACK:
+    case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
     case SETTING_SCREEN_OFF:
         if (app->config.screen_off_minutes)
             snprintf(out, size, "After %d min idle", app->config.screen_off_minutes);
@@ -127,26 +130,36 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
 
 static void drawSettings(const App *app, uint64_t now_ns)
 {
-    int h = 76 + SETTING_COUNT * SETTINGS_ROW_H + 60;
+    SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
+    int count = settingsPageRows(app->settings_page, rows);
+    int h = 76 + count * SETTINGS_ROW_H + 60;
     int x = (GFX_WIDTH - SETTINGS_W) / 2, y = (GFX_HEIGHT - h) / 2;
     dimScreen();
     panel(x, y, SETTINGS_W, h);
-    fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22, "Settings", COLOR_TEXT);
+    int title_x = x + PANEL_PAD;
+    if (app->settings_page != SETTINGS_PAGE_MAIN) {  // A page: back to the main one.
+        title_x += uiDrawBackButtonHit(x + PANEL_PAD - 4, y + 18, false, HIT_OVERLAY_BACK) + 12;
+    }
+    fontDraw(FONT_BOLD, 24, title_x, y + 22, settingsPageTitle(app->settings_page), COLOR_TEXT);
 
     char value[64];
-    for (int i = 0; i < SETTING_COUNT; i++) {
-        int row_y = y + 76 + i * SETTINGS_ROW_H;
-        bool selected = (int)app->settings_cursor == i;
+    for (int n = 0; n < count; n++) {
+        int i = (int)rows[n];
+        int row_y = y + 76 + n * SETTINGS_ROW_H;
+        bool selected = app->settings_cursor == rows[n];
         bool editable = settingsRowEditable((SettingRow)i);
+        bool opens = settingsRowPage((SettingRow)i) != SETTINGS_PAGE_MAIN;
         if (selected)
             drawRowHighlight(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6);
         fontDraw(selected ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD, row_y + 8,
                  settingsRowLabel((SettingRow)i), COLOR_TEXT);
         settingValue(app, (SettingRow)i, now_ns, value, sizeof(value));
         int value_w = fontTextWidth(FONT_BOLD, 20, value);
-        int value_x = x + SETTINGS_W - PANEL_PAD - value_w - (editable ? 24 : 0);
+        int value_x = x + SETTINGS_W - PANEL_PAD - value_w - (editable || opens ? 24 : 0);
         fontDraw(FONT_BOLD, 20, value_x, row_y + 9, value, editable ? COLOR_ACCENT : COLOR_DIM);
-        if (editable) {
+        if (opens) {  // A page: an arrow into it.
+            gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 13, 10, 16, selected ? COLOR_TEXT : COLOR_DIM);
+        } else if (editable) {
             gfxFillTriangleLeft(value_x - 22, row_y + 13, 10, 16, COLOR_DIM);
             gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 13, 10, 16, COLOR_DIM);
         } else if (selected) {  // About: A opens it.

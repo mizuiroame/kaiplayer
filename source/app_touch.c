@@ -21,13 +21,6 @@ static bool overlayOpen(const App *app)
     return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open || app->picker_open;
 }
 
-static bool isOverlayTarget(HitKind kind)
-{
-    return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING ||
-           kind == HIT_EQ_BAND || kind == HIT_EQ_PRESET || kind == HIT_EQ_TOGGLE || kind == HIT_PICKER_ROW ||
-           kind == HIT_PICKER_USE;
-}
-
 // The gain at height y on a slider: the top is +12 dB, the bottom -12 dB.
 static int sliderGain(const HitRegion *r, int y)
 {
@@ -69,7 +62,7 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
 {
     // Targets are from the last frame. If an overlay opened or closed since,
     // they belong to the other layer: ignore the tap.
-    if (isOverlayTarget(r->kind) != overlayOpen(app))
+    if (uiHitIsOverlayTarget(r->kind) != overlayOpen(app))
         return;
     PlayerStatus status;
     playerGetStatus(&status);
@@ -111,7 +104,8 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
         app->settings_cursor = (SettingRow)r->arg;
         appActivateSetting(app, (SettingRow)r->arg);
         break;
-    case HIT_BACK: appDispatchButtons(app, HidNpadButton_B); break;
+    case HIT_BACK:
+    case HIT_OVERLAY_BACK: appDispatchButtons(app, HidNpadButton_B); break;
     case HIT_EQ_BAND: appEqualizerSetGain(app, r->arg, sliderGain(r, y)); break;
     case HIT_EQ_PRESET: appEqualizerNextPreset(app); break;
     case HIT_EQ_TOGGLE: appEqualizerToggle(app); break;
@@ -129,7 +123,8 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
         appDispatchButtons(app, HidNpadButton_A);
         break;
     case HIT_ADD: addFromRow(app, r->arg); break;
-    case HIT_LIST: break;
+    case HIT_LIST:
+    case HIT_PANEL: break;
     }
 }
 
@@ -137,8 +132,11 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
 static void dragList(App *app, const TouchEvent *e)
 {
     const HitRegion *start = uiHitFind(e->start_x, e->start_y);
-    if (!start || (start->kind != HIT_LIST && start->kind != HIT_ROW) || overlayOpen(app) ||
-        app->playlists.moving)
+    // Lists scroll; so does the folder picker's, over its panel.
+    bool list = start && (start->kind == HIT_LIST || start->kind == HIT_ROW) && !overlayOpen(app);
+    bool picker = start && (start->kind == HIT_PICKER_ROW || start->kind == HIT_PANEL) && app->picker_open &&
+                  !app->menu.open && !app->keyboard_open;
+    if (!(list || picker) || app->playlists.moving)
         return;
     app->drag_rows -= e->dy;  // Finger up: the list moves on, the cursor goes down.
     while (app->drag_rows >= ROW_H) {

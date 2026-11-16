@@ -69,6 +69,23 @@ static void testSettings(void)
     CHECK(settingsRowEditable(SETTING_SLEEP) && !settingsRowEditable(SETTING_ABOUT));
     CHECK(strcmp(settingsRowLabel(SETTING_CLOCK), "Clock") == 0 && settingsRowLabel(SETTING_COUNT)[0] == '\0');
 
+    // Every row is on exactly one page; the main page opens the others.
+    int seen[SETTING_COUNT] = {0};
+    for (int page = 0; page < SETTINGS_PAGE_COUNT; page++) {
+        SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
+        int count = settingsPageRows((SettingsPage)page, rows);
+        CHECK(count > 0 && count <= SETTINGS_PAGE_MAX_ROWS);
+        for (int i = 0; i < count; i++)
+            seen[rows[i]]++;
+        if (page != SETTINGS_PAGE_MAIN) {
+            SettingRow opener = settingsPageRow((SettingsPage)page);
+            CHECK(settingsRowPage(opener) == (SettingsPage)page && !settingsRowEditable(opener));
+        }
+    }
+    for (int row = 0; row < SETTING_COUNT; row++)
+        CHECK(seen[row] == 1);
+    CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_DISPLAY), "Display") == 0);
+
     char out[16];
     utilFormatClock(out, sizeof(out), 21, 7, true);
     CHECK(strcmp(out, "21:07") == 0);

@@ -1,4 +1,4 @@
-// The Settings page: its rows and the sleep timer choices.
+// The Settings page: its rows, grouped in pages, and the sleep timer choices.
 #pragma once
 
 #include <stdbool.h>
@@ -14,10 +14,31 @@ typedef enum {
     SETTING_ACCENT,
     SETTING_NOW_STYLE,
     SETTING_BACKGROUND,
+    SETTING_BACKGROUND_BLUR,
     SETTING_SCREEN_OFF,
     SETTING_ABOUT,
+    SETTING_OPEN_PLAYBACK,  // Rows that open a page.
+    SETTING_OPEN_DISPLAY,
     SETTING_COUNT,
 } SettingRow;
+
+// Settings opens on the main page; Playback and Display hold the rest.
+typedef enum {
+    SETTINGS_PAGE_MAIN,
+    SETTINGS_PAGE_PLAYBACK,
+    SETTINGS_PAGE_DISPLAY,
+    SETTINGS_PAGE_COUNT,
+} SettingsPage;
+
+#define SETTINGS_PAGE_MAX_ROWS 8
+
+// The rows of a page, in order. Returns how many.
+int settingsPageRows(SettingsPage page, SettingRow rows[SETTINGS_PAGE_MAX_ROWS]);
+// The page a row opens, or SETTINGS_PAGE_MAIN if it doesn't open one.
+SettingsPage settingsRowPage(SettingRow row);
+// The row on the main page that opens page.
+SettingRow settingsPageRow(SettingsPage page);
+const char *settingsPageTitle(SettingsPage page);
 
 #define SLEEP_STEP_MINUTES 5
 #define SLEEP_MAX_MINUTES 600  // 10 hours.

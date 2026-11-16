@@ -29,6 +29,7 @@ DsdDecoder *dsdOpen(const char *path);
 void dsdClose(DsdDecoder *d);
 uint32_t dsdChannels(const DsdDecoder *d);
 uint32_t dsdSampleRate(const DsdDecoder *d);  // Of the PCM out.
+uint32_t dsdRate(const DsdDecoder *d);        // Of the file's 1-bit stream: 2822400 for DSD64.
 uint64_t dsdTotalFrames(const DsdDecoder *d);
 // Reads up to frames PCM frames, interleaved. Returns frames read; 0 at the end.
 uint64_t dsdRead(DsdDecoder *d, float *out, uint64_t frames);

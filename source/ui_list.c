@@ -74,6 +74,11 @@ void uiDrawRemoveButton(int x, int y, size_t index, bool focused)
 
 int uiDrawBackButton(int x, int y, bool focused)
 {
+    return uiDrawBackButtonHit(x, y, focused, HIT_BACK);
+}
+
+int uiDrawBackButtonHit(int x, int y, bool focused, HitKind hit)
+{
     static const char LABEL[] = "Back";
     int w = fontTextWidth(FONT_BOLD, 17, LABEL) + 44;
     Color text = focused ? COLOR_BG : COLOR_TEXT;
@@ -81,7 +86,7 @@ int uiDrawBackButton(int x, int y, bool focused)
     gfxFillRoundRect(x, y, w, 30, 15, focused ? COLOR_ACCENT : COLOR_SURFACE_HI);
     gfxTriangle((float)x + 12.0f, mid, (float)x + 21.0f, mid - 6.5f, (float)x + 21.0f, mid + 6.5f, text);
     fontDrawMiddle(FONT_BOLD, 17, x + 28, mid, LABEL, text);
-    uiHitAdd(x - 8, y - 10, w + 16, 50, HIT_BACK, 0);
+    uiHitAdd(x - 8, y - 10, w + 16, 50, hit, 0);
     return w;
 }
 

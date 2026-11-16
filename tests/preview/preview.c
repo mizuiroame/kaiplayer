@@ -17,6 +17,8 @@
 #include "player.h"
 #include "theme.h"
 #include "ui.h"
+#include "ui_common.h"
+#include "ui_hit.h"
 #include "ui_nowstyle.h"
 #include "nowstyle.h"
 
@@ -193,6 +195,31 @@ static void addEntry(Browser *b, const char *name, bool is_dir)
     b->entries[b->count++] = (BrowserEntry){strdup(name), is_dir};
 }
 
+int g_touch_problems;
+
+// Every touch target the scene drew must answer a tap: with an overlay open,
+// all those above its backdrop are overlay targets; with none, no target is
+// one (app_touch.c ignores the other kind). Prints what wouldn't answer.
+static void checkTouch(const char *name, const App *app)
+{
+    bool overlay = uiOverlayOpen(app);
+    int backdrop = -1;
+    for (int i = 0; i < uiHitCount(); i++)
+        if (uiHitAt(i)->kind == HIT_BACKDROP)
+            backdrop = i;
+    if (overlay && backdrop < 0) {
+        printf("TOUCH: %s: an overlay is open but drew no backdrop\n", name);
+        g_touch_problems++;
+    }
+    for (int i = overlay ? backdrop + 1 : 0; i < uiHitCount(); i++) {
+        const HitRegion *r = uiHitAt(i);
+        if (uiHitIsOverlayTarget(r->kind) != overlay) {
+            printf("TOUCH: %s: target kind %d at %d,%d wouldn't answer a tap\n", name, r->kind, r->x, r->y);
+            g_touch_problems++;
+        }
+    }
+}
+
 static void render(const char *dir, const char *name, const App *app, const PlayerStatus *status)
 {
     static uint32_t pixels[GFX_FB_WIDTH * GFX_FB_HEIGHT];
@@ -200,6 +227,7 @@ static void render(const char *dir, const char *name, const App *app, const Play
     gfxSetTarget(pixels, GFX_FB_WIDTH);
     uiDraw(app, status, 0);
     gfxSetTarget(NULL, 0);
+    checkTouch(name, app);
     snprintf(path, sizeof(path), "%s/%s.ppm", dir, name);
     if (!writePpm(path, pixels))
         fprintf(stderr, "cannot write %s\n", path);
@@ -283,8 +311,15 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->sleep_deadline_ns = 24ull * 60000000000ull;
     app->view = VIEW_NOW_PLAYING;
     app->settings_open = true;
-    app->settings_cursor = SETTING_SLEEP;
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_PLAYBACK;
     render(dir, "settings", app, status);
+    app->settings_page = SETTINGS_PAGE_DISPLAY;
+    app->settings_cursor = SETTING_NOW_STYLE;
+    render(dir, "settings_display", app, status);
+    app->settings_page = SETTINGS_PAGE_PLAYBACK;
+    app->settings_cursor = SETTING_SLEEP;
+    render(dir, "settings_playback", app, status);
     app->about_open = true;
     render(dir, "about", app, status);
     app->about_open = false;
@@ -325,6 +360,7 @@ int main(int argc, char **argv)
     PlayerStatus status = {
         .state = PLAYER_PLAYING, .track = 2, .queue_pos = 0, .track_count = TRACK_COUNT,
         .position = 83.0, .duration = 247.0, .shuffle = true, .repeat = REPEAT_ALL,
+        .format = {"FLAC", 96000, 24},
     };
     loadArtwork(argc > 2 ? argv[2] : NULL);
 
@@ -448,13 +484,17 @@ int main(int argc, char **argv)
         if (in) fclose(in);
         if (out) fclose(out);
         snprintf(folder, sizeof(folder), "%s/bg", argv[1]);
-        if (backgroundLoad(folder, "cover.jpg")) {
+        if (backgroundLoad(folder, "cover.jpg", BLUR_MEDIUM)) {
             render(argv[1], "now_playing_background", &app, &status);
             app.config.now_style = NOW_STYLE_COVER;
             app.view = VIEW_QUEUE;
             render(argv[1], "queue_background", &app, &status);
+            backgroundLoad(folder, "cover.jpg", BLUR_OFF);
+            render(argv[1], "queue_background_sharp", &app, &status);
+            backgroundLoad(folder, "cover.jpg", BLUR_HIGH);
+            render(argv[1], "queue_background_high", &app, &status);
             app.view = VIEW_NOW_PLAYING;
-            backgroundLoad(folder, "");
+            backgroundLoad(folder, "", BLUR_MEDIUM);
         }
     }
     for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {  // Under Settings: drawn, then kept.
@@ -489,5 +529,7 @@ int main(int argc, char **argv)
     app.browser.incomplete = false;
     renderPlaylistScenes(argv[1], &app, &status);
     fontExit();
-    return 0;
+    if (g_touch_problems)
+        printf("%d touch targets wouldn't answer a tap\n", g_touch_problems);
+    return g_touch_problems ? 1 : 0;
 }

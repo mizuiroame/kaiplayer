@@ -149,6 +149,7 @@ typedef struct {
     TrackList pending;      // Songs waiting for a playlist to be picked.
     bool settings_open;
     SettingRow settings_cursor;
+    SettingsPage settings_page;
     bool eq_open;               // The equalizer editor (over Settings).
     bool about_open;            // About KaiPlayer (over Settings).
     bool picker_open;           // Choosing the music folder.

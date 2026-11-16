@@ -10,9 +10,9 @@ CFLAGS  := -std=gnu11 -g -O1 -Wall -Wextra -fwrapv -I$(SRC) -I../third_party $(S
 LDFLAGS := $(SAN) -lm
 OBJDIR  := build
 
-TESTED  := util.c queue.c resampler.c decoder.c dsd.c library.c browser.c \
+TESTED  := util.c audioformat.c queue.c resampler.c decoder.c dsd.c library.c browser.c \
            tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
-           tracklist.c plainname.c playlist.c background.c resume.c keyboard.c menu.c touch.c ui_hit.c settings.c eq.c theme.c metacache.c replaygain.c catalog.c history.c home.c
+           tracklist.c plainname.c playlist.c background.c gfx.c resume.c keyboard.c menu.c touch.c ui_hit.c settings.c eq.c theme.c metacache.c replaygain.c catalog.c history.c home.c
 TESTS   := test_main.c test_tags.c test_cover.c test_playlist.c test_touch.c test_eq.c test_meta.c test_catalog.c test_home.c test_dsd.c test_style.c
 PARSERS := util.c decoder.c dsd.c tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
            codecs_impl.c image_impl.c

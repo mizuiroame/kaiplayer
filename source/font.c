@@ -7,10 +7,11 @@
 #include "font_bold_ttf.h"
 #include "font_regular_ttf.h"
 #include "font_system.h"
+#include "gfx.h"
 #include "stb_truetype.h"
 #include "util.h"
 
-#define CACHE_SLOTS 4096
+#define CACHE_SLOTS 8192  // Docked, each glyph is kept at two sizes (layout and screen).
 #define CACHE_MAX_USED (CACHE_SLOTS * 3 / 4)
 #define ELLIPSIS "\xE2\x80\xA6"
 #define MAX_FALLBACKS 6
@@ -20,7 +21,7 @@
 typedef struct {
     bool used;
     uint8_t face;
-    uint8_t px;
+    uint16_t px;
     uint8_t file;  // Font file the glyph comes from (a fallback if needed).
     uint32_t cp;
     int glyph;     // Glyph index in that file.
@@ -96,6 +97,7 @@ int fontFallbackCount(void)
 
 static void flushCache(void)
 {
+    gfxForgetMasks();  // The bitmaps the GPU's atlas points to go.
     for (int i = 0; i < CACHE_SLOTS; i++)
         free(g_cache[i].bitmap);
     memset(g_cache, 0, sizeof(g_cache));
@@ -156,7 +158,7 @@ static Glyph *getGlyph(FontFace face, int px, uint32_t cp)
     for (;;) {
         Glyph *g = &g_cache[slot];
         if (!g->used) {
-            *g = (Glyph){.used = true, .face = (uint8_t)face, .px = (uint8_t)px, .cp = cp};
+            *g = (Glyph){.used = true, .face = (uint8_t)face, .px = (uint16_t)px, .cp = cp};
             renderGlyph(g, face, px, cp);
             g_cache_used++;
             return g;
@@ -200,16 +202,27 @@ int fontTextWidth(FontFace face, int px, const char *utf8)
 // fallbacks included, sits on the face's baseline.
 static float drawRunFb(FontFace face, int px, float x, int baseline, const char *utf8, float max_width, Color color)
 {
-    float start = x;
+    float start = x, detail = gfxDetail();
+    int fine_px = detail > 1.0f ? (int)lroundf(px * detail) : px;
+    if (fine_px > 255)
+        fine_px = 255;
     PrevGlyph prev = NO_PREV;
     while (*utf8) {
-        Glyph *g = getGlyph(face, px, utilNextCodePoint(&utf8));
-        float next_x = x + kerning(px, prev, g);
-        if (next_x + g->advance - start > max_width)
+        uint32_t cp = utilNextCodePoint(&utf8);
+        Glyph *g = getGlyph(face, px, cp);
+        float next_x = x + kerning(px, prev, g), advance = g->advance;
+        if (next_x + advance - start > max_width)
             break;
-        gfxBlendMask((int)lroundf(next_x) + g->xoff, baseline + g->yoff, g->w, g->h, g->bitmap, g->w, color);
-        x = next_x + g->advance;
         prev = (PrevGlyph){g->file, g->glyph};
+        if (fine_px == px) {
+            gfxBlendMask((int)lroundf(next_x) + g->xoff, baseline + g->yoff, g->w, g->h, g->bitmap, g->w, color);
+        } else {  // The same glyph rasterized for the screen's resolution, in the same place.
+            Glyph *f = getGlyph(face, fine_px, cp);
+            float scale = (float)px / fine_px;
+            gfxBlendMaskScaled(lroundf(next_x) + f->xoff * scale, baseline + f->yoff * scale, f->w * scale,
+                               f->h * scale, f->bitmap, f->w, f->h, f->w, color);
+        }
+        x = next_x + advance;
     }
     return x - start;
 }

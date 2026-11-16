@@ -288,8 +288,16 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     utilFormatTime(total, sizeof(total), status->duration);
     snprintf(line, sizeof(line), "%s%s / %s", status->state == PLAYER_PAUSED ? "Paused  " : "",
              elapsed, status->duration > 0 ? total : "--:--");
-    fontDraw(FONT_REGULAR, 20, GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line),
-             MINI_Y + 14, line, COLOR_TEXT);
+    int time_x = GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line);
+    fontDraw(FONT_REGULAR, 20, time_x, MINI_Y + 14, line, COLOR_TEXT);
+
+    char format[48];  // "FLAC · 24-bit · 96 kHz" before the time, in a quiet pill.
+    decoderFormatLabel(&status->format, format, sizeof(format));
+    if (format[0]) {
+        int w = fontTextWidth(FONT_BOLD, 13, format) + 16;
+        gfxFillRoundRect(time_x - w - 12, MINI_Y + 15, w, 22, 11, COLOR_SURFACE_HI);
+        fontDrawMiddle(FONT_BOLD, 13, time_x - w - 4, MINI_Y + 26.0f, format, COLOR_DIM);
+    }
 
     // Shuffle and repeat as pills, lit in the accent color when on.
     const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
@@ -327,7 +335,8 @@ static const char *footerHelp(const App *app)
     if (app->eq_open)
         return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)
-        return "[^v] choose  [<>][A] change  [B] close";
+        return app->settings_page == SETTINGS_PAGE_MAIN ? "[^v] choose  [>][A] open  [B] close"
+                                                        : "[^v] choose  [<>][A] change  [B] back";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
         return "[A] choose  [B] cancel  [+] exit";
     if (app->menu.open)
@@ -401,9 +410,10 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
-    bool overlay = uiOverlayOpen(app);
+    // Only the CPU keeps the view behind an overlay: the GPU draws it all again quickly.
+    bool overlay = uiOverlayOpen(app), keep = overlay && gfxCanReadBack();
     Frozen key;
-    if (overlay && frozenStill(app, status, &track, &key)) {
+    if (keep && frozenStill(app, status, &track, &key)) {
         gfxCopyFrame(g_frozen);
         if (app->view == VIEW_NOW_PLAYING)
             uiNowPlayingUnderOverlay(app, status, &track, now_ns);
@@ -438,8 +448,9 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     }
     drawHeader(app, now_ns);
     g_frozen_ok = false;
-    if (overlay) {
+    if (overlay)
         gfxBlendRect(0, 0, GFX_WIDTH, GFX_HEIGHT, COLOR_SHADOW, UI_DIM_ALPHA);
+    if (keep) {
         if (!g_frozen)
             g_frozen = malloc((size_t)GFX_FB_WIDTH * GFX_FB_HEIGHT * sizeof(uint32_t));
         if (g_frozen) {

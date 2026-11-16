@@ -31,6 +31,7 @@ typedef struct {
     int screen_off_minutes;      // Turn the screen off after this long idle while playing; 0 never.
     int now_style;               // NowStyle: cover, vinyl, CD or cassette.
     char background[BACKGROUND_NAME_MAX];  // An image in <library>/Backgrounds; empty for the cover colors.
+    int background_blur;         // BackgroundBlur.
 } Config;
 
 // Fills defaults, then overrides them with the saved file if it exists.

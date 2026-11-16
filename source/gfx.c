@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 
+#ifndef KAIPLAYER_GPU
 static uint32_t *g_pixels;
 static uint32_t g_stride;  // In pixels.
 static int g_clip_x0, g_clip_y0, g_clip_x1 = GFX_FB_WIDTH, g_clip_y1 = GFX_FB_HEIGHT;  // Framebuffer pixels.
@@ -12,6 +13,8 @@ void gfxSetTarget(uint32_t *pixels, uint32_t stride)
     g_pixels = pixels;
     g_stride = stride;
 }
+
+#endif
 
 Color gfxMix(Color a, Color b, unsigned t)
 {
@@ -23,6 +26,8 @@ Color gfxMix(Color a, Color b, unsigned t)
     unsigned bl = (((a >> 16) & 0xFF) * inv + ((b >> 16) & 0xFF) * t) / 255;
     return GFX_RGB(r, g, bl);
 }
+
+#ifndef KAIPLAYER_GPU
 
 // Clips a framebuffer rectangle to the screen. False if nothing is left.
 static bool clip(int *x, int *y, int *w, int *h)
@@ -363,6 +368,38 @@ void gfxResetClip(void)
     g_clip_y1 = GFX_FB_HEIGHT;
 }
 
+void gfxSetClipRound(int x, int y, int w, int h, int radius)
+{
+    (void)radius;
+    gfxSetClip(x, y, w, h);
+}
+
+bool gfxCanReadBack(void)
+{
+    return true;
+}
+
+void gfxForgetMasks(void)
+{
+}
+
+void gfxImageChanged(const uint32_t *pixels)
+{
+    (void)pixels;  // The CPU reads images straight from their buffers.
+}
+
+float gfxDetail(void)
+{
+    return 1.0f;
+}
+
+void gfxBlendMaskScaled(float x, float y, float w, float h, const uint8_t *mask, int mask_w, int mask_h, int stride,
+                        Color color)
+{
+    (void)w, (void)h;
+    gfxBlendMask((int)lroundf(x), (int)lroundf(y), mask_w, mask_h, mask, stride, color);
+}
+
 void gfxSaveRectFb(int x, int y, int w, int h, uint32_t *out)
 {
     for (int py = 0; py < h; py++) {
@@ -468,3 +505,5 @@ void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, c
         }
     }
 }
+
+#endif
