@@ -309,10 +309,13 @@ homebrew control the backlight, the screen goes black instead.
 
 ### Playlists
 
-Playlists are saved as standard `.m3u8` files in `sdmc:/playlists/`, with
-paths relative to that folder (for example `../Music/Album/01 Song.flac`).
-Other music players can read them, and you can also copy `.m3u` or `.m3u8`
-playlists made on your PC into that folder.
+Playlists are saved as standard `.m3u8` files in the **Playlists** folder
+inside your music folder (for example `sdmc:/Music/Playlists/`), so all your
+music and playlists live in one folder. Paths are relative to that folder
+(for example `../Album/01 Song.flac`). Other music players can read them,
+and you can also copy `.m3u` or `.m3u8` playlists made on your PC into that
+folder. Playlists from older versions (`sdmc:/playlists/`) are copied there
+the first time; the old files stay where they were.
 
 - **Create one:** in the Playlists tab, press **+** and choose
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
@@ -449,6 +452,7 @@ followed by the file size.
 |---------|----------|
 | "No music in this folder" | Check that the files have one of the extensions in the formats table. |
 | A file or folder doesn't appear | If its name has accents (á, ñ…), Japanese or other non-ASCII characters, rename it with plain letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
+| "N items hidden by the console" | That folder has files or folders with accents or other non-ASCII characters in their names, which Switch 2 can't list. Rename them (or upload with `tools/kaiupload.py`). |
 | "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This can happen with non-ASCII file names. |
 | "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
 | No cover | The file has no embedded cover and its folder has no `cover.jpg` (or similar), or the image is larger than 4096×4096 or 8 MB. |
@@ -456,7 +460,7 @@ followed by the file size.
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
 | The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
 | A playlist name isn't accepted | Use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`, up to 48 characters, and a name no other playlist has. |
-| A playlist made on the PC doesn't appear | It must be in `sdmc:/playlists/`, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
+| A playlist made on the PC doesn't appear | It must be in the `Playlists` folder of your music folder, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
 | Taps land in the wrong place | Please open an issue with your console model and where you tapped. The buttons always work. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
@@ -555,7 +559,7 @@ source/
   config.c        settings saved on the SD card
   input.c         button auto-repeat
   tracklist.c     lists of song paths (folders, playlists, the queue)
-  playlist.c      .m3u8 playlists in sdmc:/playlists
+  playlist.c      .m3u8 playlists in <music folder>/Playlists
   resume.c        saves and restores the last queue and position
   keyboard*.c     playlist names: the console's keyboard, and a fallback
   menu.c          the + menu and dialogs

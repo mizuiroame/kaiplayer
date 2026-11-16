@@ -85,6 +85,11 @@ void catalogUnlock(void)
 {
 }
 
+const char *playlistRoot(void)
+{
+    return "sdmc:/Music/Playlists";
+}
+
 void coverCacheLock(void)
 {
 }

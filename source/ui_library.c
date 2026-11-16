@@ -16,16 +16,16 @@
 #define COLUMN_X 760
 #define COLOR_ARTIST GFX_RGB(0xC3, 0x9B, 0xFF)
 
-// A round badge with the name's first letter, for artists.
-static void drawArtistIcon(int x, int y, const char *name)
+// An artist: their latest album's cover in a circle, or a person icon.
+static void drawArtistIcon(int x, int y, const char *song_path)
 {
-    char letter[8] = "?";
-    const char *p = name;
-    unsigned cp = utilNextCodePoint(&p);
-    if (cp)
-        snprintf(letter, sizeof(letter), "%.*s", (int)(p - name), name);
+    const CoverImage *cover = song_path ? coverCacheGet(song_path, true) : NULL;
+    if (cover) {
+        gfxBlitRounded(x, y, ICON_SIZE, cover->size, cover->pixels, ICON_SIZE / 2);
+        return;
+    }
     gfxFillCircle(x + ICON_SIZE / 2, y + ICON_SIZE / 2, ICON_SIZE / 2, gfxMix(COLOR_SURFACE_HI, COLOR_ARTIST, 70));
-    fontDrawCentered(FONT_BOLD, 15, x + ICON_SIZE / 2.0f, y + ICON_SIZE / 2.0f, letter, COLOR_ARTIST);
+    uiDrawPersonIcon(x + ICON_SIZE / 2.0f, y + ICON_SIZE / 2.0f, ICON_SIZE * 0.9f, COLOR_ARTIST);
 }
 
 // The album's cover, or a square sleeve with a record while it loads.
@@ -60,7 +60,7 @@ static void drawRoot(const App *app, const Catalog *c, size_t cursor)
             uiDrawSelection(y, COLOR_ACCENT);
         int icon_y = y + (ROW_H - ICON_SIZE) / 2;
         if (i == 0)
-            drawArtistIcon(ICON_X, icon_y, "A");
+            drawArtistIcon(ICON_X, icon_y, NULL);
         else if (i == 1)
             drawAlbumIcon(ICON_X, icon_y, NULL);
         else if (i == 2)
@@ -79,7 +79,8 @@ static void drawRoot(const App *app, const Catalog *c, size_t cursor)
 static void drawArtistRow(const Catalog *c, size_t artist, int y, bool selected)
 {
     const CatalogArtist *a = &c->artists[artist];
-    drawArtistIcon(ICON_X, y + (ROW_H - ICON_SIZE) / 2, a->name);
+    const CatalogAlbum *latest = &c->albums[a->albums[a->album_count - 1]];
+    drawArtistIcon(ICON_X, y + (ROW_H - ICON_SIZE) / 2, c->songs[latest->songs[0]].path);
     char detail[48];
     snprintf(detail, sizeof(detail), "%zu album%s  ·  %zu song%s", a->album_count, a->album_count == 1 ? "" : "s",
              a->song_count, a->song_count == 1 ? "" : "s");

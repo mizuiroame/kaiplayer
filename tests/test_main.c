@@ -304,6 +304,7 @@ static void testBrowser(void)
     CHECK(browserOpen(&b, TMP_ROOT "/lib"));
     CHECK(b.count == 4);  // 2 folders + 2 audio files; jpg and hidden skipped.
     CHECK(!b.incomplete);
+    CHECK(b.listed == 6);  // Everything the listing returned: the jpg and the hidden file too.
     if (b.count == 4) {
         CHECK(b.entries[0].is_dir && strcmp(b.entries[0].name, "a sub") == 0);
         CHECK(b.entries[1].is_dir && strcmp(b.entries[1].name, "B sub") == 0);

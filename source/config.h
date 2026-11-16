@@ -17,6 +17,7 @@ typedef enum {
 typedef struct {
     char folder[UTIL_PATH_MAX];  // Last folder browsed.
     char library[UTIL_PATH_MAX]; // The music folder; empty until chosen.
+    bool playlists_moved;        // The old sdmc:/playlists were copied into it.
     bool shuffle;
     RepeatMode repeat;
     ResumeMode resume;           // What to do with the last queue at startup.

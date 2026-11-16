@@ -1,8 +1,10 @@
 // The Browse tab: navigate the card and play folders.
 #include <stdio.h>
+#include <string.h>
 
 #include "app.h"
 #include "app_buttons.h"
+#include "fsinfo.h"
 #include "library.h"
 #include "ui.h"
 
@@ -54,8 +56,20 @@ bool appBrowseCanGoUp(const App *app)
     return utilParentPath(parent) && utilPathWithin(parent, appMusicRoot(app));
 }
 
+// Counts the folder's entries the listing left out, once per folder: on
+// Switch 2 those are names with accents or other non-ASCII characters.
+static void checkHidden(App *app)
+{
+    if (strcmp(app->hidden_checked, app->browser.path) == 0)
+        return;
+    snprintf(app->hidden_checked, sizeof(app->hidden_checked), "%s", app->browser.path);
+    long total = fsinfoEntryCount(app->browser.path);
+    app->hidden_count = total > (long)app->browser.listed ? total - (long)app->browser.listed : 0;
+}
+
 void appHandleBrowser(App *app, uint64_t pressed)
 {
+    checkHidden(app);
     Browser *b = &app->browser;
     bool can_go_up = appBrowseCanGoUp(app);
     bool has_back = true;  // At the music folder, Back returns to Library.

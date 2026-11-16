@@ -30,9 +30,15 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
         path_x += back_w + 12;
         path_w -= back_w + 12;
     }
-    if (b->incomplete) {
-        // The console returned an error while listing: some names may be missing.
-        static const char WARNING[] = "Some items in this folder could not be read";
+    char hidden[96];
+    bool has_hidden = app->hidden_count > 0 && strcmp(app->hidden_checked, b->path) == 0;
+    if (has_hidden)
+        snprintf(hidden, sizeof(hidden), "%ld item%s hidden by the console: accents in the name", app->hidden_count,
+                 app->hidden_count == 1 ? "" : "s");
+    bool warned = b->incomplete || has_hidden;
+    if (warned) {
+        // The console returned an error while listing, or left names out.
+        const char *WARNING = b->incomplete ? "Some items in this folder could not be read" : hidden;
         int warning_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, WARNING);
         fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
         path_w -= warning_w + 24;
@@ -40,7 +46,7 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
     bool has_songs = false;
     for (size_t i = 0; i < b->count && !has_songs; i++)
         has_songs = !b->entries[i].is_dir;
-    if (has_songs && !b->incomplete) {
+    if (has_songs && !warned) {
         uiDrawColumnHeaders();
         path_w = COLUMN_ARTIST_X - 24 - path_x;
     }
@@ -370,6 +376,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiHitReset();
     const Artwork *art = artworkLock();
     coverCacheLock();
+    g_ui_list_focused = app->focus != FOCUS_PLAYER;
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 

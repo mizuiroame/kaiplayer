@@ -51,6 +51,8 @@ void uiResolveTrack(const PlayerStatus *status, const Artwork *art, UiTrack *tra
 // Draws a cover, or a placeholder with a music note.
 void uiDrawCover(int x, int y, int size, const CoverImage *cover);
 void uiDrawNoteIcon(int x, int y, int size, Color color);
+// A head and shoulders, for artists, centered on (cx, cy).
+void uiDrawPersonIcon(float cx, float cy, float size, Color color);
 
 const char *uiRepeatLabel(RepeatMode repeat);
 

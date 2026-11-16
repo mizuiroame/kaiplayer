@@ -20,6 +20,7 @@ typedef struct {
     size_t count;
     size_t cursor;
     bool incomplete;  // Some entries could not be read, or the list was capped.
+    size_t listed;    // Every entry the folder listing returned, shown or not.
 } Browser;
 
 // Lists path. On failure the browser keeps its previous listing.

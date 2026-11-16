@@ -1,5 +1,6 @@
-// Playlists as M3U/M3U8 files in sdmc:/playlists. Paths are written
-// relative to the playlist's folder, so other players can read the files.
+// Playlists as M3U/M3U8 files in the "Playlists" folder of the music folder
+// (sdmc:/playlists before one is chosen). Paths are written relative to the
+// playlist's folder, so other players can read the files.
 #pragma once
 
 #include <stdbool.h>
@@ -8,6 +9,7 @@
 #include "tracklist.h"
 
 #define PLAYLIST_ROOT "sdmc:/playlists"
+#define PLAYLIST_FOLDER_NAME "Playlists"
 #define PLAYLIST_EXT ".m3u8"
 #define PLAYLIST_NAME_MAX 48
 #define PLAYLIST_FILE_MAX (4u << 20)

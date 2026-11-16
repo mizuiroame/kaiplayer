@@ -319,6 +319,7 @@ int main(int argc, char **argv)
 
     static App app;
     configLoad(&app.config);
+    appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
     if (!gfxInit())

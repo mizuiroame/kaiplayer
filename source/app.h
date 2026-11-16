@@ -121,6 +121,8 @@ typedef struct {
     View view;
     Browser browser;
     LibraryTab library;
+    char hidden_checked[UTIL_PATH_MAX];  // The folder hidden_count is for.
+    long hidden_count;          // Entries the console has but didn't list (non-ASCII names).
     History history;            // Plays, for Home.
     HomeTracker home_tracker;
     Home home;                  // Home's rows, from the catalog and history.
@@ -184,6 +186,9 @@ void appHandleFolderPicker(App *app, uint64_t pressed);
 // Picker rows are folders only: how many of the listing's entries those are.
 size_t appPickerFolderCount(const App *app);
 void appPickerChoose(App *app);  // Use the folder the picker is in.
+// Points playlists at the music folder's Playlists folder, copying the ones
+// in sdmc:/playlists there the first time.
+void appUsePlaylistFolder(App *app);
 
 // The Library tab (app_library.c, library_tab.c).
 LibraryPage *appLibraryPage(App *app);
