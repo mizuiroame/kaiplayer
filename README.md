@@ -412,7 +412,10 @@ shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, 
 embedded cover.
 
 **Upload with plain names, without renaming your files.** FileZilla can't
-rename files as it uploads them, so the repository includes a small script,
+rename files as it uploads them. Use [KaiDrop](https://github.com/mizuiroame/kaidrop),
+a small Windows app (also runs on macOS and Linux) that sends folders over FTP
+and gives the copies on the console plain names, with a preview of every name.
+Or, from the command line, the repository includes a small script,
 [`tools/kaiupload.py`](tools/kaiupload.py) (Python 3.8 or later, nothing to
 install). It uploads a folder over FTP and gives the copies on the console
 plain names; the files on your computer are not changed:
