@@ -78,7 +78,7 @@ void uiDrawPill(int x, int y, const char *label, bool on)
 {
     int w = uiPillWidth(label);
     gfxFillRoundRect(x, y, w, 30, 15, on ? gfxMix(COLOR_SURFACE_HI, COLOR_ACCENT, 70) : COLOR_SURFACE_HI);
-    fontDraw(FONT_BOLD, PILL_TEXT, x + PILL_PAD, y + 4, label, on ? COLOR_ACCENT : COLOR_DIM);
+    fontDraw(FONT_BOLD, PILL_TEXT, x + PILL_PAD, y + 6, label, on ? COLOR_ACCENT : COLOR_DIM);
 }
 
 const char *uiRepeatLabel(RepeatMode repeat)

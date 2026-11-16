@@ -120,14 +120,30 @@ void gfxGradientV(int x, int y, int w, int h, Color top, Color bottom)
         gfxFillRect(x, y + i, w, 1, gfxMix(top, bottom, h > 1 ? (unsigned)(i * 255 / (h - 1)) : 0));
 }
 
+#define TRIANGLE_SAMPLES 4  // Per axis: 16 samples per pixel for smooth edges.
+
+// An isosceles triangle in a w x h box pointing right (or left), with
+// anti-aliased edges from supersampling.
 static void fillTriangle(int x, int y, int w, int h, Color color, bool left)
 {
-    for (int row = 0; row < h; row++) {
-        int distance = row < h / 2 ? row : h - 1 - row;
-        int span = (int)((long)w * distance * 2 / (h > 1 ? h - 1 : 1));
-        if (span < 1)
-            span = 1;
-        gfxFillRect(left ? x + w - span : x, y + row, span, 1, color);
+    int bx = x, by = y, bw = w, bh = h;
+    if (w <= 0 || h <= 0 || !clip(&bx, &by, &bw, &bh))
+        return;
+    float half = (float)h / 2.0f;
+    for (int py = by; py < by + bh; py++) {
+        uint32_t *row = g_pixels + (size_t)py * g_stride;
+        for (int px = bx; px < bx + bw; px++) {
+            unsigned inside = 0;
+            for (int sy = 0; sy < TRIANGLE_SAMPLES; sy++) {
+                float fy = (float)(py - y) + (sy + 0.5f) / TRIANGLE_SAMPLES;
+                float reach = (float)w * (1.0f - fabsf(fy - half) / half);  // Width at this height.
+                for (int sx = 0; sx < TRIANGLE_SAMPLES; sx++) {
+                    float fx = (float)(px - x) + (sx + 0.5f) / TRIANGLE_SAMPLES;
+                    inside += (left ? (float)w - fx : fx) < reach;
+                }
+            }
+            blendPixel(&row[px], color, inside * 255 / (TRIANGLE_SAMPLES * TRIANGLE_SAMPLES));
+        }
     }
 }
 
