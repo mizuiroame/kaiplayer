@@ -5,8 +5,6 @@
 
 #include <switch.h>
 
-#include "metacache.h"
-
 #define THREAD_STACK_SIZE 0x10000
 #define THREAD_PRIORITY 0x31  // Below the artwork thread.
 
@@ -40,7 +38,11 @@ static void workerMain(void *arg)
         mutexUnlock(&g_lock);
         readMeta(path, tags);
         mutexLock(&g_lock);
-        metaCacheStore(g_cache, path, tags->artist[0] ? tags->artist : tags->album_artist, tags->album);
+        static SongMeta meta;  // Only this thread uses it.
+        snprintf(meta.title, sizeof(meta.title), "%s", tags->title);
+        snprintf(meta.artist, sizeof(meta.artist), "%s", tags->artist[0] ? tags->artist : tags->album_artist);
+        snprintf(meta.album, sizeof(meta.album), "%s", tags->album);
+        metaCacheStore(g_cache, path, &meta);
         tagsFree(tags);
     }
     mutexUnlock(&g_lock);
@@ -84,18 +86,16 @@ void metaExit(void)
     g_cache = NULL;
 }
 
-bool metaLookup(const char *path, char *artist, size_t artist_size, char *album, size_t album_size)
+bool metaLookup(const char *path, SongMeta *out)
 {
     if (!g_started)
         return false;
     mutexLock(&g_lock);
     const MetaEntry *e = metaCacheGet(g_cache, path);
-    if (e) {
-        snprintf(artist, artist_size, "%s", e->artist);
-        snprintf(album, album_size, "%s", e->album);
-    } else {
+    if (e)
+        *out = e->meta;
+    else
         condvarWakeOne(&g_wake);
-    }
     mutexUnlock(&g_lock);
     return e != NULL;
 }

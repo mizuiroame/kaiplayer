@@ -1,4 +1,4 @@
-// A small cache of the artist and album of the songs shown in the lists.
+// A small cache of the title, artist and album of the songs shown in the lists.
 // The UI looks songs up every frame; a background thread fills in the ones
 // that are missing, most recently shown first. Not thread-safe by itself:
 // meta.c guards it with a lock.
@@ -19,10 +19,16 @@ typedef enum {
     META_READY,
 } MetaState;
 
+// What the lists show from a song's tags; any of it may be empty.
 typedef struct {
-    char path[UTIL_PATH_MAX];
+    char title[TAGS_TEXT_MAX];
     char artist[TAGS_TEXT_MAX];
     char album[TAGS_TEXT_MAX];
+} SongMeta;
+
+typedef struct {
+    char path[UTIL_PATH_MAX];
+    SongMeta meta;
     MetaState state;
     uint64_t last_used;
 } MetaEntry;
@@ -40,4 +46,4 @@ const MetaEntry *metaCacheGet(MetaCache *c, const char *path);
 // there is none.
 bool metaCacheTake(MetaCache *c, char *path, size_t size);
 // Stores the tags read for path (if it is still in the cache).
-void metaCacheStore(MetaCache *c, const char *path, const char *artist, const char *album);
+void metaCacheStore(MetaCache *c, const char *path, const SongMeta *meta);

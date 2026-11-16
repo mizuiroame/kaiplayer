@@ -8,6 +8,7 @@
 #include "app.h"
 #include "artwork.h"
 #include "font.h"
+#include "meta.h"
 #include "gfx.h"
 #include "player.h"
 #include "theme.h"
@@ -49,12 +50,18 @@ bool playerQueueTrack(size_t pos, size_t *track)
     return true;
 }
 
-// Fake tags for the list columns: songs in "Aurora Fields" have an album.
-bool metaLookup(const char *path, char *artist, size_t artist_size, char *album, size_t album_size)
+// Fake tags for the lists: songs in "Aurora Fields" have full tags (the
+// title drops the track number), the others an artist or nothing.
+bool metaLookup(const char *path, SongMeta *out)
 {
     bool aurora = strstr(path, "Aurora") != NULL;
-    snprintf(artist, artist_size, "%s", aurora ? "Aurora Fields" : strstr(path, "Night") ? "The Night Drive Band" : "");
-    snprintf(album, album_size, "%s", aurora ? "Paper Boats & Other Stories" : "");
+    const char *name = strrchr(path, '/') ? strrchr(path, '/') + 1 : path;
+    const char *dash = strstr(name, " - ");
+    snprintf(out->title, sizeof(out->title), "%.*s", aurora && dash ? (int)strcspn(dash + 3, ".") : 0,
+             aurora && dash ? dash + 3 : "");
+    snprintf(out->artist, sizeof(out->artist), "%s",
+             aurora ? "Aurora Fields" : strstr(path, "Night") ? "The Night Drive Band" : "");
+    snprintf(out->album, sizeof(out->album), "%s", aurora ? "Paper Boats & Other Stories" : "");
     return true;
 }
 

@@ -89,24 +89,31 @@ void uiDrawColumnHeaders(void)
     fontDraw(FONT_BOLD, 15, COLUMN_ALBUM_X, SUBTITLE_Y + 2, "ALBUM", COLOR_FAINT);
 }
 
-void uiDrawSongColumns(const char *path, int y)
+void uiLoadSong(const char *path, UiSong *song)
 {
-    char artist[TAGS_TEXT_MAX], album[TAGS_TEXT_MAX];
-    if (!metaLookup(path, artist, sizeof(artist), album, sizeof(album)))
+    uiSplitTrackPath(path, song->title, song->folder);
+    song->loaded = metaLookup(path, &song->meta);
+    if (song->loaded && song->meta.title[0])
+        snprintf(song->title, sizeof(song->title), "%s", song->meta.title);
+}
+
+void uiDrawSongColumns(const UiSong *song, int y)
+{
+    if (!song->loaded)
         return;  // Still being read: the columns fill in a moment later.
-    char folder[UTIL_PATH_MAX], title[UTIL_PATH_MAX];
-    if (!album[0])  // No tag: the folder is the best guess.
-        uiSplitTrackPath(path, title, folder);
+    const SongMeta *m = &song->meta;
     fontDrawClipped(FONT_REGULAR, TEXT_COLUMN, COLUMN_ARTIST_X, y + 10, COLUMN_ALBUM_X - COLUMN_ARTIST_X - COLUMN_GAP,
-                    artist, COLOR_COLUMN);
+                    m->artist, COLOR_COLUMN);
+    // No album tag: the folder is the best guess.
     fontDrawClipped(FONT_REGULAR, TEXT_COLUMN, COLUMN_ALBUM_X, y + 10, COLUMN_END - COLUMN_ALBUM_X,
-                    album[0] ? album : folder, album[0] ? COLOR_COLUMN : COLOR_DIM);
+                    m->album[0] ? m->album : song->folder, m->album[0] ? COLOR_COLUMN : COLOR_DIM);
 }
 
 void uiDrawTrackRow(const TrackRow *row)
 {
-    char title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX], digits[24];
-    uiSplitTrackPath(row->path, title, folder);
+    static UiSong song;  // Big; the UI draws on one thread.
+    char digits[24];
+    uiLoadSong(row->path, &song);
     int y = row->y;
     if (row->selected)
         uiDrawSelection(y, COLOR_ACCENT);
@@ -119,8 +126,8 @@ void uiDrawTrackRow(const TrackRow *row)
         fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN + 46 - number_w, y + 11, digits, COLOR_FAINT);
     }
     fontDrawClipped(row->current || row->selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
-                    COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), title, row->current ? COLOR_ACCENT : COLOR_TEXT);
-    uiDrawSongColumns(row->path, y);
+                    COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), song.title, row->current ? COLOR_ACCENT : COLOR_TEXT);
+    uiDrawSongColumns(&song, y);
     uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, row->index, row->add_focused);
 }
 

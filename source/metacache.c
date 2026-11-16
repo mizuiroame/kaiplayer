@@ -39,7 +39,7 @@ const MetaEntry *metaCacheGet(MetaCache *c, const char *path)
         e = victim(c);
         if (!e || snprintf(e->path, sizeof(e->path), "%s", path) >= (int)sizeof(e->path))
             return NULL;
-        e->artist[0] = e->album[0] = '\0';
+        memset(&e->meta, 0, sizeof(e->meta));
         e->state = META_WANTED;
     }
     e->last_used = c->clock;
@@ -61,12 +61,11 @@ bool metaCacheTake(MetaCache *c, char *path, size_t size)
     return true;
 }
 
-void metaCacheStore(MetaCache *c, const char *path, const char *artist, const char *album)
+void metaCacheStore(MetaCache *c, const char *path, const SongMeta *meta)
 {
     MetaEntry *e = find(c, path);
     if (!e)
         return;
-    snprintf(e->artist, sizeof(e->artist), "%s", artist);
-    snprintf(e->album, sizeof(e->album), "%s", album);
+    e->meta = *meta;
     e->state = META_READY;
 }

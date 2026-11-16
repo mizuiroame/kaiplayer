@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "gfx.h"
+#include "metacache.h"
 
 #define SUBTITLE_Y 76
 #define LIST_Y 108
@@ -38,8 +39,18 @@ typedef struct {
 // A song row: number (or moving bars when current), title, artist, album
 // and a "+" button that adds the song to a playlist.
 void uiDrawTrackRow(const TrackRow *row);
-// The artist and album of a song in their columns (empty until loaded).
-void uiDrawSongColumns(const char *path, int y);
+// What a song row shows: the title from the tags (the file name until they
+// are read, or if there is none), artist and album.
+typedef struct {
+    char title[UTIL_PATH_MAX];
+    char folder[UTIL_PATH_MAX];
+    SongMeta meta;
+    bool loaded;
+} UiSong;
+
+void uiLoadSong(const char *path, UiSong *song);
+// The artist and album in their columns (empty until loaded).
+void uiDrawSongColumns(const UiSong *song, int y);
 // "Artist" and "Album" above the columns, on the subtitle line.
 void uiDrawColumnHeaders(void);
 // Three bars moving with the music (still when paused), 20x20 at x, y.

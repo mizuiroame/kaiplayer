@@ -167,9 +167,11 @@ the card, KaiPlayer skips the system and homebrew folders there (`switch`,
 sound effects don't end up in the queue. The queue shows the folder each
 track comes from.
 
-Song rows in Browse, Playlists and Queue show the **Artist** and **Album**
-from the song's tags (read in the background, so they appear a moment after
-a list opens; without an album tag, the folder name shows in grey). The song
+Song rows in Browse, Playlists and Queue show the song's **title**,
+**Artist** and **Album** from its tags, like Now Playing. They are read in
+the background, so they appear a moment after a list opens; until then, and
+for songs without tags, the row shows the file name (and the folder name in
+grey instead of the album). The song
 that is playing has moving bars next to its name (still while paused).
 
 **Repeat queue** plays the whole queue again after its last song. **Repeat
@@ -478,7 +480,7 @@ source/
   tags_*.c        ID3 and Vorbis comment readers (title, artist, album, cover)
   cover.c         decodes and scales album art (JPEG / PNG)
   artwork.c       loads tags and covers on a background thread
-  meta*.c         artist and album for the lists, read in the background
+  meta*.c         title, artist and album for the lists, read in the background
   gfx.c           drawing: shapes, gradients, images
   gfx_switch.c    the console framebuffer
   font.c          anti-aliased text with the embedded fonts

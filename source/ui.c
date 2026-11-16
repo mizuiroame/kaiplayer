@@ -68,11 +68,14 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
             uiDrawPlayingBars(MARGIN + 6, y + 12, status->state == PLAYER_PLAYING, now_ns);
         else
             uiDrawNoteIcon(MARGIN + 4, y + 10, 24, COLOR_ACCENT);
+        static UiSong song;  // Big; the UI draws on one thread.
+        if (is_song)
+            uiLoadSong(path, &song);
         int name_w = is_song ? COLUMN_ARTIST_X - 24 - (MARGIN + 44) : GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W;
         fontDrawClipped(i == b->cursor || current ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8, name_w,
-                        e->name, e->is_dir ? COLOR_FOLDER : current ? COLOR_ACCENT : COLOR_TEXT);
+                        is_song ? song.title : e->name, e->is_dir ? COLOR_FOLDER : current ? COLOR_ACCENT : COLOR_TEXT);
         if (is_song)
-            uiDrawSongColumns(path, y);
+            uiDrawSongColumns(&song, y);
         uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
     }
     uiDrawScrollbar(first, b->count);
