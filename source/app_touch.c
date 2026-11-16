@@ -122,6 +122,12 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
         }
         break;
     case HIT_PICKER_USE: appPickerChoose(app); break;
+    case HIT_CARD:
+        app->home_row = r->arg / HOME_ROW_MAX;
+        app->home_col[app->home_row] = (size_t)(r->arg % HOME_ROW_MAX);
+        app->focus = FOCUS_LIST;
+        appDispatchButtons(app, HidNpadButton_A);
+        break;
     case HIT_ADD: addFromRow(app, r->arg); break;
     case HIT_LIST: break;
     }

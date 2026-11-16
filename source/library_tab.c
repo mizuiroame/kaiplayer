@@ -1,4 +1,4 @@
-// The Library tab's page stack, shared by input and drawing.
+// The Library tab's page stack and the Home rows, shared by input and drawing.
 #include "app.h"
 
 LibraryPage *appLibraryPage(App *app)
@@ -24,4 +24,19 @@ size_t appLibraryCount(const App *app, const Catalog *c)
     case LIB_SONGS: return c ? c->song_count : 0;
     default: return 0;
     }
+}
+
+// Recomputes the rows when the catalog or the history changed.
+const Home *appHome(App *app, const Catalog *c)
+{
+    size_t songs = c ? c->song_count : 0;
+    if (c != app->home_catalog || songs != app->home_songs || app->history.count != app->home_history ||
+        !app->home_ready) {
+        homeCompute(&app->home, c, &app->history);
+        app->home_catalog = c;
+        app->home_songs = songs;
+        app->home_history = app->history.count;
+        app->home_ready = true;
+    }
+    return &app->home;
 }

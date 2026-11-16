@@ -11,6 +11,9 @@
 #include "config.h"
 #include "keyboard.h"
 #include "menu.h"
+#include "history.h"
+#include "home.h"
+#include "player.h"
 #include "playlist.h"
 #include "settings.h"
 #include "sysinfo.h"
@@ -18,6 +21,7 @@
 #include "tracklist.h"
 
 typedef enum {
+    VIEW_HOME,
     VIEW_BROWSER,  // The Library tab (its Folders page is the old Browse).
     VIEW_PLAYLISTS,
     VIEW_QUEUE,
@@ -60,6 +64,13 @@ typedef struct {
     LibraryPage stack[LIBRARY_DEPTH_MAX];  // stack[depth - 1] is shown.
     int depth;
 } LibraryTab;
+
+// Which song is playing, to count it as played once.
+typedef struct {
+    unsigned generation;
+    size_t track;
+    bool armed;  // Not counted yet.
+} HomeTracker;
 
 // Menus that the app treats specially. Others are MENU_KIND_OTHER.
 enum {
@@ -107,6 +118,14 @@ typedef struct {
     View view;
     Browser browser;
     LibraryTab library;
+    History history;            // Plays, for Home.
+    HomeTracker home_tracker;
+    Home home;                  // Home's rows, from the catalog and history.
+    const Catalog *home_catalog;
+    size_t home_songs, home_history;
+    bool home_ready;
+    int home_row;               // Selected row (HomeRowKind) and card in each.
+    size_t home_col[HOME_ROW_COUNT];
     Config config;
     size_t queue_cursor;
     Focus focus;
@@ -172,6 +191,20 @@ void appHandleLibrary(App *app, uint64_t pressed);
 // The songs of the selected row, or of the whole page, in play order; start
 // is the selected song's place in them.
 bool appLibrarySongs(App *app, const Catalog *c, bool whole_page, TrackList *out, size_t *start);
+
+// The Home tab and the play history (app_home.c; appHome in library_tab.c).
+void appLoadHistory(App *app);
+void appRecordPlay(App *app, HistoryKind kind, const char *key);
+// Counts the playing song as played once it has played long enough.
+void appTrackPlays(App *app, const PlayerStatus *status);
+// Home's rows, worked out again when the catalog or history changed.
+const Home *appHome(App *app, const Catalog *c);
+void appHandleHome(App *app, uint64_t pressed);
+// Plays the Library page that is open (an artist or an album).
+void appLibraryPlayPage(App *app, bool shuffle);
+// Opens or plays the playlist the Playlists tab has selected.
+void appPlaylistsOpenSelected(App *app);
+void appPlaylistsPlaySelected(App *app, bool shuffle);
 
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
 void appHandleBrowser(App *app, uint64_t pressed);

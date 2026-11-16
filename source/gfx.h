@@ -61,6 +61,9 @@ void gfxTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Col
 // Draws an image_size x image_size image into a size x size box. An image
 // of gfxToFb(size) pixels is copied 1:1; any other size is scaled.
 void gfxBlit(int x, int y, int size, int image_size, const uint32_t *pixels);
+// The same with rounded corners (radius; size / 2 makes a circle). Images
+// not made for this size fall back to gfxBlit's square.
+void gfxBlitRounded(int x, int y, int size, int image_size, const uint32_t *pixels, int radius);
 // Draws color through an 8-bit coverage mask (used for text). Unlike the
 // rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

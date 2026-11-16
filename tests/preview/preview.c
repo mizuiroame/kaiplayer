@@ -8,6 +8,7 @@
 #include "app.h"
 #include "artwork.h"
 #include "catalog_scan.h"
+#include "covercache.h"
 #include "font.h"
 #include "meta.h"
 #include "gfx.h"
@@ -29,6 +30,7 @@ static const char *const TRACKS[] = {
 #define TRACK_COUNT (sizeof(TRACKS) / sizeof(TRACKS[0]))
 
 static Artwork g_art;
+static CoverImage g_art_card, g_art_thumb_small;  // The sample cover at the Home sizes.
 static bool g_has_art;
 
 // Stubs for the modules that need the console.
@@ -81,6 +83,20 @@ const Catalog *catalogLock(void)
 
 void catalogUnlock(void)
 {
+}
+
+void coverCacheLock(void)
+{
+}
+
+void coverCacheUnlock(void)
+{
+}
+
+const CoverImage *coverCacheGet(const char *song_path, bool thumb)
+{
+    // The sample cover stands in for every album that has one.
+    return g_art.has_cover && strstr(song_path, "Aurora") ? (thumb ? &g_art_thumb_small : &g_art_card) : NULL;
 }
 
 bool catalogScanProgress(size_t *done, size_t *total)
@@ -188,6 +204,9 @@ static void loadArtwork(const char *cover_path)
     snprintf(g_art.album, sizeof(g_art.album), "%s", "Paper Boats & Other Stories");
     g_art.has_cover = cover_path && coverLoadFromFolder(cover_path, &g_art.cover, gfxToFb(ARTWORK_LARGE_SIZE),
                                                          &g_art.thumb, gfxToFb(ARTWORK_SMALL_SIZE));
+    if (g_art.has_cover)
+        coverLoadFromFolder(cover_path, &g_art_card, gfxToFb(COVERCACHE_CARD), &g_art_thumb_small,
+                            gfxToFb(COVERCACHE_THUMB));
     g_has_art = true;
 }
 
@@ -308,6 +327,21 @@ int main(int argc, char **argv)
 
     // The Library tab's pages.
     buildCatalog();
+
+    // Home, with some plays and playlists in the history.
+    historyInit(&app.history);
+    static const int PLAYS[] = {0, 1, 4, 5, 0, 7, 2, 0};
+    for (size_t i = 0; i < sizeof(PLAYS) / sizeof(PLAYS[0]); i++)
+        historyAdd(&app.history, HISTORY_SONG, TRACKS[PLAYS[i]]);
+    historyAdd(&app.history, HISTORY_PLAYLIST, "Road Trip 2026");
+    historyAdd(&app.history, HISTORY_PLAYLIST, "Chill evenings");
+    app.view = VIEW_HOME;
+    app.home_row = HOME_RECENT_ALBUMS;
+    app.home_col[HOME_RECENT_ALBUMS] = 1;
+    render(argv[1], "home", &app, &status);
+    app.home_row = HOME_RECENT_ARTISTS;
+    render(argv[1], "home_scrolled", &app, &status);
+    app.view = VIEW_BROWSER;
     app.library.depth = 1;
     app.library.stack[0] = (LibraryPage){LIB_ROOT, 0, 0};
     g_scan_busy = true;

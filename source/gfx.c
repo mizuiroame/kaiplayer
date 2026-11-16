@@ -283,6 +283,36 @@ void gfxBlit(int x, int y, int size, int image_size, const uint32_t *pixels)
     }
 }
 
+void gfxBlitRounded(int x, int y, int size, int image_size, const uint32_t *pixels, int radius)
+{
+    if (!pixels || image_size != gfxToFb(size)) {
+        gfxBlit(x, y, size, image_size, pixels);
+        return;
+    }
+    int fx = gfxToFb(x), fy = gfxToFb(y), r = gfxToFb(radius);
+    r = r * 2 > image_size ? image_size / 2 : r;
+    float corner_lo = (float)r, corner_hi = (float)(image_size - r);
+    for (int row = 0; row < image_size; row++) {
+        int py = fy + row;
+        if (!g_pixels || py < 0 || py >= GFX_FB_HEIGHT)
+            continue;
+        const uint32_t *src = pixels + (size_t)row * image_size;
+        uint32_t *dst = g_pixels + (size_t)py * g_stride;
+        float cy = row + 0.5f;
+        for (int col = 0; col < image_size; col++) {
+            int px = fx + col;
+            if (px < 0 || px >= GFX_FB_WIDTH)
+                continue;
+            float cx = col + 0.5f;
+            // Inside the corners' squares, coverage comes from the corner circle.
+            float ccx = cx < corner_lo ? corner_lo : cx > corner_hi ? corner_hi : cx;
+            float ccy = cy < corner_lo ? corner_lo : cy > corner_hi ? corner_hi : cy;
+            unsigned a = (ccx == cx || ccy == cy) ? 255 : circleCoverage(cx, cy, ccx, ccy, (float)r);
+            blendPixel(&dst[px], src[col], a);
+        }
+    }
+}
+
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color)
 {
     int cx = x, cy = y, cw = w, ch = h;

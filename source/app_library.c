@@ -110,6 +110,11 @@ static void play(App *app, bool whole_page, bool shuffle)
     trackListFree(&list);
 }
 
+void appLibraryPlayPage(App *app, bool shuffle)
+{
+    play(app, true, shuffle);
+}
+
 static void openRow(App *app)
 {
     LibraryPage *p = appLibraryPage(app);

@@ -14,6 +14,7 @@
 #include "input.h"
 #include "meta.h"
 #include "catalog_scan.h"
+#include "covercache.h"
 #include "player.h"
 #include "screen.h"
 #include "sysinfo.h"
@@ -164,6 +165,7 @@ void appDispatchButtons(App *app, uint64_t pressed)
         return;
     }
     switch (app->view) {
+    case VIEW_HOME: appHandleHome(app, pressed); break;
     case VIEW_BROWSER: appHandleLibrary(app, pressed); break;
     case VIEW_PLAYLISTS: appHandlePlaylists(app, pressed); break;
     case VIEW_QUEUE: handleQueue(app, pressed); break;
@@ -172,11 +174,13 @@ void appDispatchButtons(App *app, uint64_t pressed)
     handleGlobal(app, pressed);
 }
 
-// Keeps the console awake while music plays, and surfaces player errors.
+// Keeps the console awake while music plays, counts plays for Home, and
+// surfaces player errors.
 static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, size_t error_size)
 {
     PlayerStatus status;
     playerGetStatus(&status);
+    appTrackPlays(app, &status);
     if (status.state != *last_state) {
         appletSetMediaPlaybackState(status.state == PLAYER_PLAYING);
         *last_state = status.state;
@@ -326,6 +330,8 @@ int main(int argc, char **argv)
     artworkInit();
     metaInit();
     catalogScanInit();
+    coverCacheInit();
+    appLoadHistory(&app);
     if (app.config.library[0])
         catalogScanStart(app.config.library);
     sysinfoInit();
@@ -346,7 +352,9 @@ int main(int argc, char **argv)
         appletSetMediaPlaybackState(false);
         playerExit();
     }
+    coverCacheExit();
     catalogScanExit();
+    historyFree(&app.history);
     metaExit();
     artworkExit();
     sysinfoExit();

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "catalog_scan.h"
+#include "covercache.h"
 #include "ui.h"
 #include "ui_buttons.h"
 #include "ui_common.h"
@@ -27,9 +28,14 @@ static void drawArtistIcon(int x, int y, const char *name)
     fontDrawCentered(FONT_BOLD, 15, x + ICON_SIZE / 2.0f, y + ICON_SIZE / 2.0f, letter, COLOR_ARTIST);
 }
 
-// A square sleeve with a record, for albums.
-static void drawAlbumIcon(int x, int y)
+// The album's cover, or a square sleeve with a record while it loads.
+static void drawAlbumIcon(int x, int y, const char *song_path)
 {
+    const CoverImage *cover = song_path ? coverCacheGet(song_path, true) : NULL;
+    if (cover) {
+        gfxBlitRounded(x, y, ICON_SIZE, cover->size, cover->pixels, 4);
+        return;
+    }
     gfxFillRoundRect(x, y, ICON_SIZE, ICON_SIZE, 5, COLOR_SURFACE_HI);
     gfxFillCircle(x + ICON_SIZE / 2, y + ICON_SIZE / 2, 10, COLOR_ACCENT);
     gfxFillCircle(x + ICON_SIZE / 2, y + ICON_SIZE / 2, 3, COLOR_SURFACE_HI);
@@ -56,7 +62,7 @@ static void drawRoot(const App *app, const Catalog *c, size_t cursor)
         if (i == 0)
             drawArtistIcon(ICON_X, icon_y, "A");
         else if (i == 1)
-            drawAlbumIcon(ICON_X, icon_y);
+            drawAlbumIcon(ICON_X, icon_y, NULL);
         else if (i == 2)
             uiDrawNoteIcon(ICON_X + 3, icon_y + 2, 26, COLOR_ACCENT);
         else
@@ -83,7 +89,7 @@ static void drawArtistRow(const Catalog *c, size_t artist, int y, bool selected)
 static void drawAlbumRow(const Catalog *c, size_t album, int y, bool selected, bool with_artist)
 {
     const CatalogAlbum *a = &c->albums[album];
-    drawAlbumIcon(ICON_X, y + (ROW_H - ICON_SIZE) / 2);
+    drawAlbumIcon(ICON_X, y + (ROW_H - ICON_SIZE) / 2, c->songs[a->songs[0]].path);
     char detail[TAGS_TEXT_MAX + 32];
     if (with_artist)
         snprintf(detail, sizeof(detail), "%s", c->artists[a->artist].name);

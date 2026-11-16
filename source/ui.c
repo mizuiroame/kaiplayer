@@ -8,6 +8,7 @@
 #include "ui_buttons.h"
 #include "ui_list.h"
 #include "screen.h"
+#include "covercache.h"
 #include "theme.h"
 
 #define MINI_Y 572
@@ -18,7 +19,7 @@
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 #define NS_PER_MINUTE 60000000000ull
 
-static const char *const VIEW_NAMES[VIEW_COUNT] = {"Library", "Playlists", "Queue", "Now Playing"};
+static const char *const VIEW_NAMES[VIEW_COUNT] = {"Home", "Library", "Playlists", "Queue", "Now Playing"};
 
 static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
@@ -308,6 +309,7 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
+        "[A] open  [X] play  [Y] shuffle  [<>] choose  [v] next row  [+] menu",
         "[A] open  [B] back  [>] add to playlist  [X] play folder  [Y] shuffle  [v] player  [+] menu",
         "[A] open  [X] play  [Y] shuffle  [RS] page  [-] pause  [L][R] track  [+] menu",
         "[A] play  [B] browse  [>] add to playlist  [X] shuffle  [Y] repeat  [v] player  [+] menu",
@@ -367,6 +369,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     UiTrack track;
     uiHitReset();
     const Artwork *art = artworkLock();
+    coverCacheLock();
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
@@ -377,6 +380,8 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
         if (!app->audio_ok)
             fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y,
                      "Audio unavailable: audout could not start.", COLOR_ERROR);
+        else if (app->view == VIEW_HOME)
+            uiDrawHome(app, status, now_ns);
         else if (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_FOLDERS)
             drawBrowser(app, status, now_ns);
         else if (app->view == VIEW_BROWSER)
@@ -390,5 +395,6 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     drawHeader(app, now_ns);
     uiDrawOverlay(app, now_ns);
     drawFooter(app);  // Over the dimmed screen, so the overlay's help reads well.
+    coverCacheUnlock();
     artworkUnlock();
 }
