@@ -7,7 +7,7 @@
 
 // What a file holds, for showing: "FLAC", 24 bits, 96000 Hz.
 typedef struct {
-    char codec[8];         // "MP3", "FLAC", "OGG", "WAV", "DSD64"…; empty when nothing plays.
+    char codec[16];        // "MP3", "FLAC", "OGG", "WAV", "DSD64"…; empty when nothing plays.
     uint32_t sample_rate;  // The file's own rate (DSD's 1-bit rate for DSD), not the console's.
     unsigned bits;         // Per sample for PCM; 0 for lossy formats and DSD.
 } AudioFormat;
