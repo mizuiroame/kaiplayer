@@ -291,12 +291,20 @@ static bool loadBytes(DsdDecoder *d, int64_t first, uint64_t end, size_t span)
     size_t got = 0;
     if (fseek(d->f, (long)(d->info.data_offset + b0 * group), SEEK_SET) == 0)
         got = fread(d->raw, 1, bytes, d->f);
-    for (size_t i = 0; i < got; i++) {
-        uint64_t r = i % group, pos = (b0 + i / group) * block + r % block;
-        if (pos < start || pos >= end)
-            continue;
-        uint8_t byte = d->info.lsb_first ? g_reverse[d->raw[i]] : d->raw[i];
-        d->chan[(r / block) * span + (size_t)((int64_t)pos - first)] = byte;
+    // Copies each channel's part of each block that was read whole.
+    for (uint64_t b = b0; (b - b0 + 1) * group <= got; b++) {
+        uint64_t lo = b * block > start ? b * block : start;
+        uint64_t hi = (b + 1) * block < end ? (b + 1) * block : end;
+        for (uint32_t c = 0; c < channels; c++) {
+            const uint8_t *src = d->raw + (b - b0) * group + c * block + (lo - b * block);
+            uint8_t *dst = d->chan + c * span + (size_t)((int64_t)lo - first);
+            if (d->info.lsb_first) {
+                for (uint64_t i = 0; i < hi - lo; i++)
+                    dst[i] = g_reverse[src[i]];
+            } else {
+                memcpy(dst, src, (size_t)(hi - lo));
+            }
+        }
     }
     return true;
 }
@@ -320,10 +328,16 @@ uint64_t dsdRead(DsdDecoder *d, float *out, uint64_t frames)
         for (uint64_t i = 0; i < n; i++) {
             for (uint32_t c = 0; c < channels; c++) {
                 const uint8_t *src = d->chan + c * span + i * d->step;
-                float acc = 0.0f;
-                for (uint32_t k = 0; k < d->window; k++)
-                    acc += d->table[k * 256 + src[k]];
-                out[(done + i) * channels + c] = acc;
+                const float *t = d->table;
+                // Four sums, so the additions don't wait on each other (the window is a multiple of 64).
+                float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+                for (uint32_t k = 0; k < d->window; k += 4, t += 4 * 256) {
+                    a0 += t[src[k]];
+                    a1 += t[256 + src[k + 1]];
+                    a2 += t[512 + src[k + 2]];
+                    a3 += t[768 + src[k + 3]];
+                }
+                out[(done + i) * channels + c] = (a0 + a1) + (a2 + a3);
             }
         }
         done += n;
