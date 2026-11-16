@@ -7,6 +7,7 @@
 #include "dr_flac.h"
 #include "dr_mp3.h"
 #include "dr_wav.h"
+#include "dsd.h"
 #define STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.c"
 
@@ -17,7 +18,7 @@
 #define MIN_SAMPLE_RATE 1000
 #define MAX_SAMPLE_RATE 768000
 
-typedef enum { KIND_WAV, KIND_FLAC, KIND_MP3, KIND_VORBIS } DecoderKind;
+typedef enum { KIND_WAV, KIND_FLAC, KIND_MP3, KIND_VORBIS, KIND_DSD } DecoderKind;
 
 struct Decoder {
     DecoderKind kind;
@@ -29,6 +30,7 @@ struct Decoder {
         drflac *flac;
         drmp3 mp3;
         stb_vorbis *vorbis;
+        DsdDecoder *dsd;
     } u;
     float scratch[SCRATCH_FRAMES * MAX_CHANNELS];
 };
@@ -79,6 +81,17 @@ static bool openVorbis(Decoder *d, const char *path)
     return true;
 }
 
+static bool openDsd(Decoder *d, const char *path)
+{
+    d->u.dsd = dsdOpen(path);
+    if (!d->u.dsd)
+        return false;
+    d->channels = dsdChannels(d->u.dsd);
+    d->sample_rate = dsdSampleRate(d->u.dsd);
+    d->total_frames = dsdTotalFrames(d->u.dsd);
+    return true;
+}
+
 Decoder *decoderOpen(const char *path)
 {
     Decoder *d = calloc(1, sizeof(Decoder));
@@ -98,6 +111,9 @@ Decoder *decoderOpen(const char *path)
     } else if (utilHasExtension(path, "ogg") || utilHasExtension(path, "oga")) {
         d->kind = KIND_VORBIS;
         ok = openVorbis(d, path);
+    } else if (utilHasExtension(path, "dsf") || utilHasExtension(path, "dff")) {
+        d->kind = KIND_DSD;
+        ok = openDsd(d, path);
     }
 
     // Headers come from untrusted files: reject values playback can't handle.
@@ -122,6 +138,7 @@ void decoderClose(Decoder *d)
     case KIND_FLAC: drflac_close(d->u.flac); break;
     case KIND_MP3: drmp3_uninit(&d->u.mp3); break;
     case KIND_VORBIS: stb_vorbis_close(d->u.vorbis); break;
+    case KIND_DSD: dsdClose(d->u.dsd); break;
     }
     free(d);
 }
@@ -145,6 +162,7 @@ static uint64_t readNative(Decoder *d, float *out, uint64_t frames)
     case KIND_VORBIS:
         return (uint64_t)stb_vorbis_get_samples_float_interleaved(
             d->u.vorbis, (int)d->channels, out, (int)(frames * d->channels));
+    case KIND_DSD: return dsdRead(d->u.dsd, out, frames);
     }
     return 0;
 }
@@ -182,6 +200,7 @@ bool decoderSeek(Decoder *d, uint64_t frame)
     case KIND_FLAC: return drflac_seek_to_pcm_frame(d->u.flac, frame);
     case KIND_MP3: return drmp3_seek_to_pcm_frame(&d->u.mp3, frame);
     case KIND_VORBIS: return stb_vorbis_seek(d->u.vorbis, (unsigned)frame) != 0;
+    case KIND_DSD: return dsdSeek(d->u.dsd, frame);
     }
     return false;
 }

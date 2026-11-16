@@ -300,7 +300,7 @@ static void drawAbout(void)
 {
     static const char *const LINES[] = {
         "A music player for Switch 2 homebrew on kaiHEN.",
-        "Plays MP3, FLAC, Ogg Vorbis and WAV from your SD card, with",
+        "Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with",
         "playlists, an equalizer, ReplayGain and album art.",
         "",
         "Free and open source under the MIT license.",

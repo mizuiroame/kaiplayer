@@ -153,6 +153,8 @@ int main(int argc, char **argv)
     fuzzAudioFile("fixtures/tone.flac", "flac", iterations);
     fuzzAudioFile("fixtures/tone.ogg", "ogg", iterations);
     fuzzAudioFile("fixtures/tone.wav", "wav", iterations);
+    fuzzAudioFile("fixtures/tone.dsf", "dsf", iterations);
+    fuzzAudioFile("fixtures/tone.dff", "dff", iterations);
     fuzzImage("fixtures/small_cover.jpg", iterations * 4);
     fuzzImage("fixtures/small_cover.png", iterations * 4);
     printf("fuzz: done, no crashes\n");

@@ -104,8 +104,8 @@ KaiPlayer remembers the music folder and the shuffle and repeat modes in
 
 ## Supported audio formats
 
-All of these formats are **open and royalty-free**. The decoders are built into
-the `.nro`, so you don't need to install anything else.
+The decoders are built into the `.nro`, so you don't need to install anything
+else.
 
 | Format         | Extensions     | Notes                                                 |
 |----------------|----------------|-------------------------------------------------------|
@@ -113,11 +113,19 @@ the `.nro`, so you don't need to install anything else.
 | **FLAC**       | `.flac`        | Lossless, 8 to 32 bits.                               |
 | **Ogg Vorbis** | `.ogg`, `.oga` | Vorbis only. `.ogg` files that contain Opus don't play. |
 | **WAV**        | `.wav`         | PCM, IEEE float, A-law and µ-law.                     |
+| **DSD**        | `.dsf`, `.dff` | DSD64 to DSD512, played as PCM (see below). Not DST-compressed `.dff`. |
 
 - **Sample rates:** any sample rate works (44.1 kHz, 48 kHz, 96 kHz and so on).
   KaiPlayer converts it to the console's 48 kHz.
 - **Channels:** mono is played on both channels. For files with more than two
   channels, KaiPlayer plays the front left and front right channels.
+- **DSD (`.dsf`, `.dff`)** is converted to PCM as it plays, not sent to the
+  console as DSD (it can't take DSD): KaiPlayer filters the 1-bit stream
+  (everything above about 38 kHz, where DSD's noise is) and turns it into
+  88.2 kHz PCM (96 kHz for DSD at multiples of 48 kHz), which then goes to
+  48 kHz like any other file. SACD's full level is half of PCM's, so DSD
+  plays about 6 dB quieter than a CD-level track; with ReplayGain on and
+  tagged files, the levels usually even out.
 
 **Not supported yet:** Opus, AAC/M4A, ALAC, WMA and DRM-protected files. AAC
 and WMA won't be added, because they need paid licenses.
@@ -177,8 +185,9 @@ D-pad or the left stick to move between cards and sections, **A** to open one, *
 - **Folders:** the folders of your music folder, as they are on the card.
 
 Artists and albums come from the tags (album artist, artist, album, track
-and disc numbers, year). Songs without tags are grouped by folder, as
-`Artist/Album/song.mp3`. KaiPlayer keeps the library in
+and disc numbers, year), **not from the folder names**: a folder named
+`Miki Matsubara` whose songs are tagged 松原みき shows as **松原みき**. Songs
+without tags are grouped by folder, as `Artist/Album/song.mp3`. KaiPlayer keeps the library in
 `sdmc:/config/kaiplayer/catalog.txt` so it shows at once next time, and
 updates it in the background, reading only new or changed files; the
 progress shows at the top right. **+ → Update the library now** checks the
@@ -374,6 +383,8 @@ KaiPlayer reads the song details from the file's tags:
 | FLAC       | Vorbis comments and the embedded picture |
 | Ogg Vorbis | Vorbis comments and the embedded picture (`METADATA_BLOCK_PICTURE`) |
 | WAV        | None |
+| DSF        | ID3v2 (the tag at the end of the file) |
+| DSDIFF     | ID3v2 in an `ID3 ` chunk, if the file has one |
 
 When a file has no title tag, KaiPlayer shows its file name without the
 extension. When it has no artist tag, Now Playing shows "Unknown artist" and
@@ -413,7 +424,7 @@ them, even though it is on the card and takes up space. No app on the
 console can find it, so the fix has to happen before the file gets there.
 
 **Tags carry the real names.** KaiPlayer takes each song's title, artist and
-album from its tags (ID3 in MP3, Vorbis comments in FLAC and Ogg), not from
+album from its tags (ID3 in MP3 and DSD, Vorbis comments in FLAC and Ogg), not from
 the file name, and tags can hold any language. A file renamed
 `04 Mizuiro no Ame.mp3` is still shown as **みずいろの雨 · 八神純子 · 素顔の私**,
 with its embedded cover, and `06 Cancion.flac` as **Canción**. Make sure your
@@ -555,7 +566,8 @@ make -C tests run    # tests (needs the system gcc)
 source/
   main.c          main loop and controls
   player.c        audio thread: decode → resample → audout
-  decoder.c       common interface for MP3 / FLAC / Vorbis / WAV
+  decoder.c       common interface for MP3 / FLAC / Vorbis / WAV / DSD
+  dsd.c           DSF and DSDIFF: reads the 1-bit stream and filters it to PCM
   resampler.c     sample rate conversion (linear interpolation)
   queue.c         play order, shuffle and repeat
   library.c       finds the music in a folder (recursively)
@@ -629,7 +641,7 @@ reduces that risk in these ways:
   `-fwrapv` (signed overflow wraps instead of being undefined). The host
   tests run under AddressSanitizer and UndefinedBehaviorSanitizer.
 - **Fuzzing.** `make -C tests fuzz` feeds thousands of corrupted MP3, FLAC,
-  Ogg, WAV, JPEG and PNG files to every parser, with the sanitizers on. Run it
+  Ogg, WAV, DSF, DSDIFF, JPEG and PNG files to every parser, with the sanitizers on. Run it
   before each release.
 - **Pinned dependencies.** The libraries in `third_party/` and the fonts in
   `data/` are pinned to upstream commits with SHA-256 sums. See
