@@ -367,27 +367,55 @@ static uint32_t sampleBilinear(const uint32_t *pixels, int size, int32_t u, int3
     return 0xFF000000u | rb | g;
 }
 
+// The part of a row inside a ring: from x0 to x1 (exclusive), clipped.
+static bool ringSpan(float cx, float dy, float outer, int *x0, int *x1)
+{
+    float reach = outer * outer - dy * dy;
+    if (reach < 0.0f)
+        return false;
+    float half = sqrtf(reach);
+    *x0 = (int)floorf(cx - half) - 1;
+    *x1 = (int)ceilf(cx + half) + 1;
+    if (*x0 < 0) *x0 = 0;
+    if (*x1 > GFX_FB_WIDTH) *x1 = GFX_FB_WIDTH;
+    return *x0 < *x1;
+}
+
 void gfxBlitDisc(float cx, float cy, float radius, float hole, int image_size, const uint32_t *pixels, float angle)
 {
-    cx *= GFX_SCALE, cy *= GFX_SCALE, radius *= GFX_SCALE, hole *= GFX_SCALE;
-    int x = (int)floorf(cx - radius) - 1, y = (int)floorf(cy - radius) - 1;
-    int w = (int)ceilf(2.0f * radius) + 3, h = w;
-    if (!pixels || image_size < 2 || !clip(&x, &y, &w, &h))
+    if (!g_pixels || !pixels || image_size < 2)
         return;
+    cx *= GFX_SCALE, cy *= GFX_SCALE, radius *= GFX_SCALE, hole *= GFX_SCALE;
     // The image's center at the disc's center, its edge at the disc's edge, turned by angle.
+    // Positions step in 16.16 fixed point; only pixels near an edge work out their coverage.
     float scale = image_size / (2.0f * radius), c = cosf(angle) * scale, s = sinf(angle) * scale;
-    float half = image_size / 2.0f;
-    for (int py = y; py < y + h; py++) {
+    float half = image_size / 2.0f - 0.5f;
+    float solid_out = (radius - 0.5f) * (radius - 0.5f), solid_in = (hole + 0.5f) * (hole + 0.5f);
+    float edge_out = (radius + 0.5f) * (radius + 0.5f), edge_in = hole > 0.5f ? (hole - 0.5f) * (hole - 0.5f) : 0.0f;
+    int32_t du = (int32_t)(c * 65536.0f), dv = (int32_t)(-s * 65536.0f);
+    int y0 = (int)floorf(cy - radius) - 1, y1 = (int)ceilf(cy + radius) + 1;
+    if (y0 < 0) y0 = 0;
+    if (y1 > GFX_FB_HEIGHT) y1 = GFX_FB_HEIGHT;
+    for (int py = y0; py < y1; py++) {
         float dy = py + 0.5f - cy;
+        int x0, x1;
+        if (!ringSpan(cx, dy, radius + 0.5f, &x0, &x1))
+            continue;
+        float dx = x0 + 0.5f - cx;
+        int32_t u = (int32_t)((half + c * dx + s * dy) * 65536.0f);
+        int32_t v = (int32_t)((half - s * dx + c * dy) * 65536.0f);
         uint32_t *row = g_pixels + (size_t)py * g_stride;
-        for (int px = x; px < x + w; px++) {
-            float dx = px + 0.5f - cx, d = sqrtf(dx * dx + dy * dy);
-            float cover = clampf(radius - d + 0.5f, 0.0f, 1.0f) * clampf(d - hole + 0.5f, 0.0f, 1.0f);
-            if (cover <= 0.0f)
+        for (int px = x0; px < x1; px++, dx += 1.0f, u += du, v += dv) {
+            float d2 = dx * dx + dy * dy;
+            if (d2 >= edge_out || d2 <= edge_in)
                 continue;
-            float u = half + c * dx + s * dy, v = half - s * dx + c * dy;
-            uint32_t color = sampleBilinear(pixels, image_size, (int32_t)(u * 65536.0f) - 32768,
-                                            (int32_t)(v * 65536.0f) - 32768);
+            uint32_t color = sampleBilinear(pixels, image_size, u, v);
+            if (d2 <= solid_out && d2 >= solid_in) {
+                row[px] = color;
+                continue;
+            }
+            float d = sqrtf(d2);
+            float cover = clampf(radius - d + 0.5f, 0.0f, 1.0f) * clampf(d - hole + 0.5f, 0.0f, 1.0f);
             blendPixel(&row[px], color, (unsigned)(cover * 255.0f));
         }
     }

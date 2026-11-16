@@ -9,8 +9,8 @@
 #include "ui_nowstyle.h"
 
 #define TAU 6.2831853f
-#define VINYL_RPS (100.0f / 3.0f / 60.0f)  // 33 1/3 rpm.
-#define CD_RPS 0.6f
+#define VINYL_RPS 0.25f  // A turn every 4 s: calmer on screen than a real 33 1/3 rpm.
+#define CD_RPS 0.2f
 #define TAPE_SPEED 26.0f                     // Layout pixels of tape per second, for the reels.
 #define MAX_FRAME_SECONDS 0.25               // After a pause or another view, don't jump.
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/stat.h>
 
 #include "app.h"
@@ -395,6 +396,22 @@ int main(int argc, char **argv)
     render(argv[1], "now_playing", &app, &status);
     for (int i = 0; i < 6; i++)  // Turn the discs a little, so the previews show them turned.
         uiNowStyleSpin(true, 1000000000ull + i * 200000000ull);
+    if (getenv("KAIPLAYER_BENCH")) {  // Milliseconds to draw a Now Playing frame, per style.
+        static uint32_t frame[GFX_FB_WIDTH * GFX_FB_HEIGHT];
+        gfxSetTarget(frame, GFX_FB_WIDTH);
+        for (int style = 0; style < NOW_STYLE_COUNT; style++) {
+            app.config.now_style = style;
+            uiDraw(&app, &status, 0);  // Builds the cached layers.
+            struct timespec t0, t1;
+            clock_gettime(CLOCK_MONOTONIC, &t0);
+            for (int i = 0; i < 60; i++)
+                uiDraw(&app, &status, 0);
+            clock_gettime(CLOCK_MONOTONIC, &t1);
+            printf("style %d: %.2f ms per frame\n", style,
+                   ((t1.tv_sec - t0.tv_sec) * 1e3 + (t1.tv_nsec - t0.tv_nsec) / 1e6) / 60.0);
+        }
+        gfxSetTarget(NULL, 0);
+    }
     static const char *const STYLE_SHOTS[] = {"", "now_playing_vinyl", "now_playing_cd", "now_playing_cassette"};
     for (int style = NOW_STYLE_VINYL; style < NOW_STYLE_COUNT; style++) {
         app.config.now_style = style;
