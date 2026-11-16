@@ -92,7 +92,7 @@ static const char *const VERTEX =
 
 static const char *const FRAGMENT =
     "#version 300 es\n"
-    "precision mediump float;\n"
+    "precision highp float;\n"  // As in the vertex shader: uniforms both use must match.
     "in vec2 v_uv; in vec4 v_color; in vec4 v_shape; in vec2 v_local;\n"
     "uniform sampler2D image;\n"
     "uniform float scale;\n"
@@ -210,6 +210,13 @@ int main(int argc, char **argv)
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
+    GLint linked = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        char log[1024];
+        glGetProgramInfoLog(program, sizeof(log), NULL, log);
+        logf_("link error: %s\n", log);
+    }
     glDeleteShader(vs);
     glDeleteShader(fs);
     glUseProgram(program);
@@ -293,9 +300,11 @@ int main(int argc, char **argv)
         glBufferSubData(GL_ARRAY_BUFFER, 0, g_quads * 6 * stride, g_vertices);
         glDrawArrays(GL_TRIANGLES, 0, g_quads * 6);
 
+        glFinish();  // Measures the drawing itself, without the wait for the screen.
+        double cpu_ms = armTicksToNs(armGetSystemTick() - start) / 1e6;
         eglSwapBuffers(window.display, window.surface);
         uint64_t now = armGetSystemTick();
-        double cpu_ms = armTicksToNs(now - start) / 1e6, frame_ms = armTicksToNs(now - last) / 1e6;
+        double frame_ms = armTicksToNs(now - last) / 1e6;
         last = now;
         total_ms += cpu_ms;
         if (frame_ms > worst)
