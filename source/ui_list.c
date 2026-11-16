@@ -1,13 +1,21 @@
 #include "ui_list.h"
 
+#include <math.h>
 #include <stdio.h>
 
 #include "ui.h"
 #include "ui_common.h"
+#include "meta.h"
 #include "ui_hit.h"
 
-#define TRACK_RIGHT_EDGE (GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W)
-#define TRACK_FOLDER_MAX_W 360
+#define COLUMN_END (GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W - 12)
+#define COLUMN_GAP 24
+#define TEXT_COLUMN 20
+// Brighter than COLOR_DIM: small grey text on the dark rows looked soft.
+#define COLOR_COLUMN GFX_RGB(0xCC, 0xCC, 0xD6)
+#define BAR_W 4
+#define BAR_STEP 7
+#define BAR_MAX_H 20
 
 size_t uiFirstVisible(size_t cursor, size_t count)
 {
@@ -64,29 +72,63 @@ int uiDrawBackButton(int x, int y, bool focused)
     return w;
 }
 
-void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current, size_t index,
-                    bool add_focused)
+void uiDrawPlayingBars(int x, int y, bool playing, uint64_t now_ns)
 {
-    char title[UTIL_PATH_MAX], folder[UTIL_PATH_MAX], digits[24];
-    uiSplitTrackPath(path, title, folder);
-    if (selected)
+    static const double SPEED[3] = {7.0, 9.5, 6.0}, PHASE[3] = {0.0, 1.7, 3.1};
+    static const int STILL[3] = {8, 14, 10};
+    double t = (double)(now_ns % 1000000000000ull) / 1e9;
+    for (int i = 0; i < 3; i++) {
+        int h = playing ? 4 + (int)((BAR_MAX_H - 4) * (0.5 + 0.5 * sin(t * SPEED[i] + PHASE[i]))) : STILL[i];
+        gfxFillRoundRect(x + i * BAR_STEP, y + BAR_MAX_H - h, BAR_W, h, 1, COLOR_ACCENT);
+    }
+}
+
+void uiDrawColumnHeaders(void)
+{
+    fontDraw(FONT_BOLD, 15, COLUMN_ARTIST_X, SUBTITLE_Y + 2, "ARTIST", COLOR_FAINT);
+    fontDraw(FONT_BOLD, 15, COLUMN_ALBUM_X, SUBTITLE_Y + 2, "ALBUM", COLOR_FAINT);
+}
+
+void uiLoadSong(const char *path, UiSong *song)
+{
+    uiSplitTrackPath(path, song->title, song->folder);
+    song->loaded = metaLookup(path, &song->meta);
+    if (song->loaded && song->meta.title[0])
+        snprintf(song->title, sizeof(song->title), "%s", song->meta.title);
+}
+
+void uiDrawSongColumns(const UiSong *song, int y)
+{
+    if (!song->loaded)
+        return;  // Still being read: the columns fill in a moment later.
+    const SongMeta *m = &song->meta;
+    fontDrawClipped(FONT_REGULAR, TEXT_COLUMN, COLUMN_ARTIST_X, y + 10, COLUMN_ALBUM_X - COLUMN_ARTIST_X - COLUMN_GAP,
+                    m->artist, COLOR_COLUMN);
+    // No album tag: the folder is the best guess.
+    fontDrawClipped(FONT_REGULAR, TEXT_COLUMN, COLUMN_ALBUM_X, y + 10, COLUMN_END - COLUMN_ALBUM_X,
+                    m->album[0] ? m->album : song->folder, m->album[0] ? COLOR_COLUMN : COLOR_DIM);
+}
+
+void uiDrawTrackRow(const TrackRow *row)
+{
+    static UiSong song;  // Big; the UI draws on one thread.
+    char digits[24];
+    uiLoadSong(row->path, &song);
+    int y = row->y;
+    if (row->selected)
         uiDrawSelection(y, COLOR_ACCENT);
 
-    snprintf(digits, sizeof(digits), "%zu", number);
-    int number_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, digits);
-    if (current)
-        gfxFillTriangleRight(MARGIN + 34, y + 14, 12, 16, COLOR_ACCENT);
-    else
+    if (row->current) {
+        uiDrawPlayingBars(MARGIN + 26, y + 12, row->playing, row->now_ns);
+    } else {
+        snprintf(digits, sizeof(digits), "%zu", row->number);
+        int number_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, digits);
         fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN + 46 - number_w, y + 11, digits, COLOR_FAINT);
-
-    int folder_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, folder);
-    if (folder_w > TRACK_FOLDER_MAX_W)
-        folder_w = TRACK_FOLDER_MAX_W;
-    int folder_x = TRACK_RIGHT_EDGE - folder_w;
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, folder_x, y + 11, folder_w, folder, COLOR_DIM);
-    fontDrawClipped(current || selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
-                    folder_x - (MARGIN + 66) - 24, title, current ? COLOR_ACCENT : COLOR_TEXT);
-    uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, index, add_focused);
+    }
+    fontDrawClipped(row->current || row->selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 66, y + 8,
+                    COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), song.title, row->current ? COLOR_ACCENT : COLOR_TEXT);
+    uiDrawSongColumns(&song, y);
+    uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, row->index, row->add_focused);
 }
 
 void uiHitListArea(void)

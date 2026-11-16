@@ -1,6 +1,7 @@
 #include "player.h"
 
 #include <malloc.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -8,6 +9,7 @@
 
 #include "decoder.h"
 #include "resampler.h"
+#include "tags.h"
 #include "util.h"
 
 #define BUFFER_COUNT 3
@@ -35,6 +37,14 @@ static double g_duration;
 static char g_error[160];
 static unsigned g_generation;
 static double g_seeking_to = -1.0;  // A seek the audio thread is running.
+static bool g_eq_enabled;
+static int g_eq_gains[EQ_BANDS];
+static bool g_eq_changed = true;
+static ReplayGainMode g_replaygain;
+
+// Owned by the audio thread: the equalizer and the current track's gain.
+static Eq g_eq;
+static float g_track_gain = 1.0f;
 static u64 g_fade_total;  // Frames of the running fade-out, 0 if none.
 static u64 g_fade_left;
 
@@ -61,6 +71,29 @@ static void installDecoder(Decoder *d)
         resamplerReset(&g_resampler, decoderSampleRate(d), g_out_rate);
 }
 
+// The ReplayGain of a file as a linear factor, for the chosen mode. Album
+// mode falls back to the track gain; files without tags play as they are.
+static float replayGainFor(const char *path)
+{
+    mutexLock(&g_lock);
+    ReplayGainMode mode = g_replaygain;
+    mutexUnlock(&g_lock);
+    if (mode == REPLAYGAIN_OFF)
+        return 1.0f;
+    TrackTags tags;
+    tagsInit(&tags);
+    tags.skip_picture = true;
+    tagsRead(path, &tags);
+    float db = 0.0f;
+    if (mode == REPLAYGAIN_ALBUM && tags.has_album_gain)
+        db = tags.album_gain_db;
+    else if (tags.has_track_gain)
+        db = tags.track_gain_db;
+    tagsFree(&tags);
+    // Without peak data a boost could clip: positive gains are not applied.
+    return db < 0.0f ? powf(10.0f, db / 20.0f) : 1.0f;
+}
+
 // Opens the queue's current track, skipping files that fail to open.
 // Returns true if the track that was current on entry is now loaded.
 static bool loadCurrent(void)
@@ -77,6 +110,8 @@ static bool loadCurrent(void)
         mutexUnlock(&g_lock);
 
         Decoder *d = decoderOpen(path);
+        if (d)
+            g_track_gain = replayGainFor(path);
 
         mutexLock(&g_lock);
         if (d) {
@@ -155,11 +190,26 @@ static void writeSamples(s16 *dst, const float *src, u64 frames, float gain_star
     }
 }
 
+// Takes new equalizer settings from the UI thread.
+static void updateEqualizer(void)
+{
+    int gains[EQ_BANDS];
+    mutexLock(&g_lock);
+    bool changed = g_eq_changed;
+    for (int b = 0; b < EQ_BANDS; b++)
+        gains[b] = g_eq_enabled ? g_eq_gains[b] : 0;
+    g_eq_changed = false;
+    mutexUnlock(&g_lock);
+    if (changed)
+        eqConfigure(&g_eq, gains, g_out_rate);
+}
+
 // Decodes the next block into a buffer. False if there is nothing to play.
 static bool fillBuffer(AudioOutBuffer *buffer, float gain_start, float gain_end)
 {
     u64 done = 0;
     int empty_tracks = 0;
+    float track_gain = g_track_gain;  // The gain of the song this buffer starts in.
     while (done < BUFFER_FRAMES && g_decoder && g_running) {
         u64 n = resamplerRun(&g_resampler, readDecoder, g_decoder,
                              g_mix + done * 2, BUFFER_FRAMES - done);
@@ -182,7 +232,9 @@ static bool fillBuffer(AudioOutBuffer *buffer, float gain_start, float gain_end)
         return false;
 
     memset(g_mix + done * 2, 0, (BUFFER_FRAMES - done) * 2 * sizeof(float));
-    writeSamples(buffer->buffer, g_mix, BUFFER_FRAMES, gain_start, gain_end);
+    updateEqualizer();
+    eqProcess(&g_eq, g_mix, BUFFER_FRAMES);
+    writeSamples(buffer->buffer, g_mix, BUFFER_FRAMES, gain_start * track_gain, gain_end * track_gain);
     buffer->data_size = BUFFER_BYTES;
     buffer->data_offset = 0;
     return true;
@@ -485,6 +537,22 @@ void playerSeek(double delta_seconds)
             target = g_duration - 1.0;
         g_seek_target = target < 0.0 ? 0.0 : target;
     }
+    mutexUnlock(&g_lock);
+}
+
+void playerSetEqualizer(bool enabled, const int gains[EQ_BANDS])
+{
+    mutexLock(&g_lock);
+    g_eq_enabled = enabled;
+    memcpy(g_eq_gains, gains, sizeof(g_eq_gains));
+    g_eq_changed = true;
+    mutexUnlock(&g_lock);
+}
+
+void playerSetReplayGain(ReplayGainMode mode)
+{
+    mutexLock(&g_lock);
+    g_replaygain = mode;
     mutexUnlock(&g_lock);
 }
 

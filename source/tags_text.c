@@ -114,7 +114,7 @@ void textSetField(char *field, const char *value)
 
 void textOfferPicture(TrackTags *t, const uint8_t *data, size_t size, int type)
 {
-    if (size == 0 || size > TAGS_PICTURE_MAX)
+    if (t->skip_picture || size == 0 || size > TAGS_PICTURE_MAX)
         return;
     bool better = !t->picture || (type == FRONT_COVER && t->picture_type != FRONT_COVER);
     if (!better)

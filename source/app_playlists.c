@@ -131,7 +131,7 @@ static void handleSongs(App *app, uint64_t pressed)
         handleMoving(app, pressed);
         return;
     }
-    pressed = appFocusFilter(app, pressed, t->track_cursor, true, t->tracks.count > 0);
+    pressed = appFocusFilter(app, pressed, t->track_cursor, t->tracks.count, true, t->tracks.count > 0);
     if (pressed & BUTTONS_UP) moveCursor(&t->track_cursor, -1, t->tracks.count);
     if (pressed & BUTTONS_DOWN) moveCursor(&t->track_cursor, 1, t->tracks.count);
     if (pressed & BUTTONS_PAGE_UP) moveCursor(&t->track_cursor, -PAGE_ROWS, t->tracks.count);
@@ -157,7 +157,7 @@ void appHandlePlaylists(App *app, uint64_t pressed)
         handleSongs(app, pressed);
         return;
     }
-    pressed = appFocusFilter(app, pressed, t->cursor, false, false);
+    pressed = appFocusFilter(app, pressed, t->cursor, t->index.count, false, false);
     if (pressed & BUTTONS_UP) moveCursor(&t->cursor, -1, t->index.count);
     if (pressed & BUTTONS_DOWN) moveCursor(&t->cursor, 1, t->index.count);
     if (pressed & BUTTONS_PAGE_UP) moveCursor(&t->cursor, -PAGE_ROWS, t->index.count);

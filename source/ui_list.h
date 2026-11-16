@@ -3,8 +3,10 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "gfx.h"
+#include "metacache.h"
 
 #define SUBTITLE_Y 76
 #define LIST_Y 108
@@ -18,10 +20,41 @@ size_t uiFirstVisible(size_t cursor, size_t count);
 void uiDrawSelection(int y, Color bar);
 void uiDrawScrollbar(size_t first, size_t count);
 void uiDrawFolderIcon(int x, int y, Color color);
-// A song row: number (or a play mark when current), title, folder and a
-// "+" button that adds the song at row index to a playlist.
-void uiDrawTrackRow(size_t number, const char *path, int y, bool selected, bool current, size_t index,
-                    bool add_focused);
+// Song rows have Artist and Album columns, read from the tags.
+#define COLUMN_ARTIST_X 610
+#define COLUMN_ALBUM_X 880
+
+typedef struct {
+    size_t number;     // Shown on the left (unless current).
+    const char *path;
+    int y;
+    size_t index;      // Row index, for the "+" touch target.
+    bool selected;
+    bool current;      // The song that is playing (or paused).
+    bool playing;      // Animate the bars (false while paused).
+    bool add_focused;
+    uint64_t now_ns;
+} TrackRow;
+
+// A song row: number (or moving bars when current), title, artist, album
+// and a "+" button that adds the song to a playlist.
+void uiDrawTrackRow(const TrackRow *row);
+// What a song row shows: the title from the tags (the file name until they
+// are read, or if there is none), artist and album.
+typedef struct {
+    char title[UTIL_PATH_MAX];
+    char folder[UTIL_PATH_MAX];
+    SongMeta meta;
+    bool loaded;
+} UiSong;
+
+void uiLoadSong(const char *path, UiSong *song);
+// The artist and album in their columns (empty until loaded).
+void uiDrawSongColumns(const UiSong *song, int y);
+// "Artist" and "Album" above the columns, on the subtitle line.
+void uiDrawColumnHeaders(void);
+// Three bars moving with the music (still when paused), 20x20 at x, y.
+void uiDrawPlayingBars(int x, int y, bool playing, uint64_t now_ns);
 
 // "+" at the end of a row, for adding it to a playlist.
 #define ADD_BUTTON_W 44

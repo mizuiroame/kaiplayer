@@ -12,7 +12,9 @@
 #include "font.h"
 #include "gfx.h"
 #include "input.h"
+#include "meta.h"
 #include "player.h"
+#include "screen.h"
 #include "sysinfo.h"
 #include "ui.h"
 
@@ -45,7 +47,7 @@ static void handleQueue(App *app, uint64_t pressed)
 {
     PlayerStatus status;
     playerGetStatus(&status);
-    pressed = appFocusFilter(app, pressed, app->queue_cursor, false, status.track_count > 0);
+    pressed = appFocusFilter(app, pressed, app->queue_cursor, status.track_count, false, status.track_count > 0);
     if (pressed & BUTTONS_UP) moveQueueCursor(app, -1, status.track_count);
     if (pressed & BUTTONS_DOWN) moveQueueCursor(app, 1, status.track_count);
     if (pressed & BUTTONS_PAGE_UP) moveQueueCursor(app, -PAGE_ROWS, status.track_count);
@@ -200,6 +202,40 @@ static void saveSettings(App *app)
     configSave(&app->config);
 }
 
+#define NS_PER_MINUTE 60000000000ull
+
+static bool overlayOpen(const App *app)
+{
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open;
+}
+
+// Screen off: any button or touch brings it back, and that input does
+// nothing else. While music plays and nothing is touched, it turns off after
+// the minutes chosen in Settings. Returns true while the screen is off.
+static bool manageScreen(App *app, uint64_t pressed, uint64_t now)
+{
+    bool input = pressed != 0 || appTouchDown();
+    if (app->screen_off) {
+        if (input) {
+            screenSetOn(true);
+            app->screen_off = false;
+            app->touch_wakes = appTouchDown();
+            app->last_input_ns = now;
+        }
+        return true;
+    }
+    if (input || !app->last_input_ns || overlayOpen(app))
+        app->last_input_ns = now;
+    PlayerStatus status;
+    playerGetStatus(&status);
+    uint64_t idle_limit = (uint64_t)app->config.screen_off_minutes * NS_PER_MINUTE;
+    if (idle_limit && status.state == PLAYER_PLAYING && !overlayOpen(app) && now - app->last_input_ns >= idle_limit) {
+        appScreenOff(app);
+        return true;
+    }
+    return false;
+}
+
 static void runLoop(App *app)
 {
     PadState pad;
@@ -213,7 +249,16 @@ static void runLoop(App *app)
         padUpdate(&pad);
         uint64_t now = nowNs();
         uint64_t pressed = inputRepeatUpdate(&repeat, padGetButtonsDown(&pad), padGetButtons(&pad), now);
-        if (app->audio_ok) {
+        bool was_off = app->screen_off;
+        bool screen_off = app->audio_ok && manageScreen(app, pressed, now);
+        if (was_off && !app->screen_off)
+            inputRepeatInit(&repeat, BUTTONS_REPEATING);  // The waking press doesn't repeat.
+        if (screen_off) {
+            appTickSleepTimer(app, now);
+            syncWithPlayer(app, &last_state, last_error, sizeof(last_error));
+            if (app->config.resume != RESUME_OFF)
+                appSaveSession(app, now, false);
+        } else if (app->audio_ok) {
             appDispatchButtons(app, pressed);
             appHandleTouch(app, now);
             appTickSleepTimer(app, now);
@@ -229,7 +274,10 @@ static void runLoop(App *app)
         requestArtwork(&status);
         sysinfoGet(&app->sys, now);
         gfxBegin();
-        uiDraw(app, &status, now);
+        if (app->screen_off)
+            uiDrawScreenOff();
+        else
+            uiDraw(app, &status, now);
         gfxEnd();
     }
 }
@@ -250,8 +298,12 @@ int main(int argc, char **argv)
         return 1;
     }
     artworkInit();
+    metaInit();
     sysinfoInit();
+    screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
+    if (app.audio_ok)
+        appApplyAudioSettings(&app);
     openStartFolder(&app);
     if (app.audio_ok && app.config.resume != RESUME_OFF)
         appRestoreSession(&app, app.config.resume == RESUME_PLAYING);
@@ -265,8 +317,10 @@ int main(int argc, char **argv)
         appletSetMediaPlaybackState(false);
         playerExit();
     }
+    metaExit();
     artworkExit();
     sysinfoExit();
+    screenExit();
     appPlaylistsClose(&app);
     playlistIndexFree(&app.playlists.index);
     trackListFree(&app.pending);

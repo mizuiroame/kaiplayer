@@ -6,6 +6,8 @@
 #include "ui_common.h"
 #include "ui_hit.h"
 #include "ui_list.h"
+#include "screen.h"
+#include "theme.h"
 
 #define MINI_Y 572
 #define MINI_H 92
@@ -17,7 +19,7 @@
 
 static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue", "Now Playing"};
 
-static void drawBrowser(const App *app)
+static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     const Browser *b = &app->browser;
     int path_x = MARGIN, path_w = GFX_WIDTH - 2 * MARGIN;
@@ -35,11 +37,21 @@ static void drawBrowser(const App *app)
         fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
         path_w -= warning_w + 24;
     }
+    bool has_songs = false;
+    for (size_t i = 0; i < b->count && !has_songs; i++)
+        has_songs = !b->entries[i].is_dir;
+    if (has_songs && !b->incomplete) {
+        uiDrawColumnHeaders();
+        path_w = COLUMN_ARTIST_X - 24 - path_x;
+    }
     fontDrawClipped(FONT_REGULAR, TEXT_SMALL, path_x, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
     if (b->count == 0) {
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, "This folder has no subfolders or music.", COLOR_DIM);
         return;
     }
+    char playing[UTIL_PATH_MAX] = "", path[UTIL_PATH_MAX];
+    if (status->state != PLAYER_STOPPED)
+        playerTrackPath(status->track, playing, sizeof(playing));
     size_t first = uiFirstVisible(b->cursor, b->count);
     uiHitListArea();
     for (size_t i = first; i < b->count && i < first + UI_LIST_ROWS; i++) {
@@ -48,27 +60,39 @@ static void drawBrowser(const App *app)
         uiHitRow(y, i);
         if (i == b->cursor)
             uiDrawSelection(y, COLOR_ACCENT);
+        bool is_song = !e->is_dir && utilJoinPath(path, sizeof(path), b->path, e->name);
+        bool current = is_song && playing[0] && strcmp(path, playing) == 0;
         if (e->is_dir)
             uiDrawFolderIcon(MARGIN + 4, y + 13, COLOR_FOLDER);
+        else if (current)
+            uiDrawPlayingBars(MARGIN + 6, y + 12, status->state == PLAYER_PLAYING, now_ns);
         else
             uiDrawNoteIcon(MARGIN + 4, y + 10, 24, COLOR_ACCENT);
-        fontDrawClipped(i == b->cursor ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
-                        GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W, e->name, e->is_dir ? COLOR_FOLDER : COLOR_TEXT);
+        static UiSong song;  // Big; the UI draws on one thread.
+        if (is_song)
+            uiLoadSong(path, &song);
+        int name_w = is_song ? COLUMN_ARTIST_X - 24 - (MARGIN + 44) : GFX_WIDTH - 2 * MARGIN - 60 - ADD_BUTTON_W;
+        fontDrawClipped(i == b->cursor || current ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8, name_w,
+                        is_song ? song.title : e->name, e->is_dir ? COLOR_FOLDER : current ? COLOR_ACCENT : COLOR_TEXT);
+        if (is_song)
+            uiDrawSongColumns(&song, y);
         uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
     }
     uiDrawScrollbar(first, b->count);
 }
 
-// One row of the queue: pos is a position in the play order.
-static void drawQueueRow(size_t pos, int y, bool selected, bool current, bool add_focused)
+// One row of the queue: row.index is a position in the play order.
+static void drawQueueRow(TrackRow *row)
 {
     char path[UTIL_PATH_MAX];
     size_t track;
-    if (playerQueueTrack(pos, &track) && playerTrackPath(track, path, sizeof(path)))
-        uiDrawTrackRow(pos + 1, path, y, selected, current, pos, add_focused);
+    if (playerQueueTrack(row->index, &track) && playerTrackPath(track, path, sizeof(path))) {
+        row->path = path;
+        uiDrawTrackRow(row);
+    }
 }
 
-static void drawQueue(const App *app, const PlayerStatus *status)
+static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     if (status->track_count == 0) {
         uiDrawEmptyList("Queue is empty", "Pick a folder in Browse or a playlist, and press X to play it.");
@@ -79,6 +103,7 @@ static void drawQueue(const App *app, const PlayerStatus *status)
     snprintf(line, sizeof(line), "%zu tracks  ·  %s", status->track_count,
              status->shuffle ? "shuffled play order" : "in folder order");
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
+    uiDrawColumnHeaders();
 
     size_t cursor = app->queue_cursor < status->track_count ? app->queue_cursor : 0;
     size_t first = uiFirstVisible(cursor, status->track_count);
@@ -86,8 +111,12 @@ static void drawQueue(const App *app, const PlayerStatus *status)
     for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
         bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
         uiHitRow(LIST_Y + (int)(i - first) * ROW_H, i);
-        drawQueueRow(i, LIST_Y + (int)(i - first) * ROW_H, i == cursor, current,
-                     i == cursor && app->focus == FOCUS_ADD);
+        TrackRow row = {
+            .number = i + 1, .y = LIST_Y + (int)(i - first) * ROW_H, .index = i,
+            .selected = i == cursor, .current = current, .playing = status->state == PLAYER_PLAYING,
+            .add_focused = i == cursor && app->focus == FOCUS_ADD, .now_ns = now_ns,
+        };
+        drawQueueRow(&row);
     }
     uiDrawScrollbar(first, status->track_count);
 }
@@ -178,8 +207,54 @@ static void drawHeader(const App *app, uint64_t now_ns)
     drawStatus(app, now_ns);
 }
 
+#define BAR_PREV_X 640
+#define BAR_CONTROL_GAP 76
+#define BAR_CY (MINI_Y + 46)
+#define FOCUS_RING 3
+
+static void drawBarSkip(int cx, int cy, bool next, Color color)
+{
+    if (next) {
+        gfxFillTriangleRight(cx - 10, cy - 10, 16, 20, color);
+        gfxFillRect(cx + 6, cy - 10, 4, 20, color);
+    } else {
+        gfxFillTriangleLeft(cx - 6, cy - 10, 16, 20, color);
+        gfxFillRect(cx - 10, cy - 10, 4, 20, color);
+    }
+}
+
+// A ring around the control that has the button focus.
+static void drawFocusRing(int x, int y, int w, int h, int radius)
+{
+    gfxFillRoundRect(x - FOCUS_RING, y - FOCUS_RING, w + 2 * FOCUS_RING, h + 2 * FOCUS_RING, radius + FOCUS_RING,
+                     COLOR_TEXT);
+    gfxFillRoundRect(x, y, w, h, radius, COLOR_SURFACE);
+}
+
+static void drawBarTransport(const PlayerStatus *status, int focused)
+{
+    int prev_x = BAR_PREV_X, play_x = prev_x + BAR_CONTROL_GAP, next_x = play_x + BAR_CONTROL_GAP;
+    if (focused == BAR_PREV || focused == BAR_NEXT)
+        drawFocusRing((focused == BAR_PREV ? prev_x : next_x) - 26, BAR_CY - 26, 52, 52, 26);
+    if (focused == BAR_PLAY)
+        drawFocusRing(play_x - 30, BAR_CY - 30, 60, 60, 30);
+    drawBarSkip(prev_x, BAR_CY, false, COLOR_TEXT);
+    drawBarSkip(next_x, BAR_CY, true, COLOR_TEXT);
+    gfxFillCircle(play_x, BAR_CY, 26, COLOR_ACCENT);
+    if (status->state == PLAYER_PLAYING) {
+        gfxFillRoundRect(play_x - 9, BAR_CY - 11, 6, 22, 2, COLOR_BG);
+        gfxFillRoundRect(play_x + 3, BAR_CY - 11, 6, 22, 2, COLOR_BG);
+    } else {
+        gfxFillTriangleRight(play_x - 7, BAR_CY - 12, 20, 24, COLOR_BG);
+    }
+    uiHitAdd(prev_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_PREV, 0);
+    uiHitAdd(play_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_PLAY, 0);
+    uiHitAdd(next_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_NEXT, 0);
+}
+
 static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
+    int focused = app->focus == FOCUS_PLAYER ? (int)app->bar_control : -1;
     gfxFillRect(0, MINI_Y, GFX_WIDTH, MINI_H, COLOR_SURFACE);
     gfxFillRect(0, MINI_Y, GFX_WIDTH, 3, COLOR_FAINT);
     uiHitAdd(0, MINI_Y, GFX_WIDTH, MINI_H, HIT_MINI_PLAYER, 0);
@@ -190,13 +265,14 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 
     uiDrawCover(MARGIN - 8, MINI_Y + 10, THUMB_SIZE, track->thumb);
     int text_x = MARGIN + THUMB_SIZE + 12;
-    int text_w = GFX_WIDTH - text_x - 380;
+    int text_w = BAR_PREV_X - 48 - text_x;
     fontDrawClipped(FONT_BOLD, 24, text_x, MINI_Y + 14, text_w, track->title,
                     track->has_track ? COLOR_TEXT : COLOR_DIM);
 
     bool toast = app->toast[0] && now_ns < app->toast_until_ns;
     const char *second = toast ? app->toast : track->artist[0] ? track->artist : track->folder;
     fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, second, toast ? COLOR_ERROR : COLOR_DIM);
+    drawBarTransport(status, focused);
 
     char elapsed[16], total[16], line[96];
     utilFormatTime(elapsed, sizeof(elapsed), status->position);
@@ -210,9 +286,13 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
     const char *repeat = uiRepeatLabel(status->repeat);
     int x = GFX_WIDTH - MARGIN - uiPillWidth(repeat);
+    if (focused == BAR_REPEAT)
+        drawFocusRing(x, MINI_Y + 48, uiPillWidth(repeat), 30, 15);
     uiDrawPill(x, MINI_Y + 48, repeat, status->repeat != REPEAT_OFF);
     uiHitAdd(x, MINI_Y + 40, uiPillWidth(repeat), 46, HIT_REPEAT, 0);
     x -= uiPillWidth(shuffle) + 10;
+    if (focused == BAR_SHUFFLE)
+        drawFocusRing(x, MINI_Y + 48, uiPillWidth(shuffle), 30, 15);
     uiDrawPill(x, MINI_Y + 48, shuffle, status->shuffle);
     uiHitAdd(x, MINI_Y + 40, uiPillWidth(shuffle), 46, HIT_SHUFFLE, 0);
 }
@@ -220,13 +300,15 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "A open    B back    Right: add to playlist    X play folder    Y shuffle    − pause    + menu",
+        "A open    B back    Right: add to playlist    X play folder    Y shuffle    Down at the end: player    + menu",
         "A open    X play    Y shuffle    RS up/down: page    − pause    L/R track    + menu",
-        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    − pause    + menu",
+        "A play    B browse    Right: add to playlist    X shuffle    Y repeat    Down at the end: player    + menu",
         "A pause    Left/Right seek    Down: add to playlist    X shuffle    Y repeat    + menu",
     };
     if (app->keyboard_open)
         return "A type    B delete    X shift    Y space    + done    − cancel";
+    if (app->eq_open)
+        return "Left/Right band    Up/Down gain    X preset    Y on/off    B back";
     if (app->settings_open)
         return "Up/Down choose    Left/Right or A change    B close";
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
@@ -235,6 +317,8 @@ static const char *footerHelp(const App *app)
         return app->menu.kind == MENU_KIND_MAIN ? "A choose    B close    + exit..." : "A choose    B close";
     if (app->playlists.moving)
         return "Up/Down move the song    A or B done";
+    if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
+        return "Left/Right choose    A press    Up or B back to the list    − pause    L/R track";
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
         return "A play from song    B back    Right: add to playlist    X play    Y shuffle    + menu";
     return HELP[app->view];
@@ -245,12 +329,22 @@ static void drawFooter(const App *app)
     fontDrawClipped(FONT_REGULAR, 18, MARGIN, FOOTER_Y + 16, GFX_WIDTH - 2 * MARGIN, footerHelp(app), COLOR_DIM);
 }
 
+void uiDrawScreenOff(void)
+{
+    gfxClear(GFX_RGB(0, 0, 0));
+    // Only seen when the backlight can't be turned off: keep it very dim.
+    if (!screenHasBacklightControl())
+        fontDraw(FONT_REGULAR, 16, MARGIN, GFX_HEIGHT - 40, "Screen off  ·  press any button or touch to wake",
+                 GFX_RGB(0x30, 0x30, 0x36));
+}
+
 void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     UiTrack track;
     uiHitReset();
     const Artwork *art = artworkLock();
     uiResolveTrack(status, art, &track);
+    g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->average : 0, track.cover != NULL);
 
     gfxClear(COLOR_BG);
     if (app->view == VIEW_NOW_PLAYING) {
@@ -260,11 +354,11 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
             fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y,
                      "Audio unavailable: audout could not start.", COLOR_ERROR);
         else if (app->view == VIEW_BROWSER)
-            drawBrowser(app);
+            drawBrowser(app, status, now_ns);
         else if (app->view == VIEW_PLAYLISTS)
-            uiDrawPlaylists(app, status);
+            uiDrawPlaylists(app, status, now_ns);
         else
-            drawQueue(app, status);
+            drawQueue(app, status, now_ns);
         drawMiniPlayer(app, status, &track, now_ns);
     }
     drawHeader(app, now_ns);

@@ -18,12 +18,22 @@ static bool g_full_hd;  // Seen coordinates beyond 1280x720: scale them down.
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open;
 }
 
 static bool isOverlayTarget(HitKind kind)
 {
-    return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING;
+    return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING ||
+           kind == HIT_EQ_BAND || kind == HIT_EQ_PRESET || kind == HIT_EQ_TOGGLE;
+}
+
+// The gain at height y on a slider: the top is +12 dB, the bottom -12 dB.
+static int sliderGain(const HitRegion *r, int y)
+{
+    double t = (double)(y - r->y) / (double)(r->h > 1 ? r->h - 1 : 1);
+    t = t < 0.0 ? 0.0 : t > 1.0 ? 1.0 : t;
+    double gain = EQ_GAIN_MAX - t * (EQ_GAIN_MAX - EQ_GAIN_MIN);
+    return (int)(gain < 0 ? gain - 0.5 : gain + 0.5);
 }
 
 // "+" on a row (or, with index -1, in Now Playing) adds that song or folder.
@@ -52,7 +62,7 @@ static double seekFraction(const HitRegion *r, int x)
     return fraction < 0.0 ? 0.0 : fraction > 1.0 ? 1.0 : fraction;
 }
 
-static void tapRegion(App *app, const HitRegion *r, int x)
+static void tapRegion(App *app, const HitRegion *r, int x, int y)
 {
     // Targets are from the last frame. If an overlay opened or closed since,
     // they belong to the other layer: ignore the tap.
@@ -99,6 +109,9 @@ static void tapRegion(App *app, const HitRegion *r, int x)
         appActivateSetting(app, (SettingRow)r->arg);
         break;
     case HIT_BACK: appDispatchButtons(app, HidNpadButton_B); break;
+    case HIT_EQ_BAND: appEqualizerSetGain(app, r->arg, sliderGain(r, y)); break;
+    case HIT_EQ_PRESET: appEqualizerNextPreset(app); break;
+    case HIT_EQ_TOGGLE: appEqualizerToggle(app); break;
     case HIT_ADD: addFromRow(app, r->arg); break;
     case HIT_LIST: break;
     }
@@ -127,6 +140,10 @@ static void dragList(App *app, const TouchEvent *e)
 static void dragSeekOrList(App *app, const TouchEvent *e)
 {
     const HitRegion *start = uiHitFind(e->start_x, e->start_y);
+    if (start && start->kind == HIT_EQ_BAND && app->eq_open) {  // Drag a slider.
+        appEqualizerSetGain(app, start->arg, sliderGain(start, e->y));
+        return;
+    }
     bool on_bar = start && start->kind == HIT_SEEK && !overlayOpen(app);
     if (!on_bar) {
         app->scrubbing = false;
@@ -144,14 +161,33 @@ static void dragSeekOrList(App *app, const TouchEvent *e)
     }
 }
 
-void appHandleTouch(App *app, uint64_t now_ns)
+static void initTouch(void)
 {
     if (!g_touch_ready) {
         hidInitializeTouchScreen();
         g_touch_ready = true;
     }
+}
+
+bool appTouchDown(void)
+{
+    initTouch();
+    HidTouchScreenState state = {0};
+    return hidGetTouchScreenStates(&state, 1) > 0 && state.count > 0;
+}
+
+void appHandleTouch(App *app, uint64_t now_ns)
+{
+    initTouch();
     HidTouchScreenState state = {0};
     bool touching = hidGetTouchScreenStates(&state, 1) > 0 && state.count > 0;
+    if (app->touch_wakes) {
+        // The touch that turned the screen on does nothing else.
+        if (!touching)
+            app->touch_wakes = false;
+        touchReset(&app->touch);
+        return;
+    }
     int x = 0, y = 0;
     if (touching) {
         x = (int)state.touches[0].x;
@@ -168,7 +204,7 @@ void appHandleTouch(App *app, uint64_t now_ns)
         app->drag_rows = 0;
         const HitRegion *r = uiHitFind(e.x, e.y);
         if (r)
-            tapRegion(app, r, e.x);
+            tapRegion(app, r, e.x, e.y);
     } else if (e.type == TOUCH_DRAG || e.type == TOUCH_DRAG_END) {
         dragSeekOrList(app, &e);
     } else if (!touching) {

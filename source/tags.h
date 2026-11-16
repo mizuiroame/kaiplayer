@@ -20,6 +20,10 @@ typedef struct {
     uint8_t *picture;  // JPEG or PNG bytes, or NULL.
     size_t picture_size;
     int picture_type;  // ID3/FLAC picture type; 3 is the front cover.
+    bool skip_picture; // Set before reading to leave pictures out.
+    bool has_track_gain, has_album_gain;
+    float track_gain_db;  // ReplayGain, from REPLAYGAIN_TRACK_GAIN.
+    float album_gain_db;  // ReplayGain, from REPLAYGAIN_ALBUM_GAIN.
 } TrackTags;
 
 void tagsInit(TrackTags *t);
@@ -35,6 +39,10 @@ void tagsParseId3v2(const uint8_t *data, size_t size, TrackTags *t);
 void tagsParseId3v1(const uint8_t *data, size_t size, TrackTags *t);
 // The body of a FLAC VORBIS_COMMENT block (vendor, then the comments).
 void tagsParseVorbisComments(const uint8_t *data, size_t size, TrackTags *t);
+// A ReplayGain field ("REPLAYGAIN_TRACK_GAIN" or "..._ALBUM_GAIN", any case)
+// with its value ("-6.54 dB"). Other names are ignored.
+void tagsApplyReplayGain(const char *name, const char *value, TrackTags *t);
+
 // One "KEY=value" comment, as Ogg Vorbis and FLAC store them.
 void tagsApplyComment(const char *comment, size_t length, TrackTags *t);
 // The body of a FLAC PICTURE block (also used inside Ogg comments).

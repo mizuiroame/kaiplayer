@@ -31,6 +31,8 @@ void tagsFree(TrackTags *t)
 }
 
 // Reads size bytes into a new buffer. NULL on a short read.
+#define ID3_TEXT_ONLY_MAX (256 * 1024)
+
 static uint8_t *readBlock(FILE *f, size_t size)
 {
     uint8_t *buf = malloc(size ? size : 1);
@@ -53,12 +55,15 @@ static void readId3v2(FILE *f, TrackTags *t)
     }
     size_t body = readSyncsafe32(header + 6);
     size_t total = ID3_HEADER_SIZE + body;
+    // Without the picture, the start of the tag is enough (the parser
+    // stops at the end of what it is given).
+    size_t wanted = t->skip_picture && body > ID3_TEXT_ONLY_MAX ? ID3_TEXT_ONLY_MAX : body;
     if (total <= TAGS_ID3_MAX) {
-        uint8_t *tag = malloc(total);
+        uint8_t *tag = malloc(ID3_HEADER_SIZE + wanted);
         if (tag) {
             memcpy(tag, header, ID3_HEADER_SIZE);
-            if (fread(tag + ID3_HEADER_SIZE, 1, body, f) == body)
-                tagsParseId3v2(tag, total, t);
+            if (fread(tag + ID3_HEADER_SIZE, 1, wanted, f) == wanted)
+                tagsParseId3v2(tag, ID3_HEADER_SIZE + wanted, t);
             free(tag);
         }
     }
@@ -76,7 +81,7 @@ static void readMp3(FILE *f, TrackTags *t)
 static void readFlacBlock(FILE *f, int type, size_t len, TrackTags *t)
 {
     bool wanted = (type == FLAC_BLOCK_COMMENT && len <= TAGS_COMMENT_BLOCK_MAX) ||
-                  (type == FLAC_BLOCK_PICTURE && len <= FLAC_PICTURE_BLOCK_MAX);
+                  (type == FLAC_BLOCK_PICTURE && len <= FLAC_PICTURE_BLOCK_MAX && !t->skip_picture);
     if (!wanted) {
         fseek(f, (long)len, SEEK_CUR);
         return;

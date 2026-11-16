@@ -15,7 +15,7 @@ static void drawPlaylistIcon(int x, int y, Color color)
     gfxFillRect(x + 22, y + 1, 2, 15, color);
 }
 
-static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus focus)
+static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus focus, uint64_t now_ns)
 {
     char line[160];
     if (t->tracks.count == 0) {
@@ -29,8 +29,9 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus f
     snprintf(line, sizeof(line), "%s  ·  %zu song%s%s", t->name, t->tracks.count,
              t->tracks.count == 1 ? "" : "s", t->moving ? "  ·  moving a song" : "");
     int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, focus == FOCUS_BACK) + 12;
-    fontDrawClipped(FONT_BOLD, TEXT_SMALL, MARGIN + back_w, SUBTITLE_Y, GFX_WIDTH - 2 * MARGIN - back_w, line,
+    fontDrawClipped(FONT_BOLD, TEXT_SMALL, MARGIN + back_w, SUBTITLE_Y, COLUMN_ARTIST_X - 24 - MARGIN - back_w, line,
                     t->moving ? COLOR_FOLDER : COLOR_DIM);
+    uiDrawColumnHeaders();
 
     char playing[UTIL_PATH_MAX] = "";
     if (status->state != PLAYER_STOPPED)
@@ -44,8 +45,13 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus f
         bool current = playing[0] && strcmp(playing, t->tracks.paths[i]) == 0;
         if (selected && t->moving)
             uiDrawSelection(y, COLOR_FOLDER);  // A different bar while moving.
-        uiDrawTrackRow(i + 1, t->tracks.paths[i], y, selected && !t->moving, current, i,
-                       selected && focus == FOCUS_ADD);
+        TrackRow row = {
+            .number = i + 1, .path = t->tracks.paths[i], .y = y, .index = i,
+            .selected = selected && !t->moving, .current = current,
+            .playing = status->state == PLAYER_PLAYING, .add_focused = selected && focus == FOCUS_ADD,
+            .now_ns = now_ns,
+        };
+        uiDrawTrackRow(&row);
     }
     uiDrawScrollbar(first, t->tracks.count);
 }
@@ -76,10 +82,10 @@ static void drawList(const PlaylistsTab *t)
     uiDrawScrollbar(first, t->index.count);
 }
 
-void uiDrawPlaylists(const App *app, const PlayerStatus *status)
+void uiDrawPlaylists(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     if (app->playlists.open)
-        drawSongs(&app->playlists, status, app->focus);
+        drawSongs(&app->playlists, status, app->focus, now_ns);
     else
         drawList(&app->playlists);
 }

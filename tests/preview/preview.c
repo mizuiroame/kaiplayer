@@ -8,8 +8,10 @@
 #include "app.h"
 #include "artwork.h"
 #include "font.h"
+#include "meta.h"
 #include "gfx.h"
 #include "player.h"
+#include "theme.h"
 #include "ui.h"
 
 static const char *const TRACKS[] = {
@@ -45,6 +47,26 @@ bool playerQueueTrack(size_t pos, size_t *track)
     if (pos >= TRACK_COUNT)
         return false;
     *track = ORDER[pos];
+    return true;
+}
+
+// Fake tags for the lists: songs in "Aurora Fields" have full tags (the
+// title drops the track number), the others an artist or nothing.
+bool metaLookup(const char *path, SongMeta *out)
+{
+    bool aurora = strstr(path, "Aurora") != NULL;
+    const char *name = strrchr(path, '/') ? strrchr(path, '/') + 1 : path;
+    const char *dash = strstr(name, " - ");
+    snprintf(out->title, sizeof(out->title), "%.*s", aurora && dash ? (int)strcspn(dash + 3, ".") : 0,
+             aurora && dash ? dash + 3 : "");
+    snprintf(out->artist, sizeof(out->artist), "%s",
+             aurora ? "Aurora Fields" : strstr(path, "Night") ? "The Night Drive Band" : "");
+    snprintf(out->album, sizeof(out->album), "%s", aurora ? "Paper Boats & Other Stories" : "");
+    return true;
+}
+
+bool screenHasBacklightControl(void)
+{
     return true;
 }
 
@@ -166,7 +188,19 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->settings_open = true;
     app->settings_cursor = SETTING_SLEEP;
     render(dir, "settings", app, status);
+    app->eq_open = true;
+    app->config.eq_on = true;
+    app->config.eq_preset = EQ_PRESET_ROCK;
+    app->eq_band = 5;
+    render(dir, "equalizer", app, status);
+    app->eq_open = false;
     app->settings_open = false;
+    app->config.accent = THEME_ACCENT_FROM_COVER;
+    app->view = VIEW_NOW_PLAYING;
+    g_has_art = true;
+    status->track = 2;  // The track with the sample cover.
+    render(dir, "accent_from_cover", app, status);
+    app->config.accent = 0;
 }
 
 int main(int argc, char **argv)
@@ -202,6 +236,10 @@ int main(int argc, char **argv)
     app.view = VIEW_QUEUE;
     app.queue_cursor = 3;
     render(argv[1], "queue", &app, &status);
+    app.focus = FOCUS_PLAYER;
+    app.bar_control = BAR_NEXT;
+    render(argv[1], "player_bar_focus", &app, &status);
+    app.focus = FOCUS_LIST;
     app.view = VIEW_NOW_PLAYING;
     render(argv[1], "now_playing", &app, &status);
 

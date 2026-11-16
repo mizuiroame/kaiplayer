@@ -1,5 +1,7 @@
 #include "ui_common.h"
 
+Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
+
 #include <stdio.h>
 #include <string.h>
 

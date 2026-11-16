@@ -7,7 +7,15 @@
 #include <stddef.h>
 
 #include "tracklist.h"
+#include "eq.h"
 #include "queue.h"
+
+typedef enum {
+    REPLAYGAIN_OFF,
+    REPLAYGAIN_TRACK,  // Each song at the same loudness.
+    REPLAYGAIN_ALBUM,  // Albums at the same loudness, keeping their own dynamics.
+    REPLAYGAIN_MODE_COUNT,
+} ReplayGainMode;
 
 typedef enum {
     PLAYER_STOPPED,
@@ -62,6 +70,11 @@ void playerGetStatus(PlayerStatus *out);
 // The track at a position of the play order (shuffled or not).
 // False if out of range.
 bool playerQueueTrack(size_t pos, size_t *track);
+
+// The equalizer: off, or on with these gains (dB per band).
+void playerSetEqualizer(bool enabled, const int gains[EQ_BANDS]);
+// ReplayGain: applies from the next track that opens.
+void playerSetReplayGain(ReplayGainMode mode);
 
 // Copies the full path of a track in the list. False if out of range.
 bool playerTrackPath(size_t track, char *out, size_t size);
