@@ -62,6 +62,8 @@ void appActivateSetting(App *app, SettingRow row)
         app->eq_open = true;  // The editor opens over Settings.
     } else if (row == SETTING_ABOUT) {
         app->about_open = true;
+    } else if (row == SETTING_LIBRARY) {
+        appOpenFolderPicker(app, false);
     } else {
         appChangeSetting(app, row, 1);
     }

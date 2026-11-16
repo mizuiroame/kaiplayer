@@ -25,6 +25,8 @@ bool utilJoinPath(char *out, size_t size, const char *dir, const char *name);
 // Removes the last component of a path ("sdmc:/a/b" -> "sdmc:/a").
 // Returns false if the path is already a root ("sdmc:/").
 bool utilParentPath(char *path);
+// True if path is folder itself or something inside it.
+bool utilPathWithin(const char *path, const char *folder);
 
 // Collapses "." and ".." components and repeated slashes, in place.
 // "sdmc:/a/./b/../c" -> "sdmc:/a/c". False if ".." goes above the root.

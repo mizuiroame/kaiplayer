@@ -8,6 +8,7 @@
 #include "ui_buttons.h"
 #include "ui_list.h"
 #include "screen.h"
+#include "covercache.h"
 #include "theme.h"
 
 #define MINI_Y 572
@@ -18,20 +19,19 @@
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 #define NS_PER_MINUTE 60000000000ull
 
-static const char *const VIEW_NAMES[VIEW_COUNT] = {"Browse", "Playlists", "Queue", "Now Playing"};
+static const char *const VIEW_NAMES[VIEW_COUNT] = {"Home", "Library", "Playlists", "Queue", "Now Playing"};
 
 static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     const Browser *b = &app->browser;
     int path_x = MARGIN, path_w = GFX_WIDTH - 2 * MARGIN;
-    char parent[UTIL_PATH_MAX];
-    snprintf(parent, sizeof(parent), "%s", b->path);
-    if (utilParentPath(parent)) {  // Not at the root: a touch way up.
+    {  // Back: up a folder, or to the Library at the music folder.
         int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, app->focus == FOCUS_BACK);
         path_x += back_w + 12;
         path_w -= back_w + 12;
     }
-    if (b->incomplete) {
+    bool warned = b->incomplete;
+    if (warned) {
         // The console returned an error while listing: some names may be missing.
         static const char WARNING[] = "Some items in this folder could not be read";
         int warning_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, WARNING);
@@ -41,7 +41,7 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
     bool has_songs = false;
     for (size_t i = 0; i < b->count && !has_songs; i++)
         has_songs = !b->entries[i].is_dir;
-    if (has_songs && !b->incomplete) {
+    if (has_songs && !warned) {
         uiDrawColumnHeaders();
         path_w = COLUMN_ARTIST_X - 24 - path_x;
     }
@@ -310,15 +310,19 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "[A] open  [B] back  [>] add to playlist  [X] play folder  [Y] shuffle  [v] player  [+] menu",
-        "[A] open  [X] play  [Y] shuffle  [RS] page  [-] pause  [L][R] track  [+] menu",
-        "[A] play  [B] browse  [>] add to playlist  [X] shuffle  [Y] repeat  [v] player  [+] menu",
-        "[A] pause  [<>] seek  [B] add to playlist  [X] shuffle  [Y] repeat  [+] menu",
+        "[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu",
+        "[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu",
+        "[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu",
+        "[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu",
+        "[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu",
     };
     if (app->keyboard_open)
         return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
     if (app->about_open)
         return "[A][B] back";
+    if (app->picker_open)
+        return app->picker_first_run ? "[A] open  [B] up  [X] use this folder"
+                                     : "[A] open  [B] up or close  [X] use this folder";
     if (app->eq_open)
         return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
     if (app->settings_open)
@@ -330,9 +334,20 @@ static const char *footerHelp(const App *app)
     if (app->playlists.moving)
         return "[^v] move the song  [A][B] done";
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
-        return "[<>] choose  [A] press  [^][B] back to the list  [-] pause  [L][R] track";
+        return "[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause";
+    if (app->view == VIEW_BROWSER) {
+        switch (appLibraryPage((App *)app)->level) {
+        case LIB_ROOT: return "[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu";
+        case LIB_ARTISTS:
+        case LIB_ALBUMS: return "[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
+        case LIB_ARTIST: return "[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track";
+        case LIB_ALBUM:
+        case LIB_SONGS: return "[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
+        default: break;
+        }
+    }
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "[A] play from song  [B] back  [>] remove from playlist  [X] play  [Y] shuffle  [+] menu";
+        return "[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
     return HELP[app->view];
 }
 
@@ -355,6 +370,8 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     UiTrack track;
     uiHitReset();
     const Artwork *art = artworkLock();
+    coverCacheLock();
+    g_ui_list_focused = app->focus != FOCUS_PLAYER;
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
@@ -365,8 +382,12 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
         if (!app->audio_ok)
             fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y,
                      "Audio unavailable: audout could not start.", COLOR_ERROR);
-        else if (app->view == VIEW_BROWSER)
+        else if (app->view == VIEW_HOME)
+            uiDrawHome(app, status, now_ns);
+        else if (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_FOLDERS)
             drawBrowser(app, status, now_ns);
+        else if (app->view == VIEW_BROWSER)
+            uiDrawLibrary(app, status, now_ns);
         else if (app->view == VIEW_PLAYLISTS)
             uiDrawPlaylists(app, status, now_ns);
         else
@@ -376,5 +397,6 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     drawHeader(app, now_ns);
     uiDrawOverlay(app, now_ns);
     drawFooter(app);  // Over the dimmed screen, so the overlay's help reads well.
+    coverCacheUnlock();
     artworkUnlock();
 }

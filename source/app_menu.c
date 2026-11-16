@@ -6,6 +6,7 @@
 #include "app.h"
 #include "app_buttons.h"
 #include "app_keyboard.h"
+#include "catalog_scan.h"
 #include "library.h"
 #include "meta.h"
 #include "player.h"
@@ -17,6 +18,7 @@ typedef enum {
     ACT_EXIT_CONFIRMED,
     ACT_SETTINGS,
     ACT_SCREEN_OFF,
+    ACT_RESCAN,
     ACT_PICK,           // arg: playlist index. Adds the pending songs.
     ACT_PICK_NEW,       // Names a new playlist for the pending songs.
     ACT_SAVE_QUEUE,
@@ -72,6 +74,8 @@ void appOpenMenu(App *app)
         addPlaylistItems(app);
     else if (app->view == VIEW_QUEUE && status.track_count > 0)
         menuAdd(&app->menu, "Save queue as playlist", ACT_SAVE_QUEUE, 0);
+    if (app->view == VIEW_BROWSER && app->config.library[0])
+        menuAdd(&app->menu, "Update the library now", ACT_RESCAN, 0);
     if (status.state == PLAYER_PLAYING)
         menuAdd(&app->menu, "Turn screen off (music keeps playing)", ACT_SCREEN_OFF, 0);
     menuAdd(&app->menu, "Settings", ACT_SETTINGS, 0);
@@ -99,6 +103,21 @@ static bool collectSongs(App *app, AddSource source)
                trackListAdd(&app->pending, path);
     case SRC_NOW_PLAYING:
         return playerTrackPath(status.track, path, sizeof(path)) && trackListAdd(&app->pending, path);
+    case SRC_LIBRARY_ENTRY: {
+        // A song row adds that song; an artist or album row adds all of it.
+        const Catalog *c = catalogLock();
+        TrackList all;
+        size_t start = 0;
+        LibraryLevel level = appLibraryPage(app)->level;
+        bool ok = c && appLibrarySongs(app, c, false, &all, &start);
+        catalogUnlock();
+        if (ok && (level == LIB_ALBUM || level == LIB_SONGS))
+            ok = start < all.count && trackListAdd(&app->pending, all.paths[start]);
+        else if (ok)
+            ok = trackListAddAll(&app->pending, &all);
+        trackListFree(&all);
+        return ok;
+    }
     case SRC_PLAYLIST_SONG: {
         const PlaylistsTab *t = &app->playlists;
         return t->open && t->track_cursor < t->tracks.count &&
@@ -272,6 +291,7 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_EXIT_CONFIRMED: app->quit = true; break;
     case ACT_SETTINGS: appOpenSettings(app); break;
     case ACT_SCREEN_OFF: appScreenOff(app); break;
+    case ACT_RESCAN: catalogScanStart(app->config.library); break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
             addPendingTo(app, app->playlists.index.names[item->arg]);
@@ -330,6 +350,10 @@ bool appHandleOverlay(App *app, uint64_t pressed)
     }
     if (app->menu.open) {
         handleMenu(app, pressed);
+        return true;
+    }
+    if (app->picker_open) {
+        appHandleFolderPicker(app, pressed);
         return true;
     }
     if (app->eq_open) {

@@ -45,7 +45,7 @@ DATA		:=	data
 INCLUDES	:=	include third_party
 APP_TITLE	:=	KaiPlayer
 APP_AUTHOR	:=	Mizuiro
-APP_VERSION	:=	0.6.0-beta
+APP_VERSION	:=	0.7.0-beta
 #ROMFS	:=	romfs
 
 #---------------------------------------------------------------------------------

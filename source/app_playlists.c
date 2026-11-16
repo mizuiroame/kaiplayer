@@ -96,8 +96,21 @@ static void playPlaylist(App *app, size_t start, bool shuffle)
             : t->cursor < t->index.count && loadPlaylist(app, t->index.names[t->cursor], &copy);
     if (!ok)
         return;
-    appPlayTracks(app, &copy, start, shuffle, t->open ? t->name : t->index.names[t->cursor]);
+    const char *name = t->open ? t->name : t->index.names[t->cursor];
+    appPlayTracks(app, &copy, start, shuffle, name);
+    appRecordPlay(app, HISTORY_PLAYLIST, name);
     trackListFree(&copy);
+}
+
+void appPlaylistsOpenSelected(App *app)
+{
+    openSelected(app);
+}
+
+void appPlaylistsPlaySelected(App *app, bool shuffle)
+{
+    appPlaylistsClose(app);
+    playPlaylist(app, 0, shuffle);
 }
 
 static void saveOpenPlaylist(App *app)

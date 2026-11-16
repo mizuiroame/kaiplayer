@@ -6,6 +6,7 @@
 #include "ui_buttons.h"
 #include "ui_common.h"
 #include "ui_hit.h"
+#include "ui_list.h"
 
 #ifndef KAIPLAYER_VERSION
 #define KAIPLAYER_VERSION "dev"
@@ -94,6 +95,12 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         snprintf(out, size, "%s", MODES[app->config.resume % RESUME_MODE_COUNT]);
         break;
     }
+    case SETTING_LIBRARY:
+        snprintf(out, size, "%.60s", app->config.library[0] ? (utilFileName(app->config.library)[0]
+                                                                  ? utilFileName(app->config.library)
+                                                                  : app->config.library)
+                                                           : "Not chosen");
+        break;
     case SETTING_CLOCK: snprintf(out, size, "%s", app->config.clock_24h ? "24-hour" : "12-hour"); break;
     case SETTING_EQUALIZER:
         snprintf(out, size, "%s", app->config.eq_on ? eqPresetName((EqPreset)app->config.eq_preset) : "Off");
@@ -247,6 +254,45 @@ static void drawEqualizer(const App *app)
     fontDraw(FONT_REGULAR, 16, x + PANEL_PAD, y + EQ_H - 42, "Hz  ·  +12 to -12 dB", COLOR_FAINT);
 }
 
+#define PICKER_W 760
+#define PICKER_ROWS 8
+#define PICKER_ROW_H 44
+
+static void drawFolderPicker(const App *app)
+{
+    const Browser *b = &app->picker;
+    size_t folders = appPickerFolderCount(app);
+    int h = 150 + PICKER_ROWS * PICKER_ROW_H + 70;
+    int x = (GFX_WIDTH - PICKER_W) / 2, y = (GFX_HEIGHT - h) / 2;
+    dimScreen();
+    panel(x, y, PICKER_W, h);
+    fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22,
+             app->picker_first_run ? "Welcome! Where is your music?" : "Choose your music folder", COLOR_TEXT);
+    fontDrawClipped(FONT_REGULAR, 17, x + PANEL_PAD, y + 62, PICKER_W - 2 * PANEL_PAD,
+                    "KaiPlayer only shows this folder and the ones inside it.", COLOR_DIM);
+    fontDrawClipped(FONT_BOLD, 18, x + PANEL_PAD, y + 100, PICKER_W - 2 * PANEL_PAD, b->path, COLOR_ACCENT);
+
+    int list_y = y + 136;
+    if (folders == 0)
+        fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, list_y + 10, "No folders here.", COLOR_DIM);
+    size_t first = b->cursor >= PICKER_ROWS ? b->cursor - PICKER_ROWS + 1 : 0;
+    for (size_t i = first; i < folders && i < first + PICKER_ROWS; i++) {
+        int row_y = list_y + (int)(i - first) * PICKER_ROW_H;
+        if (i == b->cursor)
+            drawRowHighlight(x + 16, row_y, PICKER_W - 32, PICKER_ROW_H - 4);
+        uiDrawFolderIcon(x + PANEL_PAD, row_y + 12, COLOR_FOLDER);
+        fontDrawClipped(i == b->cursor ? FONT_BOLD : FONT_REGULAR, 20, x + PANEL_PAD + 40, row_y + 8,
+                        PICKER_W - 2 * PANEL_PAD - 40, b->entries[i].name, COLOR_TEXT);
+        uiHitAdd(x + 16, row_y, PICKER_W - 32, PICKER_ROW_H - 4, HIT_PICKER_ROW, (int)i);
+    }
+
+    // "Use this folder", bottom right.
+    static const char USE[] = "Use this folder";
+    int use_w = uiIconPillWidth("X", USE), use_x = x + PICKER_W - PANEL_PAD - use_w, use_y = y + h - 54;
+    uiDrawIconPill(use_x, use_y, "X", PILL_ICON_CHECK, USE, true);
+    uiHitAdd(use_x, use_y - 8, use_w, 46, HIT_PICKER_USE, 0);
+}
+
 #define ABOUT_W 700
 #define ABOUT_H 470
 
@@ -285,6 +331,8 @@ void uiDrawOverlay(const App *app, uint64_t now_ns)
         drawKeyboard(app, now_ns);
     else if (app->menu.open)
         drawMenu(&app->menu);
+    else if (app->picker_open)
+        drawFolderPicker(app);
     else if (app->eq_open)
         drawEqualizer(app);
     else if (app->about_open)

@@ -1,7 +1,7 @@
 #include "settings.h"
 
 static const char *const ROW_LABELS[SETTING_COUNT] = {
-    "Sleep timer", "Resume where you left off", "Clock", "Equalizer", "ReplayGain (even loudness)",
+    "Music folder", "Sleep timer", "Resume where you left off", "Clock", "Equalizer", "ReplayGain (even loudness)",
     "Accent color", "Screen off while playing", "About",
 };
 
@@ -42,5 +42,5 @@ const char *settingsRowLabel(SettingRow row)
 
 bool settingsRowEditable(SettingRow row)
 {
-    return row != SETTING_ABOUT;
+    return row != SETTING_ABOUT && row != SETTING_LIBRARY;  // Those open with A.
 }

@@ -1,5 +1,6 @@
 // The Browse tab: navigate the card and play folders.
 #include <stdio.h>
+#include <string.h>
 
 #include "app.h"
 #include "app_buttons.h"
@@ -47,12 +48,18 @@ static void openSelected(App *app)
         appToast(app, "Could not open the folder.");
 }
 
+bool appBrowseCanGoUp(const App *app)
+{
+    char parent[UTIL_PATH_MAX];
+    snprintf(parent, sizeof(parent), "%s", app->browser.path);
+    return utilParentPath(parent) && utilPathWithin(parent, appMusicRoot(app));
+}
+
 void appHandleBrowser(App *app, uint64_t pressed)
 {
     Browser *b = &app->browser;
-    char parent[UTIL_PATH_MAX];
-    snprintf(parent, sizeof(parent), "%s", b->path);
-    bool has_back = utilParentPath(parent);
+    bool can_go_up = appBrowseCanGoUp(app);
+    bool has_back = true;  // At the music folder, Back returns to Library.
     pressed = appFocusFilter(app, pressed, b->cursor, b->count, has_back, b->count > 0);
     if (pressed & BUTTONS_UP) browserMove(b, -1);
     if (pressed & BUTTONS_DOWN) browserMove(b, 1);
@@ -62,13 +69,18 @@ void appHandleBrowser(App *app, uint64_t pressed)
         appAddToPlaylist(app, SRC_BROWSE_ENTRY);
     if (pressed & HidNpadButton_A) {
         if (app->focus == FOCUS_BACK) {
-            browserGoUp(b);
+            if (can_go_up)
+                browserGoUp(b);
+            else
+                appLibraryBack(app);
             app->focus = FOCUS_LIST;
         } else {
             openSelected(app);
         }
     }
-    if (pressed & HidNpadButton_B) {
+    if ((pressed & HidNpadButton_B) && !can_go_up) {
+        appLibraryBack(app);
+    } else if (pressed & HidNpadButton_B) {
         browserGoUp(b);
         app->focus = FOCUS_LIST;
     }

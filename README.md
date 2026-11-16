@@ -2,13 +2,14 @@
 
 An **open-source homebrew music player** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen). Pick a folder on your microSD
-card and KaiPlayer plays the music in it.
+card and KaiPlayer builds a library of your artists, albums and songs from
+their tags.
 
-![Now Playing](docs/screenshots/now_playing.png)
+![Home](docs/screenshots/home.png)
 
-| Browse | Playlists | Queue |
-|--------|-----------|-------|
-| ![Browse](docs/screenshots/browse.png) | ![Playlists](docs/screenshots/playlists.png) | ![Queue](docs/screenshots/queue.png) |
+| Now Playing | Library | Queue |
+|-------------|---------|-------|
+| ![Now Playing](docs/screenshots/now_playing.png) | ![Library](docs/screenshots/library.png) | ![Queue](docs/screenshots/queue.png) |
 
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
@@ -75,23 +76,29 @@ let it replace the old one.
 
 > **Use plain letters (A–Z, no accents) in file and folder names.** On
 > Switch 2, a file or folder whose name has any character outside basic
-> ASCII (accents such as `á é ñ ü`, or Japanese) is saved, but no app can
-> list it, KaiPlayer included. Rename such files on your PC before uploading
-> them, for example `06 Canción.mp3` → `06 Cancion.mp3` or
-> `04 みずいろの雨.mp3` → `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the
-> song's real title, artist and album, with accents or in Japanese, from its
-> tags. See
+> ASCII (accents such as `á é ñ ü`, typographic quotes such as `’`, or
+> Japanese) is saved, but the console's file system doesn't show it: no app
+> can list it, KaiPlayer included. The easiest way around it is
+> [KaiDrop](https://github.com/mizuiroame/kaidrop) (work in progress), which
+> uploads your music over FTP with plain names on the console and leaves your
+> files untouched. Or rename the files before uploading, for example
+> `06 Canción.mp3` → `06 Cancion.mp3`. KaiPlayer still shows the song's real
+> title, artist and album, with accents or in Japanese, from its tags. See
 > [File names and tags](#file-names-and-tags).
 
 ### 4. Play it
 
 1. Open hbmenu (launch a game while holding **R**) and select **KaiPlayer**.
-2. Use the D-pad to go to your music folder.
-3. Press **X** to play the whole folder, subfolders included. Or press **A**
-   on a song to start from that song.
+2. The first time, KaiPlayer asks where your music is: open your music
+   folder (for example `Music`) with **A** and press **X** to use it.
+   KaiPlayer only shows that folder and the ones inside it. You can change
+   it later in **+ → Settings → Music folder**.
+3. KaiPlayer reads your songs' tags in the background and builds your
+   library. Open **Library → Artists** or **Albums**, pick one and press
+   **X** to play it, or **A** on a song to start from there.
 
-KaiPlayer remembers the last folder and the shuffle and repeat modes. It
-saves them in `sdmc:/config/kaiplayer/settings.txt`.
+KaiPlayer remembers the music folder and the shuffle and repeat modes in
+`sdmc:/config/kaiplayer/settings.txt`.
 
 ---
 
@@ -119,18 +126,18 @@ and WMA won't be added, because they need paid licenses.
 
 ## Controls
 
-KaiPlayer has four tabs: **Browse**, **Playlists**, **Queue** and **Now
-Playing**. Press **ZL** / **ZR** to move between them. Starting a song keeps
+KaiPlayer has five tabs: **Home**, **Library**, **Playlists**, **Queue** and
+**Now Playing**. Press **ZL** / **ZR** to move between them. Starting a song keeps
 you where you are; open Now Playing with **ZR** or by tapping the player bar.
 
-| Button    | Browse                       | Playlists                    | Queue                      | Now Playing                |
+| Button    | Library                      | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↓ selects **Add to playlist**, ↑ leaves it |
+| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | — |
 | →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
-| A         | Open folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume (or add, when **Add to playlist** is selected) |
-| B         | Go up one folder             | Back to the playlist list    | Back to Browse             | Add the song to a playlist |
-| X         | Play the whole folder        | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
-| Y         | Shuffle the whole folder     | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
+| A         | Open an artist, album or folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume |
+| B         | Back (up a page or a folder) | Back to the playlist list    | Back to Library            | Add the song to a playlist |
+| X         | Play the artist, album, list or folder | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
+| Y         | Shuffle it                   | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
 
 In every tab:
 
@@ -142,6 +149,40 @@ In every tab:
 | RS ← →  | Rewind / fast-forward 10 s |
 | RS ↑ ↓  | Previous / next page of a list |
 | +       | Open the menu. Press **+** again to exit KaiPlayer: it asks you to confirm. |
+
+### Home
+
+**Home** is the first tab: four sections of up to four cards each, with
+their covers, all on one screen:
+
+| | |
+|---|---|
+| **Your top artists** (the ones you play most) | **Recent playlists** |
+| **Recent albums** | **Recent artists** |
+
+Before you have played anything, it shows albums from your library. Use the
+D-pad or the left stick to move between cards and sections, **A** to open one, **X** to play it and
+**Y** to shuffle it, or tap a card. A song counts as played after 30 seconds
+(half of a song shorter than a minute). The plays are kept in
+`sdmc:/config/kaiplayer/history.txt`; delete that file to start over.
+
+### Library
+
+**Library** organizes your music folder like a music app:
+
+- **Artists:** each artist's albums, newest last. **X** plays everything by
+  the artist.
+- **Albums:** every album, with its cover. Its songs go in track order.
+- **Songs:** every song by title.
+- **Folders:** the folders of your music folder, as they are on the card.
+
+Artists and albums come from the tags (album artist, artist, album, track
+and disc numbers, year). Songs without tags are grouped by folder, as
+`Artist/Album/song.mp3`. KaiPlayer keeps the library in
+`sdmc:/config/kaiplayer/catalog.txt` so it shows at once next time, and
+updates it in the background, reading only new or changed files; the
+progress shows at the top right. **+ → Update the library now** checks the
+folder again after you add music.
 
 ### The + menu
 
@@ -170,7 +211,7 @@ the card, KaiPlayer skips the system and homebrew folders there (`switch`,
 sound effects don't end up in the queue. The queue shows the folder each
 track comes from.
 
-Song rows in Browse, Playlists and Queue show the song's **title**,
+Song rows in Library, Playlists and Queue show the song's **title**,
 **Artist** and **Album** from its tags, like Now Playing. They are read in
 the background, so they appear a moment after a list opens; until then, and
 for songs without tags, the row shows the file name (and the folder name in
@@ -181,7 +222,7 @@ that is playing has moving bars next to its name (still while paused).
 song** plays the current song over and over. With **Shuffle on**, the Queue
 tab lists the songs in the shuffled order they will play in.
 
-The player bar under Browse, Playlists and Queue has ⏮ ⏯ ⏭, Shuffle and
+The player bar under Home, Library, Playlists and Queue has ⏮ ⏯ ⏭, Shuffle and
 Repeat. To use them with the buttons, press ↓ on the last row of the list:
 ← → choose a control, **A** presses it, and ↑ or **B** go back to the list.
 **−**, **L** and **R** also pause and change the song from anywhere.
@@ -200,7 +241,7 @@ Everything can also be done by touch:
 - **Add-to-playlist buttons:** every song and folder row ends with a button
   (a list with a small plus) that adds it to a playlist, and so does **Add
   to playlist** in Now Playing.
-- **Player bar** (below Browse, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
+- **Player bar** (below Home, Library, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
   play or pause, and skip. Tap **Shuffle** or **Repeat** to change them, or
   anywhere else on the bar to open Now Playing.
 - **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point
@@ -216,6 +257,7 @@ close with **B**.
 
 | Setting | Values |
 |---------|--------|
+| Music folder | The folder KaiPlayer shows; **A** chooses another |
 | Sleep timer | Off, or any number of minutes up to 600 |
 | Resume where you left off | Keep playing (default), Paused or Off |
 | Clock | 24-hour (default) or 12-hour |
@@ -272,16 +314,19 @@ homebrew control the backlight, the screen goes black instead.
 
 ### Playlists
 
-Playlists are saved as standard `.m3u8` files in `sdmc:/playlists/`, with
-paths relative to that folder (for example `../Music/Album/01 Song.flac`).
-Other music players can read them, and you can also copy `.m3u` or `.m3u8`
-playlists made on your PC into that folder.
+Playlists are saved as standard `.m3u8` files in the **Playlists** folder
+inside your music folder (for example `sdmc:/Music/Playlists/`), so all your
+music and playlists live in one folder. Paths are relative to that folder
+(for example `../Album/01 Song.flac`). Other music players can read them,
+and you can also copy `.m3u` or `.m3u8` playlists made on your PC into that
+folder. Playlists from older versions (`sdmc:/playlists/`) are copied there
+the first time; the old files stay where they were.
 
 - **Create one:** in the Playlists tab, press **+** and choose
   **New playlist**. Or, in any tab, choose **Add … to playlist** and then
   **New playlist...**.
 - **Add songs:** tap the add-to-playlist button on a song or folder in
-  Browse (a folder adds all its songs, subfolders included) or on a song in
+  Library (an artist, album or folder adds all its songs) or on a song in
   Queue, or **Add to playlist** in Now Playing. Then pick the playlist, or
   **New playlist...**. With buttons, select the row and press **→** (in Now
   Playing, press **B**). Songs already in the playlist aren't added twice.
@@ -318,7 +363,7 @@ playing, and when you exit.
 ### Song details and album art
 
 Now Playing shows the album cover, title, artist and album. The mini player
-at the bottom of Browse and Queue shows a small cover, the title and the
+at the bottom of Home, Library and Queue shows a small cover, the title and the
 artist.
 
 KaiPlayer reads the song details from the file's tags:
@@ -360,17 +405,28 @@ Text in tags and file names can be in any language:
 **File and folder names, however, must use plain ASCII letters.** This is a
 limitation of the console, not of KaiPlayer: on Switch 2, a file or folder
 whose name has any non-ASCII character (accented letters such as á, é, ñ or
-ü, or Japanese) is written correctly, but directory listings leave it out.
-FTP listings, OunceShell and KaiPlayer all list folders the same way, so the
-file is invisible in all of them, even though it is on the card.
+ü, typographic quotes such as ’, or Japanese) is written correctly, but the
+console's file system leaves it out of the folder: it isn't listed, and it
+isn't even counted among the folder's entries. FTP listings, OunceShell and
+KaiPlayer all see folders through it, so the file is invisible in all of
+them, even though it is on the card and takes up space. No app on the
+console can find it, so the fix has to happen before the file gets there.
 
-Because KaiPlayer shows the title, artist and album from the tags, the file
-name doesn't matter much. A file renamed `04 Mizuiro no Ame.mp3` is still
-shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, with its
-embedded cover.
+**Tags carry the real names.** KaiPlayer takes each song's title, artist and
+album from its tags (ID3 in MP3, Vorbis comments in FLAC and Ogg), not from
+the file name, and tags can hold any language. A file renamed
+`04 Mizuiro no Ame.mp3` is still shown as **みずいろの雨 · 八神純子 · 素顔の私**,
+with its embedded cover, and `06 Cancion.flac` as **Canción**. Make sure your
+songs are tagged (most music from stores or ripped with a good tool is): a
+song without tags shows its file name, and is grouped by its folders, so with
+a plain file name it shows without its accents.
 
 **Upload with plain names, without renaming your files.** FileZilla can't
-rename files as it uploads them, so the repository includes a small script,
+rename files as it uploads them. Use [KaiDrop](https://github.com/mizuiroame/kaidrop)
+(work in progress), a small Windows app (also runs on macOS and Linux) that
+sends folders over FTP and gives the copies on the console plain names, with
+a preview of every name.
+Or, from the command line, the repository includes a small script,
 [`tools/kaiupload.py`](tools/kaiupload.py) (Python 3.8 or later, nothing to
 install). It uploads a folder over FTP and gives the copies on the console
 plain names; the files on your computer are not changed:
@@ -419,7 +475,7 @@ followed by the file size.
 | An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
 | The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
 | A playlist name isn't accepted | Use Latin letters, digits, spaces and `- _ . ( ) ' & ! + ,`, up to 48 characters, and a name no other playlist has. |
-| A playlist made on the PC doesn't appear | It must be in `sdmc:/playlists/`, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
+| A playlist made on the PC doesn't appear | It must be in the `Playlists` folder of your music folder, end in `.m3u` or `.m3u8`, and have a name with Latin letters. |
 | Taps land in the wrong place | Please open an issue with your console model and where you tapped. The buttons always work. |
 | "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
 
@@ -512,10 +568,13 @@ source/
   gfx_switch.c    the console framebuffer
   font.c          anti-aliased text with the embedded fonts
   ui*.c           the tabs, the menu and the keyboard
+  catalog*.c      the library: artists, albums and songs from the tags (and its cache)
+  covercache.c    album covers for Home and the album rows
+  history.c home.c  plays, and the Home tab's rows
   config.c        settings saved on the SD card
   input.c         button auto-repeat
   tracklist.c     lists of song paths (folders, playlists, the queue)
-  playlist.c      .m3u8 playlists in sdmc:/playlists
+  playlist.c      .m3u8 playlists in <music folder>/Playlists
   resume.c        saves and restores the last queue and position
   keyboard*.c     playlist names: the console's keyboard, and a fallback
   menu.c          the + menu and dialogs

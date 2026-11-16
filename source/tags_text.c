@@ -149,3 +149,13 @@ uint32_t readSyncsafe32(const uint8_t *p)
     return (uint32_t)(p[0] & 0x7F) << 21 | (uint32_t)(p[1] & 0x7F) << 14 |
            (uint32_t)(p[2] & 0x7F) << 7 | (p[3] & 0x7F);
 }
+
+int tagsNumber(const char *value)
+{
+    while (*value == ' ')
+        value++;
+    long n = 0;
+    for (int digits = 0; *value >= '0' && *value <= '9' && digits < 6; value++, digits++)
+        n = n * 10 + (*value - '0');
+    return (int)n;
+}

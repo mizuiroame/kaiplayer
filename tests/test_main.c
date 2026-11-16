@@ -22,6 +22,11 @@ int g_checks;
 
 static void testUtil(void)
 {
+    CHECK(utilPathWithin("sdmc:/music/a/b.mp3", "sdmc:/music"));
+    CHECK(utilPathWithin("sdmc:/music", "sdmc:/music/"));
+    CHECK(utilPathWithin("sdmc:/anything", "sdmc:/"));
+    CHECK(!utilPathWithin("sdmc:/musical", "sdmc:/music"));
+    CHECK(!utilPathWithin("sdmc:/", "sdmc:/music"));
     CHECK(utilIsAudioFile("song.MP3"));
     CHECK(utilIsAudioFile("a.flac") && utilIsAudioFile("a.ogg") && utilIsAudioFile("a.wav"));
     CHECK(!utilIsAudioFile("cover.jpg"));
@@ -345,6 +350,8 @@ int main(void)
     testTouch();
     testEq();
     testMeta();
+    testCatalog();
+    testHome();
 
     printf("%d checks, %d failures\n", g_checks, g_failures);
     return g_failures ? 1 : 0;

@@ -25,8 +25,12 @@ size_t uiFirstVisible(size_t cursor, size_t count)
     return first + UI_LIST_ROWS > count ? count - UI_LIST_ROWS : first;
 }
 
+bool g_ui_list_focused = true;
+
 void uiDrawSelection(int y, Color bar)
 {
+    if (!g_ui_list_focused)
+        return;
     gfxFillRoundRect(MARGIN - 12, y + 2, GFX_WIDTH - 2 * (MARGIN - 12), ROW_H - 4, 8, COLOR_SURFACE_HI);
     gfxFillRect(MARGIN - 12, y + 10, 3, ROW_H - 20, bar);
 }
@@ -148,7 +152,8 @@ void uiDrawTrackRow(const TrackRow *row)
         int number_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, digits);
         fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN + 46 - number_w, y + 11, digits, COLOR_FAINT);
     }
-    uiDrawSongTitle(&song, row->current || row->selected ? FONT_BOLD : FONT_REGULAR, MARGIN + 66, y + 8,
+    bool selected = row->selected && g_ui_list_focused;
+    uiDrawSongTitle(&song, row->current || selected ? FONT_BOLD : FONT_REGULAR, MARGIN + 66, y + 8,
                     COLUMN_ARTIST_X - COLUMN_GAP - (MARGIN + 66), row->current ? COLOR_ACCENT : COLOR_TEXT);
     uiDrawSongColumns(&song, y);
     if (row->remove_button)

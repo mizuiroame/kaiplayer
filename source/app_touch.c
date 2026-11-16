@@ -18,13 +18,14 @@ static bool g_full_hd;  // Seen coordinates beyond 1280x720: scale them down.
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open || app->picker_open;
 }
 
 static bool isOverlayTarget(HitKind kind)
 {
     return kind == HIT_BACKDROP || kind == HIT_MENU_ITEM || kind == HIT_KEY || kind == HIT_SETTING ||
-           kind == HIT_EQ_BAND || kind == HIT_EQ_PRESET || kind == HIT_EQ_TOGGLE;
+           kind == HIT_EQ_BAND || kind == HIT_EQ_PRESET || kind == HIT_EQ_TOGGLE || kind == HIT_PICKER_ROW ||
+           kind == HIT_PICKER_USE;
 }
 
 // The gain at height y on a slider: the top is +12 dB, the bottom -12 dB.
@@ -45,7 +46,9 @@ static void addFromRow(App *app, int index)
     }
     appActivateRow(app, (size_t)index, true);
     switch (app->view) {
-    case VIEW_BROWSER: appAddToPlaylist(app, SRC_BROWSE_ENTRY); break;
+    case VIEW_BROWSER:
+        appAddToPlaylist(app, appLibraryPage(app)->level == LIB_FOLDERS ? SRC_BROWSE_ENTRY : SRC_LIBRARY_ENTRY);
+        break;
     case VIEW_QUEUE: appAddToPlaylist(app, SRC_QUEUE_ENTRY); break;
     case VIEW_PLAYLISTS:
         if (app->playlists.open)
@@ -112,6 +115,19 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
     case HIT_EQ_BAND: appEqualizerSetGain(app, r->arg, sliderGain(r, y)); break;
     case HIT_EQ_PRESET: appEqualizerNextPreset(app); break;
     case HIT_EQ_TOGGLE: appEqualizerToggle(app); break;
+    case HIT_PICKER_ROW:
+        if ((size_t)r->arg < appPickerFolderCount(app)) {
+            app->picker.cursor = (size_t)r->arg;
+            appHandleFolderPicker(app, HidNpadButton_A);
+        }
+        break;
+    case HIT_PICKER_USE: appPickerChoose(app); break;
+    case HIT_CARD:
+        app->home_row = r->arg / HOME_ROW_MAX;
+        app->home_col[app->home_row] = (size_t)(r->arg % HOME_ROW_MAX);
+        app->focus = FOCUS_LIST;
+        appDispatchButtons(app, HidNpadButton_A);
+        break;
     case HIT_ADD: addFromRow(app, r->arg); break;
     case HIT_LIST: break;
     }

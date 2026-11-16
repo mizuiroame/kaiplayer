@@ -28,6 +28,9 @@ typedef enum {
     HIT_EQ_BAND,       // An equalizer slider: the tap's y gives the gain. arg: band.
     HIT_EQ_PRESET,     // Next equalizer preset.
     HIT_EQ_TOGGLE,     // Equalizer on/off.
+    HIT_PICKER_ROW,    // A folder in the music folder picker. arg: index.
+    HIT_PICKER_USE,
+    HIT_CARD,          // A Home card. arg: row * HOME_ROW_MAX + card.    // "Use this folder".
 } HitKind;
 
 typedef struct {

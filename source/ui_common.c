@@ -66,15 +66,23 @@ void uiResolveTrack(const PlayerStatus *status, const Artwork *art, UiTrack *tra
 
 void uiDrawNoteIcon(int x, int y, int size, Color color)
 {
-    // Two beamed eighth notes scaled to a size x size box.
-    int head = size * 28 / 100, stem = size / 14 > 1 ? size / 14 : 2;
-    int left_x = x + size * 12 / 100, right_x = x + size * 56 / 100;
-    int head_y = y + size * 70 / 100, top = y + size * 14 / 100;
-    gfxFillCircle(left_x + head / 2, head_y + head / 4, head / 2, color);
-    gfxFillCircle(right_x + head / 2, head_y + head / 8 - size / 12, head / 2, color);
-    gfxFillRect(left_x + head - stem, top + size / 14, stem, head_y - top, color);
-    gfxFillRect(right_x + head - stem, top, stem, head_y - top - size / 12, color);
-    gfxFillRect(left_x + head - stem, top, right_x - left_x + stem, size / 9, color);
+    // Two notes on a beam, with smooth (anti-aliased) edges at any size.
+    float s = (float)size, head = s * 0.17f, stem = s * 0.085f;
+    float left = x + s * 0.27f, right = x + s * 0.73f, bottom = y + s * 0.78f, top = y + s * 0.16f;
+    gfxLine(left + head - stem / 2, bottom - head * 0.2f, left + head - stem / 2, top + s * 0.08f, stem, color);
+    gfxLine(right + head - stem / 2, bottom - head * 0.6f, right + head - stem / 2, top, stem, color);
+    gfxTriangle(left + head - stem, top + s * 0.08f, right + head, top - s * 0.02f, right + head, top + s * 0.1f, color);
+    gfxTriangle(left + head - stem, top + s * 0.08f, right + head, top + s * 0.1f, left + head - stem, top + s * 0.2f,
+                color);
+    gfxLine(left, bottom - head * 0.2f, left, bottom - head * 0.2f, head * 2.0f, color);  // Note heads.
+    gfxLine(right, bottom - head * 0.6f, right, bottom - head * 0.6f, head * 2.0f, color);
+}
+
+void uiDrawPersonIcon(float cx, float cy, float size, Color color)
+{
+    float s = size;
+    gfxLine(cx, cy - s * 0.16f, cx, cy - s * 0.16f, s * 0.26f, color);  // Head: a line of no length is a dot.
+    gfxLine(cx - s * 0.13f, cy + s * 0.24f, cx + s * 0.13f, cy + s * 0.24f, s * 0.28f, color);  // Shoulders.
 }
 
 void uiDrawCover(int x, int y, int size, const CoverImage *cover)
@@ -167,7 +175,10 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
     }
     if (icon == PILL_ICON_SHUFFLE)
         drawShuffleIcon((float)cx, (float)y + 5, fg);
-    else if (icon == PILL_ICON_PLAYLIST_ADD)
+    else if (icon == PILL_ICON_CHECK) {
+        gfxLine((float)cx + 3, mid, (float)cx + 8, mid + 5, 2.4f, fg);
+        gfxLine((float)cx + 8, mid + 5, (float)cx + 17, mid - 5, 2.4f, fg);
+    } else if (icon == PILL_ICON_PLAYLIST_ADD)
         uiDrawPlaylistAddIcon((float)cx + ICON_SIZE / 2.0f, mid, 0.9f, fg);
     else
         drawRepeatIcon((float)cx, (float)y + 5, icon == PILL_ICON_REPEAT_ONE, fg);

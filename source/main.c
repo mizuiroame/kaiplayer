@@ -13,6 +13,8 @@
 #include "gfx.h"
 #include "input.h"
 #include "meta.h"
+#include "catalog_scan.h"
+#include "covercache.h"
 #include "player.h"
 #include "screen.h"
 #include "sysinfo.h"
@@ -64,16 +66,15 @@ static void handleQueue(App *app, uint64_t pressed)
 
 static void handleNowPlaying(App *app, uint64_t pressed)
 {
-    // B adds the song to a playlist. Down also selects "Add to playlist"
-    // (then A adds), and Up takes the focus back.
-    if (pressed & BUTTONS_DOWN) app->focus = FOCUS_ADD;
-    if (pressed & BUTTONS_UP) app->focus = FOCUS_LIST;
-    if (((pressed & HidNpadButton_A) && app->focus == FOCUS_ADD) || (pressed & HidNpadButton_B))
+    // B adds the song to a playlist (or tap "Add to playlist").
+    if (pressed & HidNpadButton_B)
         appAddToPlaylist(app, SRC_NOW_PLAYING);
-    else if (pressed & HidNpadButton_A)
+    if (pressed & HidNpadButton_A)
         playerTogglePause();
-    if (pressed & BUTTONS_LEFT) playerSeek(-SEEK_STEP_SECONDS);
-    if (pressed & BUTTONS_RIGHT) playerSeek(SEEK_STEP_SECONDS);
+    // The d-pad seeks here; the right stick does too, everywhere. The left
+    // stick does nothing, rather than repeat them.
+    if (pressed & HidNpadButton_Left) playerSeek(-SEEK_STEP_SECONDS);
+    if (pressed & HidNpadButton_Right) playerSeek(SEEK_STEP_SECONDS);
     if (pressed & HidNpadButton_X) playerToggleShuffle();
     if (pressed & HidNpadButton_Y) playerCycleRepeat();
 }
@@ -106,9 +107,18 @@ void appActivateRow(App *app, size_t index, bool select_only)
     // The index comes from the last frame; a list that shrank since makes it stale.
     switch (app->view) {
     case VIEW_BROWSER:
-        if (index >= app->browser.count)
-            return;
-        app->browser.cursor = index;
+        if (appLibraryPage(app)->level == LIB_FOLDERS) {
+            if (index >= app->browser.count)
+                return;
+            app->browser.cursor = index;
+        } else {
+            const Catalog *c = catalogLock();
+            size_t count = appLibraryCount(app, c);
+            catalogUnlock();
+            if (index >= count)
+                return;
+            appLibraryPage(app)->cursor = index;
+        }
         break;
     case VIEW_PLAYLISTS:
         if (t->moving || index >= (t->open ? t->tracks.count : t->index.count))
@@ -154,7 +164,8 @@ void appDispatchButtons(App *app, uint64_t pressed)
         return;
     }
     switch (app->view) {
-    case VIEW_BROWSER: appHandleBrowser(app, pressed); break;
+    case VIEW_HOME: appHandleHome(app, pressed); break;
+    case VIEW_BROWSER: appHandleLibrary(app, pressed); break;
     case VIEW_PLAYLISTS: appHandlePlaylists(app, pressed); break;
     case VIEW_QUEUE: handleQueue(app, pressed); break;
     default: handleNowPlaying(app, pressed); break;
@@ -162,11 +173,13 @@ void appDispatchButtons(App *app, uint64_t pressed)
     handleGlobal(app, pressed);
 }
 
-// Keeps the console awake while music plays, and surfaces player errors.
+// Keeps the console awake while music plays, counts plays for Home, and
+// surfaces player errors.
 static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, size_t error_size)
 {
     PlayerStatus status;
     playerGetStatus(&status);
+    appTrackPlays(app, &status);
     if (status.state != *last_state) {
         appletSetMediaPlaybackState(status.state == PLAYER_PLAYING);
         *last_state = status.state;
@@ -187,10 +200,17 @@ static void requestArtwork(const PlayerStatus *status)
     artworkRequest(path);
 }
 
+// Opens the last folder if it is inside the music folder, else the music
+// folder; with no music folder yet, asks for one.
 static void openStartFolder(App *app)
 {
-    if (!browserOpen(&app->browser, app->config.folder) && !browserOpen(&app->browser, "sdmc:/"))
+    const char *root = appMusicRoot(app);
+    bool inside = utilPathWithin(app->config.folder, root);
+    if (!(inside && browserOpen(&app->browser, app->config.folder)) && !browserOpen(&app->browser, root) &&
+        !browserOpen(&app->browser, "sdmc:/"))
         appToast(app, "Could not read the SD card.");
+    if (!app->config.library[0])
+        appOpenFolderPicker(app, true);
 }
 
 static void saveSettings(App *app)
@@ -206,7 +226,7 @@ static void saveSettings(App *app)
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open || app->picker_open;
 }
 
 // Screen off: any button or touch brings it back, and that input does
@@ -298,6 +318,7 @@ int main(int argc, char **argv)
 
     static App app;
     configLoad(&app.config);
+    appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
     if (!gfxInit())
@@ -308,6 +329,11 @@ int main(int argc, char **argv)
     }
     artworkInit();
     metaInit();
+    catalogScanInit();
+    coverCacheInit();
+    appLoadHistory(&app);
+    if (app.config.library[0])
+        catalogScanStart(app.config.library);
     sysinfoInit();
     screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
@@ -326,6 +352,9 @@ int main(int argc, char **argv)
         appletSetMediaPlaybackState(false);
         playerExit();
     }
+    coverCacheExit();
+    catalogScanExit();
+    historyFree(&app.history);
     metaExit();
     artworkExit();
     sysinfoExit();

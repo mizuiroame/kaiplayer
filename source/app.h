@@ -7,9 +7,13 @@
 #include <stdint.h>
 
 #include "browser.h"
+#include "catalog.h"
 #include "config.h"
 #include "keyboard.h"
 #include "menu.h"
+#include "history.h"
+#include "home.h"
+#include "player.h"
 #include "playlist.h"
 #include "settings.h"
 #include "sysinfo.h"
@@ -17,7 +21,8 @@
 #include "tracklist.h"
 
 typedef enum {
-    VIEW_BROWSER,
+    VIEW_HOME,
+    VIEW_BROWSER,  // The Library tab (its Folders page is the old Browse).
     VIEW_PLAYLISTS,
     VIEW_QUEUE,
     VIEW_NOW_PLAYING,
@@ -34,6 +39,41 @@ typedef struct {
     size_t track_cursor;
     bool moving;                        // Up/Down move the selected song.
 } PlaylistsTab;
+
+// The Library tab's pages. Root lists Artists, Albums, Songs and Folders.
+typedef enum {
+    LIB_ROOT,
+    LIB_ARTISTS,
+    LIB_ARTIST,   // arg: artist index; lists the artist's albums.
+    LIB_ALBUMS,
+    LIB_ALBUM,    // arg: album index; lists its songs.
+    LIB_SONGS,
+    LIB_FOLDERS,  // The folder browser.
+} LibraryLevel;
+
+#define LIB_ROOT_ROWS 4
+#define LIBRARY_DEPTH_MAX 6
+
+typedef struct {
+    LibraryLevel level;
+    size_t arg;
+    size_t cursor;
+    char name[TAGS_TEXT_MAX];    // The artist's name, or the album's title,
+    char artist[TAGS_TEXT_MAX];  // and its artist: arg found again after a rescan.
+} LibraryPage;
+
+typedef struct {
+    LibraryPage stack[LIBRARY_DEPTH_MAX];  // stack[depth - 1] is shown.
+    int depth;
+    unsigned generation;  // The catalog the pages' indexes belong to.
+} LibraryTab;
+
+// Which song is playing, to count it as played once.
+typedef struct {
+    unsigned generation;
+    size_t track;
+    bool armed;  // Not counted yet.
+} HomeTracker;
 
 // Menus that the app treats specially. Others are MENU_KIND_OTHER.
 enum {
@@ -67,6 +107,7 @@ typedef enum {
     SRC_QUEUE_ENTRY,    // The selected song in Queue.
     SRC_NOW_PLAYING,    // The current song.
     SRC_PLAYLIST_SONG,  // The selected song of the open playlist.
+    SRC_LIBRARY_ENTRY,  // The selected artist, album or song in Library.
 } AddSource;
 
 // What the on-screen keyboard is typing a name for.
@@ -79,6 +120,15 @@ typedef enum {
 typedef struct {
     View view;
     Browser browser;
+    LibraryTab library;
+    History history;            // Plays, for Home.
+    HomeTracker home_tracker;
+    Home home;                  // Home's rows, from the catalog and history.
+    unsigned home_generation;   // The catalog Home's rows were made from.
+    size_t home_history;        // History length Home's rows were made from.
+    bool home_ready;
+    int home_row;               // Selected row (HomeRowKind) and card in each.
+    size_t home_col[HOME_ROW_COUNT];
     Config config;
     size_t queue_cursor;
     Focus focus;
@@ -101,6 +151,9 @@ typedef struct {
     SettingRow settings_cursor;
     bool eq_open;               // The equalizer editor (over Settings).
     bool about_open;            // About KaiPlayer (over Settings).
+    bool picker_open;           // Choosing the music folder.
+    bool picker_first_run;      // The welcome version: no folder chosen yet.
+    Browser picker;             // The folders shown in the picker.
     int eq_band;                // Selected band in the editor.
     bool screen_off;            // Screen off while music plays.
     bool touch_wakes;           // The touch that woke the screen: ignore until released.
@@ -123,8 +176,49 @@ void appToast(App *app, const char *message);
 // BUTTON_ROW_ACTION, its add (or remove) button.
 uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count, bool has_back, bool has_add);
 
+// The music folder (app_folder.c): Browse stays inside it ("sdmc:/" until
+// one is chosen).
+const char *appMusicRoot(const App *app);
+void appOpenFolderPicker(App *app, bool first_run);
+void appHandleFolderPicker(App *app, uint64_t pressed);
+// Picker rows are folders only: how many of the listing's entries those are.
+size_t appPickerFolderCount(const App *app);
+void appPickerChoose(App *app);  // Use the folder the picker is in.
+// Points playlists at the music folder's Playlists folder, copying the ones
+// in sdmc:/playlists there the first time.
+void appUsePlaylistFolder(App *app);
+
+// The Library tab (app_library.c, library_tab.c).
+LibraryPage *appLibraryPage(App *app);
+// Rows on the current page (c may be NULL while the catalog loads).
+size_t appLibraryCount(const App *app, const Catalog *c);
+void appLibraryBack(App *app);
+// Keeps the pages pointing at the same artists and albums when the catalog
+// is replaced (a rescan), and the cursors inside the lists. c may be NULL.
+void appLibrarySync(App *app, const Catalog *c);
+void appHandleLibrary(App *app, uint64_t pressed);
+// The songs of the selected row, or of the whole page, in play order; start
+// is the selected song's place in them.
+bool appLibrarySongs(App *app, const Catalog *c, bool whole_page, TrackList *out, size_t *start);
+
+// The Home tab and the play history (app_home.c; appHome in library_tab.c).
+void appLoadHistory(App *app);
+void appRecordPlay(App *app, HistoryKind kind, const char *key);
+// Counts the playing song as played once it has played long enough.
+void appTrackPlays(App *app, const PlayerStatus *status);
+// Home's rows, worked out again when the catalog or history changed.
+const Home *appHome(App *app, const Catalog *c);
+void appHandleHome(App *app, uint64_t pressed);
+// Plays the Library page that is open (an artist or an album).
+void appLibraryPlayPage(App *app, bool shuffle);
+// Opens or plays the playlist the Playlists tab has selected.
+void appPlaylistsOpenSelected(App *app);
+void appPlaylistsPlaySelected(App *app, bool shuffle);
+
 // Tab handlers. pressed holds the buttons pressed this frame (with repeat).
 void appHandleBrowser(App *app, uint64_t pressed);
+// False at the music folder: Browse doesn't go above it.
+bool appBrowseCanGoUp(const App *app);
 void appHandlePlaylists(App *app, uint64_t pressed);
 
 // Playlists tab helpers.

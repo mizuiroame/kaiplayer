@@ -65,7 +65,8 @@ static void drawList(const PlaylistsTab *t)
         return;
     }
     char line[96];
-    snprintf(line, sizeof(line), "%zu playlist%s  ·  sdmc:/playlists", t->index.count, t->index.count == 1 ? "" : "s");
+    snprintf(line, sizeof(line), "%zu playlist%s  ·  %.40s", t->index.count, t->index.count == 1 ? "" : "s",
+             playlistRoot());
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
 
     size_t first = uiFirstVisible(t->cursor, t->index.count);

@@ -17,6 +17,9 @@
 
 // First row to show so that the cursor stays near the middle.
 size_t uiFirstVisible(size_t cursor, size_t count);
+// False while the buttons are on the player bar: lists then draw no
+// selection, so only one thing looks selected. Set each frame by uiDraw.
+extern bool g_ui_list_focused;
 // The highlight behind the selected row, with a bar in the given color.
 void uiDrawSelection(int y, Color bar);
 void uiDrawScrollbar(size_t first, size_t count);

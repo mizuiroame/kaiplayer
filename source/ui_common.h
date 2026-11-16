@@ -51,6 +51,8 @@ void uiResolveTrack(const PlayerStatus *status, const Artwork *art, UiTrack *tra
 // Draws a cover, or a placeholder with a music note.
 void uiDrawCover(int x, int y, int size, const CoverImage *cover);
 void uiDrawNoteIcon(int x, int y, int size, Color color);
+// A head and shoulders, for artists, centered on (cx, cy).
+void uiDrawPersonIcon(float cx, float cy, float size, Color color);
 
 const char *uiRepeatLabel(RepeatMode repeat);
 
@@ -63,6 +65,7 @@ typedef enum {
     PILL_ICON_REPEAT,      // Arrows in a circle.
     PILL_ICON_REPEAT_ONE,  // The same, with a 1 inside.
     PILL_ICON_PLAYLIST_ADD,
+    PILL_ICON_CHECK,
 } PillIcon;
 
 // "Add to playlist": a list with a plus, in a box of about 20 * scale.
@@ -77,6 +80,10 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
 
 // The Playlists tab (ui_playlists.c).
 void uiDrawPlaylists(const App *app, const PlayerStatus *status, uint64_t now_ns);
+// The Home tab (ui_home.c).
+void uiDrawHome(const App *app, const PlayerStatus *status, uint64_t now_ns);
+// The Library tab's pages other than Folders (ui_library.c).
+void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns);
 
 // The + menu and the keyboard, drawn over everything (ui_overlay.c).
 void uiDrawOverlay(const App *app, uint64_t now_ns);

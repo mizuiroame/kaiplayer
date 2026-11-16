@@ -7,6 +7,8 @@
 
 #include "app.h"
 #include "artwork.h"
+#include "catalog_scan.h"
+#include "covercache.h"
 #include "font.h"
 #include "meta.h"
 #include "gfx.h"
@@ -28,6 +30,7 @@ static const char *const TRACKS[] = {
 #define TRACK_COUNT (sizeof(TRACKS) / sizeof(TRACKS[0]))
 
 static Artwork g_art;
+static CoverImage g_art_card, g_art_thumb_small;  // The sample cover at the Home sizes.
 static bool g_has_art;
 
 // Stubs for the modules that need the console.
@@ -67,6 +70,89 @@ bool metaLookup(const char *path, SongMeta *out)
              aurora ? "Aurora Fields" : strstr(path, "Night") ? "The Night Drive Band" : "");
     snprintf(out->album, sizeof(out->album), "%s", aurora ? "Paper Boats & Other Stories" : "");
     return true;
+}
+
+// The library: a catalog built from the fake tracks' made-up tags.
+static Catalog g_catalog;
+static bool g_scan_busy;
+
+const Catalog *catalogLock(void)
+{
+    return &g_catalog;
+}
+
+void catalogUnlock(void)
+{
+}
+
+const char *playlistRoot(void)
+{
+    return "sdmc:/Music/Playlists";
+}
+
+void coverCacheLock(void)
+{
+}
+
+void coverCacheUnlock(void)
+{
+}
+
+const CoverImage *coverCacheGet(const char *song_path, bool thumb)
+{
+    // The sample cover stands in for every album that has one.
+    return g_art.has_cover && strstr(song_path, "Aurora") ? (thumb ? &g_art_thumb_small : &g_art_card) : NULL;
+}
+
+bool catalogScanProgress(size_t *done, size_t *total)
+{
+    *done = 312;
+    *total = 480;
+    return g_scan_busy;
+}
+
+static void buildCatalog(void)
+{
+    static const struct { const char *artist, *album; int year; } META[] = {
+        {"Aurora Fields", "Paper Boats & Other Stories", 2024}, {"Aurora Fields", "Paper Boats & Other Stories", 2024},
+        {"Aurora Fields", "Paper Boats & Other Stories", 2024}, {"Aurora Fields", "Neon Harbor (Single)", 2025},
+        {"The Night Drive Band", "Night Drive", 2019}, {"The Night Drive Band", "Night Drive", 2019},
+        {"The Night Drive Band", "Glass City", 2022}, {"八神純子", "東京の夜", 1983}, {"八神純子", "東京の夜", 1983},
+    };
+    catalogInit(&g_catalog);
+    for (size_t i = 0; i < TRACK_COUNT; i++) {
+        static TrackTags t;  // No picture, so nothing to free.
+        memset(&t, 0, sizeof(t));
+        const char *name = strrchr(TRACKS[i], '/') + 1, *dash = strstr(name, " - ");
+        snprintf(t.title, sizeof(t.title), "%.*s", (int)strcspn(dash + 3, "."), dash + 3);
+        snprintf(t.artist, sizeof(t.artist), "%s", META[i].artist);
+        snprintf(t.album, sizeof(t.album), "%s", META[i].album);
+        t.year = META[i].year;
+        t.track_number = atoi(name);
+        catalogAdd(&g_catalog, TRACKS[i], 1000, &t, "sdmc:/Music");
+    }
+    catalogBuild(&g_catalog);
+}
+
+// The parts of app_folder.c and app_browse.c that drawing uses.
+const char *appMusicRoot(const App *app)
+{
+    return app->config.library[0] ? app->config.library : "sdmc:/";
+}
+
+size_t appPickerFolderCount(const App *app)
+{
+    size_t n = 0;
+    while (n < app->picker.count && app->picker.entries[n].is_dir)
+        n++;
+    return n;
+}
+
+bool appBrowseCanGoUp(const App *app)
+{
+    char parent[UTIL_PATH_MAX];
+    snprintf(parent, sizeof(parent), "%s", app->browser.path);
+    return utilParentPath(parent) && utilPathWithin(parent, appMusicRoot(app));
 }
 
 bool screenHasBacklightControl(void)
@@ -123,6 +209,9 @@ static void loadArtwork(const char *cover_path)
     snprintf(g_art.album, sizeof(g_art.album), "%s", "Paper Boats & Other Stories");
     g_art.has_cover = cover_path && coverLoadFromFolder(cover_path, &g_art.cover, gfxToFb(ARTWORK_LARGE_SIZE),
                                                          &g_art.thumb, gfxToFb(ARTWORK_SMALL_SIZE));
+    if (g_art.has_cover)
+        coverLoadFromFolder(cover_path, &g_art_card, gfxToFb(COVERCACHE_CARD), &g_art_thumb_small,
+                            gfxToFb(COVERCACHE_THUMB));
     g_has_art = true;
 }
 
@@ -236,7 +325,55 @@ int main(int argc, char **argv)
     loadArtwork(argc > 2 ? argv[2] : NULL);
 
     app.view = VIEW_BROWSER;
+    snprintf(app.config.library, sizeof(app.config.library), "%s", "sdmc:/Music");
+    app.library.depth = 1;
+    app.library.stack[0] = (LibraryPage){.level = LIB_FOLDERS};  // Library > Folders.
     render(argv[1], "browse", &app, &status);
+
+    // The Library tab's pages.
+    buildCatalog();
+
+    // Home, with some plays and playlists in the history.
+    historyInit(&app.history);
+    static const int PLAYS[] = {0, 1, 4, 5, 0, 7, 2, 0};
+    for (size_t i = 0; i < sizeof(PLAYS) / sizeof(PLAYS[0]); i++)
+        historyAdd(&app.history, HISTORY_SONG, TRACKS[PLAYS[i]]);
+    historyAdd(&app.history, HISTORY_PLAYLIST, "Road Trip 2026");
+    historyAdd(&app.history, HISTORY_PLAYLIST, "Chill evenings");
+    app.view = VIEW_HOME;
+    app.home_row = HOME_RECENT_ALBUMS;
+    app.home_col[HOME_RECENT_ALBUMS] = 1;
+    render(argv[1], "home", &app, &status);
+    app.home_row = HOME_RECENT_ARTISTS;
+    render(argv[1], "home_scrolled", &app, &status);
+    app.view = VIEW_BROWSER;
+    app.library.depth = 1;
+    app.library.stack[0] = (LibraryPage){.level = LIB_ROOT};
+    g_scan_busy = true;
+    render(argv[1], "library", &app, &status);
+    g_scan_busy = false;
+    app.library.stack[1] = (LibraryPage){.level = LIB_ARTISTS, .cursor = 1};
+    app.library.depth = 2;
+    render(argv[1], "library_artists", &app, &status);
+    app.library.stack[2] = (LibraryPage){.level = LIB_ARTIST};
+    app.library.depth = 3;
+    render(argv[1], "library_artist", &app, &status);
+    app.library.stack[3] = (LibraryPage){.level = LIB_ALBUM, .arg = g_catalog.artists[0].albums[1]};
+    app.library.depth = 4;
+    render(argv[1], "library_album", &app, &status);
+    app.library.stack[0].level = LIB_FOLDERS;  // The rest of the scenes show Folders.
+    app.library.depth = 1;
+
+    // The welcome screen: choosing the music folder.
+    snprintf(app.picker.path, sizeof(app.picker.path), "%s", "sdmc:/");
+    addEntry(&app.picker, "Music", true);
+    addEntry(&app.picker, "Podcasts", true);
+    addEntry(&app.picker, "Nintendo", true);
+    addEntry(&app.picker, "switch", true);
+    addEntry(&app.picker, "notes.txt", false);
+    app.picker_open = app.picker_first_run = true;
+    render(argv[1], "folder_picker", &app, &status);
+    app.picker_open = false;
     app.focus = FOCUS_ADD;
     render(argv[1], "browse_focus_add", &app, &status);
     app.focus = FOCUS_LIST;
