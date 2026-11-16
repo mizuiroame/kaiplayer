@@ -17,7 +17,7 @@ static void drawPlaylistIcon(int x, int y, Color color)
 
 static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus focus, uint64_t now_ns)
 {
-    char line[160];
+    char line[320];
     if (t->tracks.count == 0) {
         snprintf(line, sizeof(line), "%s  ·  empty", t->name);
         int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, focus == FOCUS_BACK) + 12;

@@ -3,7 +3,10 @@
 Small files made for the tests. They contain no third-party content: a
 1-second 440 Hz sine tone and a generated 64×64 image.
 
-They were made with ffmpeg and Pillow:
+tone.dsf and tone.dff (0.2 s of DSD64: 440 Hz left, 880 Hz right) are made
+by `python make_dsd.py`, with no packages needed.
+
+The others were made with ffmpeg and Pillow:
 
 ```sh
 # small_cover.jpg: a pink square with a yellow circle (Pillow).

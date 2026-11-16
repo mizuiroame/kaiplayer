@@ -7,6 +7,7 @@
 #define STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.c"
 
+#include "dsd.h"
 #include "tags.h"
 #include "tags_text.h"
 #include "util.h"
@@ -127,6 +128,14 @@ static void readOgg(const char *path, TrackTags *t)
     stb_vorbis_close(v);
 }
 
+// DSF points to an ID3v2 tag at the end; some DSDIFF files have one in an "ID3 " chunk.
+static void readDsd(FILE *f, TrackTags *t)
+{
+    DsdInfo info;
+    if (dsdReadInfo(f, &info) && info.id3_offset && fseek(f, (long)info.id3_offset, SEEK_SET) == 0)
+        readId3v2(f, t);
+}
+
 void tagsRead(const char *path, TrackTags *t)
 {
     if (utilHasExtension(path, "ogg") || utilHasExtension(path, "oga")) {
@@ -134,13 +143,16 @@ void tagsRead(const char *path, TrackTags *t)
         return;
     }
     bool mp3 = utilHasExtension(path, "mp3");
-    if (!mp3 && !utilHasExtension(path, "flac"))
+    bool dsd = utilHasExtension(path, "dsf") || utilHasExtension(path, "dff");
+    if (!mp3 && !dsd && !utilHasExtension(path, "flac"))
         return;
     FILE *f = fopen(path, "rb");
     if (!f)
         return;
     if (mp3)
         readMp3(f, t);
+    else if (dsd)
+        readDsd(f, t);
     else
         readFlac(f, t);
     fclose(f);

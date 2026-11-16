@@ -6,6 +6,7 @@
 #include "check.h"
 #include "keyboard.h"
 #include "menu.h"
+#include "plainname.h"
 #include "playlist.h"
 #include "resume.h"
 #include "tracklist.h"
@@ -76,8 +77,11 @@ static void testParseFormat(void)
         CHECK(strcmp(l.paths[1], "sdmc:/Music/B/02.mp3") == 0);
         CHECK(strcmp(l.paths[2], "sdmc:/x.ogg") == 0);
     }
-    char *out = playlistFormat(&l, "sdmc:/playlists");
+    char *out = playlistFormat(&l, "sdmc:/playlists", NULL);
     CHECK(out && strcmp(out, "#EXTM3U\n../Music/A/01 Intro.flac\n../Music/B/02.mp3\n../x.ogg\n") == 0);
+    free(out);
+    out = playlistFormat(&l, "sdmc:/playlists", "Español");
+    CHECK(out && strstr(out, "#EXTM3U\n#PLAYLIST:Español\n../Music/A/") == out);
     free(out);
     trackListFree(&l);
 }
@@ -91,7 +95,11 @@ static void testPlaylistFiles(void)
     CHECK(!playlistNameValid(""));
     CHECK(!playlistNameValid(".hidden"));
     CHECK(!playlistNameValid("a/b"));
-    CHECK(!playlistNameValid("日本"));
+    CHECK(playlistNameValid("日本"));
+    CHECK(playlistNameValid("Español"));
+    CHECK(!playlistNameValid("a\\b"));
+    CHECK(!playlistNameValid("tab\there"));
+    CHECK(!playlistNameValid("bad \xC3("));  // Broken UTF-8.
     CHECK(!playlistNameValid("trailing "));
 
     CHECK(playlistCreate("Mix"));
@@ -120,6 +128,69 @@ static void testPlaylistFiles(void)
     CHECK(playlistRename("Mix", "Favorites") && playlistExists("Favorites") && !playlistExists("Mix"));
     CHECK(playlistDelete("Favorites") && !playlistExists("Favorites"));
     CHECK(playlistAddTracks("Missing", &loaded) == -1);
+}
+
+static bool plain(const char *name, const char *expected)
+{
+    char out[PLAYLIST_FILE_NAME_MAX + 1];
+    plainName(name, "Playlist", out, sizeof(out));
+    return strcmp(out, expected) == 0;
+}
+
+static void testPlainNames(void)
+{
+    CHECK(plain("Español", "Espanol"));
+    CHECK(plain("Ñandú Œuvre", "Nandu Ouvre"));
+    CHECK(plain("Why’d You Only Call Me When You’re High?", "Why'd You Only Call Me When You're High_"));
+    CHECK(plain("¿Qué? — sí", "Que_ - si"));
+    CHECK(plain("松原みき", "Playlist"));
+    CHECK(plain("Best of 松原みき", "Best of _"));
+    CHECK(plain("..hidden.", "hidden"));
+    CHECK(plain("  spaced   out  ", "spaced out"));
+    CHECK(plainNameIs("Espanol (2)") && !plainNameIs("Español") && !plainNameIs("a:b"));
+    char small[6];
+    plainName("Canciones", "Playlist", small, sizeof(small));
+    CHECK(strcmp(small, "Canci") == 0);
+}
+
+// Names the console can't list stay as names; the files get plain ones.
+static void testPlaylistTitles(void)
+{
+    playlistSetRoot(TMP_ROOT "/titled");
+    CHECK(playlistCreate("Español"));
+    CHECK(playlistExists("Español") && !playlistExists("Espanol"));
+    char path[UTIL_PATH_MAX];
+    CHECK(playlistPathFor("Español", path, sizeof(path)) &&
+          strcmp(path, TMP_ROOT "/titled/Espanol.m3u8") == 0);
+    CHECK(playlistCreate("Espanol"));  // Another name: its file gets a number.
+    CHECK(playlistPathFor("Espanol", path, sizeof(path)) &&
+          strcmp(path, TMP_ROOT "/titled/Espanol (2).m3u8") == 0);
+    CHECK(playlistCreate("松原みき") && playlistCreate("中原めいこ"));
+    CHECK(playlistPathFor("中原めいこ", path, sizeof(path)) &&
+          strcmp(path, TMP_ROOT "/titled/Playlist (2).m3u8") == 0);
+
+    TrackList add = {0};
+    trackListAdd(&add, TMP_ROOT "/lib/z.mp3");
+    CHECK(playlistAddTracks("松原みき", &add) == 1);  // Saving keeps the name.
+    trackListFree(&add);
+    PlaylistIndex index;
+    CHECK(playlistIndexLoad(&index) && index.count == 4);
+    if (index.count == 4)
+        CHECK(strcmp(index.names[0], "Espanol") == 0 && strcmp(index.names[1], "Español") == 0 &&
+              strcmp(index.names[3], "松原みき") == 0);
+    playlistIndexFree(&index);
+
+    CHECK(playlistRename("Español", "Españoles") && playlistExists("Españoles") && !playlistExists("Español"));
+    CHECK(playlistPathFor("Españoles", path, sizeof(path)) &&
+          strcmp(path, TMP_ROOT "/titled/Espanoles.m3u8") == 0);
+    CHECK(playlistRename("松原みき", "Miki Matsubara"));  // Now the file name can say it.
+    CHECK(playlistPathFor("Miki Matsubara", path, sizeof(path)) &&
+          strcmp(path, TMP_ROOT "/titled/Miki Matsubara.m3u8") == 0);
+    TrackList loaded;
+    CHECK(playlistLoad(path, &loaded) && loaded.count == 1);
+    trackListFree(&loaded);
+    CHECK(!playlistRename("Miki Matsubara", "ESPANOL"));  // Taken, ignoring case.
+    CHECK(playlistDelete("中原めいこ") && !playlistExists("中原めいこ"));
 }
 
 static void testResume(void)
@@ -201,6 +272,8 @@ void testPlaylists(void)
     testTrackList();
     testParseFormat();
     testPlaylistFiles();
+    testPlainNames();
+    testPlaylistTitles();
     testResume();
     testKeyboard();
     testMenu();

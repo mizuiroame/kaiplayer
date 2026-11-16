@@ -1,6 +1,6 @@
 // KaiPlayer: a music player for Switch 2 homebrew (kaiHEN + libounce).
 // Browse the SD card, pick a folder or a playlist and play its MP3, FLAC,
-// Ogg Vorbis and WAV files.
+// Ogg Vorbis, WAV and DSD files.
 #include <stdio.h>
 #include <string.h>
 

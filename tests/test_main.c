@@ -346,6 +346,7 @@ int main(void)
     testTags();
     testCover();
     testFixtures();
+    testDsd();
     testPlaylists();
     testTouch();
     testEq();

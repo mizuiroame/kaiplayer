@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define MENU_MAX_ITEMS 520  // The picker lists up to 512 playlists.
-#define MENU_LABEL_MAX 96
+#define MENU_LABEL_MAX 256  // Room for a 48-character name in UTF-8 and its words.
 
 typedef struct {
     char label[MENU_LABEL_MAX];

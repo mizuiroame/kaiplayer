@@ -27,7 +27,7 @@ static void trimSpaces(char *text)
 void appOpenKeyboard(App *app, NamePurpose purpose, const char *title, const char *initial)
 {
     app->keyboard_for = purpose;
-    char text[KEYBOARD_MAX * 4 + 1], typed[KEYBOARD_MAX * 4 + 1], prompt[160];
+    char text[KEYBOARD_MAX * 4 + 1], typed[KEYBOARD_MAX * 4 + 1], prompt[320];
     snprintf(text, sizeof(text), "%s", initial ? initial : "");
     snprintf(prompt, sizeof(prompt), "%s", title);
     // The console's keyboard first. If the name is refused, it opens again
@@ -57,10 +57,10 @@ void appOpenKeyboard(App *app, NamePurpose purpose, const char *title, const cha
 // Applies the typed name. Returns false to keep the keyboard open.
 static bool applyName(App *app, const char *name)
 {
-    char message[160];
+    char message[320];
     PlaylistsTab *t = &app->playlists;
     if (!playlistNameValid(name)) {
-        appToast(app, "Use letters, numbers, spaces and - _ . ( ) ' & ! + , (up to 48).");
+        appToast(app, "Up to 48 characters, without / or \\, not starting with a dot.");
         return false;
     }
     if (app->keyboard_for == NAME_FOR_RENAME) {
