@@ -2,13 +2,14 @@
 
 An **open-source homebrew music player** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen). Pick a folder on your microSD
-card and KaiPlayer plays the music in it.
+card and KaiPlayer builds a library of your artists, albums and songs from
+their tags.
 
-![Now Playing](docs/screenshots/now_playing.png)
+![Home](docs/screenshots/home.png)
 
-| Library | Playlists | Queue |
-|--------|-----------|-------|
-| ![Library](docs/screenshots/browse.png) | ![Playlists](docs/screenshots/playlists.png) | ![Queue](docs/screenshots/queue.png) |
+| Now Playing | Library | Queue |
+|-------------|---------|-------|
+| ![Now Playing](docs/screenshots/now_playing.png) | ![Library](docs/screenshots/library.png) | ![Queue](docs/screenshots/queue.png) |
 
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
 > or sponsored by Nintendo. See the [Legal notice](#legal-notice).
@@ -75,12 +76,14 @@ let it replace the old one.
 
 > **Use plain letters (A–Z, no accents) in file and folder names.** On
 > Switch 2, a file or folder whose name has any character outside basic
-> ASCII (accents such as `á é ñ ü`, or Japanese) is saved, but no app can
-> list it, KaiPlayer included. Rename such files on your PC before uploading
-> them, for example `06 Canción.mp3` → `06 Cancion.mp3` or
-> `04 みずいろの雨.mp3` → `04 Mizuiro no Ame.mp3`. KaiPlayer still shows the
-> song's real title, artist and album, with accents or in Japanese, from its
-> tags. See
+> ASCII (accents such as `á é ñ ü`, typographic quotes such as `’`, or
+> Japanese) is saved, but the console's file system doesn't show it: no app
+> can list it, KaiPlayer included. The easiest way around it is
+> [KaiDrop](https://github.com/mizuiroame/kaidrop) (work in progress), which
+> uploads your music over FTP with plain names on the console and leaves your
+> files untouched. Or rename the files before uploading, for example
+> `06 Canción.mp3` → `06 Cancion.mp3`. KaiPlayer still shows the song's real
+> title, artist and album, with accents or in Japanese, from its tags. See
 > [File names and tags](#file-names-and-tags).
 
 ### 4. Play it
@@ -402,19 +405,27 @@ Text in tags and file names can be in any language:
 **File and folder names, however, must use plain ASCII letters.** This is a
 limitation of the console, not of KaiPlayer: on Switch 2, a file or folder
 whose name has any non-ASCII character (accented letters such as á, é, ñ or
-ü, or Japanese) is written correctly, but directory listings leave it out.
-FTP listings, OunceShell and KaiPlayer all list folders the same way, so the
-file is invisible in all of them, even though it is on the card.
+ü, typographic quotes such as ’, or Japanese) is written correctly, but the
+console's file system leaves it out of the folder: it isn't listed, and it
+isn't even counted among the folder's entries. FTP listings, OunceShell and
+KaiPlayer all see folders through it, so the file is invisible in all of
+them, even though it is on the card and takes up space. No app on the
+console can find it, so the fix has to happen before the file gets there.
 
-Because KaiPlayer shows the title, artist and album from the tags, the file
-name doesn't matter much. A file renamed `04 Mizuiro no Ame.mp3` is still
-shown as **みずいろの雨 · 八神純子 · 素顔の私** in Now Playing, with its
-embedded cover.
+**Tags carry the real names.** KaiPlayer takes each song's title, artist and
+album from its tags (ID3 in MP3, Vorbis comments in FLAC and Ogg), not from
+the file name, and tags can hold any language. A file renamed
+`04 Mizuiro no Ame.mp3` is still shown as **みずいろの雨 · 八神純子 · 素顔の私**,
+with its embedded cover, and `06 Cancion.flac` as **Canción**. Make sure your
+songs are tagged (most music from stores or ripped with a good tool is): a
+song without tags shows its file name, and is grouped by its folders, so with
+a plain file name it shows without its accents.
 
 **Upload with plain names, without renaming your files.** FileZilla can't
-rename files as it uploads them. Use [KaiDrop](https://github.com/mizuiroame/kaidrop),
-a small Windows app (also runs on macOS and Linux) that sends folders over FTP
-and gives the copies on the console plain names, with a preview of every name.
+rename files as it uploads them. Use [KaiDrop](https://github.com/mizuiroame/kaidrop)
+(work in progress), a small Windows app (also runs on macOS and Linux) that
+sends folders over FTP and gives the copies on the console plain names, with
+a preview of every name.
 Or, from the command line, the repository includes a small script,
 [`tools/kaiupload.py`](tools/kaiupload.py) (Python 3.8 or later, nothing to
 install). It uploads a folder over FTP and gives the copies on the console
