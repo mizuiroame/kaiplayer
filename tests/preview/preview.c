@@ -84,8 +84,8 @@ static bool writePpm(const char *path, const uint32_t *pixels)
     FILE *f = fopen(path, "wb");
     if (!f)
         return false;
-    fprintf(f, "P6\n%d %d\n255\n", GFX_WIDTH, GFX_HEIGHT);
-    for (int i = 0; i < GFX_WIDTH * GFX_HEIGHT; i++) {
+    fprintf(f, "P6\n%d %d\n255\n", GFX_FB_WIDTH, GFX_FB_HEIGHT);
+    for (int i = 0; i < GFX_FB_WIDTH * GFX_FB_HEIGHT; i++) {
         uint32_t p = pixels[i];
         unsigned char rgb[3] = {p & 0xFF, (p >> 8) & 0xFF, (p >> 16) & 0xFF};
         fwrite(rgb, 1, 3, f);
@@ -101,9 +101,9 @@ static void addEntry(Browser *b, const char *name, bool is_dir)
 
 static void render(const char *dir, const char *name, const App *app, const PlayerStatus *status)
 {
-    static uint32_t pixels[GFX_WIDTH * GFX_HEIGHT];
+    static uint32_t pixels[GFX_FB_WIDTH * GFX_FB_HEIGHT];
     char path[512];
-    gfxSetTarget(pixels, GFX_WIDTH);
+    gfxSetTarget(pixels, GFX_FB_WIDTH);
     uiDraw(app, status, 0);
     gfxSetTarget(NULL, 0);
     snprintf(path, sizeof(path), "%s/%s.ppm", dir, name);
@@ -117,8 +117,8 @@ static void loadArtwork(const char *cover_path)
     snprintf(g_art.title, sizeof(g_art.title), "%s", "Canción del Río (Versión Acústica Extendida)");
     snprintf(g_art.artist, sizeof(g_art.artist), "%s", "Aurora Fields");
     snprintf(g_art.album, sizeof(g_art.album), "%s", "Paper Boats & Other Stories");
-    g_art.has_cover = cover_path && coverLoadFromFolder(cover_path, &g_art.cover, ARTWORK_LARGE_SIZE,
-                                                         &g_art.thumb, ARTWORK_SMALL_SIZE);
+    g_art.has_cover = cover_path && coverLoadFromFolder(cover_path, &g_art.cover, gfxToFb(ARTWORK_LARGE_SIZE),
+                                                         &g_art.thumb, gfxToFb(ARTWORK_SMALL_SIZE));
     g_has_art = true;
 }
 

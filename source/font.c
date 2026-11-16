@@ -172,10 +172,17 @@ static float kerning(int px, PrevGlyph prev, const Glyph *next)
     return stbtt_GetGlyphKernAdvance(&g_faces[prev.file].info, prev.glyph, next->glyph) * scaleFor(prev.file, px);
 }
 
+// A layout text size in framebuffer pixels (rounded).
+static int fbPx(int px)
+{
+    return (px * 3 + 1) / 2;
+}
+
 int fontTextWidth(FontFace face, int px, const char *utf8)
 {
     if (!g_faces[face].ok)
         return 0;
+    px = fbPx(px);
     float x = 0.0f;
     PrevGlyph prev = NO_PREV;
     while (*utf8) {
@@ -183,14 +190,18 @@ int fontTextWidth(FontFace face, int px, const char *utf8)
         x += kerning(px, prev, g) + g->advance;
         prev = (PrevGlyph){g->file, g->glyph};
     }
-    return (int)ceilf(x);
+    return (int)ceilf(x / GFX_SCALE);
 }
 
-// Draws up to max_width pixels of text; returns the width used. Every
-// glyph, fallbacks included, sits on the face's baseline.
+// Draws up to max_width (layout) pixels of text; returns the width used.
+// Every glyph, fallbacks included, sits on the face's baseline. The work is
+// done in framebuffer pixels.
 static float drawRun(FontFace face, int px, float x, int y, const char *utf8, float max_width, Color color)
 {
-    int baseline = y + (int)lroundf(g_faces[face].ascent * scaleFor(face, px));
+    px = fbPx(px);
+    x *= GFX_SCALE;
+    max_width *= GFX_SCALE;
+    int baseline = gfxToFb(y) + (int)lroundf(g_faces[face].ascent * scaleFor(face, px));
     float start = x;
     PrevGlyph prev = NO_PREV;
     while (*utf8) {
@@ -202,7 +213,7 @@ static float drawRun(FontFace face, int px, float x, int y, const char *utf8, fl
         x = next_x + g->advance;
         prev = (PrevGlyph){g->file, g->glyph};
     }
-    return x - start;
+    return (x - start) / GFX_SCALE;
 }
 
 int fontDraw(FontFace face, int px, int x, int y, const char *utf8, Color color)

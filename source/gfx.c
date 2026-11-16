@@ -23,12 +23,12 @@ Color gfxMix(Color a, Color b, unsigned t)
     return GFX_RGB(r, g, bl);
 }
 
-// Clips a rectangle to the screen. False if nothing is left.
+// Clips a framebuffer rectangle to the screen. False if nothing is left.
 static bool clip(int *x, int *y, int *w, int *h)
 {
     int x0 = *x < 0 ? 0 : *x, y0 = *y < 0 ? 0 : *y;
-    int x1 = *x + *w > GFX_WIDTH ? GFX_WIDTH : *x + *w;
-    int y1 = *y + *h > GFX_HEIGHT ? GFX_HEIGHT : *y + *h;
+    int x1 = *x + *w > GFX_FB_WIDTH ? GFX_FB_WIDTH : *x + *w;
+    int y1 = *y + *h > GFX_FB_HEIGHT ? GFX_FB_HEIGHT : *y + *h;
     if (!g_pixels || x1 <= x0 || y1 <= y0)
         return false;
     *x = x0, *y = y0, *w = x1 - x0, *h = y1 - y0;
@@ -48,7 +48,16 @@ void gfxClear(Color color)
     gfxFillRect(0, 0, GFX_WIDTH, GFX_HEIGHT, color);
 }
 
-void gfxFillRect(int x, int y, int w, int h, Color color)
+// Layout rectangle to framebuffer pixels. Both edges are converted, so
+// rectangles that touch in the layout still touch.
+static void toFb(int *x, int *y, int *w, int *h)
+{
+    int x1 = gfxToFb(*x + *w), y1 = gfxToFb(*y + *h);
+    *x = gfxToFb(*x), *y = gfxToFb(*y);
+    *w = x1 - *x, *h = y1 - *y;
+}
+
+static void fillFb(int x, int y, int w, int h, Color color)
 {
     if (!clip(&x, &y, &w, &h))
         return;
@@ -59,8 +68,15 @@ void gfxFillRect(int x, int y, int w, int h, Color color)
     }
 }
 
+void gfxFillRect(int x, int y, int w, int h, Color color)
+{
+    toFb(&x, &y, &w, &h);
+    fillFb(x, y, w, h, color);
+}
+
 void gfxBlendRect(int x, int y, int w, int h, Color color, unsigned alpha)
 {
+    toFb(&x, &y, &w, &h);
     if (!clip(&x, &y, &w, &h))
         return;
     for (int py = y; py < y + h; py++) {
@@ -82,11 +98,13 @@ static unsigned circleCoverage(float px, float py, float cx, float cy, float r)
 
 void gfxFillRoundRect(int x, int y, int w, int h, int radius, Color color)
 {
+    toFb(&x, &y, &w, &h);
+    radius = gfxToFb(radius);
     if (radius * 2 > w) radius = w / 2;
     if (radius * 2 > h) radius = h / 2;
-    gfxFillRect(x, y + radius, w, h - 2 * radius, color);
-    gfxFillRect(x + radius, y, w - 2 * radius, radius, color);
-    gfxFillRect(x + radius, y + h - radius, w - 2 * radius, radius, color);
+    fillFb(x, y + radius, w, h - 2 * radius, color);
+    fillFb(x + radius, y, w - 2 * radius, radius, color);
+    fillFb(x + radius, y + h - radius, w - 2 * radius, radius, color);
     for (int dy = 0; dy < radius; dy++) {
         for (int dx = 0; dx < radius; dx++) {
             unsigned a = circleCoverage(dx + 0.5f, dy + 0.5f, (float)radius, (float)radius, (float)radius);
@@ -95,7 +113,7 @@ void gfxFillRoundRect(int x, int y, int w, int h, int radius, Color color)
             int xs[2] = {x + dx, x + w - 1 - dx}, ys[2] = {y + dy, y + h - 1 - dy};
             for (int i = 0; i < 4; i++) {
                 int px = xs[i & 1], py = ys[i >> 1];
-                if (g_pixels && px >= 0 && px < GFX_WIDTH && py >= 0 && py < GFX_HEIGHT)
+                if (g_pixels && px >= 0 && px < GFX_FB_WIDTH && py >= 0 && py < GFX_FB_HEIGHT)
                     blendPixel(g_pixels + (size_t)py * g_stride + px, color, a);
             }
         }
@@ -104,20 +122,22 @@ void gfxFillRoundRect(int x, int y, int w, int h, int radius, Color color)
 
 void gfxFillCircle(int cx, int cy, int radius, Color color)
 {
-    int x = cx - radius - 1, y = cy - radius - 1, w = radius * 2 + 3, h = w;
+    float fcx = cx * GFX_SCALE, fcy = cy * GFX_SCALE, fr = radius * GFX_SCALE;
+    int x = (int)(fcx - fr) - 1, y = (int)(fcy - fr) - 1, w = (int)(fr * 2.0f) + 3, h = w;
     if (!clip(&x, &y, &w, &h))
         return;
     for (int py = y; py < y + h; py++) {
         uint32_t *row = g_pixels + (size_t)py * g_stride;
         for (int px = x; px < x + w; px++)
-            blendPixel(&row[px], color, circleCoverage(px + 0.5f, py + 0.5f, (float)cx, (float)cy, (float)radius));
+            blendPixel(&row[px], color, circleCoverage(px + 0.5f, py + 0.5f, fcx, fcy, fr));
     }
 }
 
 void gfxGradientV(int x, int y, int w, int h, Color top, Color bottom)
 {
+    toFb(&x, &y, &w, &h);
     for (int i = 0; i < h; i++)
-        gfxFillRect(x, y + i, w, 1, gfxMix(top, bottom, h > 1 ? (unsigned)(i * 255 / (h - 1)) : 0));
+        fillFb(x, y + i, w, 1, gfxMix(top, bottom, h > 1 ? (unsigned)(i * 255 / (h - 1)) : 0));
 }
 
 #define TRIANGLE_SAMPLES 4  // Per axis: 16 samples per pixel for smooth edges.
@@ -149,11 +169,13 @@ static void fillTriangle(int x, int y, int w, int h, Color color, bool left)
 
 void gfxFillTriangleRight(int x, int y, int w, int h, Color color)
 {
+    toFb(&x, &y, &w, &h);
     fillTriangle(x, y, w, h, color, false);
 }
 
 void gfxFillTriangleLeft(int x, int y, int w, int h, Color color)
 {
+    toFb(&x, &y, &w, &h);
     fillTriangle(x, y, w, h, color, true);
 }
 
@@ -190,7 +212,8 @@ static float lineCoverage(float px, float py, const float *s)
 
 void gfxLine(float x0, float y0, float x1, float y1, float thickness, Color color)
 {
-    float r = thickness / 2.0f, s[5] = {x0, y0, x1, y1, r};
+    x0 *= GFX_SCALE, y0 *= GFX_SCALE, x1 *= GFX_SCALE, y1 *= GFX_SCALE;
+    float r = thickness * GFX_SCALE / 2.0f, s[5] = {x0, y0, x1, y1, r};
     fillShape(fminf(x0, x1) - r, fminf(y0, y1) - r, fmaxf(x0, x1) + r, fmaxf(y0, y1) + r, s, lineCoverage, color);
 }
 
@@ -210,6 +233,7 @@ static float arcCoverage(float px, float py, const float *s)
 
 void gfxArc(float cx, float cy, float radius, float thickness, float start, float end, Color color)
 {
+    cx *= GFX_SCALE, cy *= GFX_SCALE, radius *= GFX_SCALE, thickness *= GFX_SCALE;
     float r = radius + thickness / 2.0f;
     float s[6] = {cx, cy, radius, thickness / 2.0f, start, clampf(end - start, 0.0f, 2.0f * (float)M_PI)};
     fillShape(cx - r, cy - r, cx + r, cy + r, s, arcCoverage, color);
@@ -231,19 +255,29 @@ static float triangleCoverage(float px, float py, const float *s)
 
 void gfxTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color)
 {
+    x0 *= GFX_SCALE, y0 *= GFX_SCALE, x1 *= GFX_SCALE, y1 *= GFX_SCALE, x2 *= GFX_SCALE, y2 *= GFX_SCALE;
     float s[6] = {x0, y0, x1, y1, x2, y2};
     fillShape(fminf(x0, fminf(x1, x2)), fminf(y0, fminf(y1, y2)), fmaxf(x0, fmaxf(x1, x2)),
               fmaxf(y0, fmaxf(y1, y2)), s, triangleCoverage, color);
 }
 
-void gfxBlit(int x, int y, int size, const uint32_t *pixels)
+void gfxBlit(int x, int y, int size, int image_size, const uint32_t *pixels)
 {
-    int cx = x, cy = y, w = size, h = size;
-    if (!pixels || !clip(&cx, &cy, &w, &h))
+    int w = size, h = size;
+    toFb(&x, &y, &w, &h);
+    int cx = x, cy = y, cw = w, ch = h;
+    if (!pixels || image_size <= 0 || !clip(&cx, &cy, &cw, &ch))
         return;
-    for (int row = 0; row < h; row++) {
-        const uint32_t *src = pixels + (size_t)(cy - y + row) * size + (cx - x);
-        memcpy(g_pixels + (size_t)(cy + row) * g_stride + cx, src, (size_t)w * sizeof(uint32_t));
+    for (int row = 0; row < ch; row++) {
+        uint32_t *dst = g_pixels + (size_t)(cy + row) * g_stride + cx;
+        if (image_size == w && image_size == h) {
+            memcpy(dst, pixels + (size_t)(cy - y + row) * image_size + (cx - x), (size_t)cw * sizeof(uint32_t));
+            continue;
+        }
+        // Another size (nearest pixel): only if a cover was decoded for another scale.
+        const uint32_t *src = pixels + (size_t)((cy - y + row) * image_size / h) * image_size;
+        for (int i = 0; i < cw; i++)
+            dst[i] = src[(cx - x + i) * image_size / w];
     }
 }
 

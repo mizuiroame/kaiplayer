@@ -78,8 +78,8 @@ void uiDrawNoteIcon(int x, int y, int size, Color color)
 
 void uiDrawCover(int x, int y, int size, const CoverImage *cover)
 {
-    if (cover && cover->pixels && cover->size == size) {
-        gfxBlit(x, y, size, cover->pixels);
+    if (cover && cover->pixels) {
+        gfxBlit(x, y, size, cover->size, cover->pixels);
         return;
     }
     gfxFillRoundRect(x, y, size, size, size / 12, COLOR_SURFACE_HI);

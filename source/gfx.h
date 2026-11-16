@@ -5,8 +5,20 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// The UI is laid out in a 1280x720 space. The framebuffer is 1.5 times
+// that, 1920x1080 (the Switch 2 screen, and a clean 2x for a 4K TV), and
+// every shape, glyph and cover is drawn at that full resolution.
 #define GFX_WIDTH 1280
 #define GFX_HEIGHT 720
+#define GFX_FB_WIDTH 1920
+#define GFX_FB_HEIGHT 1080
+#define GFX_SCALE 1.5f
+
+// A layout coordinate or length in framebuffer pixels (rounded down).
+static inline int gfxToFb(int v)
+{
+    return (v * 3) >> 1;
+}
 
 // RGBA8 as libnx stores it: 0xAABBGGRR.
 typedef uint32_t Color;
@@ -20,8 +32,8 @@ void gfxExit(void);
 void gfxBegin(void);
 void gfxEnd(void);
 
-// Sets the pixels that drawing goes to; NULL turns drawing off. stride is
-// in pixels. gfxBegin calls this; the host preview uses it directly.
+// Sets the GFX_FB_WIDTH x GFX_FB_HEIGHT pixels that drawing goes to; NULL
+// turns drawing off. stride is in pixels. gfxBegin calls this; the host preview uses it directly.
 void gfxSetTarget(uint32_t *pixels, uint32_t stride);
 
 // Linear blend from a (t = 0) to b (t = 255).
@@ -46,7 +58,9 @@ void gfxLine(float x0, float y0, float x1, float y1, float thickness, Color colo
 void gfxArc(float cx, float cy, float radius, float thickness, float start, float end, Color color);
 void gfxTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color);
 
-// Copies a size x size image.
-void gfxBlit(int x, int y, int size, const uint32_t *pixels);
-// Draws color through an 8-bit coverage mask (used for text).
+// Draws an image_size x image_size image into a size x size box. An image
+// of gfxToFb(size) pixels is copied 1:1; any other size is scaled.
+void gfxBlit(int x, int y, int size, int image_size, const uint32_t *pixels);
+// Draws color through an 8-bit coverage mask (used for text). Unlike the
+// rest, x, y, w and h are framebuffer pixels.
 void gfxBlendMask(int x, int y, int w, int h, const uint8_t *mask, int stride, Color color);

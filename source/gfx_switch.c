@@ -10,7 +10,7 @@ static bool g_drawing;
 
 bool gfxInit(void)
 {
-    if (R_FAILED(framebufferCreate(&g_fb, nwindowGetDefault(), GFX_WIDTH, GFX_HEIGHT,
+    if (R_FAILED(framebufferCreate(&g_fb, nwindowGetDefault(), GFX_FB_WIDTH, GFX_FB_HEIGHT,
                                    PIXEL_FORMAT_RGBA_8888, FRAMEBUFFER_COUNT)))
         return false;
     if (R_FAILED(framebufferMakeLinear(&g_fb))) {
