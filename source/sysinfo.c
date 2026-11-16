@@ -42,7 +42,13 @@ static void readBattery(SysInfo *info)
     if (!info->has_battery)
         return;
     info->battery_percent = (int)percent;
-    info->charging = R_SUCCEEDED(psmGetChargerType(&charger)) && charger != PsmChargerType_Unconnected;
+    // Ask several ways: not every call answers the same on Switch 2.
+    bool supplied = false;
+    PsmBatteryChargeInfoFields fields;
+    info->charging = (R_SUCCEEDED(psmGetChargerType(&charger)) && charger != PsmChargerType_Unconnected) ||
+                     (R_SUCCEEDED(psmIsEnoughPowerSupplied(&supplied)) && supplied) ||
+                     (R_SUCCEEDED(psmGetBatteryChargeInfoFields(&fields)) &&
+                      (fields.battery_charging || fields.charger_type != PsmChargerType_Unconnected));
 }
 
 void sysinfoGet(SysInfo *info, uint64_t now_ns)
