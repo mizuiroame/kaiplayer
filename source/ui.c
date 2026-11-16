@@ -346,7 +346,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     uiHitReset();
     const Artwork *art = artworkLock();
     uiResolveTrack(status, art, &track);
-    g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->average : 0, track.cover != NULL);
+    g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
 
     gfxClear(COLOR_BG);
     if (app->view == VIEW_NOW_PLAYING) {

@@ -118,7 +118,9 @@ static void testTheme(void)
     CHECK(strcmp(themeAccentName(0), "Pink") == 0 && themeAccentName(THEME_ACCENT_COUNT)[0] == '\0');
     uint32_t pink = themeAccentColor(0, 0, false);
     CHECK(themeAccentColor(THEME_ACCENT_FROM_COVER, 0xFF808080u, false) == pink);  // No cover.
-    CHECK(themeAccentColor(THEME_ACCENT_FROM_COVER, 0xFF808080u, true) == pink);   // Grey: no hue.
+    uint32_t silver = themeAccentColor(THEME_ACCENT_FROM_COVER, 0, true);           // Black and white cover.
+    CHECK(silver != pink && (silver & 0xFF) == ((silver >> 16) & 0xFF) - 10);
+    CHECK(themeVivid(0xFF808080u) == silver);  // Grey: no hue to take.
     // A dark, dull blue cover becomes a bright, saturated blue.
     uint32_t vivid = themeAccentColor(THEME_ACCENT_FROM_COVER, 0xFF402010u, true);  // r=0x10 g=0x20 b=0x40
     unsigned r = vivid & 0xFF, g = (vivid >> 8) & 0xFF, b = (vivid >> 16) & 0xFF;

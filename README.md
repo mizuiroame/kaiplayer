@@ -254,7 +254,8 @@ turns songs down, never up, so nothing clips. A new mode applies from the
 next song.
 
 **Accent color:** the color of the highlights, buttons and progress bar.
-**From cover** takes a bright version of the playing song's album art color.
+**From cover** takes a bright version of the most prominent color in the
+playing song's album art; black-and-white covers give a silver accent.
 
 **Screen off while playing:** after that long without touching the console
 while music plays, the screen turns off to save battery and the music keeps

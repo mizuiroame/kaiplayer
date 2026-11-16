@@ -76,8 +76,26 @@ static void testFolderCoverNames(void)
     CHECK(!coverLoadFromFolder(TMP_ROOT "/art/c/song.flac", &large, LARGE, &small, SMALL));
 }
 
+static void testVibrant(void)
+{
+    enum { N = 400 };
+    static uint32_t px[N];
+    // Black with white lines (like a minimal album cover): no color.
+    for (int i = 0; i < N; i++)
+        px[i] = i % 10 == 0 ? 0xFFFFFFFFu : 0xFF000000u;
+    CHECK(coverVibrantColor(px, N) == 0);
+    // Mostly grey with some red and more blue: blue wins, though the
+    // average of the whole would be a dull grey-purple.
+    for (int i = 0; i < N; i++)
+        px[i] = i < 40 ? 0xFF2020E0u : i < 120 ? 0xFFE04020u : 0xFF808080u;  // 0xAABBGGRR
+    uint32_t v = coverVibrantColor(px, N);
+    CHECK(((v >> 16) & 0xFF) > 200 && (v & 0xFF) < 64);
+    CHECK(coverVibrantColor(px, 0) == 0);
+}
+
 void testCover(void)
 {
+    testVibrant();
     testFolderCoverNames();
 
     CoverImage large, small;

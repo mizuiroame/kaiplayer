@@ -13,9 +13,14 @@ typedef struct {
     int size;           // Width and height.
     uint32_t *pixels;   // size * size pixels, 0xAABBGGRR like gfx's Color.
     uint32_t average;   // Mean color, for backgrounds.
+    uint32_t vibrant;   // The most common vivid color; 0 for a black, white or grey cover.
 } CoverImage;
 
 void coverFree(CoverImage *c);
+
+// The most common vivid color of some pixels (0xAABBGGRR), or 0 if they
+// are black, white or grey. Sets CoverImage.vibrant.
+uint32_t coverVibrantColor(const uint32_t *pixels, size_t count);
 
 // Decodes an image and scales it to both sizes. On failure both stay empty.
 bool coverDecode(const uint8_t *data, size_t size, CoverImage *large, int large_size,
