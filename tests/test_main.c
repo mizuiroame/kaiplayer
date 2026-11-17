@@ -348,6 +348,7 @@ int main(void)
     testFixtures();
     testDsd();
     testStyles();
+    testAppRoot();
     testPlaylists();
     testTouch();
     testEq();

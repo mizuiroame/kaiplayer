@@ -7,6 +7,7 @@
 #include <switch.h>
 
 #include "app.h"
+#include "approot.h"
 #include "app_buttons.h"
 #include "artwork.h"
 #include "font.h"
@@ -16,6 +17,7 @@
 #include "catalog_scan.h"
 #include "covercache.h"
 #include "player.h"
+#include "resume.h"
 #include "screen.h"
 #include "sysinfo.h"
 #include "ui.h"
@@ -312,16 +314,18 @@ static void runLoop(App *app)
 }
 
 // Shows why KaiPlayer can't start, on libnx's text console, until + is
-// pressed, and writes it to sdmc:/config/kaiplayer/error.txt.
+// pressed, and writes it to error.txt in KaiPlayer's folder.
 static void startupError(const char *message)
 {
-    FILE *f = fopen("sdmc:/config/kaiplayer/error.txt", "w");
+    char path[UTIL_PATH_MAX];
+    snprintf(path, sizeof(path), "%s/error.txt", configFolder());
+    FILE *f = fopen(path, "w");
     if (f) {
         fprintf(f, "%s\n", message);
         fclose(f);
     }
     consoleInit(NULL);
-    printf("\n  %s\n\n  Details are in sdmc:/config/kaiplayer/error.txt.\n  Press + to exit.\n", message);
+    printf("\n  %s\n\n  Details are in %s.\n  Press + to exit.\n", message, path);
     PadState pad;
     padInitializeDefault(&pad);
     while (appletMainLoop()) {
@@ -335,8 +339,15 @@ static void startupError(const char *message)
 
 int main(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
+    // KaiPlayer's files go next to its NRO; the first time, what the old
+    // folder had (settings, history, resume, catalog) is copied there.
+    char folder[APPROOT_PATH_MAX];
+    bool next_to_nro = appRootFolder(argc > 0 ? argv[0] : NULL, "kaiplayer", folder, sizeof(folder));
+    appRootMakeFolder(folder);
+    if (next_to_nro)
+        appRootMigrate("sdmc:/config/kaiplayer", folder);
+    configSetFolder(folder);
+    resumeSetDir(folder);
 
     static App app;
     configLoad(&app.config);

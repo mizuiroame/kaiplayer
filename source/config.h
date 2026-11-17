@@ -1,4 +1,5 @@
-// Settings kept between runs in sdmc:/config/kaiplayer/settings.txt.
+// Settings kept between runs in settings.txt in KaiPlayer's folder (next to
+// its NRO, see approot.h; sdmc:/config/kaiplayer before).
 #pragma once
 
 #include <stdbool.h>
@@ -35,5 +36,10 @@ typedef struct {
 } Config;
 
 // Fills defaults, then overrides them with the saved file if it exists.
+// KaiPlayer's folder, for its settings, history, catalog and resume files:
+// set once at start (main), sdmc:/config/kaiplayer until then.
+void configSetFolder(const char *folder);
+const char *configFolder(void);
+
 void configLoad(Config *c);
 bool configSave(const Config *c);

@@ -23,7 +23,7 @@ static bool filePath(const char *name, char *out, size_t size)
     return utilJoinPath(out, size, g_dir, name);
 }
 
-// Creates g_dir and its parent ("sdmc:/config/kaiplayer").
+// Creates g_dir and its parent ("sdmc:/switch/kaiplayer/config").
 static void makeDirs(void)
 {
     char parent[UTIL_PATH_MAX];

@@ -8,23 +8,31 @@
 #include "app_buttons.h"
 #include "catalog_scan.h"
 #include "player.h"
+#include "util.h"
 
-#define HISTORY_DIR "sdmc:/config/kaiplayer"
-#define HISTORY_PATH HISTORY_DIR "/history.txt"
+#define HISTORY_NAME "history.txt"
 #define PLAY_SECONDS 30.0  // A song counts as played after this long (or half of a short one).
 #define RESTART_SECONDS 3.0
+
+// history.txt in KaiPlayer's folder.
+static void historyPath(char *out, size_t size)
+{
+    snprintf(out, size, "%s/" HISTORY_NAME, configFolder());
+}
 
 void appLoadHistory(App *app)
 {
     historyInit(&app->history);
-    FILE *f = fopen(HISTORY_PATH, "r");
+    char path[UTIL_PATH_MAX];
+    historyPath(path, sizeof(path));
+    FILE *f = fopen(path, "r");
     if (!f)
         return;
     historyLoad(&app->history, f);
     fclose(f);
     if (app->history.count < HISTORY_MAX)
         return;
-    f = fopen(HISTORY_PATH, "w");  // Full: rewrite without the dropped lines.
+    f = fopen(path, "w");  // Full: rewrite without the dropped lines.
     if (f) {
         historySave(&app->history, f);
         fclose(f);
@@ -35,9 +43,9 @@ void appRecordPlay(App *app, HistoryKind kind, const char *key)
 {
     if (!historyAdd(&app->history, kind, key))
         return;
-    mkdir("sdmc:/config", 0777);
-    mkdir(HISTORY_DIR, 0777);
-    FILE *f = fopen(HISTORY_PATH, "a");
+    char path[UTIL_PATH_MAX];
+    historyPath(path, sizeof(path));
+    FILE *f = fopen(path, "a");
     if (f) {
         historyWriteEntry(f, kind, key);
         fclose(f);

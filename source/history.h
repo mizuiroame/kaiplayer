@@ -1,5 +1,5 @@
 // What was played, newest last: songs (by path) and playlists (by name).
-// Kept in sdmc:/config/kaiplayer/history.txt for the Home tab.
+// Kept in history.txt in KaiPlayer's folder for the Home tab.
 #pragma once
 
 #include <stdbool.h>

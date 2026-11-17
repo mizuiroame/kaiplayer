@@ -105,7 +105,23 @@ let it replace the old one.
    **X** to play it, or **A** on a song to start from there.
 
 KaiPlayer remembers the music folder and the shuffle and repeat modes in
-`sdmc:/config/kaiplayer/settings.txt`.
+`settings.txt` in its folder (see below).
+
+### Where KaiPlayer keeps its files
+
+Settings, play history, the library catalog and where you left off are kept
+in a `config` folder next to `KaiPlayer.nro`, in its own folder:
+
+| Where `KaiPlayer.nro` is | Its files |
+|--------------------------|-----------|
+| `sdmc:/switch/KaiPlayer.nro` | `sdmc:/switch/kaiplayer/config/` |
+| `sdmc:/switch/kaiplayer/KaiPlayer.nro` | `sdmc:/switch/kaiplayer/config/` |
+| `sdmc:/brewstore/apps/kaiplayer/KaiPlayer.nro` | `sdmc:/brewstore/apps/kaiplayer/config/` |
+
+Before 1.0.0-rc2 they were in `sdmc:/config/kaiplayer`. The first time a newer
+KaiPlayer opens, it copies them over (and leaves that folder as it is, so you
+can delete it once everything is there). Your music, playlists and
+backgrounds stay where they are.
 
 ---
 
@@ -197,7 +213,7 @@ Before you have played anything, it shows albums from your library. Use the
 D-pad or the left stick to move between cards and sections, **A** to open one, **X** to play it and
 **Y** to shuffle it, or tap a card. A song counts as played after 30 seconds
 (half of a song shorter than a minute). The plays are kept in
-`sdmc:/config/kaiplayer/history.txt`; delete that file to start over.
+`history.txt` in KaiPlayer's folder; delete that file to start over.
 
 ### Library
 
@@ -213,7 +229,7 @@ Artists and albums come from the tags (album artist, artist, album, track
 and disc numbers, year), **not from the folder names**: a folder named
 `Miki Matsubara` whose songs are tagged 松原みき shows as **松原みき**. Songs
 without tags are grouped by folder, as `Artist/Album/song.mp3`. KaiPlayer keeps the library in
-`sdmc:/config/kaiplayer/catalog.txt` so it shows at once next time, and
+`catalog.txt` in its folder so it shows at once next time, and
 updates it in the background, reading only new or changed files; the
 progress shows at the top right. **+ → Update the library now** checks the
 folder again after you add music.
@@ -420,8 +436,8 @@ when playing.
 Unless you turn it off in Settings, KaiPlayer remembers the queue, the
 current song and the position. When you open it again, it starts in Now
 Playing and keeps playing from that spot (or waits paused, if you chose
-**Paused** in Settings). It saves this in `sdmc:/config/kaiplayer/resume.m3u8` and
-`resume.txt` when the song changes, when you pause, every 30 seconds while
+**Paused** in Settings). It saves this in `resume.m3u8` and
+`resume.txt` in its folder when the song changes, when you pause, every 30 seconds while
 playing, and when you exit.
 
 ### Screen and resolution
@@ -701,8 +717,8 @@ reads untrusted files could therefore affect the whole console. KaiPlayer
 reduces that risk in these ways:
 
 - **Small attack surface.** No network access. The app only reads the files
-  and folders you browse, and only writes
-  `sdmc:/config/kaiplayer/settings.txt`.
+  and folders you browse, and only writes its own files (settings, history,
+  catalog, resume) in its folder, and the playlists you save.
 - **Untrusted input is bounded.**
   - Paths and settings use length-checked buffers.
   - Audio headers with unsupported channel counts (0 or more than 8) or sample

@@ -1,4 +1,5 @@
 #include "catalog_scan.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,8 +14,7 @@
 
 #define THREAD_STACK_SIZE 0x20000
 #define THREAD_PRIORITY 0x32  // Below the artwork and list-tag threads.
-#define CACHE_DIR "sdmc:/config/kaiplayer"
-#define CACHE_PATH CACHE_DIR "/catalog.txt"
+#define CACHE_NAME "catalog.txt"
 
 static Mutex g_lock;
 static CondVar g_wake;
@@ -50,10 +50,18 @@ static void publish(Catalog *fresh)
     }
 }
 
+// catalog.txt in KaiPlayer's folder.
+static void cachePath(char *out, size_t size)
+{
+    snprintf(out, size, "%s/" CACHE_NAME, configFolder());
+}
+
 // The saved catalog, keeping only songs inside root. NULL if there is none.
 static Catalog *loadCache(const char *root)
 {
-    FILE *f = fopen(CACHE_PATH, "r");
+    char path[UTIL_PATH_MAX];
+    cachePath(path, sizeof(path));
+    FILE *f = fopen(path, "r");
     if (!f)
         return NULL;
     Catalog all, *kept = malloc(sizeof(Catalog));
@@ -80,16 +88,17 @@ static Catalog *loadCache(const char *root)
 
 static void saveCache(const Catalog *c)
 {
-    mkdir("sdmc:/config", 0777);
-    mkdir(CACHE_DIR, 0777);
-    FILE *f = fopen(CACHE_PATH ".tmp", "w");
+    char path[UTIL_PATH_MAX], temp[UTIL_PATH_MAX + 8];
+    cachePath(path, sizeof(path));
+    snprintf(temp, sizeof(temp), "%s.tmp", path);
+    FILE *f = fopen(temp, "w");
     if (!f)
         return;
     bool ok = catalogSave(c, f);
     ok = fclose(f) == 0 && ok;
     if (ok) {
-        remove(CACHE_PATH);
-        rename(CACHE_PATH ".tmp", CACHE_PATH);
+        remove(path);
+        rename(temp, path);
     }
 }
 
