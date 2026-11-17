@@ -66,10 +66,11 @@ Go to the repository's **[Releases](../../releases)** page and download
    `1337`).
 2. In FileZilla, enter that address as **Host** and that number as **Port**,
    leave **Username** and **Password** empty, and click **Quickconnect**.
-3. In the remote pane (the console), open the `switch` folder. Create it if
-   it doesn't exist.
-4. Drag `KaiPlayer.nro` from your PC into `switch`. Its path on the card is
-   then `sdmc:/switch/KaiPlayer.nro`.
+3. In the remote pane (the console), open the `switch` folder (create it if
+   it doesn't exist) and make a `kaiplayer` folder inside it.
+4. Drag `KaiPlayer.nro` from your PC into `kaiplayer`. Its path on the card
+   is then `sdmc:/switch/kaiplayer/KaiPlayer.nro`. (Straight in `switch`
+   works too.)
 
 To update KaiPlayer later, upload the new `KaiPlayer.nro` the same way and
 let it replace the old one.
