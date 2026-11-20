@@ -36,10 +36,11 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus f
     char playing[UTIL_PATH_MAX] = "";
     if (status->state != PLAYER_STOPPED)
         playerTrackPath(status->track, playing, sizeof(playing));
-    size_t first = uiFirstVisible(t->track_cursor, t->tracks.count);
+    int offset;
+    size_t first = uiListBegin(&t->track_cursor, t->track_cursor, t->tracks.count, &offset);
     uiHitListArea();
-    for (size_t i = first; i < t->tracks.count && i < first + UI_LIST_ROWS; i++) {
-        int y = LIST_Y + (int)(i - first) * ROW_H;
+    for (size_t i = first; i < t->tracks.count && i <= first + UI_LIST_ROWS; i++) {
+        int y = LIST_Y + (int)(i - first) * ROW_H - offset;
         uiHitRow(y, i);
         bool selected = i == t->track_cursor;
         bool current = playing[0] && strcmp(playing, t->tracks.paths[i]) == 0;
@@ -54,6 +55,7 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus f
         };
         uiDrawTrackRow(&row);
     }
+    uiListEnd();
     uiDrawScrollbar(first, t->tracks.count);
 }
 
@@ -69,10 +71,11 @@ static void drawList(const PlaylistsTab *t)
              playlistRoot());
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
 
-    size_t first = uiFirstVisible(t->cursor, t->index.count);
+    int offset;
+    size_t first = uiListBegin(&t->cursor, t->cursor, t->index.count, &offset);
     uiHitListArea();
-    for (size_t i = first; i < t->index.count && i < first + UI_LIST_ROWS; i++) {
-        int y = LIST_Y + (int)(i - first) * ROW_H;
+    for (size_t i = first; i < t->index.count && i <= first + UI_LIST_ROWS; i++) {
+        int y = LIST_Y + (int)(i - first) * ROW_H - offset;
         uiHitRow(y, i);
         bool selected = i == t->cursor;
         if (selected)
@@ -81,6 +84,7 @@ static void drawList(const PlaylistsTab *t)
         fontDrawClipped(selected ? FONT_BOLD : FONT_REGULAR, TEXT_ROW, MARGIN + 44, y + 8,
                         GFX_WIDTH - 2 * MARGIN - 60, t->index.names[i], COLOR_TEXT);
     }
+    uiListEnd();
     uiDrawScrollbar(first, t->index.count);
 }
 

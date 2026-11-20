@@ -13,6 +13,7 @@
 #include "menu.h"
 #include "history.h"
 #include "home.h"
+#include "kinetic.h"
 #include "player.h"
 #include "playlist.h"
 #include "settings.h"
@@ -162,7 +163,8 @@ typedef struct {
     int sleep_minutes;          // The sleep timer's length; 0 is off.
     uint64_t sleep_deadline_ns; // When the sleep timer fires; 0 if off.
     TouchTracker touch;
-    int drag_rows;              // Pixels dragged on a list, not yet a whole row.
+    Kinetic kinetic;            // A list following a finger, or gliding on after it.
+    bool swallow_tap;           // A press stopped a glide: its tap doesn't open anything.
     bool scrubbing;             // Dragging on the progress bar.
     double scrub_fraction;      // Where the finger is on the bar, 0 to 1.
     bool quit;

@@ -9,6 +9,7 @@
 #include "app.h"
 #include "approot.h"
 #include "app_buttons.h"
+#include "ui_list.h"
 #include "artwork.h"
 #include "font.h"
 #include "gfx.h"
@@ -290,6 +291,10 @@ static void runLoop(App *app)
             if (app->config.resume != RESUME_OFF)
                 appSaveSession(app, now, false);
         } else if (app->audio_ok) {
+            if (pressed & (BUTTONS_UP | BUTTONS_DOWN | BUTTONS_PAGE_UP | BUTTONS_PAGE_DOWN)) {
+                uiListRelease();  // The buttons take over from the finger.
+                kineticStop(&app->kinetic);
+            }
             appDispatchButtons(app, pressed);
             appHandleTouch(app, now);
             appTickSleepTimer(app, now);

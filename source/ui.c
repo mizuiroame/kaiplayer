@@ -54,10 +54,11 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
     char playing[UTIL_PATH_MAX] = "", path[UTIL_PATH_MAX];
     if (status->state != PLAYER_STOPPED)
         playerTrackPath(status->track, playing, sizeof(playing));
-    size_t first = uiFirstVisible(b->cursor, b->count);
+    int offset;
+    size_t first = uiListBegin(&b->cursor, b->cursor, b->count, &offset);
     uiHitListArea();
-    for (size_t i = first; i < b->count && i < first + UI_LIST_ROWS; i++) {
-        int y = LIST_Y + (int)(i - first) * ROW_H;
+    for (size_t i = first; i < b->count && i <= first + UI_LIST_ROWS; i++) {
+        int y = LIST_Y + (int)(i - first) * ROW_H - offset;
         const BrowserEntry *e = &b->entries[i];
         uiHitRow(y, i);
         if (i == b->cursor)
@@ -83,6 +84,7 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
             uiDrawSongColumns(&song, y);
         uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, i == b->cursor && app->focus == FOCUS_ADD);
     }
+    uiListEnd();
     uiDrawScrollbar(first, b->count);
 }
 
@@ -111,18 +113,20 @@ static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_n
     uiDrawColumnHeaders();
 
     size_t cursor = app->queue_cursor < status->track_count ? app->queue_cursor : 0;
-    size_t first = uiFirstVisible(cursor, status->track_count);
+    int offset;
+    size_t first = uiListBegin(&app->queue_cursor, cursor, status->track_count, &offset);
     uiHitListArea();
-    for (size_t i = first; i < status->track_count && i < first + UI_LIST_ROWS; i++) {
+    for (size_t i = first; i < status->track_count && i <= first + UI_LIST_ROWS; i++) {
         bool current = i == status->queue_pos && status->state != PLAYER_STOPPED;
-        uiHitRow(LIST_Y + (int)(i - first) * ROW_H, i);
+        uiHitRow(LIST_Y + (int)(i - first) * ROW_H - offset, i);
         TrackRow row = {
-            .number = i + 1, .y = LIST_Y + (int)(i - first) * ROW_H, .index = i,
+            .number = i + 1, .y = LIST_Y + (int)(i - first) * ROW_H - offset, .index = i,
             .selected = i == cursor, .current = current, .playing = status->state == PLAYER_PLAYING,
             .add_focused = i == cursor && app->focus == FOCUS_ADD, .now_ns = now_ns,
         };
         drawQueueRow(&row);
     }
+    uiListEnd();
     uiDrawScrollbar(first, status->track_count);
 }
 

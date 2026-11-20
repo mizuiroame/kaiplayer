@@ -14,7 +14,7 @@ static void testTap(void)
     TouchTracker t;
     touchReset(&t);
     TouchEvent e = touchUpdate(&t, true, 100, 200, 0);
-    CHECK(e.type == TOUCH_NONE);
+    CHECK(e.type == TOUCH_PRESS && e.x == 100 && e.y == 200);  // Down: a glide stops.
     e = touchUpdate(&t, true, 105, 203, 50 * MS);  // Within the slop.
     CHECK(e.type == TOUCH_NONE);
     e = touchUpdate(&t, false, 0, 0, 120 * MS);

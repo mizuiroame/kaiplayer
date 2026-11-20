@@ -1,5 +1,5 @@
 // Touch input: taps act like the matching button, and drags on a list move
-// its cursor. Targets come from the regions the UI drew last frame.
+// it with the finger (and it glides on, as on a phone). Targets come from the regions the UI drew last frame.
 #include <switch.h>
 
 #include "app.h"
@@ -128,30 +128,66 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
     }
 }
 
-// A drag that starts on a list moves its cursor one row per row height.
-static void dragList(App *app, const TouchEvent *e)
+// Moves the list in view by px as a finger does, and its cursor with the
+// same steps as Up and Down to stay in view. False at an end.
+static bool scrollList(App *app, int px)
+{
+    bool moved = uiListScrollPx(px);
+    size_t want = g_list_scroll.want_cursor;
+    for (; g_list_scroll.cursor < want; g_list_scroll.cursor++)
+        appDispatchButtons(app, HidNpadButton_Down);
+    for (; g_list_scroll.cursor > want; g_list_scroll.cursor--)
+        appDispatchButtons(app, HidNpadButton_Up);
+    return moved;
+}
+
+// A drag that starts on a list moves it with the finger, as on a phone.
+static void dragList(App *app, const TouchEvent *e, uint64_t now_ns)
 {
     const HitRegion *start = uiHitFind(e->start_x, e->start_y);
-    // Lists scroll; so does the folder picker's, over its panel.
+    // Lists scroll; the folder picker's goes by rows, over its panel.
     bool list = start && (start->kind == HIT_LIST || start->kind == HIT_ROW) && !overlayOpen(app);
     bool picker = start && (start->kind == HIT_PICKER_ROW || start->kind == HIT_PANEL) && app->picker_open &&
                   !app->menu.open && !app->keyboard_open;
     if (!(list || picker) || app->playlists.moving)
         return;
-    app->drag_rows -= e->dy;  // Finger up: the list moves on, the cursor goes down.
-    while (app->drag_rows >= ROW_H) {
-        app->drag_rows -= ROW_H;
-        appDispatchButtons(app, HidNpadButton_Down);
+    bool starting = !app->kinetic.dragging;
+    kineticDrag(&app->kinetic, starting ? 0 : -e->dy, now_ns);
+    if (picker) {  // Not one of the lists that follow the finger: a row a step.
+        static int rows;
+        rows = starting ? -e->dy : rows - e->dy;
+        for (; rows >= ROW_H; rows -= ROW_H)
+            appDispatchButtons(app, HidNpadButton_Down);
+        for (; rows <= -ROW_H; rows += ROW_H)
+            appDispatchButtons(app, HidNpadButton_Up);
+        return;
     }
-    while (app->drag_rows <= -ROW_H) {
-        app->drag_rows += ROW_H;
-        appDispatchButtons(app, HidNpadButton_Up);
+    scrollList(app, -e->dy);  // Finger up: the content goes up, showing what's below.
+}
+
+// A finger came down, let go, or nothing: the list glides on, or stops.
+static void glide(App *app, TouchEvent *e, uint64_t now_ns)
+{
+    if (e->type == TOUCH_PRESS) {  // A press stops a glide, and isn't a tap on what it stopped over.
+        app->swallow_tap = kineticGliding(&app->kinetic);
+        kineticStop(&app->kinetic);
+    } else if (e->type == TOUCH_TAP && app->swallow_tap) {
+        e->type = TOUCH_NONE;
     }
+    if (e->type != TOUCH_PRESS && e->type != TOUCH_DRAG)
+        app->swallow_tap = false;
+    if (e->type == TOUCH_DRAG_END && app->kinetic.dragging)
+        kineticRelease(&app->kinetic, now_ns);
+    if (overlayOpen(app) || app->playlists.moving)
+        kineticStop(&app->kinetic);
+    int px = kineticStep(&app->kinetic, now_ns);
+    if (px && !scrollList(app, px))
+        kineticStop(&app->kinetic);  // An end.
 }
 
 // A drag that starts on the progress bar scrubs: the bar follows the finger,
 // and the song jumps there on release. Other drags scroll lists.
-static void dragSeekOrList(App *app, const TouchEvent *e)
+static void dragSeekOrList(App *app, const TouchEvent *e, uint64_t now_ns)
 {
     const HitRegion *start = uiHitFind(e->start_x, e->start_y);
     if (start && start->kind == HIT_EQ_BAND && app->eq_open) {  // Drag a slider.
@@ -162,7 +198,7 @@ static void dragSeekOrList(App *app, const TouchEvent *e)
     if (!on_bar) {
         app->scrubbing = false;
         if (e->type == TOUCH_DRAG)
-            dragList(app, e);
+            dragList(app, e, now_ns);
         return;
     }
     app->scrub_fraction = seekFraction(start, e->x);
@@ -214,14 +250,12 @@ void appHandleTouch(App *app, uint64_t now_ns)
         }
     }
     TouchEvent e = touchUpdate(&app->touch, touching, x, y, now_ns);
+    glide(app, &e, now_ns);
     if (e.type == TOUCH_TAP) {
-        app->drag_rows = 0;
         const HitRegion *r = uiHitFind(e.x, e.y);
         if (r)
             tapRegion(app, r, e.x, e.y);
     } else if (e.type == TOUCH_DRAG || e.type == TOUCH_DRAG_END) {
-        dragSeekOrList(app, &e);
-    } else if (!touching) {
-        app->drag_rows = 0;  // A new drag starts from zero.
+        dragSeekOrList(app, &e, now_ns);
     }
 }

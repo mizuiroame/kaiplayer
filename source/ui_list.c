@@ -26,6 +26,63 @@ size_t uiFirstVisible(size_t cursor, size_t count)
 }
 
 bool g_ui_list_focused = true;
+UiListScroll g_list_scroll;
+
+static size_t clampFirst(size_t first, size_t count)
+{
+    return count <= UI_LIST_ROWS ? 0 : first > count - UI_LIST_ROWS ? count - UI_LIST_ROWS : first;
+}
+
+size_t uiListBegin(const void *key, size_t cursor, size_t count, int *offset)
+{
+    UiListScroll *s = &g_list_scroll;
+    if (s->key != key)
+        s->free = false;
+    s->key = key;
+    s->cursor = cursor;
+    s->count = count;
+    size_t first = s->free ? clampFirst(s->first, count) : uiFirstVisible(cursor, count);
+    *offset = s->free && first == s->first ? s->offset : 0;
+    gfxSetClip(0, LIST_Y, GFX_WIDTH, UI_LIST_ROWS * ROW_H);
+    uiHitClip(LIST_Y, LIST_Y + UI_LIST_ROWS * ROW_H);
+    return first;
+}
+
+void uiListEnd(void)
+{
+    gfxResetClip();
+    uiHitClip(-100000, 100000);
+}
+
+bool uiListScrollPx(int px)
+{
+    UiListScroll *s = &g_list_scroll;
+    if (!s->free) {
+        s->first = uiFirstVisible(s->cursor, s->count);
+        s->offset = 0;
+        s->free = true;
+    }
+    long end = s->count > UI_LIST_ROWS ? (long)(s->count - UI_LIST_ROWS) * ROW_H : 0;
+    long at = (long)s->first * ROW_H + s->offset, to = at + px;
+    to = to < 0 ? 0 : to > end ? end : to;
+    s->first = (size_t)(to / ROW_H);
+    s->offset = (int)(to % ROW_H);
+    s->want_cursor = s->cursor;
+    if (s->count > 0) {  // The cursor stays on a row mostly in view.
+        size_t top = s->first + (s->offset * 2 > ROW_H ? 1 : 0);
+        size_t bottom = top + UI_LIST_ROWS - 1 < s->count ? top + UI_LIST_ROWS - 1 : s->count - 1;
+        if (s->cursor < top)
+            s->want_cursor = top;
+        else if (s->cursor > bottom)
+            s->want_cursor = bottom;
+    }
+    return to != at && to == at + px;
+}
+
+void uiListRelease(void)
+{
+    g_list_scroll.free = false;
+}
 
 void uiDrawSelection(int y, Color bar)
 {
@@ -49,7 +106,9 @@ void uiDrawScrollbar(size_t first, size_t count)
     int thumb_h = track_h * UI_LIST_ROWS / (int)count;
     if (thumb_h < 24)
         thumb_h = 24;
-    int thumb_y = LIST_Y + (int)((long)(track_h - thumb_h) * (long)first / (long)(count - UI_LIST_ROWS));
+    long at = (long)first * ROW_H + (g_list_scroll.free ? g_list_scroll.offset : 0);
+    long end = (long)(count - UI_LIST_ROWS) * ROW_H;
+    int thumb_y = LIST_Y + (int)((long)(track_h - thumb_h) * (at < end ? at : end) / end);
     gfxFillRoundRect(GFX_WIDTH - 12, LIST_Y, 4, track_h, 2, COLOR_SURFACE);
     gfxFillRoundRect(GFX_WIDTH - 12, thumb_y, 4, thumb_h, 2, COLOR_FAINT);
 }

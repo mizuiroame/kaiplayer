@@ -18,6 +18,28 @@
 
 // First row to show so that the cursor stays near the middle.
 size_t uiFirstVisible(size_t cursor, size_t count);
+
+// A list as a finger left it, as on a phone: where it is (free: not centered
+// on the cursor), the list it's for, and what that list was when drawn.
+typedef struct {
+    bool free;
+    const void *key;      // The list (its cursor's address): another one starts centered.
+    size_t first;
+    int offset;           // Pixels into the first row in view.
+    size_t cursor, count; // As the list was drawn last.
+    size_t want_cursor;   // Where the cursor should be to stay in view, after a move.
+} UiListScroll;
+extern UiListScroll g_list_scroll;
+
+// A list starts drawing: the first row in view and pixels into it (offset);
+// it's drawn cut to its place, and its targets too, until uiListEnd.
+size_t uiListBegin(const void *key, size_t cursor, size_t count, int *offset);
+void uiListEnd(void);
+// A finger moves the list last drawn by px (positive: up). False at an end.
+// want_cursor then says where the cursor goes to stay in view.
+bool uiListScrollPx(int px);
+// A button moved the cursor: the list keeps it in its middle again.
+void uiListRelease(void);
 // False while the buttons are on the player bar: lists then draw no
 // selection, so only one thing looks selected. Set each frame by uiDraw.
 extern bool g_ui_list_focused;

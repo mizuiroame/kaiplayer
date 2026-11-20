@@ -170,9 +170,10 @@ void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns)
     char playing[UTIL_PATH_MAX] = "";
     if (status->state != PLAYER_STOPPED)
         playerTrackPath(status->track, playing, sizeof(playing));
-    size_t first = uiFirstVisible(p->cursor, count);
-    for (size_t i = first; i < count && i < first + UI_LIST_ROWS; i++) {
-        int y = LIST_Y + (int)(i - first) * ROW_H;
+    int offset;
+    size_t first = uiListBegin(&p->cursor, p->cursor, count, &offset);
+    for (size_t i = first; i < count && i <= first + UI_LIST_ROWS; i++) {
+        int y = LIST_Y + (int)(i - first) * ROW_H - offset;
         bool selected = i == p->cursor;
         uiHitRow(y, i);
         if (selected && p->level != LIB_ALBUM && p->level != LIB_SONGS)
@@ -188,6 +189,7 @@ void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns)
         if (p->level != LIB_ALBUM && p->level != LIB_SONGS)
             uiDrawAddButton(GFX_WIDTH - MARGIN - 16 - ADD_BUTTON_W + 8, y, i, false);
     }
+    uiListEnd();
     uiDrawScrollbar(first, count);
     catalogUnlock();
 }

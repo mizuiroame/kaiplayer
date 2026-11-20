@@ -30,3 +30,4 @@ void testHome(void);
 void testDsd(void);
 void testStyles(void);
 void testAppRoot(void);
+void testKinetic(void);
