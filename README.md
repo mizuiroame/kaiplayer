@@ -287,7 +287,8 @@ Everything can also be done by touch:
 
 - **Tabs:** tap a tab name to open it.
 - **Lists:** tap a song to play it, or a folder or playlist to open it. Drag
-  up or down to scroll. **‹ Back** (next to the folder path, or the playlist
+  up or down to scroll: the list follows your finger and glides on when you
+  let go, as on a phone, and a touch stops it. **‹ Back** (next to the folder path, or the playlist
   name) goes up a folder or back to the playlist list.
 - **Add-to-playlist buttons:** every song and folder row ends with a button
   (a list with a small plus) that adds it to a playlist, and so does **Add
