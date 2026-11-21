@@ -8,6 +8,7 @@
 #include <switch.h>
 
 #include "decoder.h"
+#include "kfile.h"
 #include "lang.h"
 #include "resampler.h"
 #include "tags.h"
@@ -21,7 +22,8 @@
 #define IDLE_SLEEP_NS 10000000ull
 #define RESTART_THRESHOLD_SECONDS 3.0
 #define MAX_OPEN_FAILURES 32
-#define THREAD_STACK_SIZE 0x8000
+#define MAX_NETWORK_FAILURES 3  // Network songs that fail in a row: the server is gone, not those songs.
+#define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
 #define THREAD_PRIORITY 0x2B
 
 // Shared with the UI thread: guarded by lock.
@@ -98,6 +100,7 @@ static float replayGainFor(const char *path)
 static bool loadCurrent(void)
 {
     char path[UTIL_PATH_MAX];
+    int network_failures = 0;
     for (int attempt = 0; attempt < MAX_OPEN_FAILURES; attempt++) {
         mutexLock(&g_lock);
         if (g_list.count == 0) {
@@ -129,6 +132,10 @@ static bool loadCurrent(void)
             return false;
         }
         snprintf(g_error, sizeof(g_error), T("Could not open: %s"), utilFileName(path));
+        if (kfileIsRemote(path) && ++network_failures >= MAX_NETWORK_FAILURES) {
+            mutexUnlock(&g_lock);
+            break;  // Without waiting for each of the others in turn.
+        }
         queueNext(&g_queue, true);
         mutexUnlock(&g_lock);
     }
@@ -406,6 +413,7 @@ bool playerInit(bool shuffle, RepeatMode repeat)
 void playerExit(void)
 {
     g_running = false;
+    kfileInterruptStreams();
     threadWaitForExit(&g_thread);
     threadClose(&g_thread);
     audoutStopAudioOut();
@@ -427,6 +435,7 @@ static void cancelFadeLocked(void)
 // Replaces the list and starts at start. Call with the lock held.
 static void startListLocked(TrackList *list, size_t start)
 {
+    kfileInterruptStreams();  // The song playing from the network needn't wait for it.
     cancelFadeLocked();
     trackListFree(&g_list);
     queueFree(&g_queue);
@@ -484,6 +493,7 @@ static void startCurrentLocked(void)
 {
     if (g_list.count == 0)
         return;
+    kfileInterruptStreams();  // The song playing from the network needn't wait for it.
     // A running fade (the sleep timer) continues across skips; only a
     // pause/play or a new list cancels it.
     g_load_pending = true;

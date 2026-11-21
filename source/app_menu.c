@@ -78,7 +78,7 @@ void appOpenMenu(App *app)
     else if (app->view == VIEW_QUEUE && status.track_count > 0)
         menuAdd(&app->menu, T("Save queue as playlist"), ACT_SAVE_QUEUE, 0);
     menuAddDivider(&app->menu);
-    if (app->config.library[0])
+    if (app->config.library[0] || appLibraryIsNetwork(app))
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
     if (status.state == PLAYER_PLAYING)
         menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), ACT_SCREEN_OFF, 0);

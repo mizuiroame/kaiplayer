@@ -620,3 +620,136 @@ CD
 
 Cassette
 カセット
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 開く  [X] SDカード / ネットワーク  [LS] 移動  [RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+ネットワーク上の共有フォルダー（SMB）または WebDAV フォルダーです。ライブラリーでXを押すと、SDカードと切り替わります。
+
+Address
+アドレス
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+アドレス: \\PC\Music（共有フォルダー）または 192.168.0.10:8098（WebDAV）
+
+Enter the folder's address first.
+先にフォルダーのアドレスを入力してください。
+
+Forget this folder
+このフォルダーの登録を解除
+
+It couldn't be written to the card.
+SDカードに書き込めませんでした。
+
+Library: the network folder
+ライブラリー: ネットワークフォルダー
+
+Library: the SD card
+ライブラリー: SDカード
+
+Network folder
+ネットワークフォルダー
+
+Network folder set: test the connection, then press X in Library to play from it.
+ネットワークフォルダーを設定しました。接続をテストしてから、ライブラリーでXを押すとそこから再生できます。
+
+None
+なし
+
+Not set
+未設定
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+そのアドレスとポートから応答がありません。サーバーは起動していますか？ポートは正しいですか？
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+そのアドレスから応答がありません。パソコンは起動していますか？フォルダーは共有されていますか？
+
+Out of memory.
+メモリーが足りません。
+
+Password
+パスワード
+
+SD card
+SDカード
+
+Set up the network folder in Settings first.
+先に「設定」でネットワークフォルダーを設定してください。
+
+Test the connection
+接続をテスト
+
+Testing the connection...
+接続をテストしています...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+そのアドレスは応答しましたが、WebDAV フォルダーではありません。ポートのあとのパスを確認してください。
+
+That folder isn't on the server.
+そのフォルダーはサーバーにありません。
+
+That folder's name is too long.
+そのフォルダーの名前が長すぎます。
+
+That isn't a network folder's address.
+ネットワークフォルダーのアドレスではありません。
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+ネットワークフォルダーのアドレスではありません。\\PC\Music、smb://、http://、https:// のいずれかで入力してください。
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+その共有フォルダーはパソコンにありません。パソコン名のあとの共有名を確認してください。
+
+The connection failed. Check the address and the network.
+接続できませんでした。アドレスとネットワークを確認してください。
+
+The keyboard couldn't open.
+キーボードを開けませんでした。
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+アドレスの名前が見つかりませんでした。確認するか、サーバーのIPアドレスを使ってください。
+
+The network can't be used.
+ネットワークを使用できません。
+
+The network folder answers. At its top: folders %d, songs %d.
+ネットワークフォルダーが応答しました。最上位: フォルダー%d、曲%d。
+
+The network folder couldn't be read.
+ネットワークフォルダーを読み込めませんでした。
+
+The network folder is forgotten.
+ネットワークフォルダーの登録を解除しました。
+
+The network folder stopped answering. What was found before is kept.
+ネットワークフォルダーが応答しなくなりました。前回見つかった曲はそのまま残ります。
+
+The secure connection failed. Does the server use https on that port?
+安全な接続ができませんでした。サーバーはそのポートで https を使っていますか？
+
+The server answered %ld.
+サーバーの応答: %ld。
+
+The server didn't answer in time. Is the console on the same network as the server?
+サーバーが時間内に応答しませんでした。本体はサーバーと同じネットワークにありますか？
+
+The server doesn't let this user see that folder.
+このユーザーはサーバーでそのフォルダーを見る権限がありません。
+
+The server's certificate isn't trusted.
+サーバーの証明書は信頼されていません。
+
+The shared folder couldn't be opened (%d: %s).
+共有フォルダーを開けませんでした（%d: %s）。
+
+User and password
+ユーザー名とパスワード
+
+User name (empty: none; DOMAIN\user for a domain)
+ユーザー名（空欄: なし、ドメインは DOMAIN\user）
+
+Wrong user name or password.
+ユーザー名またはパスワードが違います。

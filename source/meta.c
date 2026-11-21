@@ -6,7 +6,10 @@
 
 #include <switch.h>
 
-#define THREAD_STACK_SIZE 0x10000
+#include "catalog_scan.h"
+#include "kfile.h"
+
+#define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
 #define THREAD_PRIORITY 0x31  // Below the artwork thread.
 
 static Mutex g_lock;
@@ -16,11 +19,28 @@ static bool g_running;
 static bool g_started;
 static MetaCache *g_cache;
 
+// A network song the library already read: its tags from there, not over the network again.
+static bool fromCatalog(const char *path, TrackTags *tags)
+{
+    const Catalog *c = catalogLock();
+    long i = c ? catalogFind(c, path) : -1;
+    if (i >= 0) {
+        const CatalogSong *s = &c->songs[i];
+        snprintf(tags->title, sizeof(tags->title), "%s", s->title);
+        bool unknown = strcmp(s->artist, CATALOG_UNKNOWN_ARTIST) == 0;
+        snprintf(tags->artist, sizeof(tags->artist), "%s", unknown ? "" : s->artist);
+        snprintf(tags->album, sizeof(tags->album), "%s", s->album);
+    }
+    catalogUnlock();
+    return i >= 0;
+}
+
 static void readMeta(const char *path, TrackTags *tags)
 {
     tagsInit(tags);
     tags->skip_picture = true;  // Only the text is needed.
-    tagsRead(path, tags);
+    if (!kfileIsRemote(path) || !fromCatalog(path, tags))
+        tagsRead(path, tags);
 }
 
 static void workerMain(void *arg)

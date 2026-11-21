@@ -189,6 +189,13 @@ size_t appPickerFolderCount(const App *app);
 void appPickerChoose(App *app);  // Use the folder the picker is in.
 // Looks for music in the music folder again ("Update the library"), or says to choose one first.
 void appUpdateLibrary(App *app);
+// The library from the network folder (its top is the music folder: "dav:/"), or from the card's music folder.
+void appSetLibrarySource(App *app, bool network);
+bool appLibraryIsNetwork(const App *app);
+// The network folder's account changed (moved: its address): its library is looked for again, or, gone, the card's shows.
+void appLibraryNetworkChanged(App *app, bool moved);
+// Lists the music folder's top for the Folders page, unless it's already in it.
+void appOpenFolders(App *app);
 // Points playlists at the music folder's Playlists folder, copying the ones
 // in sdmc:/playlists there the first time.
 void appUsePlaylistFolder(App *app);
@@ -282,6 +289,22 @@ bool appTouchDown(void);
 // Handles buttons as if pressed this frame: overlays first, then the tab.
 // Touch uses it to act like the matching button.
 void appDispatchButtons(App *app, uint64_t pressed);
+
+// The network folder (app_network.c, dav.h): its Settings page, its test, and the console's network.
+// Reads its account (network.txt) and starts the network if there is one. Before the library's scan.
+void appNetworkStart(App *app);
+// True when there is a network folder and the network is up.
+bool appNetworkReady(void);
+// A Settings row of its page: true if it was one.
+bool appNetworkActivate(App *app, SettingRow row);
+// Once a frame: a test's answer.
+void appNetworkUpdate(App *app);
+// Closes its connections and lets the console's network go, after everything that reads files has stopped.
+void appNetworkExit(void);
+// What its rows show: the address ("" for none) and the user.
+void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size);
+// A network folder's location as the person knows it: "192.168.0.10:8098/music/Album".
+void appNetworkShownPath(const char *location, char *out, size_t size);
 
 // Resume: restore the last queue at startup and save it while playing.
 // play: keep playing; otherwise the restored queue waits paused.

@@ -129,6 +129,8 @@ static void openRow(App *app)
     catalogUnlock();
     if (level == LIB_ROOT) {
         static const LibraryLevel ROWS[LIB_ROOT_ROWS] = {LIB_ARTISTS, LIB_ALBUMS, LIB_SONGS, LIB_FOLDERS};
+        if (cursor < LIB_ROOT_ROWS && ROWS[cursor] == LIB_FOLDERS)
+            appOpenFolders(app);  // Listed now (a network folder's waits for its server).
         if (cursor < LIB_ROOT_ROWS)
             push(app, ROWS[cursor], 0);
         return;
@@ -184,6 +186,8 @@ void appHandleLibrary(App *app, uint64_t pressed)
     bool page = p->level == LIB_ARTIST || p->level == LIB_ALBUM || p->level == LIB_SONGS;
     if ((pressed & HidNpadButton_X) && p->level != LIB_ROOT)
         play(app, page, false);
+    else if ((pressed & HidNpadButton_X) && (appNetworkReady() || appLibraryIsNetwork(app)))
+        appSetLibrarySource(app, !appLibraryIsNetwork(app));  // The card's music, or the network folder's.
     if ((pressed & HidNpadButton_Y) && p->level != LIB_ROOT)
         play(app, page, true);
 }

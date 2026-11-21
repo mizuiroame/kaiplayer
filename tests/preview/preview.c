@@ -118,6 +118,37 @@ bool catalogScanProgress(size_t *done, size_t *total)
     return g_scan_busy;
 }
 
+// The network folder (app_network.c, kfile.c): set up in the scenes that show it.
+static bool g_network;
+static const char *g_scan_problem = "";
+#define PREVIEW_ADDRESS "smb://192.168.0.168:4451/Music"
+
+void catalogScanProblem(char *out, size_t size)
+{
+    snprintf(out, size, "%s", g_scan_problem);
+}
+
+bool appNetworkReady(void)
+{
+    return g_network;
+}
+
+bool appLibraryIsNetwork(const App *app)
+{
+    return app->config.use_network;
+}
+
+void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size)
+{
+    snprintf(address, address_size, "%s", g_network ? PREVIEW_ADDRESS : "");
+    snprintf(user, user_size, "%s", g_network ? "kaiplayer" : "");
+}
+
+void appNetworkShownPath(const char *location, char *out, size_t size)
+{
+    snprintf(out, size, "%s%s", PREVIEW_ADDRESS, strcmp(location, "dav:/") ? location + 4 : "");
+}
+
 static void buildCatalog(void)
 {
     static const struct { const char *artist, *album; int year; } META[] = {
@@ -144,6 +175,8 @@ static void buildCatalog(void)
 // The parts of app_folder.c and app_browse.c that drawing uses.
 const char *appMusicRoot(const App *app)
 {
+    if (app->config.use_network)
+        return "dav:/";
     return app->config.library[0] ? app->config.library : "sdmc:/";
 }
 
@@ -393,6 +426,16 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->settings_page = SETTINGS_PAGE_PLAYBACK;
     app->settings_cursor = SETTING_SLEEP;
     render(dir, "settings_playback", app, status);
+    app->settings_page = SETTINGS_PAGE_NETWORK;  // The network folder's page, before and after it's set.
+    app->settings_cursor = SETTING_NET_ADDRESS;
+    render(dir, "settings_network_empty", app, status);
+    g_network = true;
+    app->settings_cursor = SETTING_NET_TEST;
+    render(dir, "settings_network", app, status);
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_NETWORK;
+    render(dir, "settings_main_network", app, status);
+    g_network = false;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->about_open = true;
     render(dir, "about", app, status);
@@ -492,6 +535,33 @@ int main(int argc, char **argv)
     app.library.stack[3] = (LibraryPage){.level = LIB_ALBUM, .arg = g_catalog.artists[0].albums[1]};
     app.library.depth = 4;
     render(argv[1], "library_album", &app, &status);
+    // The network folder as the library: its source in Library, its Folders, and what went wrong.
+    g_network = true;
+    app.library.depth = 1;
+    app.library.stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = 3};
+    render(argv[1], "library_source_card", &app, &status);
+    app.config.use_network = true;
+    render(argv[1], "library_network", &app, &status);
+    g_scan_problem = "Nothing answered at that address. Is the computer on, and is the folder shared?";
+    render(argv[1], "library_network_problem", &app, &status);
+    g_scan_problem = "";
+    static Browser card;
+    card = app.browser;
+    app.browser = (Browser){0};
+    snprintf(app.browser.path, sizeof(app.browser.path), "%s", "dav:/Aurora Fields");
+    addEntry(&app.browser, "Neon Harbor", true);
+    addEntry(&app.browser, "Paper Boats", true);
+    addEntry(&app.browser, "01 - Morning Light.flac", false);
+    app.library.stack[0].level = LIB_FOLDERS;
+    render(argv[1], "browse_network", &app, &status);
+    browserFree(&app.browser);
+    snprintf(app.browser.path, sizeof(app.browser.path), "%s", "dav:/");
+    snprintf(app.browser.problem, sizeof(app.browser.problem), "%s", "Wrong user name or password.");
+    render(argv[1], "browse_network_problem", &app, &status);
+    app.browser = card;
+    app.config.use_network = false;
+    g_network = false;
+
     app.library.stack[0].level = LIB_FOLDERS;  // The rest of the scenes show Folders.
     app.library.depth = 1;
 

@@ -19,6 +19,7 @@ typedef enum {
 typedef struct {
     char folder[UTIL_PATH_MAX];  // Last folder browsed.
     char library[UTIL_PATH_MAX]; // The music folder; empty until chosen.
+    bool use_network;            // The library is the network folder's (dav.h), not the card's.
     bool playlists_moved;        // The old sdmc:/playlists were copied into it.
     bool shuffle;
     RepeatMode repeat;

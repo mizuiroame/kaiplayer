@@ -7,15 +7,17 @@ SRC     := ../source
 SAN     := -fsanitize=address,undefined -fno-omit-frame-pointer
 # -fwrapv as in the .nro: corrupt FLAC data overflows dr_flac's LPC sums.
 CFLAGS  := -std=gnu11 -g -O1 -Wall -Wextra -fwrapv -I$(SRC) -I../third_party $(SAN)
-LDFLAGS := $(SAN) -lm
+LDFLAGS := $(SAN) -lm -lpthread
 OBJDIR  := build
 
 TESTED  := util.c audioformat.c queue.c resampler.c decoder.c dsd.c library.c browser.c \
            tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
-           tracklist.c plainname.c playlist.c background.c gfx.c resume.c keyboard.c menu.c touch.c ui_hit.c settings.c eq.c theme.c metacache.c replaygain.c catalog.c history.c home.c approot.c kinetic.c lang.c
-TESTS   := test_main.c test_tags.c test_cover.c test_playlist.c test_touch.c test_eq.c test_meta.c test_catalog.c test_home.c test_dsd.c test_style.c test_approot.c test_kinetic.c test_lang.c
+           tracklist.c plainname.c playlist.c background.c gfx.c resume.c keyboard.c menu.c touch.c ui_hit.c settings.c eq.c theme.c metacache.c replaygain.c catalog.c history.c home.c approot.c kinetic.c lang.c \
+           kfile.c blockcache.c dav.c
+TESTS   := test_main.c test_tags.c test_cover.c test_playlist.c test_touch.c test_eq.c test_meta.c test_catalog.c test_home.c test_dsd.c test_style.c test_approot.c test_kinetic.c test_lang.c \
+           test_kfile.c test_dav.c
 PARSERS := util.c decoder.c dsd.c tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
-           codecs_impl.c image_impl.c
+           kfile.c blockcache.c dav.c codecs_impl.c image_impl.c
 ITER    ?= 1000
 
 # GCC 12's ASan can hang on kernels with high mmap entropy, so ASLR is off.

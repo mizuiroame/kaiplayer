@@ -87,11 +87,18 @@ static void testSettings(void)
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_DISPLAY), "Display") == 0);
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_LIBRARY), "Library") == 0);
 
-    // The pages as in KaiVideo and KaiRadio: Library, Playback, Display, then About.
+    // The pages as in KaiVideo and KaiRadio: Library, the network folder (as KaiVideo's), Playback, Display,
+    // then About.
     SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
-    CHECK(settingsPageRows(SETTINGS_PAGE_MAIN, rows) == 4);
-    CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_PLAYBACK && rows[2] == SETTING_OPEN_DISPLAY &&
-          rows[3] == SETTING_ABOUT);
+    CHECK(settingsPageRows(SETTINGS_PAGE_MAIN, rows) == 5);
+    CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_NETWORK && rows[2] == SETTING_OPEN_PLAYBACK &&
+          rows[3] == SETTING_OPEN_DISPLAY && rows[4] == SETTING_ABOUT);
+    CHECK(settingsPageRows(SETTINGS_PAGE_NETWORK, rows) == 4);
+    CHECK(rows[0] == SETTING_NET_ADDRESS && rows[1] == SETTING_NET_ACCOUNT && rows[2] == SETTING_NET_TEST &&
+          rows[3] == SETTING_NET_FORGET);
+    CHECK(!settingsRowEditable(SETTING_NET_ADDRESS) && !settingsRowEditable(SETTING_NET_FORGET));
+    CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_NETWORK), "Network folder") == 0);
+    CHECK(settingsPageNote(SETTINGS_PAGE_NETWORK) && !settingsPageNote(SETTINGS_PAGE_MAIN));
     CHECK(settingsPageRows(SETTINGS_PAGE_LIBRARY, rows) == 2);
     CHECK(rows[0] == SETTING_LIBRARY && rows[1] == SETTING_RESCAN);
     CHECK(!settingsRowEditable(SETTING_RESCAN) && !settingsRowEditable(SETTING_LIBRARY));

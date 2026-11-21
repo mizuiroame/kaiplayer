@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "tags.h"
@@ -19,6 +20,7 @@ typedef struct {
     char *album;          // Album title, else the folder name.
     int track, disc, year;
     long size;            // File size, to notice changed files on rescans.
+    int64_t modified;     // And a network file's time (seconds since 1970); 0 on the card.
     size_t album_index;   // Set by catalogBuild.
 } CatalogSong;
 
@@ -54,6 +56,9 @@ void catalogFree(Catalog *c);
 // Adds a song from its tags (any may be empty). root is the music folder,
 // for folder-based names. False if memory runs out.
 bool catalogAdd(Catalog *c, const char *path, long size, const TrackTags *tags, const char *root);
+// The same with the file's time, as a network folder's listing gives it.
+bool catalogAddFile(Catalog *c, const char *path, long size, int64_t modified, const TrackTags *tags,
+                    const char *root);
 // Adds a song with its fields already worked out (from the cache file).
 bool catalogAddFields(Catalog *c, const CatalogSong *fields);
 
@@ -64,6 +69,7 @@ bool catalogBuild(Catalog *c);
 // The song with this path, or -1. Needs catalogBuild.
 long catalogFind(const Catalog *c, const char *path);
 
-// The cache file: one song per line. Load fills an unbuilt catalog.
+// The cache file: one song per line. Load fills an unbuilt catalog (and
+// reads the files of KaiPlayer 1.1, without the times).
 bool catalogSave(const Catalog *c, FILE *f);
 bool catalogLoad(Catalog *c, FILE *f);

@@ -6,6 +6,7 @@
 #include "app.h"
 #include "app_buttons.h"
 #include "catalog_scan.h"
+#include "dav.h"
 #include "lang.h"
 #include "playlist.h"
 
@@ -13,7 +14,73 @@
 
 const char *appMusicRoot(const App *app)
 {
+    if (app->config.use_network)
+        return DAV_ROOT;
     return app->config.library[0] ? app->config.library : DEVICE_ROOT;
+}
+
+bool appLibraryIsNetwork(const App *app)
+{
+    return app->config.use_network;
+}
+
+// The Folders page shows the music folder's top again, listed when it's opened
+// (the network folder's waits for its server).
+static void resetFolders(App *app)
+{
+    browserFree(&app->browser);
+    app->browser.path[0] = '\0';
+    app->browser.problem[0] = '\0';
+}
+
+void appOpenFolders(App *app)
+{
+    Browser *b = &app->browser;
+    const char *root = appMusicRoot(app);
+    bool listed = b->path[0] && utilPathWithin(b->path, root) && !(b->count == 0 && b->problem[0]);
+    if (listed || browserOpen(b, root))
+        return;
+    char problem[BROWSER_PROBLEM_MAX];
+    snprintf(problem, sizeof(problem), "%s", b->problem);
+    browserFree(b);  // Empty at the top, saying why.
+    snprintf(b->path, sizeof(b->path), "%s", root);
+    snprintf(b->problem, sizeof(b->problem), "%s", problem[0] ? problem : T("Could not open the folder."));
+}
+
+void appSetLibrarySource(App *app, bool network)
+{
+    if (network && !appNetworkReady()) {
+        appToast(app, T("Set up the network folder in Settings first."));
+        return;
+    }
+    if (app->config.use_network == network)
+        return;
+    app->config.use_network = network;
+    configSave(&app->config);
+    app->library.depth = 0;  // Back to the Library's first page.
+    app->focus = FOCUS_LIST;
+    resetFolders(app);
+    if (network || app->config.library[0])
+        catalogScanStart(appMusicRoot(app));
+    appToast(app, network ? T("Library: the network folder") : T("Library: the SD card"));
+}
+
+void appLibraryNetworkChanged(App *app, bool moved)
+{
+    if (moved)
+        catalogScanDropCache(DAV_ROOT);  // What was found belonged to the old address.
+    if (!app->config.use_network)
+        return;
+    if (!appNetworkReady()) {  // Forgotten: the card's.
+        appSetLibrarySource(app, false);
+        return;
+    }
+    app->library.depth = 0;
+    resetFolders(app);
+    if (moved)
+        catalogScanStartFresh(DAV_ROOT);
+    else
+        catalogScanStart(DAV_ROOT);  // Another user: look again.
 }
 
 size_t appPickerFolderCount(const App *app)
@@ -84,11 +151,11 @@ void appUsePlaylistFolder(App *app)
 
 void appUpdateLibrary(App *app)
 {
-    if (!app->config.library[0]) {
+    if (!app->config.library[0] && !app->config.use_network) {
         appToast(app, T("Choose your music folder first."));
         return;
     }
-    catalogScanStart(app->config.library);
+    catalogScanStart(appMusicRoot(app));
     appToast(app, T("Updating the library..."));  // Its progress shows on the Library tab.
 }
 
@@ -96,6 +163,7 @@ void appPickerChoose(App *app)
 {
     snprintf(app->config.library, sizeof(app->config.library), "%s", app->picker.path);
     snprintf(app->config.folder, sizeof(app->config.folder), "%s", app->picker.path);
+    app->config.use_network = false;  // A card folder chosen: the card's library.
     configSave(&app->config);
     browserOpen(&app->browser, app->config.library);
     app->picker_open = false;

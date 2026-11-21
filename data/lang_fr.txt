@@ -620,3 +620,136 @@ CD
 
 Cassette
 Cassette
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] ouvrir  [X] carte SD / réseau  [LS] déplacer  [RS] position  [L][R] piste  [-] pause  [+] menu
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+Un dossier partagé (SMB) ou WebDAV de votre réseau. Dans Bibliothèque, X passe de lui à la carte SD.
+
+Address
+Adresse
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+Adresse : \\PC\Music (dossier partagé) ou 192.168.0.10:8098 (WebDAV)
+
+Enter the folder's address first.
+Saisissez d'abord l'adresse du dossier.
+
+Forget this folder
+Oublier ce dossier
+
+It couldn't be written to the card.
+Impossible de l'écrire sur la carte.
+
+Library: the network folder
+Bibliothèque : le dossier réseau
+
+Library: the SD card
+Bibliothèque : la carte SD
+
+Network folder
+Dossier réseau
+
+Network folder set: test the connection, then press X in Library to play from it.
+Dossier réseau défini : testez la connexion, puis appuyez sur X dans Bibliothèque pour l'écouter.
+
+None
+Aucun
+
+Not set
+Non défini
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+Rien n'a répondu à cette adresse et ce port. Le serveur est-il allumé, et le port est-il correct ?
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+Rien n'a répondu à cette adresse. L'ordinateur est-il allumé, et le dossier est-il partagé ?
+
+Out of memory.
+Mémoire insuffisante.
+
+Password
+Mot de passe
+
+SD card
+Carte SD
+
+Set up the network folder in Settings first.
+Configurez d'abord le dossier réseau dans Paramètres.
+
+Test the connection
+Tester la connexion
+
+Testing the connection...
+Test de la connexion...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+Cette adresse répond, mais ce n'est pas un dossier WebDAV. Vérifiez le chemin après le port.
+
+That folder isn't on the server.
+Ce dossier n'est pas sur le serveur.
+
+That folder's name is too long.
+Le nom de ce dossier est trop long.
+
+That isn't a network folder's address.
+Ce n'est pas l'adresse d'un dossier réseau.
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+Ce n'est pas l'adresse d'un dossier réseau : \\PC\Music, smb://, http:// ou https://.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+Ce dossier partagé n'est pas sur l'ordinateur. Vérifiez le nom du partage après celui de l'ordinateur.
+
+The connection failed. Check the address and the network.
+La connexion a échoué. Vérifiez l'adresse et le réseau.
+
+The keyboard couldn't open.
+Impossible d'ouvrir le clavier.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+Le nom de l'adresse est introuvable. Vérifiez-le, ou utilisez l'adresse IP du serveur.
+
+The network can't be used.
+Impossible d'utiliser le réseau.
+
+The network folder answers. At its top: folders %d, songs %d.
+Le dossier réseau répond. À sa racine : dossiers %d, titres %d.
+
+The network folder couldn't be read.
+Impossible de lire le dossier réseau.
+
+The network folder is forgotten.
+Le dossier réseau a été oublié.
+
+The network folder stopped answering. What was found before is kept.
+Le dossier réseau ne répond plus. Ce qui avait été trouvé est conservé.
+
+The secure connection failed. Does the server use https on that port?
+La connexion sécurisée a échoué. Le serveur utilise-t-il https sur ce port ?
+
+The server answered %ld.
+Le serveur a répondu %ld.
+
+The server didn't answer in time. Is the console on the same network as the server?
+Le serveur n'a pas répondu à temps. La console est-elle sur le même réseau que le serveur ?
+
+The server doesn't let this user see that folder.
+Le serveur n'autorise pas cet utilisateur à voir ce dossier.
+
+The server's certificate isn't trusted.
+Le certificat du serveur n'est pas reconnu.
+
+The shared folder couldn't be opened (%d: %s).
+Impossible d'ouvrir le dossier partagé (%d : %s).
+
+User and password
+Utilisateur et mot de passe
+
+User name (empty: none; DOMAIN\user for a domain)
+Nom d'utilisateur (vide : aucun ; DOMAINE\utilisateur pour un domaine)
+
+Wrong user name or password.
+Nom d'utilisateur ou mot de passe incorrect.

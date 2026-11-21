@@ -56,6 +56,8 @@ static void applyLine(Config *c, char *line)
         strcpy(c->folder, value);
     } else if (strcmp(key, "library") == 0 && strlen(value) < sizeof(c->library)) {
         strcpy(c->library, value);
+    } else if (strcmp(key, "library_source") == 0) {
+        c->use_network = strcmp(value, "network") == 0;
     } else if (strcmp(key, "playlists_moved") == 0) {
         c->playlists_moved = strcmp(value, "1") == 0;
     } else if (strcmp(key, "shuffle") == 0) {
@@ -97,6 +99,7 @@ void configLoad(Config *c)
 {
     strcpy(c->folder, DEFAULT_FOLDER);
     c->library[0] = '\0';
+    c->use_network = false;
     c->shuffle = false;
     c->resume = RESUME_PLAYING;
     c->clock_24h = true;
@@ -145,6 +148,8 @@ bool configSave(const Config *c)
             folder, c->shuffle ? 1 : 0, (int)c->repeat, (int)c->resume, c->clock_24h ? 1 : 0);
     if (c->library[0] && !strpbrk(c->library, "\r\n"))
         fprintf(f, "library=%s\nplaylists_moved=%d\n", c->library, c->playlists_moved ? 1 : 0);
+    if (c->use_network)
+        fprintf(f, "library_source=network\n");
     fprintf(f, "eq_on=%d\neq_preset=%d\neq_gains=", c->eq_on ? 1 : 0, c->eq_preset);
     for (int b = 0; b < EQ_BANDS; b++)
         fprintf(f, b ? ",%d" : "%d", c->eq_gains[b]);

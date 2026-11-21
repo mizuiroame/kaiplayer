@@ -80,8 +80,10 @@ void appActivateSetting(App *app, SettingRow row)
         app->about_open = true;
     } else if (row == SETTING_LIBRARY) {
         appOpenFolderPicker(app, false);
+    } else if (appNetworkActivate(app, row)) {
+        return;  // The network folder's page.
     } else if (row == SETTING_RESCAN) {
-        if (app->config.library[0])
+        if (app->config.library[0] || appLibraryIsNetwork(app))
             app->settings_open = false;  // Closed, as the + menu's, to see the library update.
         appUpdateLibrary(app);
     } else {

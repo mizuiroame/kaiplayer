@@ -11,7 +11,7 @@
 #include "util.h"
 
 #define CACHE_SIZE 32
-#define THREAD_STACK_SIZE 0x10000
+#define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
 #define THREAD_PRIORITY 0x31
 
 typedef enum {

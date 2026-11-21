@@ -1,4 +1,4 @@
-# Builds KaiPlayer.nro with the ounce-devkit Docker image.
+# Builds KaiPlayer.nro with the kaiplayer-devkit Docker image (ounce-devkit plus libsmb2, smb/Dockerfile).
 #   .\build.ps1           build the .nro
 #   .\build.ps1 test      run the host tests with coverage
 #   .\build.ps1 fuzz      fuzz the file parsers (set $env:ITER for more inputs)
@@ -8,11 +8,11 @@ param([ValidateSet('nro', 'test', 'fuzz', 'preview', 'clean')][string]$Target = 
 
 $ErrorActionPreference = 'Stop'
 $project = $PSScriptRoot
-$image = 'ounce-devkit'
+$image = 'kaiplayer-devkit'
 
 docker image inspect $image *> $null
 if ($LASTEXITCODE -ne 0) {
-    throw "Docker image '$image' not found. Build it in the ounce-devkit folder with: docker build -t $image ."
+    throw "Docker image '$image' not found. Build ounce-devkit (in its folder: docker build -t ounce-devkit .), then here: docker build -t $image smb"
 }
 
 $mount = "${project}:/build/kaiplayer"

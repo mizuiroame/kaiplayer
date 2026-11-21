@@ -15,6 +15,12 @@ typedef enum {
 SystemKeyboardResult systemKeyboardInput(const char *title, const char *initial, char *out,
                                          size_t size, size_t max_length);
 
+// Any text, every key: an address, a user name ("DOMAIN\user", "me@example.com").
+SystemKeyboardResult systemKeyboardText(const char *title, const char *initial, char *out, size_t size,
+                                        size_t max_length);
+// The same for a password: what's typed isn't shown.
+SystemKeyboardResult systemKeyboardPassword(const char *title, char *out, size_t size, size_t max_length);
+
 // Shows the number pad (digits only) and waits for it.
 SystemKeyboardResult systemKeyboardNumber(const char *title, const char *initial, char *out,
                                           size_t size, size_t max_length);

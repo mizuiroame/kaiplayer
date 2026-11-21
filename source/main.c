@@ -205,10 +205,13 @@ static void requestArtwork(const PlayerStatus *status)
 }
 
 // Opens the last folder if it is inside the music folder, else the music
-// folder; with no music folder yet, asks for one.
+// folder; with no music folder yet, asks for one. The network folder's is
+// listed when the Folders page opens: KaiPlayer doesn't start by waiting for its server.
 static void openStartFolder(App *app)
 {
     const char *root = appMusicRoot(app);
+    if (appLibraryIsNetwork(app))
+        return;
     bool inside = utilPathWithin(app->config.folder, root);
     if (!(inside && browserOpen(&app->browser, app->config.folder)) && !browserOpen(&app->browser, root) &&
         !browserOpen(&app->browser, "sdmc:/"))
@@ -292,6 +295,7 @@ static void runLoop(App *app)
             if (app->config.resume != RESUME_OFF)
                 appSaveSession(app, now, false);
         } else if (app->audio_ok) {
+            appNetworkUpdate(app);
             if (pressed & (BUTTONS_UP | BUTTONS_DOWN | BUTTONS_PAGE_UP | BUTTONS_PAGE_DOWN)) {
                 uiListRelease();  // The buttons take over from the finger.
                 kineticStop(&app->kinetic);
@@ -358,6 +362,7 @@ int main(int argc, char **argv)
     static App app;
     configLoad(&app.config);
     appStartLanguages(&app);  // Before anything is said on screen.
+    appNetworkStart(&app);    // Before the library: it may be the network folder's.
     appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
@@ -375,8 +380,8 @@ int main(int argc, char **argv)
     catalogScanInit();
     coverCacheInit();
     appLoadHistory(&app);
-    if (app.config.library[0])
-        catalogScanStart(app.config.library);
+    if (app.config.library[0] || appLibraryIsNetwork(&app))
+        catalogScanStart(appMusicRoot(&app));
     sysinfoInit();
     screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
@@ -400,6 +405,7 @@ int main(int argc, char **argv)
     historyFree(&app.history);
     metaExit();
     artworkExit();
+    appNetworkExit();  // After everything that read the network folder's files.
     sysinfoExit();
     screenExit();
     appPlaylistsClose(&app);

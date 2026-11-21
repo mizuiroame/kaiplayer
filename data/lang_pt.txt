@@ -620,3 +620,136 @@ Sua pasta de música ainda não tem músicas. Adicione algumas por FTP.
 
 Your top artists
 Seus artistas mais ouvidos
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] abrir  [X] cartão SD / rede  [LS] mover  [RS] posição  [L][R] faixa  [-] pausar  [+] menu
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+Uma pasta compartilhada (SMB) ou WebDAV da sua rede. Na Biblioteca, X alterna entre ela e o cartão SD.
+
+Address
+Endereço
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+Endereço: \\PC\Music (pasta compartilhada) ou 192.168.0.10:8098 (WebDAV)
+
+Enter the folder's address first.
+Primeiro digite o endereço da pasta.
+
+Forget this folder
+Esquecer esta pasta
+
+It couldn't be written to the card.
+Não foi possível gravar no cartão.
+
+Library: the network folder
+Biblioteca: a pasta de rede
+
+Library: the SD card
+Biblioteca: o cartão SD
+
+Network folder
+Pasta de rede
+
+Network folder set: test the connection, then press X in Library to play from it.
+Pasta de rede pronta: teste a conexão e depois aperte X na Biblioteca para ouvir dela.
+
+None
+Nenhum
+
+Not set
+Não configurado
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+Nada respondeu nesse endereço e porta. O servidor está ligado e a porta está certa?
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+Nada respondeu nesse endereço. O computador está ligado e a pasta está compartilhada?
+
+Out of memory.
+Sem memória.
+
+Password
+Senha
+
+SD card
+Cartão SD
+
+Set up the network folder in Settings first.
+Primeiro configure a pasta de rede em Configurações.
+
+Test the connection
+Testar a conexão
+
+Testing the connection...
+Testando a conexão...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+Esse endereço responde, mas não é uma pasta WebDAV. Verifique o caminho depois da porta.
+
+That folder isn't on the server.
+Essa pasta não está no servidor.
+
+That folder's name is too long.
+O nome dessa pasta é longo demais.
+
+That isn't a network folder's address.
+Esse não é o endereço de uma pasta de rede.
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+Esse não é o endereço de uma pasta de rede: \\PC\Music, smb://, http:// ou https://.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+Essa pasta compartilhada não está no computador. Verifique o nome do compartilhamento depois do nome do computador.
+
+The connection failed. Check the address and the network.
+A conexão falhou. Verifique o endereço e a rede.
+
+The keyboard couldn't open.
+Não foi possível abrir o teclado.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+O nome no endereço não foi encontrado. Verifique-o, ou use o endereço IP do servidor.
+
+The network can't be used.
+Não é possível usar a rede.
+
+The network folder answers. At its top: folders %d, songs %d.
+A pasta de rede responde. No nível principal: pastas %d, músicas %d.
+
+The network folder couldn't be read.
+Não foi possível ler a pasta de rede.
+
+The network folder is forgotten.
+A pasta de rede foi esquecida.
+
+The network folder stopped answering. What was found before is kept.
+A pasta de rede parou de responder. O que foi encontrado antes continua.
+
+The secure connection failed. Does the server use https on that port?
+A conexão segura falhou. O servidor usa https nessa porta?
+
+The server answered %ld.
+O servidor respondeu %ld.
+
+The server didn't answer in time. Is the console on the same network as the server?
+O servidor não respondeu a tempo. O console está na mesma rede que o servidor?
+
+The server doesn't let this user see that folder.
+O servidor não deixa este usuário ver essa pasta.
+
+The server's certificate isn't trusted.
+O certificado do servidor não é confiável.
+
+The shared folder couldn't be opened (%d: %s).
+Não foi possível abrir a pasta compartilhada (%d: %s).
+
+User and password
+Usuário e senha
+
+User name (empty: none; DOMAIN\user for a domain)
+Usuário (vazio: nenhum; DOMÍNIO\usuário para um domínio)
+
+Wrong user name or password.
+Usuário ou senha incorretos.

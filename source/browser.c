@@ -1,8 +1,12 @@
 #include "browser.h"
 
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "kfile.h"
+#include "lang.h"
 
 static void freeEntries(BrowserEntry *entries, size_t count)
 {
@@ -37,35 +41,68 @@ static bool pushEntry(BrowserEntry **entries, size_t *count, size_t *capacity,
     return true;
 }
 
-bool browserOpen(Browser *b, const char *path)
+// A network folder's entries, from its listing. False if it can't be listed.
+static bool listNetwork(Browser *b, const char *path, BrowserEntry **entries, size_t *count, bool *incomplete)
 {
-    if (strlen(path) >= sizeof(b->path))
+    DavEntry *listed;
+    size_t listed_count, capacity = 0;
+    if (!kfileList(path, &listed, &listed_count, b->problem, sizeof(b->problem)))
         return false;
+    bool ok = true;
+    for (size_t i = 0; i < listed_count && ok; i++) {
+        const DavEntry *e = &listed[i];
+        if (*count >= BROWSER_MAX_ENTRIES) {
+            *incomplete = true;
+            break;
+        }
+        if (e->name[0] != '.' && (e->is_dir || utilIsAudioFile(e->name)))
+            ok = pushEntry(entries, count, &capacity, e->name, e->is_dir);
+    }
+    free(listed);
+    return ok;
+}
+
+// A card folder's entries.
+static bool listCard(const char *path, BrowserEntry **entries, size_t *count, bool *incomplete)
+{
     DIR *dir = opendir(path);
     if (!dir)
         return false;
-
-    BrowserEntry *entries = NULL;
-    size_t count = 0, capacity = 0;
-    bool ok = true, incomplete = false;
+    size_t capacity = 0;
+    bool ok = true;
     while (ok) {
-        if (count >= BROWSER_MAX_ENTRIES) {
-            incomplete = true;
+        if (*count >= BROWSER_MAX_ENTRIES) {
+            *incomplete = true;
             break;
         }
         errno = 0;
         struct dirent *entry = readdir(dir);
         if (!entry) {
-            incomplete = errno != 0;  // NULL with errno set is a read error, not the end.
+            *incomplete = errno != 0;  // NULL with errno set is a read error, not the end.
             break;
         }
         if (entry->d_name[0] == '.')
             continue;
         bool is_dir = utilEntryIsDir(path, entry);
         if (is_dir || utilIsAudioFile(entry->d_name))
-            ok = pushEntry(&entries, &count, &capacity, entry->d_name, is_dir);
+            ok = pushEntry(entries, count, &capacity, entry->d_name, is_dir);
     }
     closedir(dir);
+    return ok;
+}
+
+bool browserOpen(Browser *b, const char *path)
+{
+    if (strlen(path) >= sizeof(b->path))
+        return false;
+    BrowserEntry *entries = NULL;
+    size_t count = 0;
+    bool incomplete = false;
+    b->problem[0] = '\0';
+    bool remote = kfileIsRemote(path);
+    bool ok = remote ? listNetwork(b, path, &entries, &count, &incomplete) : listCard(path, &entries, &count, &incomplete);
+    if (!ok && remote && !b->problem[0])  // No network folder to ask.
+        snprintf(b->problem, sizeof(b->problem), "%s", T("Set up the network folder in Settings first."));
 
     if (!ok) {
         freeEntries(entries, count);

@@ -15,7 +15,7 @@
 #define TAPS_PER_RATIO 16      // Filter length, in output-frame steps.
 
 struct DsdDecoder {
-    FILE *f;
+    KFile *f;
     DsdInfo info;
     uint32_t out_rate;
     uint32_t step;    // Bytes per channel per PCM frame.
@@ -51,10 +51,10 @@ static uint64_t be64(const uint8_t *p)
     return (uint64_t)be32(p) << 32 | be32(p + 4);
 }
 
-static bool readAt(FILE *f, uint64_t offset, void *buf, size_t size)
+static bool readAt(KFile *f, uint64_t offset, void *buf, size_t size)
 {
-    return offset <= (uint64_t)INT64_MAX / 2 && fseek(f, (long)offset, SEEK_SET) == 0 &&
-           fread(buf, 1, size, f) == size;
+    return offset <= (uint64_t)INT64_MAX / 2 && kfileSeek(f, (int64_t)offset, SEEK_SET) &&
+           kfileRead(f, buf, size) == size;
 }
 
 // DSD64 to DSD512, in the 44.1 or 48 kHz family.
@@ -66,7 +66,7 @@ static bool supportedRate(uint32_t rate)
 }
 
 // DSF: a "DSD " chunk (with the ID3 pointer), "fmt " and "data", little-endian.
-static bool readDsf(FILE *f, DsdInfo *info)
+static bool readDsf(KFile *f, DsdInfo *info)
 {
     uint8_t h[52];
     if (!readAt(f, 0, h, 28) || memcmp(h, "DSD ", 4) != 0)
@@ -96,7 +96,7 @@ static bool readDsf(FILE *f, DsdInfo *info)
 }
 
 // The PROP chunk's sample rate, channel count and compression.
-static bool readDffProperties(FILE *f, uint64_t at, uint64_t end, DsdInfo *info)
+static bool readDffProperties(KFile *f, uint64_t at, uint64_t end, DsdInfo *info)
 {
     uint8_t h[12], v[4];
     if (!readAt(f, at, h, 4) || memcmp(h, "SND ", 4) != 0)
@@ -121,7 +121,7 @@ static bool readDffProperties(FILE *f, uint64_t at, uint64_t end, DsdInfo *info)
 }
 
 // DSDIFF: big-endian chunks in a "FRM8" form of type "DSD ".
-static bool readDff(FILE *f, DsdInfo *info)
+static bool readDff(KFile *f, DsdInfo *info)
 {
     uint8_t h[16];
     if (!readAt(f, 0, h, 16) || memcmp(h, "FRM8", 4) != 0 || memcmp(h + 12, "DSD ", 4) != 0 ||
@@ -155,7 +155,7 @@ static bool readDff(FILE *f, DsdInfo *info)
     return true;
 }
 
-bool dsdReadInfo(FILE *f, DsdInfo *info)
+bool dsdReadInfo(KFile *f, DsdInfo *info)
 {
     memset(info, 0, sizeof(*info));
     bool ok = readDsf(f, info);
@@ -213,7 +213,7 @@ DsdDecoder *dsdOpen(const char *path)
     DsdDecoder *d = calloc(1, sizeof(DsdDecoder));
     if (!d)
         return NULL;
-    d->f = fopen(path, "rb");
+    d->f = kfileOpen(path, KFILE_STREAM);
     if (!d->f || !dsdReadInfo(d->f, &d->info)) {
         dsdClose(d);
         return NULL;
@@ -237,8 +237,7 @@ void dsdClose(DsdDecoder *d)
 {
     if (!d)
         return;
-    if (d->f)
-        fclose(d->f);
+    kfileClose(d->f);
     free(d->table);
     free(d->raw);
     free(d->chan);
@@ -294,8 +293,8 @@ static bool loadBytes(DsdDecoder *d, int64_t first, uint64_t end, size_t span)
     if (!reserve(&d->raw, &d->raw_cap, bytes))
         return false;
     size_t got = 0;
-    if (fseek(d->f, (long)(d->info.data_offset + b0 * group), SEEK_SET) == 0)
-        got = fread(d->raw, 1, bytes, d->f);
+    if (kfileSeek(d->f, (int64_t)(d->info.data_offset + b0 * group), SEEK_SET))
+        got = kfileRead(d->f, d->raw, bytes);
     // Copies each channel's part of each block that was read whole.
     for (uint64_t b = b0; (b - b0 + 1) * group <= got; b++) {
         uint64_t lo = b * block > start ? b * block : start;

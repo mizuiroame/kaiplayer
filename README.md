@@ -28,6 +28,8 @@ install.
   [More](docs/library.md)
 - **MP3, FLAC, Ogg Vorbis, WAV and DSD** (`.dsf`, `.dff`, converted to PCM),
   at any sample rate. [More](docs/playback.md)
+- **Music from your network:** a Windows shared folder, a NAS or Samba
+  (SMB), or WebDAV, as a library of its own. [More](docs/network-folder.md)
 - **Covers** embedded in the file, or a `cover.jpg` (or similar) in the
   album's folder. [More](docs/library.md#song-details-and-album-art)
 - **Titles in any language** from the tags, including Japanese, Chinese and
@@ -79,6 +81,8 @@ full steps are in [Installing](docs/install.md).
 - [Installing](docs/install.md): every step, updating, where KaiPlayer keeps
   its files
 - [The library](docs/library.md): Home, Library, song details and album art
+- [Network folder](docs/network-folder.md): music from a shared folder or
+  WebDAV on your network
 - [Playback](docs/playback.md): formats, DSD, queue, resume, screen
   resolution
 - [Playlists](docs/playlists.md)
@@ -97,5 +101,5 @@ full steps are in [Installing](docs/install.md).
 ## License
 
 KaiPlayer is released under the [MIT License](LICENSE). Copyright (c) 2026
-Mizuiro. It uses dr_libs, stb and the Noto Sans font; the full list is in
-[docs/legal.md](docs/legal.md#licenses).
+Mizuiro. It uses dr_libs, stb, curl, libsmb2 (under the LGPL 2.1) and the
+Noto Sans font; the full list is in [docs/legal.md](docs/legal.md#licenses).

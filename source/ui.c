@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dav.h"
+#include "kfile.h"
 #include "ui_common.h"
 #include "ui_hit.h"
 #include "ui_buttons.h"
@@ -48,7 +50,16 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
         uiDrawColumnHeaders();
         path_w = COLUMN_ARTIST_X - 24 - path_x;
     }
-    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, path_x, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
+    char shown[UTIL_PATH_MAX + DAV_ADDRESS_MAX];
+    if (kfileIsRemote(b->path))  // Where it is, as typed: not "dav:/".
+        appNetworkShownPath(b->path, shown, sizeof(shown));
+    else
+        snprintf(shown, sizeof(shown), "%s", b->path);
+    fontDrawClipped(FONT_REGULAR, TEXT_SMALL, path_x, SUBTITLE_Y, path_w, shown, COLOR_DIM);
+    if (b->count == 0 && b->problem[0]) {  // The network folder couldn't be listed.
+        fontDrawClipped(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, GFX_WIDTH - 2 * MARGIN, b->problem, COLOR_ERROR);
+        return;
+    }
     if (b->count == 0) {
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, T("This folder has no subfolders or music."),
                  COLOR_DIM);
@@ -354,7 +365,10 @@ static const char *footerHelp(const App *app)
         return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
     if (app->view == VIEW_BROWSER) {
         switch (appLibraryPage((App *)app)->level) {
-        case LIB_ROOT: return T("[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
+        case LIB_ROOT:
+            return appNetworkReady() || appLibraryIsNetwork(app)
+                       ? T("[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu")
+                       : T("[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
         case LIB_ARTISTS:
         case LIB_ALBUMS: return T("[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu");
         case LIB_ARTIST: return T("[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track");

@@ -14,6 +14,10 @@
   return; see [File names and tags](file-names.md) for the workaround.
 - Opus, AAC, ALAC and WMA aren't supported. AAC and WMA won't be added,
   because they need paid licenses. See [Playback](playback.md).
+- A network folder is read while it plays: there is a short gap between its
+  songs (the next one's first piece is fetched when it starts), and nothing
+  is kept on the card for playing without the network. See
+  [Network folder](network-folder.md).
 - DSD is converted to PCM (no native DSD and no DoP), and DST-compressed
   `.dff`, SACD `.iso` images and DSD in WavPack don't play. See
   [DSD](playback.md#dsd-dsf-dff).

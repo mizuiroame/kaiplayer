@@ -620,3 +620,136 @@ La tua cartella musica non ha ancora brani. Aggiungine via FTP.
 
 Your top artists
 I tuoi artisti più ascoltati
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] apri  [X] scheda SD / rete  [LS] muovi  [RS] scorri  [L][R] brano  [-] pausa  [+] menu
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+Una cartella condivisa (SMB) o WebDAV nella tua rete. In Libreria, X passa da questa alla scheda SD e viceversa.
+
+Address
+Indirizzo
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+Indirizzo: \\PC\Music (cartella condivisa) o 192.168.0.10:8098 (WebDAV)
+
+Enter the folder's address first.
+Prima inserisci l'indirizzo della cartella.
+
+Forget this folder
+Dimentica questa cartella
+
+It couldn't be written to the card.
+Impossibile scriverlo sulla scheda.
+
+Library: the network folder
+Libreria: la cartella di rete
+
+Library: the SD card
+Libreria: la scheda SD
+
+Network folder
+Cartella di rete
+
+Network folder set: test the connection, then press X in Library to play from it.
+Cartella di rete impostata: prova la connessione, poi premi X in Libreria per ascoltarla.
+
+None
+Nessuno
+
+Not set
+Non impostato
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+Nessuna risposta a quell'indirizzo e porta. Il server è acceso e la porta è giusta?
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+Nessuna risposta a quell'indirizzo. Il computer è acceso e la cartella è condivisa?
+
+Out of memory.
+Memoria esaurita.
+
+Password
+Password
+
+SD card
+Scheda SD
+
+Set up the network folder in Settings first.
+Prima imposta la cartella di rete in Impostazioni.
+
+Test the connection
+Prova la connessione
+
+Testing the connection...
+Prova della connessione...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+Quell'indirizzo risponde, ma non è una cartella WebDAV. Controlla il percorso dopo la porta.
+
+That folder isn't on the server.
+Quella cartella non è sul server.
+
+That folder's name is too long.
+Il nome di quella cartella è troppo lungo.
+
+That isn't a network folder's address.
+Non è l'indirizzo di una cartella di rete.
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+Non è l'indirizzo di una cartella di rete: \\PC\Music, smb://, http:// o https://.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+Quella cartella condivisa non è sul computer. Controlla il nome della condivisione dopo quello del computer.
+
+The connection failed. Check the address and the network.
+Connessione non riuscita. Controlla l'indirizzo e la rete.
+
+The keyboard couldn't open.
+Impossibile aprire la tastiera.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+Nome nell'indirizzo non trovato. Controllalo, o usa l'indirizzo IP del server.
+
+The network can't be used.
+Impossibile usare la rete.
+
+The network folder answers. At its top: folders %d, songs %d.
+La cartella di rete risponde. Al livello principale: cartelle %d, brani %d.
+
+The network folder couldn't be read.
+Impossibile leggere la cartella di rete.
+
+The network folder is forgotten.
+Cartella di rete dimenticata.
+
+The network folder stopped answering. What was found before is kept.
+La cartella di rete non risponde più. Quanto trovato prima resta.
+
+The secure connection failed. Does the server use https on that port?
+Connessione sicura non riuscita. Il server usa https su quella porta?
+
+The server answered %ld.
+Il server ha risposto %ld.
+
+The server didn't answer in time. Is the console on the same network as the server?
+Il server non ha risposto in tempo. La console è nella stessa rete del server?
+
+The server doesn't let this user see that folder.
+Il server non permette a questo utente di vedere quella cartella.
+
+The server's certificate isn't trusted.
+Il certificato del server non è attendibile.
+
+The shared folder couldn't be opened (%d: %s).
+Impossibile aprire la cartella condivisa (%d: %s).
+
+User and password
+Utente e password
+
+User name (empty: none; DOMAIN\user for a domain)
+Nome utente (vuoto: nessuno; DOMINIO\utente per un dominio)
+
+Wrong user name or password.
+Nome utente o password errati.

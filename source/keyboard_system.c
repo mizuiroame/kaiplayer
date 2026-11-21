@@ -4,7 +4,7 @@
 
 #include <switch.h>
 
-static SystemKeyboardResult show(SwkbdType type, const char *title, const char *initial, char *out,
+static SystemKeyboardResult show(SwkbdType type, bool hidden, const char *title, const char *initial, char *out,
                                  size_t size, size_t max_length)
 {
     SwkbdConfig config;
@@ -23,6 +23,8 @@ static SystemKeyboardResult show(SwkbdType type, const char *title, const char *
     swkbdConfigSetGuideText(&config, title);
     swkbdConfigSetInitialText(&config, initial ? initial : "");
     swkbdConfigSetStringLenMax(&config, (u32)max_length);
+    if (hidden)
+        swkbdConfigSetPasswordFlag(&config, 1);
 
     memset(out, 0, size);
     Result rc = swkbdShow(&config, out, size);
@@ -38,11 +40,22 @@ static SystemKeyboardResult show(SwkbdType type, const char *title, const char *
 SystemKeyboardResult systemKeyboardInput(const char *title, const char *initial, char *out,
                                          size_t size, size_t max_length)
 {
-    return show(SwkbdType_Latin, title, initial, out, size, max_length);
+    return show(SwkbdType_Latin, false, title, initial, out, size, max_length);
+}
+
+SystemKeyboardResult systemKeyboardText(const char *title, const char *initial, char *out, size_t size,
+                                        size_t max_length)
+{
+    return show(SwkbdType_All, false, title, initial, out, size, max_length);
+}
+
+SystemKeyboardResult systemKeyboardPassword(const char *title, char *out, size_t size, size_t max_length)
+{
+    return show(SwkbdType_All, true, title, "", out, size, max_length);
 }
 
 SystemKeyboardResult systemKeyboardNumber(const char *title, const char *initial, char *out,
                                           size_t size, size_t max_length)
 {
-    return show(SwkbdType_NumPad, title, initial, out, size, max_length);
+    return show(SwkbdType_NumPad, false, title, initial, out, size, max_length);
 }

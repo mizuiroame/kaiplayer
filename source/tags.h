@@ -32,8 +32,10 @@ typedef struct {
 void tagsInit(TrackTags *t);
 void tagsFree(TrackTags *t);
 
-// Reads the tags of a file by its extension. Missing tags stay empty.
-void tagsRead(const char *path, TrackTags *t);
+// Reads the tags of a file by its extension, on the card or in the network
+// folder (kfile.h). Missing tags stay empty. False if the file couldn't be
+// read (gone, or the network failed): what's empty may not be so.
+bool tagsRead(const char *path, TrackTags *t);
 
 // Parsers, exposed for tests. Each fills only the fields it finds.
 // data starts with an ID3v2 header ("ID3").

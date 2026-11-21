@@ -620,3 +620,136 @@ CD
 
 Cassette
 Kassette
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] Öffnen  [X] SD-Karte / Netzwerk  [LS] Bewegen  [RS] Spulen  [L][R] Titel  [-] Pause  [+] Menü
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+Ein freigegebener Ordner (SMB) oder WebDAV-Ordner in deinem Netzwerk. In der Bibliothek wechselt X zwischen ihm und der SD-Karte.
+
+Address
+Adresse
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+Adresse: \\PC\Music (freigegebener Ordner) oder 192.168.0.10:8098 (WebDAV)
+
+Enter the folder's address first.
+Gib zuerst die Adresse des Ordners ein.
+
+Forget this folder
+Diesen Ordner vergessen
+
+It couldn't be written to the card.
+Es konnte nicht auf die Karte geschrieben werden.
+
+Library: the network folder
+Bibliothek: der Netzwerkordner
+
+Library: the SD card
+Bibliothek: die SD-Karte
+
+Network folder
+Netzwerkordner
+
+Network folder set: test the connection, then press X in Library to play from it.
+Netzwerkordner eingerichtet: Teste die Verbindung und drücke dann X in der Bibliothek, um daraus abzuspielen.
+
+None
+Keine
+
+Not set
+Nicht festgelegt
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+Unter dieser Adresse und diesem Port hat nichts geantwortet. Ist der Server an und stimmt der Port?
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+Unter dieser Adresse hat nichts geantwortet. Ist der Computer an und der Ordner freigegeben?
+
+Out of memory.
+Kein Speicher mehr.
+
+Password
+Passwort
+
+SD card
+SD-Karte
+
+Set up the network folder in Settings first.
+Richte zuerst den Netzwerkordner in den Einstellungen ein.
+
+Test the connection
+Verbindung testen
+
+Testing the connection...
+Verbindung wird getestet...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+Diese Adresse antwortet, ist aber kein WebDAV-Ordner. Prüfe den Pfad nach dem Port.
+
+That folder isn't on the server.
+Dieser Ordner ist nicht auf dem Server.
+
+That folder's name is too long.
+Der Name dieses Ordners ist zu lang.
+
+That isn't a network folder's address.
+Das ist keine Netzwerkordner-Adresse.
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+Das ist keine Netzwerkordner-Adresse: \\PC\Music, smb://, http:// oder https://.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+Dieser freigegebene Ordner ist nicht auf dem Computer. Prüfe den Freigabenamen nach dem Computernamen.
+
+The connection failed. Check the address and the network.
+Die Verbindung ist fehlgeschlagen. Prüfe die Adresse und das Netzwerk.
+
+The keyboard couldn't open.
+Die Tastatur konnte nicht geöffnet werden.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+Der Name in der Adresse wurde nicht gefunden. Prüfe ihn oder nutze die IP-Adresse des Servers.
+
+The network can't be used.
+Das Netzwerk kann nicht genutzt werden.
+
+The network folder answers. At its top: folders %d, songs %d.
+Der Netzwerkordner antwortet. Oberste Ebene: Ordner %d, Songs %d.
+
+The network folder couldn't be read.
+Der Netzwerkordner konnte nicht gelesen werden.
+
+The network folder is forgotten.
+Der Netzwerkordner wurde vergessen.
+
+The network folder stopped answering. What was found before is kept.
+Der Netzwerkordner antwortet nicht mehr. Was vorher gefunden wurde, bleibt erhalten.
+
+The secure connection failed. Does the server use https on that port?
+Die sichere Verbindung ist fehlgeschlagen. Nutzt der Server https auf diesem Port?
+
+The server answered %ld.
+Der Server hat %ld geantwortet.
+
+The server didn't answer in time. Is the console on the same network as the server?
+Der Server hat nicht rechtzeitig geantwortet. Ist die Konsole im selben Netzwerk wie der Server?
+
+The server doesn't let this user see that folder.
+Der Server lässt diesen Benutzer den Ordner nicht sehen.
+
+The server's certificate isn't trusted.
+Dem Zertifikat des Servers wird nicht vertraut.
+
+The shared folder couldn't be opened (%d: %s).
+Der freigegebene Ordner konnte nicht geöffnet werden (%d: %s).
+
+User and password
+Benutzer und Passwort
+
+User name (empty: none; DOMAIN\user for a domain)
+Benutzername (leer: keiner; DOMÄNE\Benutzer für eine Domäne)
+
+Wrong user name or password.
+Falscher Benutzername oder falsches Passwort.

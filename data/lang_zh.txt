@@ -620,3 +620,136 @@ CD
 
 Cassette
 磁带
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 打开  [X] SD卡 / 网络  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+网络中的共享文件夹（SMB）或WebDAV文件夹。在媒体库中按X可在它和SD卡之间切换。
+
+Address
+地址
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+地址：\\PC\Music（共享文件夹）或 192.168.0.10:8098（WebDAV）
+
+Enter the folder's address first.
+请先输入文件夹地址。
+
+Forget this folder
+忘记此文件夹
+
+It couldn't be written to the card.
+无法写入SD卡。
+
+Library: the network folder
+媒体库：网络文件夹
+
+Library: the SD card
+媒体库：SD卡
+
+Network folder
+网络文件夹
+
+Network folder set: test the connection, then press X in Library to play from it.
+网络文件夹已设置：请测试连接，然后在媒体库中按X从中播放。
+
+None
+无
+
+Not set
+未设置
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+该地址和端口没有响应。服务器是否已开启？端口是否正确？
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+该地址没有响应。电脑是否已开启？文件夹是否已共享？
+
+Out of memory.
+内存不足。
+
+Password
+密码
+
+SD card
+SD卡
+
+Set up the network folder in Settings first.
+请先在“设置”中设置网络文件夹。
+
+Test the connection
+测试连接
+
+Testing the connection...
+正在测试连接...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+该地址有响应，但不是WebDAV文件夹。请检查端口后面的路径。
+
+That folder isn't on the server.
+服务器上没有该文件夹。
+
+That folder's name is too long.
+该文件夹名称过长。
+
+That isn't a network folder's address.
+这不是网络文件夹地址。
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+这不是网络文件夹地址：\\PC\Music、smb://、http:// 或 https://。
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+电脑上没有该共享文件夹。请检查电脑名称后面的共享名称。
+
+The connection failed. Check the address and the network.
+连接失败。请检查地址和网络。
+
+The keyboard couldn't open.
+无法打开键盘。
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+找不到地址中的名称。请检查地址，或使用服务器的IP地址。
+
+The network can't be used.
+无法使用网络。
+
+The network folder answers. At its top: folders %d, songs %d.
+网络文件夹有响应。顶层：文件夹%d个，歌曲%d首。
+
+The network folder couldn't be read.
+无法读取网络文件夹。
+
+The network folder is forgotten.
+已忘记网络文件夹。
+
+The network folder stopped answering. What was found before is kept.
+网络文件夹已停止响应。之前找到的内容会保留。
+
+The secure connection failed. Does the server use https on that port?
+安全连接失败。服务器在该端口上是否使用https？
+
+The server answered %ld.
+服务器返回了%ld。
+
+The server didn't answer in time. Is the console on the same network as the server?
+服务器未及时响应。主机和服务器是否在同一网络中？
+
+The server doesn't let this user see that folder.
+服务器不允许此用户查看该文件夹。
+
+The server's certificate isn't trusted.
+服务器证书不受信任。
+
+The shared folder couldn't be opened (%d: %s).
+无法打开共享文件夹（%d: %s）。
+
+User and password
+用户名和密码
+
+User name (empty: none; DOMAIN\user for a domain)
+用户名（留空表示无；域用户请用 DOMAIN\user）
+
+Wrong user name or password.
+用户名或密码错误。

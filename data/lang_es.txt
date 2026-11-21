@@ -620,3 +620,136 @@ CD
 
 Cassette
 Casete
+
+# The network folder.
+[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] abrir  [X] tarjeta SD / red  [LS] mover  [RS] avanzar  [L][R] pista  [-] pausa  [+] menú
+
+A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
+Una carpeta compartida (SMB) o WebDAV de tu red. En Biblioteca, X cambia entre ella y la tarjeta SD.
+
+Address
+Dirección
+
+Address: \\PC\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)
+Dirección: \\PC\Music (carpeta compartida) o 192.168.0.10:8098 (WebDAV)
+
+Enter the folder's address first.
+Primero escribe la dirección de la carpeta.
+
+Forget this folder
+Olvidar esta carpeta
+
+It couldn't be written to the card.
+No se pudo escribir en la tarjeta.
+
+Library: the network folder
+Biblioteca: la carpeta de red
+
+Library: the SD card
+Biblioteca: la tarjeta SD
+
+Network folder
+Carpeta de red
+
+Network folder set: test the connection, then press X in Library to play from it.
+Carpeta de red lista: prueba la conexión y luego pulsa X en Biblioteca para escuchar desde ella.
+
+None
+Ninguno
+
+Not set
+Sin configurar
+
+Nothing answered at that address and port. Is the server on, and is the port right?
+Nada respondió en esa dirección y puerto. ¿Está encendido el servidor y es el puerto correcto?
+
+Nothing answered at that address. Is the computer on, and is the folder shared?
+Nada respondió en esa dirección. ¿Está encendida la computadora y la carpeta está compartida?
+
+Out of memory.
+Sin memoria.
+
+Password
+Contraseña
+
+SD card
+Tarjeta SD
+
+Set up the network folder in Settings first.
+Primero configura la carpeta de red en Configuración.
+
+Test the connection
+Probar la conexión
+
+Testing the connection...
+Probando la conexión...
+
+That address answers, but it isn't a WebDAV folder. Check the path after the port.
+Esa dirección responde, pero no es una carpeta WebDAV. Revisa la ruta después del puerto.
+
+That folder isn't on the server.
+Esa carpeta no está en el servidor.
+
+That folder's name is too long.
+El nombre de esa carpeta es demasiado largo.
+
+That isn't a network folder's address.
+Esa no es la dirección de una carpeta de red.
+
+That isn't a network folder's address: \\PC\Music, smb://, http:// or https://.
+Esa no es la dirección de una carpeta de red: \\PC\Music, smb://, http:// o https://.
+
+That shared folder isn't on the computer. Check the share's name after the computer's.
+Esa carpeta compartida no está en la computadora. Revisa el nombre que va después del de la computadora.
+
+The connection failed. Check the address and the network.
+Falló la conexión. Revisa la dirección y la red.
+
+The keyboard couldn't open.
+No se pudo abrir el teclado.
+
+The name in the address couldn't be found. Check it, or use the server's IP address.
+No se encontró el nombre de la dirección. Revísalo, o usa la dirección IP del servidor.
+
+The network can't be used.
+No se puede usar la red.
+
+The network folder answers. At its top: folders %d, songs %d.
+La carpeta de red responde. En su nivel principal: carpetas %d, canciones %d.
+
+The network folder couldn't be read.
+No se pudo leer la carpeta de red.
+
+The network folder is forgotten.
+Se olvidó la carpeta de red.
+
+The network folder stopped answering. What was found before is kept.
+La carpeta de red dejó de responder. Se conserva lo que se encontró antes.
+
+The secure connection failed. Does the server use https on that port?
+Falló la conexión segura. ¿El servidor usa https en ese puerto?
+
+The server answered %ld.
+El servidor respondió %ld.
+
+The server didn't answer in time. Is the console on the same network as the server?
+El servidor no respondió a tiempo. ¿La consola está en la misma red que el servidor?
+
+The server doesn't let this user see that folder.
+El servidor no deja que este usuario vea esa carpeta.
+
+The server's certificate isn't trusted.
+El certificado del servidor no es de confianza.
+
+The shared folder couldn't be opened (%d: %s).
+No se pudo abrir la carpeta compartida (%d: %s).
+
+User and password
+Usuario y contraseña
+
+User name (empty: none; DOMAIN\user for a domain)
+Usuario (vacío: ninguno; DOMINIO\usuario para un dominio)
+
+Wrong user name or password.
+Usuario o contraseña incorrectos.

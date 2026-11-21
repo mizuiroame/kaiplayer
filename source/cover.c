@@ -7,6 +7,7 @@
 #include <strings.h>
 
 #include "image_config.h"
+#include "kfile.h"
 #include "stb_image.h"
 #include "util.h"
 
@@ -140,25 +141,14 @@ bool coverDecode(const uint8_t *data, size_t size, CoverImage *large, int large_
     return ok;
 }
 
-// Reads a whole file of at most COVER_FILE_MAX bytes. Caller frees.
+// Reads a whole file of at most COVER_FILE_MAX bytes, on the card or the network. Caller frees.
 static uint8_t *readSmallFile(const char *path, size_t *size)
 {
-    FILE *f = fopen(path, "rb");
-    if (!f)
-        return NULL;
-    uint8_t *data = NULL;
-    long len = -1;
-    if (fseek(f, 0, SEEK_END) == 0)
-        len = ftell(f);
-    if (len > 0 && (unsigned long)len <= COVER_FILE_MAX && fseek(f, 0, SEEK_SET) == 0) {
-        data = malloc((size_t)len);
-        if (data && fread(data, 1, (size_t)len, f) != (size_t)len) {
-            free(data);
-            data = NULL;
-        }
+    uint8_t *data = kfileReadAll(path, COVER_FILE_MAX, size, NULL);
+    if (data && *size == 0) {
+        free(data);
+        data = NULL;
     }
-    fclose(f);
-    *size = data ? (size_t)len : 0;
     return data;
 }
 
@@ -184,27 +174,51 @@ static int compareCandidates(const void *a, const void *b)
     return ((const CoverCandidate *)a)->priority - ((const CoverCandidate *)b)->priority;
 }
 
+// Keeps an image file's name if there's room. *others counts the unusual names.
+static void addCandidate(const char *name, CoverCandidate *out, size_t *count, size_t *others)
+{
+    int priority = coverNamePriority(name);
+    if (priority < 0 || name[0] == '.' || strlen(name) >= sizeof(out->name))
+        return;
+    *others += priority == PRIORITY_OTHER_IMAGE;
+    if (*count < MAX_CANDIDATES) {
+        snprintf(out[*count].name, sizeof(out[*count].name), "%s", name);
+        out[(*count)++].priority = priority;
+    }
+}
+
+// A network folder's images, from its listing.
+static void findNetworkCandidates(const char *folder, CoverCandidate *out, size_t *count, size_t *others)
+{
+    DavEntry *entries;
+    size_t n;
+    char why[160];
+    if (!kfileList(folder, &entries, &n, why, sizeof(why)))
+        return;
+    for (size_t i = 0; i < n && i < MAX_SCANNED_ENTRIES; i++)
+        if (!entries[i].is_dir)
+            addCandidate(entries[i].name, out, count, others);
+    free(entries);
+}
+
 // Lists the image files of a folder, best names first. An image with an
 // unusual name is kept only when it is the folder's only image.
 static size_t findCandidates(const char *folder, CoverCandidate *out)
 {
-    DIR *dir = opendir(folder);
-    if (!dir)
-        return 0;
     size_t count = 0, others = 0, scanned = 0;
-    struct dirent *entry;
-    while (scanned++ < MAX_SCANNED_ENTRIES && (entry = readdir(dir)) != NULL) {
-        int priority = coverNamePriority(entry->d_name);
-        if (priority < 0 || entry->d_name[0] == '.' || strlen(entry->d_name) >= sizeof(out->name) ||
-            utilEntryIsDir(folder, entry))
-            continue;
-        others += priority == PRIORITY_OTHER_IMAGE;
-        if (count < MAX_CANDIDATES) {
-            snprintf(out[count].name, sizeof(out[count].name), "%s", entry->d_name);
-            out[count++].priority = priority;
+    if (kfileIsRemote(folder)) {
+        findNetworkCandidates(folder, out, &count, &others);
+    } else {
+        DIR *dir = opendir(folder);
+        if (!dir)
+            return 0;
+        struct dirent *entry;
+        while (scanned++ < MAX_SCANNED_ENTRIES && (entry = readdir(dir)) != NULL) {
+            if (coverNamePriority(entry->d_name) >= 0 && !utilEntryIsDir(folder, entry))
+                addCandidate(entry->d_name, out, &count, &others);
         }
+        closedir(dir);
     }
-    closedir(dir);
     qsort(out, count, sizeof(CoverCandidate), compareCandidates);
     while (count > 0 && others > 1 && out[count - 1].priority == PRIORITY_OTHER_IMAGE)
         count--;

@@ -100,6 +100,42 @@ static void testCache(void)
     catalogFree(&back);
 }
 
+// A network song keeps its time; KaiPlayer 1.1's files (without times) still load.
+static void testCacheTimes(void)
+{
+    Catalog c, back;
+    catalogInit(&c);
+    catalogInit(&back);
+    TrackTags t;
+    tagsInit(&t);
+    snprintf(t.title, sizeof(t.title), "%s", "Far");
+    CHECK(catalogAddFile(&c, "dav:/Band/Album/far.flac", 1234567, 1795293630, &t, "dav:/"));
+    CHECK(catalogAdd(&c, "sdmc:/music/near.flac", 99, &t, "sdmc:/music"));
+    CHECK(catalogBuild(&c));
+    FILE *f = tmpfile();
+    CHECK(f && catalogSave(&c, f));
+    rewind(f);
+    CHECK(catalogLoad(&back, f) && catalogBuild(&back));
+    fclose(f);
+    long far = catalogFind(&back, "dav:/Band/Album/far.flac"), near = catalogFind(&back, "sdmc:/music/near.flac");
+    CHECK(far >= 0 && back.songs[far].modified == 1795293630 && back.songs[far].size == 1234567);
+    CHECK(far >= 0 && strcmp(back.songs[far].album, "Album") == 0 && strcmp(back.songs[far].artist, "Band") == 0);
+    CHECK(near >= 0 && back.songs[near].modified == 0 && back.songs[near].size == 99);
+    catalogFree(&c);
+    catalogFree(&back);
+
+    FILE *old = tmpfile();
+    fputs("KAIPLAYER-CATALOG 1\n100\t3\t1\t2001\tsdmc:/music/a.mp3\tA\tArtist\tArtist\tAlbum\n", old);
+    rewind(old);
+    catalogInit(&back);
+    CHECK(catalogLoad(&back, old) && catalogBuild(&back) && back.song_count == 1);
+    CHECK(back.song_count == 1 && back.songs[0].size == 100 && back.songs[0].track == 3 && back.songs[0].year == 2001 &&
+          back.songs[0].modified == 0 && strcmp(back.songs[0].title, "A") == 0 && strcmp(back.songs[0].album, "Album") == 0);
+    fclose(old);
+    catalogFree(&back);
+    tagsFree(&t);
+}
+
 static void testNumbers(void)
 {
     CHECK(tagsNumber("3/12") == 3 && tagsNumber(" 2019-05-01") == 2019 && tagsNumber("abc") == 0);
@@ -110,5 +146,6 @@ void testCatalog(void)
 {
     testGrouping();
     testCache();
+    testCacheTimes();
     testNumbers();
 }

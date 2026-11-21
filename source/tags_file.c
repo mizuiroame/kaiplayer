@@ -8,6 +8,7 @@
 #include "stb_vorbis.c"
 
 #include "dsd.h"
+#include "kfile.h"
 #include "tags.h"
 #include "tags_text.h"
 #include "util.h"
@@ -18,6 +19,11 @@
 #define FLAC_BLOCK_COMMENT 4
 #define FLAC_BLOCK_PICTURE 6
 #define FLAC_PICTURE_BLOCK_MAX (TAGS_PICTURE_MAX + (64u << 10))
+// A network Ogg file's start, for stb_vorbis (which reads memory, not
+// kfile): its headers, with the comments, are in there; with a large
+// picture in them, a longer start.
+#define OGG_HEAD_SIZE (256u << 10)
+#define OGG_HEAD_MAX (4u << 20)  // 256 KB, 1 MB, then 4 MB.
 
 void tagsInit(TrackTags *t)
 {
@@ -34,10 +40,10 @@ void tagsFree(TrackTags *t)
 // Reads size bytes into a new buffer. NULL on a short read.
 #define ID3_TEXT_ONLY_MAX (256 * 1024)
 
-static uint8_t *readBlock(FILE *f, size_t size)
+static uint8_t *readBlock(KFile *f, size_t size)
 {
     uint8_t *buf = malloc(size ? size : 1);
-    if (buf && fread(buf, 1, size, f) != size) {
+    if (buf && kfileRead(f, buf, size) != size) {
         free(buf);
         return NULL;
     }
@@ -46,12 +52,12 @@ static uint8_t *readBlock(FILE *f, size_t size)
 
 // Reads a whole ID3v2 tag at the current position, if there is one.
 // Leaves the file after the tag either way.
-static void readId3v2(FILE *f, TrackTags *t)
+static void readId3v2(KFile *f, TrackTags *t)
 {
-    long start = ftell(f);
+    int64_t start = kfileTell(f);
     uint8_t header[ID3_HEADER_SIZE];
-    if (fread(header, 1, sizeof(header), f) != sizeof(header) || memcmp(header, "ID3", 3) != 0) {
-        fseek(f, start, SEEK_SET);
+    if (kfileRead(f, header, sizeof(header)) != sizeof(header) || memcmp(header, "ID3", 3) != 0) {
+        kfileSeek(f, start, SEEK_SET);
         return;
     }
     size_t body = readSyncsafe32(header + 6);
@@ -63,28 +69,28 @@ static void readId3v2(FILE *f, TrackTags *t)
         uint8_t *tag = malloc(ID3_HEADER_SIZE + wanted);
         if (tag) {
             memcpy(tag, header, ID3_HEADER_SIZE);
-            if (fread(tag + ID3_HEADER_SIZE, 1, wanted, f) == wanted)
+            if (kfileRead(f, tag + ID3_HEADER_SIZE, wanted) == wanted)
                 tagsParseId3v2(tag, ID3_HEADER_SIZE + wanted, t);
             free(tag);
         }
     }
-    fseek(f, start + (long)total, SEEK_SET);
+    kfileSeek(f, start + (int64_t)total, SEEK_SET);
 }
 
-static void readMp3(FILE *f, TrackTags *t)
+static void readMp3(KFile *f, TrackTags *t)
 {
     readId3v2(f, t);
     uint8_t tail[ID3V1_SIZE];
-    if (fseek(f, -(long)ID3V1_SIZE, SEEK_END) == 0 && fread(tail, 1, sizeof(tail), f) == sizeof(tail))
+    if (kfileSeek(f, -(int64_t)ID3V1_SIZE, SEEK_END) && kfileRead(f, tail, sizeof(tail)) == sizeof(tail))
         tagsParseId3v1(tail, sizeof(tail), t);
 }
 
-static void readFlacBlock(FILE *f, int type, size_t len, TrackTags *t)
+static void readFlacBlock(KFile *f, int type, size_t len, TrackTags *t)
 {
     bool wanted = (type == FLAC_BLOCK_COMMENT && len <= TAGS_COMMENT_BLOCK_MAX) ||
                   (type == FLAC_BLOCK_PICTURE && len <= FLAC_PICTURE_BLOCK_MAX && !t->skip_picture);
     if (!wanted) {
-        fseek(f, (long)len, SEEK_CUR);
+        kfileSeek(f, (int64_t)len, SEEK_CUR);
         return;
     }
     uint8_t *block = readBlock(f, len);
@@ -97,15 +103,15 @@ static void readFlacBlock(FILE *f, int type, size_t len, TrackTags *t)
     free(block);
 }
 
-static void readFlac(FILE *f, TrackTags *t)
+static void readFlac(KFile *f, TrackTags *t)
 {
     readId3v2(f, t);  // Some taggers put ID3 in front of FLAC.
     uint8_t magic[4];
-    if (fread(magic, 1, 4, f) != 4 || memcmp(magic, "fLaC", 4) != 0)
+    if (kfileRead(f, magic, 4) != 4 || memcmp(magic, "fLaC", 4) != 0)
         return;
     for (int i = 0; i < FLAC_MAX_BLOCKS; i++) {
         uint8_t header[4];
-        if (fread(header, 1, 4, f) != 4)
+        if (kfileRead(f, header, 4) != 4)
             return;
         bool last = header[0] & 0x80;
         readFlacBlock(f, header[0] & 0x7F, readBe24(header + 1), t);
@@ -114,12 +120,8 @@ static void readFlac(FILE *f, TrackTags *t)
     }
 }
 
-static void readOgg(const char *path, TrackTags *t)
+static void applyComments(stb_vorbis *v, TrackTags *t)
 {
-    int error = 0;
-    stb_vorbis *v = stb_vorbis_open_filename(path, &error, NULL);
-    if (!v)
-        return;
     stb_vorbis_comment comments = stb_vorbis_get_comment(v);
     for (int i = 0; i < comments.comment_list_length; i++) {
         if (comments.comment_list[i])
@@ -128,32 +130,71 @@ static void readOgg(const char *path, TrackTags *t)
     stb_vorbis_close(v);
 }
 
+// The start of a network Ogg file, longer until its headers are all in it. False if it couldn't be read.
+static bool readOggHead(KFile *f, TrackTags *t)
+{
+    int64_t total = kfileSize(f);
+    uint8_t *head = NULL;
+    for (size_t want = OGG_HEAD_SIZE; want <= OGG_HEAD_MAX; want *= 4) {
+        size_t size = total < (int64_t)want ? (size_t)total : want;
+        uint8_t *grown = realloc(head, size ? size : 1);
+        if (!grown)
+            break;
+        head = grown;
+        if (!kfileSeek(f, 0, SEEK_SET) || kfileRead(f, head, size) != size)
+            break;
+        int error = 0;
+        stb_vorbis *v = stb_vorbis_open_memory(head, (int)size, &error, NULL);
+        if (v) {
+            applyComments(v, t);
+            break;
+        }
+        if ((int64_t)size == total)
+            break;  // The whole file: it isn't Ogg Vorbis.
+    }
+    free(head);
+    return !kfileFailed(f);
+}
+
+static bool readOgg(KFile *f, TrackTags *t)
+{
+    if (!kfileStdio(f))
+        return readOggHead(f, t);
+    int error = 0;
+    stb_vorbis *v = stb_vorbis_open_file(kfileStdio(f), 0, &error, NULL);
+    if (v)
+        applyComments(v, t);
+    return true;
+}
+
 // DSF points to an ID3v2 tag at the end; some DSDIFF files have one in an "ID3 " chunk.
-static void readDsd(FILE *f, TrackTags *t)
+static void readDsd(KFile *f, TrackTags *t)
 {
     DsdInfo info;
-    if (dsdReadInfo(f, &info) && info.id3_offset && fseek(f, (long)info.id3_offset, SEEK_SET) == 0)
+    if (dsdReadInfo(f, &info) && info.id3_offset && kfileSeek(f, (int64_t)info.id3_offset, SEEK_SET))
         readId3v2(f, t);
 }
 
-void tagsRead(const char *path, TrackTags *t)
+bool tagsRead(const char *path, TrackTags *t)
 {
-    if (utilHasExtension(path, "ogg") || utilHasExtension(path, "oga")) {
-        readOgg(path, t);
-        return;
-    }
+    bool ogg = utilHasExtension(path, "ogg") || utilHasExtension(path, "oga");
     bool mp3 = utilHasExtension(path, "mp3");
     bool dsd = utilHasExtension(path, "dsf") || utilHasExtension(path, "dff");
-    if (!mp3 && !dsd && !utilHasExtension(path, "flac"))
-        return;
-    FILE *f = fopen(path, "rb");
+    if (!ogg && !mp3 && !dsd && !utilHasExtension(path, "flac"))
+        return true;  // A WAV: no tags to read.
+    KFile *f = kfileOpen(path, KFILE_PEEK);
     if (!f)
-        return;
-    if (mp3)
+        return false;
+    bool ok = true;
+    if (ogg)
+        ok = readOgg(f, t);
+    else if (mp3)
         readMp3(f, t);
     else if (dsd)
         readDsd(f, t);
     else
         readFlac(f, t);
-    fclose(f);
+    ok = ok && !kfileFailed(f);
+    kfileClose(f);
+    return ok;
 }

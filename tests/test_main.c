@@ -357,6 +357,8 @@ int main(void)
     testHome();
     testKinetic();
     testLang();
+    testDav();
+    testKfile();
 
     printf("%d checks, %d failures\n", g_checks, g_failures);
     return g_failures ? 1 : 0;

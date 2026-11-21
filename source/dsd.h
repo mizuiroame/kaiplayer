@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "kfile.h"
+
 #define DSD_MAX_CHANNELS 6
 
 typedef struct {
@@ -21,7 +23,7 @@ typedef struct {
 } DsdInfo;
 
 // Reads a DSF or DSDIFF file's headers. False if it isn't one KaiPlayer can play.
-bool dsdReadInfo(FILE *f, DsdInfo *info);
+bool dsdReadInfo(KFile *f, DsdInfo *info);
 
 typedef struct DsdDecoder DsdDecoder;
 

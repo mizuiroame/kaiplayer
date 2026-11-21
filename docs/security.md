@@ -6,9 +6,21 @@ Under kaiHEN, homebrew runs with broad system access. A bug in an app that
 reads untrusted files could therefore affect the whole console. KaiPlayer
 reduces that risk in these ways:
 
-- **Small attack surface.** No network access. The app only reads the files
-  and folders you browse, and only writes its own files (settings, history,
-  catalog, resume) in its folder, and the playlists you save.
+- **Small attack surface.** No network access unless you set up a
+  [network folder](network-folder.md): then the console's network is started
+  and KaiPlayer only talks to that folder's server (SMB or WebDAV), to list
+  and read its files. The app only reads the files and folders you browse,
+  and only writes its own files (settings, history, catalog, resume, the
+  network folder's account) in its folder, and the playlists you save.
+- **The network folder's password** is kept as typed in `network.txt` in
+  KaiPlayer's folder, because it's needed to sign in each time. A new address
+  forgets the old user and password, so they're never sent to another server.
+  Use an account that can only read the folder. Plain `http://` WebDAV sends
+  it unencrypted.
+- **What the server sends is untrusted.** Folder listings (WebDAV's XML, SMB
+  entries) are parsed with length checks; names with control characters and
+  listings past 5000 entries are left out; songs read over the network go
+  through the same decoders and checks as the card's.
 - **Untrusted input is bounded.**
   - Paths and settings use length-checked buffers.
   - Audio headers with unsupported channel counts (0 or more than 8) or sample

@@ -27,6 +27,9 @@
 #define KEYS_W (KEYBOARD_COLS * KEY_W + (KEYBOARD_COLS - 1) * KEY_GAP)
 #define PANEL_PAD 32
 #define NS_PER_MINUTE 60000000000ull
+#define NOTE_PX 16
+#define NOTE_LINE_H 22
+#define NOTE_LINES 2
 
 // Darkens the screen; a tap there closes the overlay.
 // uiDraw has already dimmed what's behind (see uiOverlayOpen); taps on it close the overlay.
@@ -143,7 +146,20 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_OPEN_LIBRARY:
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
-    case SETTING_RESCAN: out[0] = '\0'; break;         // Just the A button when chosen.
+    case SETTING_RESCAN:                               // Just the A button when chosen.
+    case SETTING_NET_TEST:
+    case SETTING_NET_FORGET: out[0] = '\0'; break;
+    case SETTING_OPEN_NETWORK:
+    case SETTING_NET_ADDRESS:
+    case SETTING_NET_ACCOUNT: {
+        char address[128], user[128];
+        appNetworkShown(address, sizeof(address), user, sizeof(user));
+        if (row == SETTING_NET_ACCOUNT)
+            snprintf(out, size, "%.40s", user[0] ? user : T("None"));
+        else
+            snprintf(out, size, "%.40s", address[0] ? address : T("Not set"));
+        break;
+    }
     case SETTING_SCREEN_OFF:
         if (app->config.screen_off_minutes)
             snprintf(out, size, T("After %d min idle"), app->config.screen_off_minutes);
@@ -154,11 +170,51 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     }
 }
 
+// The end of the line of text that fits in width: at a space if there's one, else between characters.
+static const char *lineEnd(const char *text, int width)
+{
+    const char *at = text, *space = NULL;
+    char line[512];
+    while (*at) {
+        const char *next = at;
+        utilNextCodePoint(&next);
+        size_t length = (size_t)(next - text);
+        if (length >= sizeof(line))
+            break;
+        memcpy(line, text, length);
+        line[length] = '\0';
+        if (fontTextWidth(FONT_REGULAR, NOTE_PX, line) > width)
+            return space ? space : at > text ? at : next;
+        if (*at == ' ')
+            space = at;
+        at = next;
+    }
+    return at;
+}
+
+// A page's note, on up to two lines (drawn if draw). How many it takes.
+static int drawNote(int x, int y, int width, const char *text, bool draw)
+{
+    int lines = 0;
+    while (*text && lines < NOTE_LINES) {
+        const char *end = lines + 1 < NOTE_LINES ? lineEnd(text, width) : text + strlen(text);
+        char line[512];
+        snprintf(line, sizeof(line), "%.*s", (int)(end - text), text);
+        if (draw)
+            fontDrawClipped(FONT_REGULAR, NOTE_PX, x, y + lines * NOTE_LINE_H, width, line, COLOR_DIM);
+        lines++;
+        text = *end == ' ' ? end + 1 : end;
+    }
+    return lines;
+}
+
 static void drawSettings(const App *app, uint64_t now_ns)
 {
     SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
     int count = settingsPageRows(app->settings_page, rows);
-    int h = 76 + count * SETTINGS_ROW_H + 60;
+    const char *note = settingsPageNote(app->settings_page);
+    int note_lines = note ? drawNote(0, 0, SETTINGS_W - 2 * PANEL_PAD, note, false) : 1;
+    int h = 76 + count * SETTINGS_ROW_H + 60 + (note_lines - 1) * NOTE_LINE_H;
     int x = (GFX_WIDTH - SETTINGS_W) / 2, y = (GFX_HEIGHT - h) / 2;
     dimScreen();
     panel(x, y, SETTINGS_W, h);
@@ -194,8 +250,11 @@ static void drawSettings(const App *app, uint64_t now_ns)
         }
         uiHitAdd(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6, HIT_SETTING, i);
     }
-    fontDrawClipped(FONT_REGULAR, 16, x + PANEL_PAD, y + h - 40, SETTINGS_W - 2 * PANEL_PAD,
-                    T("Open source (MIT)  ·  github.com/mizuiroame/kaiplayer"), COLOR_FAINT);
+    if (note)  // What the page is for, instead of the project's line.
+        drawNote(x + PANEL_PAD, y + h - 40 - (note_lines - 1) * NOTE_LINE_H, SETTINGS_W - 2 * PANEL_PAD, note, true);
+    else
+        fontDrawClipped(FONT_REGULAR, 16, x + PANEL_PAD, y + h - 40, SETTINGS_W - 2 * PANEL_PAD,
+                        T("Open source (MIT)  ·  github.com/mizuiroame/kaiplayer"), COLOR_FAINT);
 }
 
 static void drawKey(int x, int y, int w, const char *label, bool selected, bool lit, int hit_arg)

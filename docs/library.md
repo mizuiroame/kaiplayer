@@ -5,7 +5,11 @@
 KaiPlayer builds a library of your artists, albums and songs from the tags of
 the music in your music folder. It only shows that folder and the ones inside
 it. You choose the folder the first time you open KaiPlayer, and can change it
-in **+ → Settings → Music folder**.
+in **+ → Settings → Library → Music folder**.
+
+The library can also come from a [network folder](network-folder.md): with
+one set up, **X** on Library's first page (or a tap on the pill next to
+"Library") switches between the **SD card** and the **network folder**.
 
 ## Home
 
@@ -33,7 +37,8 @@ their covers, all on one screen:
   the artist.
 - **Albums:** every album, with its cover. Its songs go in track order.
 - **Songs:** every song by title.
-- **Folders:** the folders of your music folder, as they are on the card.
+- **Folders:** the folders of your music folder, as they are on the card (or
+  in the network folder).
 
 Artists and albums come from the tags (album artist, artist, album, track
 and disc numbers, year), **not from the folder names**: a folder named

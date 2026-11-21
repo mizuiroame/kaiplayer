@@ -2,17 +2,22 @@
 
 [Back to the README](../README.md)
 
-Open **+ → Settings**. It opens on four rows: **Music folder**, **Playback**,
-**Display** and **About**.
+Open **+ → Settings**. It opens on five rows: **Library**, **Network
+folder**, **Playback**, **Display** and **About**.
 
-- **A** or **→** opens Playback or Display.
+- **A** or **→** opens a page.
 - **B** (or the **Back** button) goes back, and **B** on the first page
   closes Settings.
 - Change a setting with ← → or **A** (or tap it).
 
 | Page | Setting | Values |
 |------|---------|--------|
-| — | Music folder | The folder KaiPlayer shows; **A** chooses another |
+| Library | Music folder | The folder KaiPlayer shows; **A** chooses another |
+| Library | Update the library | **A** looks for new or changed songs |
+| Network folder | Address | `\\PC\Music`, `smb://`, or a WebDAV address; **A** types it. See [Network folder](network-folder.md) |
+| Network folder | User and password | **A** types them; empty for the folder's guest access |
+| Network folder | Test the connection | **A** tries it, and says what's at its top or what went wrong |
+| Network folder | Forget this folder | **A** removes the address, user and password |
 | Playback | Sleep timer | Off, or any number of minutes up to 600 |
 | Playback | Resume where you left off | Keep playing (default), Paused or Off |
 | Playback | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
@@ -22,7 +27,7 @@ Open **+ → Settings**. It opens on four rows: **Music folder**, **Playback**,
 | Display | Background | Cover colors (default), or a picture from your `Backgrounds` folder |
 | Display | Background blur | Off, Low, Medium (default) or High |
 | Display | Clock | 24-hour (default) or 12-hour |
-| Display | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
+| Playback | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
 | — | About | The KaiPlayer version; **A** shows more about the app and its author |
 
 ## Sleep timer

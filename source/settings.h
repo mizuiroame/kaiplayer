@@ -22,13 +22,19 @@ typedef enum {
     SETTING_LANGUAGE,       // The language KaiPlayer is shown in (languages.h).
     SETTING_OPEN_LIBRARY,
     SETTING_RESCAN,         // Looks for music again, as the + menu's "Update the library".
+    SETTING_OPEN_NETWORK,   // Opens the network folder's page.
+    SETTING_NET_ADDRESS,    // Types the network folder's address (dav.h).
+    SETTING_NET_ACCOUNT,    // Types its user name and password.
+    SETTING_NET_TEST,       // Tries it, and says what's at its top.
+    SETTING_NET_FORGET,     // Removes its address, user and password.
     SETTING_COUNT,
 } SettingRow;
 
-// Settings opens on the main page; Library, Playback and Display hold the rest.
+// Settings opens on the main page; Library, Network folder, Playback and Display hold the rest.
 typedef enum {
     SETTINGS_PAGE_MAIN,
     SETTINGS_PAGE_LIBRARY,
+    SETTINGS_PAGE_NETWORK,
     SETTINGS_PAGE_PLAYBACK,
     SETTINGS_PAGE_DISPLAY,
     SETTINGS_PAGE_COUNT,
@@ -43,6 +49,8 @@ SettingsPage settingsRowPage(SettingRow row);
 // The row on the main page that opens page.
 SettingRow settingsPageRow(SettingsPage page);
 const char *settingsPageTitle(SettingsPage page);
+// A line about the page, at the panel's foot; NULL for none.
+const char *settingsPageNote(SettingsPage page);
 
 #define SLEEP_STEP_MINUTES 5
 #define SLEEP_MAX_MINUTES 600  // 10 hours.

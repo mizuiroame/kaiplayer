@@ -4,6 +4,7 @@
 
 #include "app.h"
 #include "app_buttons.h"
+#include "kfile.h"
 #include "lang.h"
 #include "library.h"
 #include "ui.h"
@@ -15,7 +16,8 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
 {
     TrackList list;
     if (!libraryScan(&list, folder, recursive)) {
-        appToast(app, T("Out of memory for the track list."));
+        appToast(app, kfileIsRemote(folder) ? T("The network folder couldn't be read.")
+                                            : T("Out of memory for the track list."));
         return;
     }
     if (list.count == 0) {
@@ -45,8 +47,8 @@ static void openSelected(App *app)
     }
     char path[UTIL_PATH_MAX];
     if (!utilJoinPath(path, sizeof(path), app->browser.path, e->name) ||
-        !browserOpen(&app->browser, path))
-        appToast(app, T("Could not open the folder."));
+        !browserOpen(&app->browser, path))  // A network folder's says why.
+        appToast(app, app->browser.problem[0] ? app->browser.problem : T("Could not open the folder."));
 }
 
 bool appBrowseCanGoUp(const App *app)

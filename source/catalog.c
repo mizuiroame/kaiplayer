@@ -5,8 +5,9 @@
 
 #include "util.h"
 
-#define CACHE_HEADER "KAIPLAYER-CATALOG 1"
-#define CACHE_FIELDS 9
+#define CACHE_HEADER "KAIPLAYER-CATALOG 2"
+#define CACHE_HEADER_V1 "KAIPLAYER-CATALOG 1"  // Without the times.
+#define CACHE_FIELDS 10
 #define CACHE_LINE_MAX (UTIL_PATH_MAX + 5 * TAGS_TEXT_MAX + 64)
 
 void catalogInit(Catalog *c)
@@ -71,7 +72,7 @@ bool catalogAddFields(Catalog *c, const CatalogSong *f)
     CatalogSong s = {
         .path = strdup(f->path), .title = copyClean(f->title), .artist = copyClean(f->artist),
         .album_artist = copyClean(f->album_artist), .album = copyClean(f->album),
-        .track = f->track, .disc = f->disc, .year = f->year, .size = f->size,
+        .track = f->track, .disc = f->disc, .year = f->year, .size = f->size, .modified = f->modified,
     };
     if (!s.path || !s.title || !s.artist || !s.album_artist || !s.album) {
         free(s.path), free(s.title), free(s.artist), free(s.album_artist), free(s.album);
@@ -100,6 +101,11 @@ static void folderName(const char *path, const char *root, int levels, char *out
 
 bool catalogAdd(Catalog *c, const char *path, long size, const TrackTags *t, const char *root)
 {
+    return catalogAddFile(c, path, size, 0, t, root);
+}
+
+bool catalogAddFile(Catalog *c, const char *path, long size, int64_t modified, const TrackTags *t, const char *root)
+{
     char title[UTIL_PATH_MAX], album[UTIL_PATH_MAX], artist_folder[UTIL_PATH_MAX];
     if (t->title[0]) {
         snprintf(title, sizeof(title), "%s", t->title);
@@ -124,7 +130,7 @@ bool catalogAdd(Catalog *c, const char *path, long size, const TrackTags *t, con
     CatalogSong f = {
         .path = (char *)path, .title = title, .artist = (char *)(t->artist[0] ? t->artist : group),
         .album_artist = (char *)group, .album = album,
-        .track = t->track_number, .disc = t->disc_number, .year = t->year, .size = size,
+        .track = t->track_number, .disc = t->disc_number, .year = t->year, .size = size, .modified = modified,
     };
     return catalogAddFields(c, &f);
 }
@@ -302,8 +308,8 @@ bool catalogSave(const Catalog *c, FILE *f)
     fprintf(f, "%s\n", CACHE_HEADER);
     for (size_t i = 0; i < c->song_count; i++) {
         const CatalogSong *s = &c->songs[i];
-        fprintf(f, "%ld\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%s\n", s->size, s->track, s->disc, s->year, s->path, s->title,
-                s->artist, s->album_artist, s->album);
+        fprintf(f, "%ld\t%lld\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%s\n", s->size, (long long)s->modified, s->track, s->disc,
+                s->year, s->path, s->title, s->artist, s->album_artist, s->album);
     }
     return !ferror(f);
 }
@@ -327,16 +333,19 @@ bool catalogLoad(Catalog *c, FILE *f)
     char *line = malloc(CACHE_LINE_MAX);
     if (!line)
         return false;
-    bool ok = fgets(line, CACHE_LINE_MAX, f) && strncmp(line, CACHE_HEADER, strlen(CACHE_HEADER)) == 0;
+    bool ok = fgets(line, CACHE_LINE_MAX, f) != NULL;
+    bool v1 = ok && strncmp(line, CACHE_HEADER_V1, strlen(CACHE_HEADER_V1)) == 0;
+    ok = ok && (v1 || strncmp(line, CACHE_HEADER, strlen(CACHE_HEADER)) == 0);
+    int fields = v1 ? CACHE_FIELDS - 1 : CACHE_FIELDS;
     while (ok && fgets(line, CACHE_LINE_MAX, f)) {
         line[strcspn(line, "\r\n")] = '\0';
-        char *field[CACHE_FIELDS];
-        if (splitTabs(line, field, CACHE_FIELDS) != CACHE_FIELDS || !field[4][0])
+        char *field[CACHE_FIELDS], **rest = field + (v1 ? 1 : 2);  // After the size and the time.
+        if (splitTabs(line, field, fields) != fields || !rest[3][0])
             continue;  // A damaged line: that song is read again from the file.
         CatalogSong s = {
-            .size = strtol(field[0], NULL, 10), .track = atoi(field[1]), .disc = atoi(field[2]),
-            .year = atoi(field[3]), .path = field[4], .title = field[5], .artist = field[6],
-            .album_artist = field[7], .album = field[8],
+            .size = strtol(field[0], NULL, 10), .modified = v1 ? 0 : strtoll(field[1], NULL, 10),
+            .track = atoi(rest[0]), .disc = atoi(rest[1]), .year = atoi(rest[2]), .path = rest[3],
+            .title = rest[4], .artist = rest[5], .album_artist = rest[6], .album = rest[7],
         };
         ok = catalogAddFields(c, &s);
     }

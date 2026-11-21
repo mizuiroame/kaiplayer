@@ -12,17 +12,23 @@
 #define STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.c"
 
+#include "kfile.h"
 #include "util.h"
 
 #define MAX_CHANNELS 8
 #define SCRATCH_FRAMES 1024
 #define MIN_SAMPLE_RATE 1000
 #define MAX_SAMPLE_RATE 768000
+// stb_vorbis can't read through callbacks: a network Ogg file is read whole
+// into memory first (Ogg songs are small).
+#define VORBIS_MEMORY_MAX (64u << 20)
 
 typedef enum { KIND_WAV, KIND_FLAC, KIND_MP3, KIND_VORBIS, KIND_DSD } DecoderKind;
 
 struct Decoder {
     DecoderKind kind;
+    KFile *file;            // What the dr_libs and stb_vorbis read (not DSD: dsd.c opens its own).
+    uint8_t *memory;        // A network Ogg file, whole.
     uint32_t channels;
     uint32_t sample_rate;
     uint64_t total_frames;
@@ -36,9 +42,53 @@ struct Decoder {
     float scratch[SCRATCH_FRAMES * MAX_CHANNELS];
 };
 
-static bool openWav(Decoder *d, const char *path)
+// The dr_libs read the file through kfile, on the card or the network.
+static size_t onRead(void *user, void *to, size_t size)
 {
-    if (!drwav_init_file(&d->u.wav, path, NULL))
+    return kfileRead(user, to, size);
+}
+
+static int onSeekTo(void *user, int offset, int origin)  // Origins: SET, CUR, END, as stdio's.
+{
+    return kfileSeek(user, offset, origin == 0 ? SEEK_SET : origin == 1 ? SEEK_CUR : SEEK_END);
+}
+
+static drflac_bool32 onSeekFlac(void *user, int offset, drflac_seek_origin origin)
+{
+    return onSeekTo(user, offset, (int)origin);
+}
+
+static drmp3_bool32 onSeekMp3(void *user, int offset, drmp3_seek_origin origin)
+{
+    return onSeekTo(user, offset, (int)origin);
+}
+
+static drwav_bool32 onSeekWav(void *user, int offset, drwav_seek_origin origin)
+{
+    return onSeekTo(user, offset, (int)origin);
+}
+
+static drflac_bool32 onTellFlac(void *user, drflac_int64 *at)
+{
+    *at = kfileTell(user);
+    return *at >= 0;
+}
+
+static drmp3_bool32 onTellMp3(void *user, drmp3_int64 *at)
+{
+    *at = kfileTell(user);
+    return *at >= 0;
+}
+
+static drwav_bool32 onTellWav(void *user, drwav_int64 *at)
+{
+    *at = kfileTell(user);
+    return *at >= 0;
+}
+
+static bool openWav(Decoder *d)
+{
+    if (!drwav_init(&d->u.wav, onRead, onSeekWav, onTellWav, d->file, NULL))
         return false;
     d->channels = d->u.wav.channels;
     d->sample_rate = d->u.wav.sampleRate;
@@ -46,9 +96,9 @@ static bool openWav(Decoder *d, const char *path)
     return true;
 }
 
-static bool openFlac(Decoder *d, const char *path)
+static bool openFlac(Decoder *d)
 {
-    d->u.flac = drflac_open_file(path, NULL);
+    d->u.flac = drflac_open(onRead, onSeekFlac, onTellFlac, d->file, NULL);
     if (!d->u.flac)
         return false;
     d->channels = d->u.flac->channels;
@@ -57,9 +107,9 @@ static bool openFlac(Decoder *d, const char *path)
     return true;
 }
 
-static bool openMp3(Decoder *d, const char *path)
+static bool openMp3(Decoder *d)
 {
-    if (!drmp3_init_file(&d->u.mp3, path, NULL))
+    if (!drmp3_init(&d->u.mp3, onRead, onSeekMp3, onTellMp3, NULL, d->file, NULL))
         return false;
     d->channels = d->u.mp3.channels;
     d->sample_rate = d->u.mp3.sampleRate;
@@ -69,10 +119,34 @@ static bool openMp3(Decoder *d, const char *path)
     return true;
 }
 
-static bool openVorbis(Decoder *d, const char *path)
+// A network file, whole, read as a stream: on a connection of its own, and
+// given up when the song changes (kfileInterruptStreams). NULL if it can't be.
+static uint8_t *readWhole(KFile *f, size_t *size)
+{
+    int64_t total = kfileSize(f);
+    uint8_t *data = total > 0 && total <= VORBIS_MEMORY_MAX ? malloc((size_t)total) : NULL;
+    if (data && kfileRead(f, data, (size_t)total) != (size_t)total) {
+        free(data);
+        data = NULL;
+    }
+    *size = data ? (size_t)total : 0;
+    return data;
+}
+
+// A card file through its FILE (as stb_vorbis_open_filename does); a network one from memory.
+static bool openVorbis(Decoder *d)
 {
     int error = 0;
-    d->u.vorbis = stb_vorbis_open_filename(path, &error, NULL);
+    if (kfileStdio(d->file)) {
+        d->u.vorbis = stb_vorbis_open_file(kfileStdio(d->file), 0, &error, NULL);
+    } else {
+        size_t size = 0;
+        d->memory = readWhole(d->file, &size);
+        kfileClose(d->file);  // Read: its connection can go.
+        d->file = NULL;
+        if (d->memory)
+            d->u.vorbis = stb_vorbis_open_memory(d->memory, (int)size, &error, NULL);
+    }
     if (!d->u.vorbis)
         return false;
     stb_vorbis_info info = stb_vorbis_get_info(d->u.vorbis);
@@ -93,28 +167,48 @@ static bool openDsd(Decoder *d, const char *path)
     return true;
 }
 
+// The kind of file, by its extension. False if no decoder reads it.
+static bool kindOf(const char *path, DecoderKind *kind)
+{
+    if (utilHasExtension(path, "wav"))
+        *kind = KIND_WAV;
+    else if (utilHasExtension(path, "flac"))
+        *kind = KIND_FLAC;
+    else if (utilHasExtension(path, "mp3"))
+        *kind = KIND_MP3;
+    else if (utilHasExtension(path, "ogg") || utilHasExtension(path, "oga"))
+        *kind = KIND_VORBIS;
+    else if (utilHasExtension(path, "dsf") || utilHasExtension(path, "dff"))
+        *kind = KIND_DSD;
+    else
+        return false;
+    return true;
+}
+
+static void closeFiles(Decoder *d)
+{
+    kfileClose(d->file);
+    free(d->memory);
+}
+
 Decoder *decoderOpen(const char *path)
 {
     Decoder *d = calloc(1, sizeof(Decoder));
     if (!d)
         return NULL;
-
-    bool ok = false;
-    if (utilHasExtension(path, "wav")) {
-        d->kind = KIND_WAV;
-        ok = openWav(d, path);
-    } else if (utilHasExtension(path, "flac")) {
-        d->kind = KIND_FLAC;
-        ok = openFlac(d, path);
-    } else if (utilHasExtension(path, "mp3")) {
-        d->kind = KIND_MP3;
-        ok = openMp3(d, path);
-    } else if (utilHasExtension(path, "ogg") || utilHasExtension(path, "oga")) {
-        d->kind = KIND_VORBIS;
-        ok = openVorbis(d, path);
-    } else if (utilHasExtension(path, "dsf") || utilHasExtension(path, "dff")) {
-        d->kind = KIND_DSD;
-        ok = openDsd(d, path);
+    bool ok = kindOf(path, &d->kind);
+    if (ok && d->kind != KIND_DSD) {  // dsd.c opens its own.
+        d->file = kfileOpen(path, KFILE_STREAM);
+        ok = d->file != NULL;
+    }
+    if (ok) {
+        switch (d->kind) {
+        case KIND_WAV: ok = openWav(d); break;
+        case KIND_FLAC: ok = openFlac(d); break;
+        case KIND_MP3: ok = openMp3(d); break;
+        case KIND_VORBIS: ok = openVorbis(d); break;
+        case KIND_DSD: ok = openDsd(d, path); break;
+        }
     }
 
     // Headers come from untrusted files: reject values playback can't handle.
@@ -124,6 +218,7 @@ Decoder *decoderOpen(const char *path)
         return NULL;
     }
     if (!ok) {
+        closeFiles(d);
         free(d);
         return NULL;
     }
@@ -141,6 +236,7 @@ void decoderClose(Decoder *d)
     case KIND_VORBIS: stb_vorbis_close(d->u.vorbis); break;
     case KIND_DSD: dsdClose(d->u.dsd); break;
     }
+    closeFiles(d);  // After the decoder: it may read on closing.
     free(d);
 }
 

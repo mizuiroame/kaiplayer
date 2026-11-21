@@ -8,6 +8,7 @@
 
 // Entries listed per folder; the rest are left out.
 #define BROWSER_MAX_ENTRIES 16384
+#define BROWSER_PROBLEM_MAX 192
 
 typedef struct {
     char *name;
@@ -20,9 +21,12 @@ typedef struct {
     size_t count;
     size_t cursor;
     bool incomplete;  // Some entries could not be read, or the list was capped.
+    char problem[BROWSER_PROBLEM_MAX];  // Why the last network folder couldn't be listed; "" if it could.
 } Browser;
 
-// Lists path. On failure the browser keeps its previous listing.
+// Lists path: a folder on the card, or in the network folder ("dav:/...",
+// through kfile.h, which waits for the server). On failure the browser keeps
+// its previous listing (problem says why, for a network folder).
 bool browserOpen(Browser *b, const char *path);
 void browserFree(Browser *b);
 
