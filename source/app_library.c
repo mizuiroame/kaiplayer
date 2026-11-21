@@ -6,6 +6,7 @@
 #include "app.h"
 #include "app_buttons.h"
 #include "catalog_scan.h"
+#include "lang.h"
 #include "ui.h"
 
 #define PAGE_ROWS UI_LIST_ROWS
@@ -97,13 +98,13 @@ static void play(App *app, bool whole_page, bool shuffle)
         snprintf(source, sizeof(source), "%.48s", c->artists[a].name);
         mixed = true;
     } else if (ok && p->level == LIB_SONGS) {
-        snprintf(source, sizeof(source), "%s", "All songs");
+        snprintf(source, sizeof(source), "%s", T("All songs"));
         mixed = true;
     }
     catalogUnlock();
     if (!ok) {
         trackListFree(&list);
-        appToast(app, "There are no songs to play.");
+        appToast(app, T("There are no songs to play."));
         return;
     }
     appPlayTracks(app, &list, start, shuffle, mixed ? source : NULL);

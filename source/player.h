@@ -30,7 +30,7 @@ typedef struct {
     bool shuffle;
     RepeatMode repeat;
     AudioFormat format;   // The playing file's format; an empty codec when none.
-    char error[160];
+    char error[320];
 } PlayerStatus;
 
 bool playerInit(bool shuffle, RepeatMode repeat);

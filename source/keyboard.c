@@ -3,13 +3,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "lang.h"
+
 static const char *const LOWER[KEYBOARD_CHAR_ROWS] = {
     "1234567890", "qwertyuiop", "asdfghjkl'", "zxcvbnm-_.",
 };
 static const char *const UPPER[KEYBOARD_CHAR_ROWS] = {
     "!&()+,1234", "QWERTYUIOP", "ASDFGHJKL'", "ZXCVBNM-_.",
 };
-static const char *const ACTION_LABELS[KEYBOARD_ACTIONS] = {"Space", "Delete", "Shift", "Done"};
+static const char *const ACTION_LABELS[KEYBOARD_ACTIONS] = {N_("Space"), N_("Delete"), N_("Shift"), N_("Done")};
 
 void keyboardInit(Keyboard *k, const char *initial)
 {
@@ -55,7 +57,7 @@ char keyboardCharAt(const Keyboard *k, int row, int col)
 
 const char *keyboardActionLabel(KeyboardAction action)
 {
-    return ACTION_LABELS[action];
+    return T(ACTION_LABELS[action]);
 }
 
 void keyboardType(Keyboard *k, char c)

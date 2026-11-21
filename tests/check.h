@@ -31,3 +31,4 @@ void testDsd(void);
 void testStyles(void);
 void testAppRoot(void);
 void testKinetic(void);
+void testLang(void);

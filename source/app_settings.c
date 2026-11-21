@@ -2,11 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "app.h"
 #include "app_buttons.h"
 #include "background.h"
 #include "keyboard_system.h"
+#include "lang.h"
+#include "languages.h"
 #include "nowstyle.h"
 #include "player.h"
 #include "resume.h"
@@ -49,7 +52,7 @@ static void typeSleepMinutes(App *app)
     if (app->sleep_minutes)
         snprintf(initial, sizeof(initial), "%d", app->sleep_minutes);
     SystemKeyboardResult result =
-        systemKeyboardNumber("Sleep timer, in minutes (0 turns it off)", initial, typed, sizeof(typed), 3);
+        systemKeyboardNumber(T("Sleep timer, in minutes (0 turns it off)"), initial, typed, sizeof(typed), 3);
     if (result == SYSTEM_KEYBOARD_OK)
         setSleep(app, settingsSleepClamp(strtol(typed, NULL, 10)));
     else if (result == SYSTEM_KEYBOARD_UNAVAILABLE)
@@ -100,8 +103,8 @@ static void stepBackground(App *app, int delta)
     int count = (int)backgroundList(app->config.library, names, BACKGROUND_MAX_IMAGES);
     if (count == 0) {
         app->config.background[0] = '\0';
-        appToast(app, app->config.library[0] ? "Put JPEG or PNG images in a Backgrounds folder in your music folder."
-                                             : "Choose your music folder first.");
+        appToast(app, app->config.library[0] ? T("Put JPEG or PNG images in a Backgrounds folder in your music folder.")
+                                             : T("Choose your music folder first."));
         return;
     }
     int index = 0;  // 0 is the cover colors, then the images.
@@ -112,12 +115,29 @@ static void stepBackground(App *app, int delta)
     index = ((index + delta) % (count + 1) + count + 1) % (count + 1);
     snprintf(app->config.background, sizeof(app->config.background), "%s", index ? names[index - 1] : "");
     if (!backgroundLoad(app->config.library, app->config.background, app->config.background_blur)) {
-        char message[BACKGROUND_NAME_MAX + 80];
-        snprintf(message, sizeof(message), "Could not read %s (JPEG or PNG, up to 50 megapixels).",
+        char message[BACKGROUND_NAME_MAX + 192];
+        snprintf(message, sizeof(message), T("Could not read %s (JPEG or PNG, up to 50 megapixels)."),
                  app->config.background);
         appToast(app, message);
         app->config.background[0] = '\0';  // Not kept: it would fail again at every start.
     }
+}
+
+void appUseLanguage(App *app)
+{
+    if (!languageUse(app->config.language))
+        snprintf(app->config.language, sizeof(app->config.language), "%s", "en");  // Gone: English.
+    snprintf(app->config.language_name, sizeof(app->config.language_name), "%s",
+             languageName(languageIndex(app->config.language)));
+}
+
+void appStartLanguages(App *app)
+{
+    char folder[UTIL_PATH_MAX];
+    if (utilJoinPath(folder, sizeof(folder), configFolder(), "lang"))
+        mkdir(folder, 0777);  // Where to put more languages' files, there to be seen.
+    languagesFind(folder);
+    appUseLanguage(app);
 }
 
 void appChangeSetting(App *app, SettingRow row, int delta)
@@ -168,6 +188,14 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         app->config.screen_off_minutes = settingsScreenOffStep(app->config.screen_off_minutes, delta);
         configSave(&app->config);
         break;
+    case SETTING_LANGUAGE: {  // Through the languages found: English, those in the app, config/lang's files.
+        int count = languagesCount();
+        int at = (languageIndex(app->config.language) + delta % count + count) % count;
+        snprintf(app->config.language, sizeof(app->config.language), "%s", languageId(at));
+        appUseLanguage(app);
+        configSave(&app->config);
+        break;
+    }
     default:
         break;
     }
@@ -220,5 +248,5 @@ void appTickSleepTimer(App *app, uint64_t now_ns)
     app->sleep_deadline_ns = 0;
     app->sleep_minutes = 0;
     playerFadeOutAndPause(SLEEP_FADE_SECONDS);
-    appToast(app, "Sleep timer: pausing.");
+    appToast(app, T("Sleep timer: pausing."));
 }

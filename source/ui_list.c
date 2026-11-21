@@ -5,6 +5,7 @@
 
 #include "ui.h"
 #include "ui_common.h"
+#include "lang.h"
 #include "meta.h"
 #include "ui_hit.h"
 
@@ -138,7 +139,7 @@ int uiDrawBackButton(int x, int y, bool focused)
 
 int uiDrawBackButtonHit(int x, int y, bool focused, HitKind hit)
 {
-    static const char LABEL[] = "Back";
+    const char *const LABEL = T("Back");
     int w = fontTextWidth(FONT_BOLD, 17, LABEL) + 44;
     Color text = focused ? COLOR_BG : COLOR_TEXT;
     float mid = (float)y + 15.0f;
@@ -162,8 +163,8 @@ void uiDrawPlayingBars(int x, int y, bool playing, uint64_t now_ns)
 
 void uiDrawColumnHeaders(void)
 {
-    fontDraw(FONT_BOLD, 15, COLUMN_ARTIST_X, SUBTITLE_Y + 2, "ARTIST", COLOR_FAINT);
-    fontDraw(FONT_BOLD, 15, COLUMN_ALBUM_X, SUBTITLE_Y + 2, "ALBUM", COLOR_FAINT);
+    fontDraw(FONT_BOLD, 15, COLUMN_ARTIST_X, SUBTITLE_Y + 2, T("ARTIST"), COLOR_FAINT);
+    fontDraw(FONT_BOLD, 15, COLUMN_ALBUM_X, SUBTITLE_Y + 2, T("ALBUM"), COLOR_FAINT);
 }
 
 void uiLoadSong(const char *path, UiSong *song)

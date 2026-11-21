@@ -8,6 +8,7 @@
 #include <switch.h>
 
 #include "decoder.h"
+#include "lang.h"
 #include "resampler.h"
 #include "tags.h"
 #include "util.h"
@@ -35,7 +36,7 @@ static double g_seek_target = -1.0;
 static u64 g_played_frames;
 static double g_duration;
 static AudioFormat g_format;  // Of the file the decoder plays.
-static char g_error[160];
+static char g_error[320];
 static unsigned g_generation;
 static double g_seeking_to = -1.0;  // A seek the audio thread is running.
 static bool g_eq_enabled;
@@ -127,7 +128,7 @@ static bool loadCurrent(void)
             mutexUnlock(&g_lock);
             return false;
         }
-        snprintf(g_error, sizeof(g_error), "Could not open: %s", utilFileName(path));
+        snprintf(g_error, sizeof(g_error), T("Could not open: %s"), utilFileName(path));
         queueNext(&g_queue, true);
         mutexUnlock(&g_lock);
     }

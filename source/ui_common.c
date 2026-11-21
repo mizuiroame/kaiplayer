@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "lang.h"
 #include "meta.h"
 #include "ui_buttons.h"
 
@@ -31,7 +32,7 @@ void uiResolveTrack(const PlayerStatus *status, const Artwork *art, UiTrack *tra
     char path[UTIL_PATH_MAX];
     track->has_track = status->track_count > 0 && playerTrackPath(status->track, path, sizeof(path));
     if (!track->has_track) {
-        snprintf(track->title, sizeof(track->title), "%s", "Nothing playing");
+        snprintf(track->title, sizeof(track->title), "%s", T("Nothing playing"));
         return;
     }
     uiSplitTrackPath(path, track->title, track->folder);
@@ -195,8 +196,8 @@ void uiDrawPill(int x, int y, const char *label, bool on)
 const char *uiRepeatLabel(RepeatMode repeat)
 {
     switch (repeat) {
-    case REPEAT_ALL: return "Repeat queue";
-    case REPEAT_ONE: return "Repeat song";
-    default: return "Repeat off";
+    case REPEAT_ALL: return T("Repeat queue");
+    case REPEAT_ONE: return T("Repeat song");
+    default: return T("Repeat off");
     }
 }

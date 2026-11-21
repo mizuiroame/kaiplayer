@@ -33,6 +33,8 @@ typedef struct {
     int now_style;               // NowStyle: cover, vinyl, CD or cassette.
     char background[BACKGROUND_NAME_MAX];  // An image in <library>/Backgrounds; empty for the cover colors.
     int background_blur;         // BackgroundBlur.
+    char language[64];           // Its id: "en", "es", or a file in config/lang; "" is English.
+    char language_name[64];      // Its name, as Settings shows it (not kept: set at start).
 } Config;
 
 // Fills defaults, then overrides them with the saved file if it exists.

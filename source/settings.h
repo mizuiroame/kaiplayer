@@ -19,6 +19,7 @@ typedef enum {
     SETTING_ABOUT,
     SETTING_OPEN_PLAYBACK,  // Rows that open a page.
     SETTING_OPEN_DISPLAY,
+    SETTING_LANGUAGE,       // The language KaiPlayer is shown in (languages.h).
     SETTING_COUNT,
 } SettingRow;
 

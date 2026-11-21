@@ -5,6 +5,7 @@
 
 #include "app_buttons.h"
 #include "keyboard_system.h"
+#include "lang.h"
 
 static void closeKeyboard(App *app)
 {
@@ -27,7 +28,7 @@ static void trimSpaces(char *text)
 void appOpenKeyboard(App *app, NamePurpose purpose, const char *title, const char *initial)
 {
     app->keyboard_for = purpose;
-    char text[KEYBOARD_MAX * 4 + 1], typed[KEYBOARD_MAX * 4 + 1], prompt[320];
+    char text[KEYBOARD_MAX * 4 + 1], typed[KEYBOARD_MAX * 4 + 1], prompt[512];
     snprintf(text, sizeof(text), "%s", initial ? initial : "");
     snprintf(prompt, sizeof(prompt), "%s", title);
     // The console's keyboard first. If the name is refused, it opens again
@@ -57,10 +58,10 @@ void appOpenKeyboard(App *app, NamePurpose purpose, const char *title, const cha
 // Applies the typed name. Returns false to keep the keyboard open.
 static bool applyName(App *app, const char *name)
 {
-    char message[320];
+    char message[512];
     PlaylistsTab *t = &app->playlists;
     if (!playlistNameValid(name)) {
-        appToast(app, "Up to 48 characters, without / or \\, not starting with a dot.");
+        appToast(app, T("Up to 48 characters, without / or \\, not starting with a dot."));
         return false;
     }
     if (app->keyboard_for == NAME_FOR_RENAME) {
@@ -68,22 +69,23 @@ static bool applyName(App *app, const char *name)
         if (strcmp(old, name) == 0)
             return true;  // Unchanged.
         if (!playlistRename(old, name)) {
-            appToast(app, "A playlist with that name already exists.");
+            appToast(app, T("A playlist with that name already exists."));
             return false;
         }
         if (t->open)
             snprintf(t->name, sizeof(t->name), "%s", name);
-        snprintf(message, sizeof(message), "Renamed to \"%s\".", name);
+        snprintf(message, sizeof(message), T("Renamed to \"%s\"."), name);
     } else {
         if (!playlistCreate(name)) {
-            appToast(app, "A playlist with that name already exists.");
+            appToast(app, T("A playlist with that name already exists."));
             return false;
         }
         int added = app->keyboard_for == NAME_FOR_NEW_PLAYLIST_WITH_SONGS ? playlistAddTracks(name, &app->pending) : 0;
         if (added > 0)
-            snprintf(message, sizeof(message), "Created \"%s\" with %d song%s.", name, added, added == 1 ? "" : "s");
+            snprintf(message, sizeof(message),
+                     added == 1 ? T("Created \"%s\" with %d song.") : T("Created \"%s\" with %d songs."), name, added);
         else
-            snprintf(message, sizeof(message), "Created \"%s\".", name);
+            snprintf(message, sizeof(message), T("Created \"%s\"."), name);
     }
     appToast(app, message);
     appPlaylistsRefresh(app);

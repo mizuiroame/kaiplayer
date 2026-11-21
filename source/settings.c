@@ -1,14 +1,19 @@
 #include "settings.h"
 
+#include "lang.h"
+
 static const char *const ROW_LABELS[SETTING_COUNT] = {
-    "Music folder", "Sleep timer", "Resume where you left off", "Clock", "Equalizer", "ReplayGain (even loudness)",
-    "Accent color", "Now Playing style", "Background", "Background blur", "Screen off while playing", "About", "Playback", "Display",
+    N_("Music folder"), N_("Sleep timer"), N_("Resume where you left off"), N_("Clock"), N_("Equalizer"),
+    N_("ReplayGain (even loudness)"), N_("Accent color"), N_("Now Playing style"), N_("Background"),
+    N_("Background blur"), N_("Screen off while playing"), N_("About"), N_("Playback"), N_("Display"),
+    N_("Language"),
 };
 
 static const SettingRow MAIN_ROWS[] = {SETTING_LIBRARY, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY, SETTING_ABOUT};
 static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_EQUALIZER, SETTING_REPLAYGAIN};
-static const SettingRow DISPLAY_ROWS[] = {SETTING_ACCENT,          SETTING_NOW_STYLE, SETTING_BACKGROUND,
-                                          SETTING_BACKGROUND_BLUR, SETTING_CLOCK,     SETTING_SCREEN_OFF};
+static const SettingRow DISPLAY_ROWS[] = {SETTING_LANGUAGE,   SETTING_ACCENT,          SETTING_NOW_STYLE,
+                                          SETTING_BACKGROUND, SETTING_BACKGROUND_BLUR, SETTING_CLOCK,
+                                          SETTING_SCREEN_OFF};
 
 #define COUNT_OF(a) ((int)(sizeof(a) / sizeof((a)[0])))
 
@@ -41,7 +46,9 @@ SettingRow settingsPageRow(SettingsPage page)
 
 const char *settingsPageTitle(SettingsPage page)
 {
-    return page == SETTINGS_PAGE_PLAYBACK ? "Playback" : page == SETTINGS_PAGE_DISPLAY ? "Display" : "Settings";
+    return page == SETTINGS_PAGE_PLAYBACK  ? T("Playback")
+           : page == SETTINGS_PAGE_DISPLAY ? T("Display")
+                                           : T("Settings");
 }
 
 int settingsSleepClamp(long minutes)
@@ -76,7 +83,7 @@ int settingsScreenOffStep(int minutes, int delta)
 
 const char *settingsRowLabel(SettingRow row)
 {
-    return row >= 0 && row < SETTING_COUNT ? ROW_LABELS[row] : "";
+    return row >= 0 && row < SETTING_COUNT ? T(ROW_LABELS[row]) : "";
 }
 
 bool settingsRowEditable(SettingRow row)

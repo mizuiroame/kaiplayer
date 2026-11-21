@@ -139,14 +139,14 @@ typedef struct {
     PlaylistsTab playlists;
     bool audio_ok;
     SysInfo sys;  // Clock and battery, refreshed by the main loop.
-    char toast[320];
+    char toast[512];
     uint64_t toast_until_ns;
 
     Menu menu;              // The + menu and the dialogs it opens.
     bool keyboard_open;
     Keyboard keyboard;
     NamePurpose keyboard_for;
-    char keyboard_title[96];
+    char keyboard_title[192];
     TrackList pending;      // Songs waiting for a playlist to be picked.
     bool settings_open;
     SettingRow settings_cursor;
@@ -253,6 +253,10 @@ void appActivateRow(App *app, size_t index, bool select_only);
 // Settings page and sleep timer (app_settings.c).
 void appOpenSettings(App *app);
 void appHandleSettings(App *app, uint64_t pressed);
+// Finds the languages (English, those in the app, config/lang's files) and uses the one chosen.
+void appStartLanguages(App *app);
+// Uses app->config.language (English if it's gone), and names it for Settings.
+void appUseLanguage(App *app);
 void appChangeSetting(App *app, SettingRow row, int delta);
 // A on a row (or a tap): the sleep timer opens the number pad, others change.
 void appActivateSetting(App *app, SettingRow row);

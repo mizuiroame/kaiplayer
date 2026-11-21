@@ -82,6 +82,8 @@ static void applyLine(Config *c, char *line)
         c->now_style = clampInt(atoi(value), 0, NOW_STYLE_COUNT - 1);
     } else if (strcmp(key, "background") == 0 && strlen(value) < sizeof(c->background) && !strchr(value, '/')) {
         strcpy(c->background, value);
+    } else if (strcmp(key, "language") == 0 && strlen(value) < sizeof(c->language) && !strpbrk(value, "/\\")) {
+        strcpy(c->language, value);  // An id, or a name in the lang folder: never a path.
     } else if (strcmp(key, "background_blur") == 0) {
         c->background_blur = clampInt(atoi(value), 0, BLUR_COUNT - 1);
     } else if (strcmp(key, "repeat") == 0) {
@@ -150,5 +152,7 @@ bool configSave(const Config *c)
             c->accent, c->screen_off_minutes, c->now_style, c->background_blur);
     if (c->background[0] && !strpbrk(c->background, "\r\n/"))
         fprintf(f, "background=%s\n", c->background);
+    if (c->language[0] && !strpbrk(c->language, "\r\n"))
+        fprintf(f, "language=%s\n", c->language);
     return fclose(f) == 0;
 }

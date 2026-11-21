@@ -1,0 +1,622 @@
+# KaiPlayer 日本語版。
+# 英語の行の次の行がその訳で、組ごとに空行を入れます。
+# %d、%s などはそのまま、同じ順番で残します。source/lang.h を参照。
+language = 日本語
+
+%d min  (%u left)
+%d分  （残り%u分）
+
+%zu album
+アルバム%zu枚
+
+%zu albums
+アルバム%zu枚
+
+%zu playlist
+プレイリスト%zu件
+
+%zu playlists
+プレイリスト%zu件
+
+%zu song
+%zu曲
+
+%zu songs
+%zu曲
+
+%zu track
+%zu曲
+
+%zu tracks
+%zu曲
+
+12-hour
+12時間制
+
+24-hour
+24時間制
+
+[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back
+[<>] 帯域  [^v] ゲイン  [X] プリセット  [Y] オン/オフ  [B] 戻る
+
+[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause
+[<>] 選ぶ  [A] 押す  [^][B] リストに戻る  [RS] シーク  [L][R] 曲送り  [-] 一時停止
+
+[^v] choose  [<>][A] change  [B] back
+[^v] 選ぶ  [<>][A] 変更  [B] 戻る
+
+[^v] choose  [>][A] open  [B] close
+[^v] 選ぶ  [>][A] 開く  [B] 閉じる
+
+[^v] move the song  [A][B] done
+[^v] 曲を移動  [A][B] 完了
+
+[A] choose  [B] cancel  [+] exit
+[A] 決定  [B] キャンセル  [+] 終了
+
+[A] choose  [B] close
+[A] 決定  [B] 閉じる
+
+[A] choose  [B] close  [+] exit...
+[A] 決定  [B] 閉じる  [+] 終了...
+
+[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 開く  [B] 戻る  [>] 追加  [X] 再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り  [+] メニュー
+
+[A] open  [B] up  [X] use this folder
+[A] 開く  [B] 上のフォルダー  [X] このフォルダーを使う
+
+[A] open  [B] up or close  [X] use this folder
+[A] 開く  [B] 上へ / 閉じる  [X] このフォルダーを使う
+
+[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 開く  [LS] 移動  [RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 開く  [X] 再生  [Y] シャッフル  [LS] 移動  [RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 開く  [X] 再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track
+[A] アルバムを開く  [B] 戻る  [>] 追加  [X] アーティストを再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り
+
+[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu
+[A] 一時停止  [B] プレイリストに追加  [<>][RS] シーク  [X] シャッフル  [Y] リピート  [L][R] 曲送り  [+] メニュー
+
+[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 再生  [B] 戻る  [>] 追加  [X] すべて再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り  [+] メニュー
+
+[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 再生  [B] 戻る  [>] 外す  [X] 再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り  [+] メニュー
+
+[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu
+[A] 再生  [B] ライブラリー  [>] 追加  [X] シャッフル  [Y] リピート  [RS] ページ / シーク  [L][R] 曲送り  [+] メニュー
+
+[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel
+[A] 入力  [B] 削除  [X] シフト  [Y] スペース  [+] 完了  [-] キャンセル
+
+[A][B] back
+[A][B] 戻る
+
+A music player for Switch 2 homebrew on kaiHEN.
+kaiHEN で動く Switch 2 自作ソフト用の音楽プレーヤーです。
+
+A playlist with that name already exists.
+その名前のプレイリストはすでにあります。
+
+About
+このアプリについて
+
+Accent color
+アクセントカラー
+
+Add "%s" to
+「%s」の追加先
+
+Add %zu songs to
+%zu曲の追加先
+
+Add songs with the + buttons in Library, Queue or Now Playing.
+ライブラリー、キュー、再生中の画面で + ボタンを押すと曲を追加できます。
+
+Add to playlist
+プレイリストに追加
+
+Added "%s" to "%s".
+「%s」を「%s」に追加しました。
+
+Added %d song to "%s".
+%d曲を「%s」に追加しました。
+
+Added %d songs to "%s".
+%d曲を「%s」に追加しました。
+
+After %d min idle
+操作なしで%d分後
+
+ALBUM
+アルバム
+
+Album
+アルバム単位
+
+Albums
+アルバム
+
+Albums in your library
+ライブラリーのアルバム
+
+All songs
+すべての曲
+
+Already in "%s".
+すでに「%s」に入っています。
+
+ARTIST
+アーティスト
+
+Artists
+アーティスト
+
+Audio unavailable: audout could not start.
+音声を使用できません。audout を開始できませんでした。
+
+Auto
+自動
+
+Back
+戻る
+
+Background
+背景
+
+Background blur
+背景のぼかし
+
+Bass
+低音
+
+Blue
+ブルー
+
+Cancel
+キャンセル
+
+Choose your music folder
+音楽フォルダーを選んでください
+
+Choose your music folder first.
+先に音楽フォルダーを選んでください。
+
+Choose your music folder in + > Settings > Music folder.
+「+ > 設定 > 音楽フォルダー」で音楽フォルダーを選んでください。
+
+Classical
+クラシック
+
+Clock
+時計
+
+Could not add to "%s".
+「%s」に追加できませんでした。
+
+Could not delete "%s".
+「%s」を削除できませんでした。
+
+Could not open the folder.
+フォルダーを開けませんでした。
+
+Could not open: %s
+開けませんでした: %s
+
+Could not read %s (JPEG or PNG, up to 50 megapixels).
+%s を読み込めませんでした（JPEG または PNG、5000万画素まで）。
+
+Could not read that playlist.
+そのプレイリストを読み込めませんでした。
+
+Could not read the playlists folder.
+プレイリストのフォルダーを読み込めませんでした。
+
+Could not read the SD card.
+SDカードを読み込めませんでした。
+
+Could not save the playlist.
+プレイリストを保存できませんでした。
+
+Cover colors
+ジャケットの色
+
+Created "%s" with %d song.
+「%s」を作成しました（%d曲）。
+
+Created "%s" with %d songs.
+「%s」を作成しました（%d曲）。
+
+Created "%s".
+「%s」を作成しました。
+
+Custom
+カスタム
+
+Delete
+削除
+
+Delete "%s"
+「%s」を削除
+
+Delete "%s"? The songs stay on the card.
+「%s」を削除しますか？曲はSDカードに残ります。
+
+Deleted "%s".
+「%s」を削除しました。
+
+Display
+画面
+
+Done
+完了
+
+empty
+空
+
+Equalizer
+イコライザー
+
+Exit
+終了
+
+Exit KaiPlayer
+KaiPlayerを終了
+
+Exit KaiPlayer?
+KaiPlayerを終了しますか？
+
+Flat
+フラット
+
+Folders
+フォルダー
+
+Free and open source under the MIT license.
+MIT ライセンスの無料オープンソースソフトです。
+
+From cover
+ジャケットから
+
+Green
+グリーン
+
+High
+高
+
+Home
+ホーム
+
+Hz  ·  +12 to -12 dB
+Hz  ·  +12～-12 dB
+
+in folder order
+フォルダー順
+
+Jazz
+ジャズ
+
+KaiPlayer only shows this folder and the ones inside it.
+KaiPlayer はこのフォルダーとその中のフォルダーだけを表示します。
+
+Keep playing
+再生を続ける
+
+Language
+言語
+
+Library
+ライブラリー
+
+Looking for music...
+音楽を探しています...
+
+Low
+低
+
+Made by
+制作
+
+Medium
+中
+
+Menu
+メニュー
+
+Move song
+曲を移動
+
+Move the song with Up/Down, then press A.
+上下で曲を移動して、Aを押してください。
+
+moving a song
+曲を移動中
+
+Music folder
+音楽フォルダー
+
+Music folder: %.60s
+音楽フォルダー: %.60s
+
+Name for the new playlist
+新しいプレイリストの名前
+
+Never
+しない
+
+New name
+新しい名前
+
+New playlist
+新しいプレイリスト
+
+New playlist...
+新しいプレイリスト...
+
+No folders here.
+ここにはフォルダーがありません。
+
+No music in this folder.
+このフォルダーには音楽がありません。
+
+No playlists yet
+まだプレイリストがありません
+
+Not affiliated with or endorsed by Nintendo.
+Nintendo とは無関係で、承認を受けたものではありません。
+
+Not chosen
+未選択
+
+Nothing here yet.
+まだ何もありません。
+
+Nothing playing
+再生していません
+
+Now Playing
+再生中
+
+NOW PLAYING
+再生中
+
+Now Playing style
+再生中の画面のスタイル
+
+Off
+オフ
+
+On
+オン
+
+Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
+オープンソース（MIT）  ·  github.com/mizuiroame/kaiplayer
+
+Orange
+オレンジ
+
+Out of memory for the track list.
+曲リストに必要なメモリーが足りません。
+
+Paused
+一時停止中
+
+PAUSED
+一時停止中
+
+Pick a folder in Library or a playlist, and press X to play it.
+ライブラリーのフォルダーかプレイリストを選んで、Xを押すと再生します。
+
+Pink
+ピンク
+
+Playback
+再生
+
+Playlist
+プレイリスト
+
+Playlists
+プレイリスト
+
+Playlists you play show up here.
+再生したプレイリストがここに表示されます。
+
+Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
+SDカードの MP3、FLAC、Ogg Vorbis、WAV、DSD を再生します。\nプレイリスト、イコライザー、ReplayGain、アルバムアートにも対応しています。
+
+Pop
+ポップ
+
+Press + to create one, or to add songs from Library, Queue or Now Playing.
++を押して作成するか、ライブラリー、キュー、再生中の画面から曲を追加してください。
+
+Purple
+パープル
+
+Put JPEG or PNG images in a Backgrounds folder in your music folder.
+音楽フォルダー内の Backgrounds フォルダーに JPEG か PNG の画像を入れてください。
+
+Queue
+キュー
+
+Queue is empty
+キューは空です
+
+Reading your music folder...
+音楽フォルダーを読み込んでいます...
+
+Reading your music folder... your albums will show up here.
+音楽フォルダーを読み込んでいます... アルバムはここに表示されます。
+
+Recent albums
+最近のアルバム
+
+Recent artists
+最近のアーティスト
+
+Recent playlists
+最近のプレイリスト
+
+Red
+レッド
+
+Remove
+外す
+
+Remove "%s" from this playlist?
+このプレイリストから「%s」を外しますか？
+
+Remove song from playlist
+プレイリストから曲を外す
+
+Removed "%s" from "%s".
+「%s」を「%s」から外しました。
+
+Rename "%s"
+「%s」の名前を変更
+
+Renamed to "%s".
+「%s」に名前を変更しました。
+
+Repeat off
+リピートオフ
+
+Repeat queue
+キューをリピート
+
+Repeat song
+1曲リピート
+
+ReplayGain (even loudness)
+ReplayGain（音量をそろえる）
+
+Resume where you left off
+前回の続きから再生
+
+Rock
+ロック
+
+Save queue as playlist
+キューをプレイリストとして保存
+
+Screen off  ·  press any button or touch to wake
+画面オフ  ·  ボタンかタッチで復帰します
+
+Screen off while playing
+再生中の画面オフ
+
+Settings
+設定
+
+Shift
+シフト
+
+Shuffle off
+シャッフルオフ
+
+Shuffle on
+シャッフルオン
+
+shuffled play order
+シャッフルした再生順
+
+Sleep %u min
+スリープ %u分
+
+Sleep timer
+スリープタイマー
+
+Sleep timer, in minutes (0 turns it off)
+スリープタイマー（分、0でオフ）
+
+Sleep timer: pausing.
+スリープタイマー: 一時停止します。
+
+Some items in this folder could not be read
+このフォルダーの一部の項目を読み込めませんでした
+
+Songs
+曲
+
+Songs you play show up here.
+再生した曲がここに表示されます。
+
+Space
+スペース
+
+The queue is empty.
+キューは空です。
+
+There are no songs to add.
+追加する曲がありません。
+
+There are no songs to play.
+再生する曲がありません。
+
+This folder has no subfolders or music.
+このフォルダーにはサブフォルダーも音楽もありません。
+
+Track
+曲単位
+
+Track %zu of %zu
+%zu曲目 / 全%zu曲
+
+Treble
+高音
+
+Turn screen off (music keeps playing)
+画面をオフ（音楽は再生を続けます）
+
+Unknown artist
+不明なアーティスト
+
+Up to 48 characters, without / or \, not starting with a dot.
+48文字まで。/ と \ は使えず、先頭をドットにはできません。
+
+Update the library now
+今すぐライブラリーを更新
+
+Updating library  %zu / %zu
+ライブラリーを更新中  %zu / %zu
+
+Use this folder
+このフォルダーを使う
+
+Version %s
+バージョン %s
+
+Vocal
+ボーカル
+
+Welcome to KaiPlayer
+KaiPlayer へようこそ
+
+Welcome! Where is your music?
+ようこそ！音楽はどこにありますか？
+
+Your music folder has no songs yet. Add some over FTP.
+音楽フォルダーにまだ曲がありません。FTP で追加してください。
+
+Your top artists
+よく聴くアーティスト
+
+Cover
+ジャケット
+
+Vinyl record
+レコード
+
+CD
+CD
+
+Cassette
+カセット

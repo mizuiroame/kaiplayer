@@ -1,0 +1,622 @@
+# KaiPlayer en español (Latinoamérica).
+# Cada línea en inglés va seguida de su traducción, con una línea en blanco
+# entre pares. %d, %s y similares van igual y en el mismo orden. Ver source/lang.h.
+language = Español (Latinoamérica)
+
+%d min  (%u left)
+%d min  (quedan %u)
+
+%zu album
+%zu álbum
+
+%zu albums
+%zu álbumes
+
+%zu playlist
+%zu lista
+
+%zu playlists
+%zu listas
+
+%zu song
+%zu canción
+
+%zu songs
+%zu canciones
+
+%zu track
+%zu pista
+
+%zu tracks
+%zu pistas
+
+12-hour
+12 horas
+
+24-hour
+24 horas
+
+[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back
+[<>] banda  [^v] ganancia  [X] preajuste  [Y] sí/no  [B] atrás
+
+[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause
+[<>] elegir  [A] pulsar  [^][B] volver a la lista  [RS] avanzar  [L][R] pista  [-] pausa
+
+[^v] choose  [<>][A] change  [B] back
+[^v] elegir  [<>][A] cambiar  [B] atrás
+
+[^v] choose  [>][A] open  [B] close
+[^v] elegir  [>][A] abrir  [B] cerrar
+
+[^v] move the song  [A][B] done
+[^v] mover la canción  [A][B] listo
+
+[A] choose  [B] cancel  [+] exit
+[A] elegir  [B] cancelar  [+] salir
+
+[A] choose  [B] close
+[A] elegir  [B] cerrar
+
+[A] choose  [B] close  [+] exit...
+[A] elegir  [B] cerrar  [+] salir...
+
+[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] abrir  [B] atrás  [>] agregar  [X] reproducir  [Y] mezclar  [RS] página / avanzar  [L][R] pista  [+] menú
+
+[A] open  [B] up  [X] use this folder
+[A] abrir  [B] subir  [X] usar esta carpeta
+
+[A] open  [B] up or close  [X] use this folder
+[A] abrir  [B] subir o cerrar  [X] usar esta carpeta
+
+[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] abrir  [LS] mover  [RS] avanzar  [L][R] pista  [-] pausa  [+] menú
+
+[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] abrir  [X] reproducir  [Y] mezclar  [LS] mover  [RS] avanzar  [L][R] pista  [-] pausa  [+] menú
+
+[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] abrir  [X] reproducir  [Y] mezclar  [RS] página / avanzar  [L][R] pista  [-] pausa  [+] menú
+
+[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track
+[A] abrir álbum  [B] atrás  [>] agregar  [X] reproducir artista  [Y] mezclar  [RS] página / avanzar  [L][R] pista
+
+[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu
+[A] pausa  [B] agregar a lista  [<>][RS] avanzar  [X] mezclar  [Y] repetir  [L][R] pista  [+] menú
+
+[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] reproducir  [B] atrás  [>] agregar  [X] todo  [Y] mezclar  [RS] página / avanzar  [L][R] pista  [+] menú
+
+[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] reproducir  [B] atrás  [>] quitar  [X] reproducir  [Y] mezclar  [RS] página / avanzar  [L][R] pista  [+] menú
+
+[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu
+[A] reproducir  [B] biblioteca  [>] agregar  [X] mezclar  [Y] repetir  [RS] página / avanzar  [L][R] pista  [+] menú
+
+[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel
+[A] escribir  [B] borrar  [X] mayús  [Y] espacio  [+] listo  [-] cancelar
+
+[A][B] back
+[A][B] atrás
+
+A music player for Switch 2 homebrew on kaiHEN.
+Un reproductor de música homebrew para Switch 2 con kaiHEN.
+
+A playlist with that name already exists.
+Ya existe una lista con ese nombre.
+
+About
+Acerca de
+
+Accent color
+Color de acento
+
+Add "%s" to
+Agregar "%s" a
+
+Add %zu songs to
+Agregar %zu canciones a
+
+Add songs with the + buttons in Library, Queue or Now Playing.
+Agrega canciones con los botones + en Biblioteca, Cola o En reproducción.
+
+Add to playlist
+Agregar a una lista
+
+Added "%s" to "%s".
+Se agregó "%s" a "%s".
+
+Added %d song to "%s".
+Se agregó %d canción a "%s".
+
+Added %d songs to "%s".
+Se agregaron %d canciones a "%s".
+
+After %d min idle
+Tras %d min sin uso
+
+ALBUM
+ÁLBUM
+
+Album
+Álbum
+
+Albums
+Álbumes
+
+Albums in your library
+Álbumes de tu biblioteca
+
+All songs
+Todas las canciones
+
+Already in "%s".
+Ya está en "%s".
+
+ARTIST
+ARTISTA
+
+Artists
+Artistas
+
+Audio unavailable: audout could not start.
+Audio no disponible: no se pudo iniciar audout.
+
+Auto
+Automático
+
+Back
+Atrás
+
+Background
+Fondo
+
+Background blur
+Desenfoque del fondo
+
+Bass
+Graves
+
+Blue
+Azul
+
+Cancel
+Cancelar
+
+Choose your music folder
+Elige tu carpeta de música
+
+Choose your music folder first.
+Primero elige tu carpeta de música.
+
+Choose your music folder in + > Settings > Music folder.
+Elige tu carpeta de música en + > Configuración > Carpeta de música.
+
+Classical
+Clásica
+
+Clock
+Reloj
+
+Could not add to "%s".
+No se pudo agregar a "%s".
+
+Could not delete "%s".
+No se pudo borrar "%s".
+
+Could not open the folder.
+No se pudo abrir la carpeta.
+
+Could not open: %s
+No se pudo abrir: %s
+
+Could not read %s (JPEG or PNG, up to 50 megapixels).
+No se pudo leer %s (JPEG o PNG, hasta 50 megapíxeles).
+
+Could not read that playlist.
+No se pudo leer esa lista.
+
+Could not read the playlists folder.
+No se pudo leer la carpeta de listas.
+
+Could not read the SD card.
+No se pudo leer la tarjeta SD.
+
+Could not save the playlist.
+No se pudo guardar la lista.
+
+Cover colors
+Colores de la portada
+
+Created "%s" with %d song.
+Se creó "%s" con %d canción.
+
+Created "%s" with %d songs.
+Se creó "%s" con %d canciones.
+
+Created "%s".
+Se creó "%s".
+
+Custom
+Personalizado
+
+Delete
+Borrar
+
+Delete "%s"
+Borrar "%s"
+
+Delete "%s"? The songs stay on the card.
+¿Borrar "%s"? Las canciones se quedan en la tarjeta.
+
+Deleted "%s".
+Se borró "%s".
+
+Display
+Pantalla
+
+Done
+Listo
+
+empty
+vacía
+
+Equalizer
+Ecualizador
+
+Exit
+Salir
+
+Exit KaiPlayer
+Salir de KaiPlayer
+
+Exit KaiPlayer?
+¿Salir de KaiPlayer?
+
+Flat
+Plano
+
+Folders
+Carpetas
+
+Free and open source under the MIT license.
+Libre y de código abierto con licencia MIT.
+
+From cover
+De la portada
+
+Green
+Verde
+
+High
+Alta
+
+Home
+Inicio
+
+Hz  ·  +12 to -12 dB
+Hz  ·  +12 a -12 dB
+
+in folder order
+en orden de carpeta
+
+Jazz
+Jazz
+
+KaiPlayer only shows this folder and the ones inside it.
+KaiPlayer solo muestra esta carpeta y las que tiene dentro.
+
+Keep playing
+Seguir reproduciendo
+
+Language
+Idioma
+
+Library
+Biblioteca
+
+Looking for music...
+Buscando música...
+
+Low
+Baja
+
+Made by
+Hecho por
+
+Medium
+Media
+
+Menu
+Menú
+
+Move song
+Mover canción
+
+Move the song with Up/Down, then press A.
+Mueve la canción con Arriba/Abajo y luego pulsa A.
+
+moving a song
+moviendo una canción
+
+Music folder
+Carpeta de música
+
+Music folder: %.60s
+Carpeta de música: %.60s
+
+Name for the new playlist
+Nombre de la nueva lista
+
+Never
+Nunca
+
+New name
+Nuevo nombre
+
+New playlist
+Nueva lista
+
+New playlist...
+Nueva lista...
+
+No folders here.
+No hay carpetas aquí.
+
+No music in this folder.
+No hay música en esta carpeta.
+
+No playlists yet
+Todavía no hay listas
+
+Not affiliated with or endorsed by Nintendo.
+Sin relación ni respaldo de Nintendo.
+
+Not chosen
+Sin elegir
+
+Nothing here yet.
+Todavía no hay nada aquí.
+
+Nothing playing
+No se reproduce nada
+
+Now Playing
+En reproducción
+
+NOW PLAYING
+EN REPRODUCCIÓN
+
+Now Playing style
+Estilo de En reproducción
+
+Off
+No
+
+On
+Sí
+
+Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
+Código abierto (MIT)  ·  github.com/mizuiroame/kaiplayer
+
+Orange
+Naranja
+
+Out of memory for the track list.
+No hay memoria para la lista de pistas.
+
+Paused
+En pausa
+
+PAUSED
+EN PAUSA
+
+Pick a folder in Library or a playlist, and press X to play it.
+Elige una carpeta en Biblioteca o una lista, y pulsa X para reproducirla.
+
+Pink
+Rosa
+
+Playback
+Reproducción
+
+Playlist
+Lista
+
+Playlists
+Listas
+
+Playlists you play show up here.
+Las listas que reproduces aparecen aquí.
+
+Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
+Reproduce MP3, FLAC, Ogg Vorbis, WAV y DSD de tu tarjeta SD, con\nlistas, un ecualizador, ReplayGain y portadas de álbumes.
+
+Pop
+Pop
+
+Press + to create one, or to add songs from Library, Queue or Now Playing.
+Pulsa + para crear una, o para agregar canciones desde Biblioteca, Cola o En reproducción.
+
+Purple
+Morado
+
+Put JPEG or PNG images in a Backgrounds folder in your music folder.
+Pon imágenes JPEG o PNG en una carpeta Backgrounds dentro de tu carpeta de música.
+
+Queue
+Cola
+
+Queue is empty
+La cola está vacía
+
+Reading your music folder...
+Leyendo tu carpeta de música...
+
+Reading your music folder... your albums will show up here.
+Leyendo tu carpeta de música... tus álbumes aparecerán aquí.
+
+Recent albums
+Álbumes recientes
+
+Recent artists
+Artistas recientes
+
+Recent playlists
+Listas recientes
+
+Red
+Rojo
+
+Remove
+Quitar
+
+Remove "%s" from this playlist?
+¿Quitar "%s" de esta lista?
+
+Remove song from playlist
+Quitar canción de la lista
+
+Removed "%s" from "%s".
+Se quitó "%s" de "%s".
+
+Rename "%s"
+Renombrar "%s"
+
+Renamed to "%s".
+Se renombró a "%s".
+
+Repeat off
+Repetir: no
+
+Repeat queue
+Repetir la cola
+
+Repeat song
+Repetir la canción
+
+ReplayGain (even loudness)
+ReplayGain (volumen parejo)
+
+Resume where you left off
+Continuar donde lo dejaste
+
+Rock
+Rock
+
+Save queue as playlist
+Guardar la cola como lista
+
+Screen off  ·  press any button or touch to wake
+Pantalla apagada  ·  pulsa cualquier botón o toca para encenderla
+
+Screen off while playing
+Apagar la pantalla al reproducir
+
+Settings
+Configuración
+
+Shift
+Mayús
+
+Shuffle off
+Aleatorio: no
+
+Shuffle on
+Aleatorio: sí
+
+shuffled play order
+orden aleatorio
+
+Sleep %u min
+Dormir %u min
+
+Sleep timer
+Temporizador para dormir
+
+Sleep timer, in minutes (0 turns it off)
+Temporizador para dormir, en minutos (0 lo desactiva)
+
+Sleep timer: pausing.
+Temporizador para dormir: en pausa.
+
+Some items in this folder could not be read
+No se pudieron leer algunos elementos de esta carpeta
+
+Songs
+Canciones
+
+Songs you play show up here.
+Las canciones que reproduces aparecen aquí.
+
+Space
+Espacio
+
+The queue is empty.
+La cola está vacía.
+
+There are no songs to add.
+No hay canciones para agregar.
+
+There are no songs to play.
+No hay canciones para reproducir.
+
+This folder has no subfolders or music.
+Esta carpeta no tiene subcarpetas ni música.
+
+Track
+Pista
+
+Track %zu of %zu
+Pista %zu de %zu
+
+Treble
+Agudos
+
+Turn screen off (music keeps playing)
+Apagar la pantalla (la música sigue sonando)
+
+Unknown artist
+Artista desconocido
+
+Up to 48 characters, without / or \, not starting with a dot.
+Hasta 48 caracteres, sin / ni \, sin empezar con punto.
+
+Update the library now
+Actualizar la biblioteca ahora
+
+Updating library  %zu / %zu
+Actualizando la biblioteca  %zu / %zu
+
+Use this folder
+Usar esta carpeta
+
+Version %s
+Versión %s
+
+Vocal
+Voz
+
+Welcome to KaiPlayer
+Te damos la bienvenida a KaiPlayer
+
+Welcome! Where is your music?
+¡Te damos la bienvenida! ¿Dónde está tu música?
+
+Your music folder has no songs yet. Add some over FTP.
+Tu carpeta de música todavía no tiene canciones. Agrega algunas por FTP.
+
+Your top artists
+Tus artistas más escuchados
+
+Cover
+Portada
+
+Vinyl record
+Disco de vinilo
+
+CD
+CD
+
+Cassette
+Casete

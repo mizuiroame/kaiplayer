@@ -3,13 +3,16 @@
 #include <math.h>
 #include <string.h>
 
+#include "lang.h"
+
 #define BAND_Q 1.41  // About one octave wide, like the band spacing.
 #define PI 3.14159265358979323846
 
 static const double FREQUENCIES[EQ_BANDS] = {31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
 static const char *const LABELS[EQ_BANDS] = {"31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k"};
 static const char *const PRESET_NAMES[EQ_PRESET_COUNT] = {
-    "Flat", "Bass", "Treble", "Rock", "Pop", "Jazz", "Classical", "Vocal", "Custom",
+    N_("Flat"), N_("Bass"), N_("Treble"), N_("Rock"),   N_("Pop"),
+    N_("Jazz"), N_("Classical"), N_("Vocal"), N_("Custom"),
 };
 static const int PRESET_GAINS[EQ_PRESET_CUSTOM][EQ_BANDS] = {
     [EQ_PRESET_FLAT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -34,7 +37,7 @@ const char *eqBandLabel(int band)
 
 const char *eqPresetName(EqPreset preset)
 {
-    return preset >= 0 && preset < EQ_PRESET_COUNT ? PRESET_NAMES[preset] : "";
+    return preset >= 0 && preset < EQ_PRESET_COUNT ? T(PRESET_NAMES[preset]) : "";
 }
 
 bool eqPresetGains(EqPreset preset, int gains[EQ_BANDS])

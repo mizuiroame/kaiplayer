@@ -10,6 +10,7 @@
 #include "ui_list.h"
 #include "screen.h"
 #include "covercache.h"
+#include "lang.h"
 #include "theme.h"
 
 #define MINI_Y 572
@@ -20,7 +21,8 @@
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 #define NS_PER_MINUTE 60000000000ull
 
-static const char *const VIEW_NAMES[VIEW_COUNT] = {"Home", "Library", "Playlists", "Queue", "Now Playing"};
+static const char *const VIEW_NAMES[VIEW_COUNT] = {N_("Home"), N_("Library"), N_("Playlists"), N_("Queue"),
+                                                     N_("Now Playing")};
 
 static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
@@ -34,7 +36,7 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
     bool warned = b->incomplete;
     if (warned) {
         // The console returned an error while listing: some names may be missing.
-        static const char WARNING[] = "Some items in this folder could not be read";
+        const char *const WARNING = T("Some items in this folder could not be read");
         int warning_w = fontTextWidth(FONT_REGULAR, TEXT_SMALL, WARNING);
         fontDraw(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - warning_w, SUBTITLE_Y, WARNING, COLOR_ERROR);
         path_w -= warning_w + 24;
@@ -48,7 +50,8 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
     }
     fontDrawClipped(FONT_REGULAR, TEXT_SMALL, path_x, SUBTITLE_Y, path_w, b->path, COLOR_DIM);
     if (b->count == 0) {
-        fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, "This folder has no subfolders or music.", COLOR_DIM);
+        fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10, T("This folder has no subfolders or music."),
+                 COLOR_DIM);
         return;
     }
     char playing[UTIL_PATH_MAX] = "", path[UTIL_PATH_MAX];
@@ -102,13 +105,13 @@ static void drawQueueRow(TrackRow *row)
 static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     if (status->track_count == 0) {
-        uiDrawEmptyList("Queue is empty", "Pick a folder in Browse or a playlist, and press X to play it.");
+        uiDrawEmptyList(T("Queue is empty"), T("Pick a folder in Library or a playlist, and press X to play it."));
         return;
     }
     // The rows follow the play order, so a shuffled queue shows its real order.
-    char line[96];
-    snprintf(line, sizeof(line), "%zu tracks  ·  %s", status->track_count,
-             status->shuffle ? "shuffled play order" : "in folder order");
+    char count[64], line[192];
+    snprintf(count, sizeof(count), status->track_count == 1 ? T("%zu track") : T("%zu tracks"), status->track_count);
+    snprintf(line, sizeof(line), "%s  ·  %s", count, status->shuffle ? T("shuffled play order") : T("in folder order"));
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
     uiDrawColumnHeaders();
 
@@ -138,14 +141,14 @@ static void drawTabs(const App *app)
 {
     int widths[VIEW_COUNT], total = 0;
     for (int i = 0; i < VIEW_COUNT; i++) {
-        widths[i] = fontTextWidth((int)app->view == i ? FONT_BOLD : FONT_REGULAR, 20, VIEW_NAMES[i]);
+        widths[i] = fontTextWidth((int)app->view == i ? FONT_BOLD : FONT_REGULAR, 20, T(VIEW_NAMES[i]));
         total += widths[i] + (i > 0 ? TAB_GAP : 0);
     }
     int x = (GFX_WIDTH - total) / 2;
     uiDrawButton(x - HINT_GAP - uiButtonWidth("ZL"), TAB_TEXT_MIDDLE, "ZL", COLOR_SURFACE_HI, COLOR_DIM);
     for (int i = 0; i < VIEW_COUNT; i++) {
         bool active = (int)app->view == i;
-        fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, VIEW_NAMES[i], active ? COLOR_TEXT : COLOR_DIM);
+        fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, T(VIEW_NAMES[i]), active ? COLOR_TEXT : COLOR_DIM);
         uiHitAdd(x - TAB_GAP / 2, 4, widths[i] + TAB_GAP, HEADER_H - 8, HIT_TAB, i);
         if (active)
             gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
@@ -196,9 +199,9 @@ static void drawStatus(const App *app, uint64_t now_ns)
         x -= 20;
     }
     if (app->sleep_deadline_ns > now_ns) {
-        char sleep[32];
+        char sleep[64];
         unsigned minutes = (unsigned)((app->sleep_deadline_ns - now_ns + NS_PER_MINUTE - 1) / NS_PER_MINUTE);
-        snprintf(sleep, sizeof(sleep), "Sleep %u min", minutes);
+        snprintf(sleep, sizeof(sleep), T("Sleep %u min"), minutes);
         x -= fontTextWidth(FONT_BOLD, 16, sleep);
         fontDraw(FONT_BOLD, 16, x, 20, sleep, COLOR_ACCENT);
     }
@@ -287,11 +290,11 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, second, toast ? COLOR_ERROR : COLOR_DIM);
     drawBarTransport(status, focused);
 
-    char elapsed[16], total[16], line[96];
+    char elapsed[16], total[16], line[128];
     utilFormatTime(elapsed, sizeof(elapsed), status->position);
     utilFormatTime(total, sizeof(total), status->duration);
-    snprintf(line, sizeof(line), "%s%s / %s", status->state == PLAYER_PAUSED ? "Paused  " : "",
-             elapsed, status->duration > 0 ? total : "--:--");
+    snprintf(line, sizeof(line), "%s%s%s / %s", status->state == PLAYER_PAUSED ? T("Paused") : "",
+             status->state == PLAYER_PAUSED ? "  " : "", elapsed, status->duration > 0 ? total : "--:--");
     int time_x = GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line);
     fontDraw(FONT_REGULAR, 20, time_x, MINI_Y + 14, line, COLOR_TEXT);
 
@@ -304,7 +307,7 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     }
 
     // Shuffle and repeat as pills, lit in the accent color when on.
-    const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
+    const char *shuffle = status->shuffle ? T("Shuffle on") : T("Shuffle off");
     const char *repeat = uiRepeatLabel(status->repeat);
     PillIcon repeat_icon = status->repeat == REPEAT_ONE ? PILL_ICON_REPEAT_ONE : PILL_ICON_REPEAT;
     int repeat_w = uiIconPillWidth(NULL, repeat), shuffle_w = uiIconPillWidth(NULL, shuffle);
@@ -323,46 +326,46 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
 static const char *footerHelp(const App *app)
 {
     static const char *const HELP[VIEW_COUNT] = {
-        "[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu",
-        "[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu",
-        "[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu",
-        "[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu",
-        "[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu",
+        N_("[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu"),
+        N_("[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu"),
+        N_("[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu"),
+        N_("[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu"),
+        N_("[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu"),
     };
     if (app->keyboard_open)
-        return "[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel";
+        return T("[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel");
     if (app->about_open)
-        return "[A][B] back";
+        return T("[A][B] back");
     if (app->picker_open)
-        return app->picker_first_run ? "[A] open  [B] up  [X] use this folder"
-                                     : "[A] open  [B] up or close  [X] use this folder";
+        return app->picker_first_run ? T("[A] open  [B] up  [X] use this folder")
+                                     : T("[A] open  [B] up or close  [X] use this folder");
     if (app->eq_open)
-        return "[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back";
+        return T("[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back");
     if (app->settings_open)
-        return app->settings_page == SETTINGS_PAGE_MAIN ? "[^v] choose  [>][A] open  [B] close"
-                                                        : "[^v] choose  [<>][A] change  [B] back";
+        return app->settings_page == SETTINGS_PAGE_MAIN ? T("[^v] choose  [>][A] open  [B] close")
+                                                        : T("[^v] choose  [<>][A] change  [B] back");
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
-        return "[A] choose  [B] cancel  [+] exit";
+        return T("[A] choose  [B] cancel  [+] exit");
     if (app->menu.open)
-        return app->menu.kind == MENU_KIND_MAIN ? "[A] choose  [B] close  [+] exit..." : "[A] choose  [B] close";
+        return app->menu.kind == MENU_KIND_MAIN ? T("[A] choose  [B] close  [+] exit...") : T("[A] choose  [B] close");
     if (app->playlists.moving)
-        return "[^v] move the song  [A][B] done";
+        return T("[^v] move the song  [A][B] done");
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
-        return "[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause";
+        return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
     if (app->view == VIEW_BROWSER) {
         switch (appLibraryPage((App *)app)->level) {
-        case LIB_ROOT: return "[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu";
+        case LIB_ROOT: return T("[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
         case LIB_ARTISTS:
-        case LIB_ALBUMS: return "[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
-        case LIB_ARTIST: return "[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track";
+        case LIB_ALBUMS: return T("[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu");
+        case LIB_ARTIST: return T("[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track");
         case LIB_ALBUM:
-        case LIB_SONGS: return "[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
+        case LIB_SONGS: return T("[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu");
         default: break;
         }
     }
     if (app->view == VIEW_PLAYLISTS && app->playlists.open)
-        return "[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu";
-    return HELP[app->view];
+        return T("[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu");
+    return T(HELP[app->view]);
 }
 
 static void drawFooter(const App *app)
@@ -375,7 +378,7 @@ void uiDrawScreenOff(void)
     gfxClear(GFX_RGB(0, 0, 0));
     // Only seen when the backlight can't be turned off: keep it very dim.
     if (!screenHasBacklightControl())
-        fontDraw(FONT_REGULAR, 16, MARGIN, GFX_HEIGHT - 40, "Screen off  ·  press any button or touch to wake",
+        fontDraw(FONT_REGULAR, 16, MARGIN, GFX_HEIGHT - 40, T("Screen off  ·  press any button or touch to wake"),
                  GFX_RGB(0x30, 0x30, 0x36));
 }
 
@@ -437,7 +440,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     } else {
         if (!app->audio_ok)
             fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y,
-                     "Audio unavailable: audout could not start.", COLOR_ERROR);
+                     T("Audio unavailable: audout could not start."), COLOR_ERROR);
         else if (app->view == VIEW_HOME)
             uiDrawHome(app, status, now_ns);
         else if (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_FOLDERS)

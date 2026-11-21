@@ -4,6 +4,7 @@
 
 #include "app.h"
 #include "app_buttons.h"
+#include "lang.h"
 #include "library.h"
 #include "ui.h"
 
@@ -14,12 +15,12 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
 {
     TrackList list;
     if (!libraryScan(&list, folder, recursive)) {
-        appToast(app, "Out of memory for the track list.");
+        appToast(app, T("Out of memory for the track list."));
         return;
     }
     if (list.count == 0) {
         trackListFree(&list);
-        appToast(app, "No music in this folder.");
+        appToast(app, T("No music in this folder."));
         return;
     }
     size_t start = 0;
@@ -45,7 +46,7 @@ static void openSelected(App *app)
     char path[UTIL_PATH_MAX];
     if (!utilJoinPath(path, sizeof(path), app->browser.path, e->name) ||
         !browserOpen(&app->browser, path))
-        appToast(app, "Could not open the folder.");
+        appToast(app, T("Could not open the folder."));
 }
 
 bool appBrowseCanGoUp(const App *app)

@@ -1,0 +1,622 @@
+# KaiPlayer 简体中文。
+# 每行英文后面是其译文，每对之间空一行。
+# %d、%s 等占位符保持原样，顺序不变。详见 source/lang.h。
+language = 简体中文
+
+%d min  (%u left)
+%d分钟  （剩余%u分钟）
+
+%zu album
+%zu张专辑
+
+%zu albums
+%zu张专辑
+
+%zu playlist
+%zu个播放列表
+
+%zu playlists
+%zu个播放列表
+
+%zu song
+%zu首歌曲
+
+%zu songs
+%zu首歌曲
+
+%zu track
+%zu首曲目
+
+%zu tracks
+%zu首曲目
+
+12-hour
+12小时制
+
+24-hour
+24小时制
+
+[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back
+[<>] 频段  [^v] 增益  [X] 预设  [Y] 开/关  [B] 返回
+
+[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause
+[<>] 选择  [A] 按下  [^][B] 返回列表  [RS] 调整进度  [L][R] 切歌  [-] 暂停
+
+[^v] choose  [<>][A] change  [B] back
+[^v] 选择  [<>][A] 更改  [B] 返回
+
+[^v] choose  [>][A] open  [B] close
+[^v] 选择  [>][A] 打开  [B] 关闭
+
+[^v] move the song  [A][B] done
+[^v] 移动歌曲  [A][B] 完成
+
+[A] choose  [B] cancel  [+] exit
+[A] 选择  [B] 取消  [+] 退出
+
+[A] choose  [B] close
+[A] 选择  [B] 关闭
+
+[A] choose  [B] close  [+] exit...
+[A] 选择  [B] 关闭  [+] 退出...
+
+[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 打开  [B] 返回  [>] 添加  [X] 播放  [Y] 随机播放  [RS] 翻页/调整进度  [L][R] 切歌  [+] 菜单
+
+[A] open  [B] up  [X] use this folder
+[A] 打开  [B] 上一级  [X] 使用此文件夹
+
+[A] open  [B] up or close  [X] use this folder
+[A] 打开  [B] 上一级/关闭  [X] 使用此文件夹
+
+[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 打开  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 打开  [X] 播放  [Y] 随机播放  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 打开  [X] 播放  [Y] 随机播放  [RS] 翻页/调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track
+[A] 打开专辑  [B] 返回  [>] 添加  [X] 播放艺人  [Y] 随机播放  [RS] 翻页/调整进度  [L][R] 切歌
+
+[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu
+[A] 暂停  [B] 添加到播放列表  [<>][RS] 调整进度  [X] 随机播放  [Y] 循环  [L][R] 切歌  [+] 菜单
+
+[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 播放  [B] 返回  [>] 添加  [X] 全部播放  [Y] 随机播放  [RS] 翻页/调整进度  [L][R] 切歌  [+] 菜单
+
+[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 播放  [B] 返回  [>] 移除  [X] 播放  [Y] 随机播放  [RS] 翻页/调整进度  [L][R] 切歌  [+] 菜单
+
+[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu
+[A] 播放  [B] 媒体库  [>] 添加  [X] 随机播放  [Y] 循环  [RS] 翻页/调整进度  [L][R] 切歌  [+] 菜单
+
+[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel
+[A] 输入  [B] 删除  [X] 大小写  [Y] 空格  [+] 完成  [-] 取消
+
+[A][B] back
+[A][B] 返回
+
+A music player for Switch 2 homebrew on kaiHEN.
+适用于kaiHEN的Switch 2自制音乐播放器。
+
+A playlist with that name already exists.
+已有同名的播放列表。
+
+About
+关于
+
+Accent color
+强调色
+
+Add "%s" to
+将“%s”添加到
+
+Add %zu songs to
+将%zu首歌曲添加到
+
+Add songs with the + buttons in Library, Queue or Now Playing.
+可在媒体库、队列或正在播放中用+按钮添加歌曲。
+
+Add to playlist
+添加到播放列表
+
+Added "%s" to "%s".
+已将“%s”添加到“%s”。
+
+Added %d song to "%s".
+已将%d首歌曲添加到“%s”。
+
+Added %d songs to "%s".
+已将%d首歌曲添加到“%s”。
+
+After %d min idle
+闲置%d分钟后
+
+ALBUM
+专辑
+
+Album
+按专辑
+
+Albums
+专辑
+
+Albums in your library
+媒体库中的专辑
+
+All songs
+所有歌曲
+
+Already in "%s".
+已在“%s”中。
+
+ARTIST
+艺人
+
+Artists
+艺人
+
+Audio unavailable: audout could not start.
+音频不可用：无法启动audout。
+
+Auto
+自动
+
+Back
+返回
+
+Background
+背景
+
+Background blur
+背景模糊
+
+Bass
+低音
+
+Blue
+蓝色
+
+Cancel
+取消
+
+Choose your music folder
+选择音乐文件夹
+
+Choose your music folder first.
+请先选择音乐文件夹。
+
+Choose your music folder in + > Settings > Music folder.
+请在+ > 设置 > 音乐文件夹中选择音乐文件夹。
+
+Classical
+古典
+
+Clock
+时钟
+
+Could not add to "%s".
+无法添加到“%s”。
+
+Could not delete "%s".
+无法删除“%s”。
+
+Could not open the folder.
+无法打开该文件夹。
+
+Could not open: %s
+无法打开：%s
+
+Could not read %s (JPEG or PNG, up to 50 megapixels).
+无法读取%s（JPEG或PNG，最多5000万像素）。
+
+Could not read that playlist.
+无法读取该播放列表。
+
+Could not read the playlists folder.
+无法读取播放列表文件夹。
+
+Could not read the SD card.
+无法读取SD卡。
+
+Could not save the playlist.
+无法保存播放列表。
+
+Cover colors
+封面配色
+
+Created "%s" with %d song.
+已创建“%s”，共%d首歌曲。
+
+Created "%s" with %d songs.
+已创建“%s”，共%d首歌曲。
+
+Created "%s".
+已创建“%s”。
+
+Custom
+自定义
+
+Delete
+删除
+
+Delete "%s"
+删除“%s”
+
+Delete "%s"? The songs stay on the card.
+要删除“%s”吗？歌曲仍会保留在SD卡上。
+
+Deleted "%s".
+已删除“%s”。
+
+Display
+显示
+
+Done
+完成
+
+empty
+空
+
+Equalizer
+均衡器
+
+Exit
+退出
+
+Exit KaiPlayer
+退出KaiPlayer
+
+Exit KaiPlayer?
+要退出KaiPlayer吗？
+
+Flat
+平坦
+
+Folders
+文件夹
+
+Free and open source under the MIT license.
+基于MIT许可证的免费开源软件。
+
+From cover
+取自封面
+
+Green
+绿色
+
+High
+高
+
+Home
+首页
+
+Hz  ·  +12 to -12 dB
+Hz  ·  +12至-12 dB
+
+in folder order
+按文件夹顺序
+
+Jazz
+爵士
+
+KaiPlayer only shows this folder and the ones inside it.
+KaiPlayer只显示此文件夹及其子文件夹。
+
+Keep playing
+继续播放
+
+Language
+语言
+
+Library
+媒体库
+
+Looking for music...
+正在查找音乐...
+
+Low
+低
+
+Made by
+制作者
+
+Medium
+中
+
+Menu
+菜单
+
+Move song
+移动歌曲
+
+Move the song with Up/Down, then press A.
+用上/下移动歌曲，然后按A。
+
+moving a song
+正在移动歌曲
+
+Music folder
+音乐文件夹
+
+Music folder: %.60s
+音乐文件夹：%.60s
+
+Name for the new playlist
+新播放列表的名称
+
+Never
+永不
+
+New name
+新名称
+
+New playlist
+新建播放列表
+
+New playlist...
+新建播放列表...
+
+No folders here.
+这里没有文件夹。
+
+No music in this folder.
+此文件夹中没有音乐。
+
+No playlists yet
+还没有播放列表
+
+Not affiliated with or endorsed by Nintendo.
+与Nintendo无关，也未获得其认可。
+
+Not chosen
+未选择
+
+Nothing here yet.
+这里还没有内容。
+
+Nothing playing
+未在播放
+
+Now Playing
+正在播放
+
+NOW PLAYING
+正在播放
+
+Now Playing style
+正在播放样式
+
+Off
+关
+
+On
+开
+
+Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
+开源软件（MIT）  ·  github.com/mizuiroame/kaiplayer
+
+Orange
+橙色
+
+Out of memory for the track list.
+内存不足，无法载入曲目列表。
+
+Paused
+已暂停
+
+PAUSED
+已暂停
+
+Pick a folder in Library or a playlist, and press X to play it.
+在媒体库中选择文件夹或播放列表，然后按X播放。
+
+Pink
+粉色
+
+Playback
+播放
+
+Playlist
+播放列表
+
+Playlists
+播放列表
+
+Playlists you play show up here.
+播放过的播放列表会显示在这里。
+
+Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
+可播放SD卡中的MP3、FLAC、Ogg Vorbis、WAV和DSD，\n支持播放列表、均衡器、ReplayGain和专辑封面。
+
+Pop
+流行
+
+Press + to create one, or to add songs from Library, Queue or Now Playing.
+按+新建，或从媒体库、队列或正在播放中添加歌曲。
+
+Purple
+紫色
+
+Put JPEG or PNG images in a Backgrounds folder in your music folder.
+请将JPEG或PNG图片放入音乐文件夹中的Backgrounds文件夹。
+
+Queue
+队列
+
+Queue is empty
+队列为空
+
+Reading your music folder...
+正在读取音乐文件夹...
+
+Reading your music folder... your albums will show up here.
+正在读取音乐文件夹...专辑会显示在这里。
+
+Recent albums
+最近播放的专辑
+
+Recent artists
+最近播放的艺人
+
+Recent playlists
+最近播放的播放列表
+
+Red
+红色
+
+Remove
+移除
+
+Remove "%s" from this playlist?
+要从此播放列表中移除“%s”吗？
+
+Remove song from playlist
+从播放列表中移除歌曲
+
+Removed "%s" from "%s".
+已将“%s”从“%s”中移除。
+
+Rename "%s"
+重命名“%s”
+
+Renamed to "%s".
+已重命名为“%s”。
+
+Repeat off
+循环：关
+
+Repeat queue
+队列循环
+
+Repeat song
+单曲循环
+
+ReplayGain (even loudness)
+ReplayGain（统一响度）
+
+Resume where you left off
+从上次位置继续
+
+Rock
+摇滚
+
+Save queue as playlist
+将队列存为播放列表
+
+Screen off  ·  press any button or touch to wake
+屏幕已关闭  ·  按任意按钮或触摸屏幕唤醒
+
+Screen off while playing
+播放时关闭屏幕
+
+Settings
+设置
+
+Shift
+大小写
+
+Shuffle off
+随机播放：关
+
+Shuffle on
+随机播放：开
+
+shuffled play order
+随机播放顺序
+
+Sleep %u min
+定时%u分钟
+
+Sleep timer
+睡眠定时
+
+Sleep timer, in minutes (0 turns it off)
+睡眠定时（分钟，0为关闭）
+
+Sleep timer: pausing.
+睡眠定时：已暂停播放。
+
+Some items in this folder could not be read
+此文件夹中的部分项目无法读取
+
+Songs
+歌曲
+
+Songs you play show up here.
+播放过的歌曲会显示在这里。
+
+Space
+空格
+
+The queue is empty.
+队列为空。
+
+There are no songs to add.
+没有可添加的歌曲。
+
+There are no songs to play.
+没有可播放的歌曲。
+
+This folder has no subfolders or music.
+此文件夹中没有子文件夹或音乐。
+
+Track
+按曲目
+
+Track %zu of %zu
+第%zu首，共%zu首
+
+Treble
+高音
+
+Turn screen off (music keeps playing)
+关闭屏幕（音乐继续播放）
+
+Unknown artist
+未知艺人
+
+Up to 48 characters, without / or \, not starting with a dot.
+最多48个字符，不能包含/或\，不能以点开头。
+
+Update the library now
+立即更新媒体库
+
+Updating library  %zu / %zu
+正在更新媒体库  %zu / %zu
+
+Use this folder
+使用此文件夹
+
+Version %s
+版本 %s
+
+Vocal
+人声
+
+Welcome to KaiPlayer
+欢迎使用KaiPlayer
+
+Welcome! Where is your music?
+欢迎！你的音乐在哪里？
+
+Your music folder has no songs yet. Add some over FTP.
+音乐文件夹中还没有歌曲。请通过FTP添加。
+
+Your top artists
+最常听的艺人
+
+Cover
+封面
+
+Vinyl record
+黑胶唱片
+
+CD
+CD
+
+Cassette
+磁带

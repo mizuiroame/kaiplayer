@@ -4,6 +4,7 @@
 
 #include "catalog_scan.h"
 #include "covercache.h"
+#include "lang.h"
 #include "ui.h"
 #include "ui_common.h"
 #include "ui_hit.h"
@@ -21,10 +22,10 @@
 static const char *sectionTitle(const Home *home, HomeRowKind row)
 {
     switch (row) {
-    case HOME_TOP_ARTISTS: return "Your top artists";
-    case HOME_RECENT_ALBUMS: return home->albums_from_library ? "Albums in your library" : "Recent albums";
-    case HOME_RECENT_ARTISTS: return "Recent artists";
-    default: return "Recent playlists";
+    case HOME_TOP_ARTISTS: return T("Your top artists");
+    case HOME_RECENT_ALBUMS: return home->albums_from_library ? T("Albums in your library") : T("Recent albums");
+    case HOME_RECENT_ARTISTS: return T("Recent artists");
+    default: return T("Recent playlists");
     }
 }
 
@@ -59,7 +60,7 @@ static void drawCard(const Home *home, const Catalog *c, HomeRowKind row, size_t
     if (row == HOME_RECENT_PLAYLISTS) {
         drawPlaylistCover(x, y);
         title = home->playlists[i];
-        subtitle = "Playlist";
+        subtitle = T("Playlist");
     } else if (row == HOME_RECENT_ALBUMS) {
         size_t album = home->rows[row].items[i];
         if (album >= c->album_count)
@@ -73,7 +74,7 @@ static void drawCard(const Home *home, const Catalog *c, HomeRowKind row, size_t
         const CatalogArtist *a = &c->artists[home->rows[row].items[i]];
         drawCover(c, a->albums[a->album_count - 1], x, y, true);  // Their latest album.
         title = a->name;
-        snprintf(line, sizeof(line), "%zu song%s", a->song_count, a->song_count == 1 ? "" : "s");
+        snprintf(line, sizeof(line), a->song_count == 1 ? T("%zu song") : T("%zu songs"), a->song_count);
         subtitle = line;
     }
     fontDrawClipped(selected ? FONT_BOLD : FONT_REGULAR, 17, x, y + CARD + 10, CARD + 4, title, COLOR_TEXT);
@@ -84,17 +85,17 @@ static void drawEmpty(const Catalog *c)
 {
     size_t done, total;
     bool scanning = catalogScanProgress(&done, &total);
-    fontDraw(FONT_BOLD, 30, MARGIN, 150, "Welcome to KaiPlayer", COLOR_TEXT);
-    const char *hint = scanning ? "Reading your music folder... your albums will show up here."
-                     : c        ? "Your music folder has no songs yet. Add some over FTP."
-                                : "Choose your music folder in + > Settings > Music folder.";
+    fontDraw(FONT_BOLD, 30, MARGIN, 150, T("Welcome to KaiPlayer"), COLOR_TEXT);
+    const char *hint = scanning ? T("Reading your music folder... your albums will show up here.")
+                     : c        ? T("Your music folder has no songs yet. Add some over FTP.")
+                                : T("Choose your music folder in + > Settings > Music folder.");
     fontDraw(FONT_REGULAR, 21, MARGIN, 200, hint, COLOR_DIM);
 }
 
 // What an empty section says.
 static const char *sectionEmpty(HomeRowKind row)
 {
-    return row == HOME_RECENT_PLAYLISTS ? "Playlists you play show up here." : "Songs you play show up here.";
+    return row == HOME_RECENT_PLAYLISTS ? T("Playlists you play show up here.") : T("Songs you play show up here.");
 }
 
 void uiDrawHome(const App *app, const PlayerStatus *status, uint64_t now_ns)

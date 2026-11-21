@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "lang.h"
 #include "ui.h"
 #include "ui_common.h"
 #include "ui_hit.h"
@@ -17,17 +18,19 @@ static void drawPlaylistIcon(int x, int y, Color color)
 
 static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus focus, uint64_t now_ns)
 {
-    char line[320];
+    char line[384];
     if (t->tracks.count == 0) {
-        snprintf(line, sizeof(line), "%s  ·  empty", t->name);
+        snprintf(line, sizeof(line), "%s  ·  %s", t->name, T("empty"));
         int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, focus == FOCUS_BACK) + 12;
         fontDraw(FONT_BOLD, TEXT_SMALL, MARGIN + back_w, SUBTITLE_Y, line, COLOR_DIM);
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10,
-                 "Add songs with the + buttons in Browse, Queue or Now Playing.", COLOR_DIM);
+                 T("Add songs with the + buttons in Library, Queue or Now Playing."), COLOR_DIM);
         return;
     }
-    snprintf(line, sizeof(line), "%s  ·  %zu song%s%s", t->name, t->tracks.count,
-             t->tracks.count == 1 ? "" : "s", t->moving ? "  ·  moving a song" : "");
+    char songs[64];
+    snprintf(songs, sizeof(songs), t->tracks.count == 1 ? T("%zu song") : T("%zu songs"), t->tracks.count);
+    snprintf(line, sizeof(line), "%s  ·  %s%s%s", t->name, songs, t->moving ? "  ·  " : "",
+             t->moving ? T("moving a song") : "");
     int back_w = uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, focus == FOCUS_BACK) + 12;
     fontDrawClipped(FONT_BOLD, TEXT_SMALL, MARGIN + back_w, SUBTITLE_Y, COLUMN_ARTIST_X - 24 - MARGIN - back_w, line,
                     t->moving ? COLOR_FOLDER : COLOR_DIM);
@@ -62,13 +65,13 @@ static void drawSongs(const PlaylistsTab *t, const PlayerStatus *status, Focus f
 static void drawList(const PlaylistsTab *t)
 {
     if (t->index.count == 0) {
-        uiDrawEmptyList("No playlists yet",
-                        "Press + to create one, or to add songs from Browse, Queue or Now Playing.");
+        uiDrawEmptyList(T("No playlists yet"),
+                        T("Press + to create one, or to add songs from Library, Queue or Now Playing."));
         return;
     }
-    char line[96];
-    snprintf(line, sizeof(line), "%zu playlist%s  ·  %.40s", t->index.count, t->index.count == 1 ? "" : "s",
-             playlistRoot());
+    char count[64], line[160];
+    snprintf(count, sizeof(count), t->index.count == 1 ? T("%zu playlist") : T("%zu playlists"), t->index.count);
+    snprintf(line, sizeof(line), "%s  ·  %.40s", count, playlistRoot());
     fontDraw(FONT_REGULAR, TEXT_SMALL, MARGIN, SUBTITLE_Y, line, COLOR_DIM);
 
     int offset;

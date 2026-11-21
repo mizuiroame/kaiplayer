@@ -4,6 +4,7 @@
 
 #include "catalog_scan.h"
 #include "covercache.h"
+#include "lang.h"
 #include "ui.h"
 #include "ui_buttons.h"
 #include "ui_common.h"
@@ -51,7 +52,7 @@ static void drawRowText(int y, bool selected, const char *name, const char *deta
 
 static void drawRoot(const App *app, const Catalog *c, size_t cursor)
 {
-    static const char *const NAMES[LIB_ROOT_ROWS] = {"Artists", "Albums", "Songs", "Folders"};
+    static const char *const NAMES[LIB_ROOT_ROWS] = {N_("Artists"), N_("Albums"), N_("Songs"), N_("Folders")};
     size_t counts[LIB_ROOT_ROWS] = {c ? c->artist_count : 0, c ? c->album_count : 0, c ? c->song_count : 0, 0};
     for (size_t i = 0; i < LIB_ROOT_ROWS; i++) {
         int y = LIST_Y + (int)i * ROW_H;
@@ -72,7 +73,7 @@ static void drawRoot(const App *app, const Catalog *c, size_t cursor)
             snprintf(detail, sizeof(detail), "%zu", counts[i]);
         else if (i == 3)
             snprintf(detail, sizeof(detail), "%.28s", utilFileName(appMusicRoot(app)));
-        drawRowText(y, i == cursor, NAMES[i], detail, COLOR_TEXT);
+        drawRowText(y, i == cursor, T(NAMES[i]), detail, COLOR_TEXT);
     }
 }
 
@@ -81,9 +82,10 @@ static void drawArtistRow(const Catalog *c, size_t artist, int y, bool selected)
     const CatalogArtist *a = &c->artists[artist];
     const CatalogAlbum *latest = &c->albums[a->albums[a->album_count - 1]];
     drawArtistIcon(ICON_X, y + (ROW_H - ICON_SIZE) / 2, c->songs[latest->songs[0]].path);
-    char detail[48];
-    snprintf(detail, sizeof(detail), "%zu album%s  ·  %zu song%s", a->album_count, a->album_count == 1 ? "" : "s",
-             a->song_count, a->song_count == 1 ? "" : "s");
+    char albums[64], songs[64], detail[160];
+    snprintf(albums, sizeof(albums), a->album_count == 1 ? T("%zu album") : T("%zu albums"), a->album_count);
+    snprintf(songs, sizeof(songs), a->song_count == 1 ? T("%zu song") : T("%zu songs"), a->song_count);
+    snprintf(detail, sizeof(detail), "%s  ·  %s", albums, songs);
     drawRowText(y, selected, a->name, detail, COLOR_TEXT);
 }
 
@@ -91,13 +93,14 @@ static void drawAlbumRow(const Catalog *c, size_t album, int y, bool selected, b
 {
     const CatalogAlbum *a = &c->albums[album];
     drawAlbumIcon(ICON_X, y + (ROW_H - ICON_SIZE) / 2, c->songs[a->songs[0]].path);
-    char detail[TAGS_TEXT_MAX + 32];
+    char detail[TAGS_TEXT_MAX + 32], songs[64];
+    snprintf(songs, sizeof(songs), a->song_count == 1 ? T("%zu song") : T("%zu songs"), a->song_count);
     if (with_artist)
         snprintf(detail, sizeof(detail), "%s", c->artists[a->artist].name);
     else if (a->year)
-        snprintf(detail, sizeof(detail), "%d  ·  %zu song%s", a->year, a->song_count, a->song_count == 1 ? "" : "s");
+        snprintf(detail, sizeof(detail), "%d  ·  %s", a->year, songs);
     else
-        snprintf(detail, sizeof(detail), "%zu song%s", a->song_count, a->song_count == 1 ? "" : "s");
+        snprintf(detail, sizeof(detail), "%s", songs);
     drawRowText(y, selected, a->title, detail, COLOR_TEXT);
 }
 
@@ -122,10 +125,10 @@ static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
         x += uiDrawBackButton(MARGIN - 4, SUBTITLE_Y - 6, app->focus == FOCUS_BACK) + 12;
     char line[TAGS_TEXT_MAX * 2 + 64] = "";
     switch (p->level) {
-    case LIB_ROOT: snprintf(line, sizeof(line), "Library"); break;
-    case LIB_ARTISTS: snprintf(line, sizeof(line), "Artists"); break;
-    case LIB_ALBUMS: snprintf(line, sizeof(line), "Albums"); break;
-    case LIB_SONGS: snprintf(line, sizeof(line), "Songs"); break;
+    case LIB_ROOT: snprintf(line, sizeof(line), "%s", T("Library")); break;
+    case LIB_ARTISTS: snprintf(line, sizeof(line), "%s", T("Artists")); break;
+    case LIB_ALBUMS: snprintf(line, sizeof(line), "%s", T("Albums")); break;
+    case LIB_SONGS: snprintf(line, sizeof(line), "%s", T("Songs")); break;
     case LIB_ARTIST:
         if (c && p->arg < c->artist_count)
             snprintf(line, sizeof(line), "%s", c->artists[p->arg].name);
@@ -139,9 +142,13 @@ static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
     default: break;
     }
     size_t done, total;
-    char scan[48] = "";
-    if (catalogScanProgress(&done, &total))
-        snprintf(scan, sizeof(scan), total ? "Updating library  %zu / %zu" : "Looking for music...", done, total);
+    char scan[128] = "";
+    if (catalogScanProgress(&done, &total)) {
+        if (total)
+            snprintf(scan, sizeof(scan), T("Updating library  %zu / %zu"), done, total);
+        else
+            snprintf(scan, sizeof(scan), "%s", T("Looking for music..."));
+    }
     int scan_w = scan[0] ? fontTextWidth(FONT_REGULAR, TEXT_SMALL, scan) : 0;
     fontDrawClipped(FONT_BOLD, TEXT_SMALL, x, SUBTITLE_Y, GFX_WIDTH - MARGIN - x - scan_w - 24, line, COLOR_DIM);
     if (scan[0])
@@ -157,7 +164,7 @@ void uiDrawLibrary(const App *app, const PlayerStatus *status, uint64_t now_ns)
     size_t count = appLibraryCount(app, c);
     if (p->level != LIB_ROOT && count == 0) {
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10,
-                 c ? "Nothing here yet." : "Reading your music folder...", COLOR_DIM);
+                 c ? T("Nothing here yet.") : T("Reading your music folder..."), COLOR_DIM);
         catalogUnlock();
         return;
     }

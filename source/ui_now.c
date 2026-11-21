@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "lang.h"
 #include "ui.h"
 #include "ui_common.h"
 #include "ui_buttons.h"
@@ -91,17 +92,17 @@ static void drawFormat(const PlayerStatus *status)
 
 static void drawInfo(const PlayerStatus *status, const UiTrack *track, const char *playlist)
 {
-    fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? "PAUSED" : "NOW PLAYING", COLOR_DIM);
+    fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? T("PAUSED") : T("NOW PLAYING"), COLOR_DIM);
     fontDrawClipped(FONT_BOLD, 44, INFO_X, 172, INFO_W, track->title, track->has_track ? COLOR_TEXT : COLOR_DIM);
-    const char *artist = track->artist[0] ? track->artist : "Unknown artist";
+    const char *artist = track->artist[0] ? track->artist : T("Unknown artist");
     if (track->has_track)
         fontDrawClipped(FONT_REGULAR, 26, INFO_X, 236, INFO_W, artist, COLOR_TEXT);
     if (track->album[0])
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 276, INFO_W, track->album, COLOR_DIM);
 
     if (status->track_count > 0) {  // With the playlist's name when it came from one.
-        char line[PLAYLIST_NAME_MAX + 64];
-        int n = snprintf(line, sizeof(line), "Track %zu of %zu", status->queue_pos + 1, status->track_count);
+        char line[PLAYLIST_NAME_MAX + 128];
+        int n = snprintf(line, sizeof(line), T("Track %zu of %zu"), status->queue_pos + 1, status->track_count);
         if (playlist[0] && n > 0 && (size_t)n < sizeof(line))
             snprintf(line + n, sizeof(line) - (size_t)n, "  ·  %s", playlist);
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 314, INFO_W, line, COLOR_DIM);
@@ -172,7 +173,7 @@ static void drawTransport(const PlayerStatus *status)
 static void drawToggles(const PlayerStatus *status, bool add_focused)
 {
     int x = INFO_X;
-    const char *shuffle = status->shuffle ? "Shuffle on" : "Shuffle off";
+    const char *shuffle = status->shuffle ? T("Shuffle on") : T("Shuffle off");
     int shuffle_w = uiIconPillWidth("X", shuffle);
     uiDrawIconPill(x, TOGGLES_Y, "X", PILL_ICON_SHUFFLE, shuffle, status->shuffle);
     uiHitAdd(x, TOGGLES_Y - 8, shuffle_w, 46, HIT_SHUFFLE, 0);
@@ -183,7 +184,7 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
                    status->repeat != REPEAT_OFF);
     uiHitAdd(x, TOGGLES_Y - 8, repeat_w, 46, HIT_REPEAT, 0);
     if (status->track_count > 0) {  // Add the current song to a playlist.
-        static const char ADD[] = "Add to playlist";
+        const char *const ADD = T("Add to playlist");
         x += repeat_w + 12;
         uiDrawIconPill(x, TOGGLES_Y, "B", PILL_ICON_PLAYLIST_ADD, ADD, add_focused);
         uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth("B", ADD), 46, HIT_ADD, -1);

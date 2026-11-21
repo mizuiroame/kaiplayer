@@ -12,6 +12,7 @@
 #include "catalog_scan.h"
 #include "covercache.h"
 #include "font.h"
+#include "lang.h"
 #include "meta.h"
 #include "gfx.h"
 #include "player.h"
@@ -338,8 +339,25 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->config.accent = 0;
 }
 
+// KAI_LANG_FILE names a language file: the screens are drawn in it (the
+// Makefile draws every language in data/, to see what no longer fits).
+static void useLanguageFile(void)
+{
+    const char *path = getenv("KAI_LANG_FILE");
+    if (!path)
+        return;
+    FILE *f = fopen(path, "rb");
+    static char text[1 << 20];
+    size_t size = f ? fread(text, 1, sizeof(text), f) : 0;
+    if (f)
+        fclose(f);
+    if (!size || !langLoadText(text, size))
+        fprintf(stderr, "cannot read the language in %s\n", path);
+}
+
 int main(int argc, char **argv)
 {
+    useLanguageFile();
     if (argc < 2 || !fontInit()) {
         fprintf(stderr, "usage: preview OUTDIR [TRACK_IN_COVER_FOLDER]\n");
         return 2;

@@ -7,6 +7,7 @@
 #include "app_buttons.h"
 #include "app_keyboard.h"
 #include "catalog_scan.h"
+#include "lang.h"
 #include "library.h"
 #include "meta.h"
 #include "player.h"
@@ -47,17 +48,17 @@ static void addPlaylistItems(App *app)
     char label[MENU_LABEL_MAX];
     if (t->open) {
         if (t->tracks.count > 0) {
-            menuAdd(&app->menu, "Move song", ACT_MOVE_SONG, 0);
-            menuAdd(&app->menu, "Remove song from playlist", ACT_REMOVE_SONG, 0);
+            menuAdd(&app->menu, T("Move song"), ACT_MOVE_SONG, 0);
+            menuAdd(&app->menu, T("Remove song from playlist"), ACT_REMOVE_SONG, 0);
         }
     } else {
-        menuAdd(&app->menu, "New playlist", ACT_NEW, 0);
+        menuAdd(&app->menu, T("New playlist"), ACT_NEW, 0);
     }
     const char *name = currentPlaylist(app);
     if (name) {
-        snprintf(label, sizeof(label), "Rename \"%s\"", name);
+        snprintf(label, sizeof(label), T("Rename \"%s\""), name);
         menuAdd(&app->menu, label, ACT_RENAME, 0);
-        snprintf(label, sizeof(label), "Delete \"%s\"", name);
+        snprintf(label, sizeof(label), T("Delete \"%s\""), name);
         menuAdd(&app->menu, label, ACT_DELETE, 0);
     }
 }
@@ -66,20 +67,20 @@ void appOpenMenu(App *app)
 {
     PlayerStatus status;
     playerGetStatus(&status);
-    menuOpen(&app->menu, "Menu");
+    menuOpen(&app->menu, T("Menu"));
     app->menu.kind = MENU_KIND_MAIN;
     // Adding songs to a playlist is on the + buttons of each row and of Now
     // Playing, so the menu keeps the actions that have no button.
     if (app->view == VIEW_PLAYLISTS)
         addPlaylistItems(app);
     else if (app->view == VIEW_QUEUE && status.track_count > 0)
-        menuAdd(&app->menu, "Save queue as playlist", ACT_SAVE_QUEUE, 0);
+        menuAdd(&app->menu, T("Save queue as playlist"), ACT_SAVE_QUEUE, 0);
     if (app->view == VIEW_BROWSER && app->config.library[0])
-        menuAdd(&app->menu, "Update the library now", ACT_RESCAN, 0);
+        menuAdd(&app->menu, T("Update the library now"), ACT_RESCAN, 0);
     if (status.state == PLAYER_PLAYING)
-        menuAdd(&app->menu, "Turn screen off (music keeps playing)", ACT_SCREEN_OFF, 0);
-    menuAdd(&app->menu, "Settings", ACT_SETTINGS, 0);
-    menuAdd(&app->menu, "Exit KaiPlayer", ACT_EXIT, 0);
+        menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), ACT_SCREEN_OFF, 0);
+    menuAdd(&app->menu, T("Settings"), ACT_SETTINGS, 0);
+    menuAdd(&app->menu, T("Exit KaiPlayer"), ACT_EXIT, 0);
 }
 
 // Fills app->pending with the songs an "Add" item refers to.
@@ -165,13 +166,13 @@ static void openPicker(App *app)
     char title[MENU_LABEL_MAX], song[SONG_TITLE_MAX];
     if (app->pending.count == 1) {
         songTitle(app->pending.paths[0], song);
-        snprintf(title, sizeof(title), "Add \"%s\" to", song);
+        snprintf(title, sizeof(title), T("Add \"%s\" to"), song);
     }
     else
-        snprintf(title, sizeof(title), "Add %zu songs to", app->pending.count);
+        snprintf(title, sizeof(title), T("Add %zu songs to"), app->pending.count);
     appPlaylistsRefresh(app);
     menuOpen(&app->menu, title);
-    menuAdd(&app->menu, "New playlist...", ACT_PICK_NEW, 0);
+    menuAdd(&app->menu, T("New playlist..."), ACT_PICK_NEW, 0);
     for (size_t i = 0; i < app->playlists.index.count; i++) {
         if (!menuAdd(&app->menu, app->playlists.index.names[i], ACT_PICK, (int)i))
             break;
@@ -181,17 +182,18 @@ static void openPicker(App *app)
 static void addPendingTo(App *app, const char *name)
 {
     int added = playlistAddTracks(name, &app->pending);
-    char message[320];
+    char message[512];
     char song[SONG_TITLE_MAX];
     if (added < 0) {
-        snprintf(message, sizeof(message), "Could not add to \"%s\".", name);
+        snprintf(message, sizeof(message), T("Could not add to \"%s\"."), name);
     } else if (added == 0) {
-        snprintf(message, sizeof(message), "Already in \"%s\".", name);
+        snprintf(message, sizeof(message), T("Already in \"%s\"."), name);
     } else if (app->pending.count == 1) {
         songTitle(app->pending.paths[0], song);
-        snprintf(message, sizeof(message), "Added \"%s\" to \"%s\".", song, name);
+        snprintf(message, sizeof(message), T("Added \"%s\" to \"%s\"."), song, name);
     } else {
-        snprintf(message, sizeof(message), "Added %d songs to \"%s\".", added, name);
+        snprintf(message, sizeof(message), added == 1 ? T("Added %d song to \"%s\".") : T("Added %d songs to \"%s\"."),
+                 added, name);
     }
     appToast(app, message);
     if (added > 0)
@@ -202,7 +204,7 @@ static void addPendingTo(App *app, const char *name)
 void appAddToPlaylist(App *app, AddSource source)
 {
     if (!collectSongs(app, source) || app->pending.count == 0) {
-        appToast(app, "There are no songs to add.");
+        appToast(app, T("There are no songs to add."));
         trackListFree(&app->pending);
         return;
     }
@@ -212,25 +214,26 @@ void appAddToPlaylist(App *app, AddSource source)
 static void confirmDelete(App *app)
 {
     char title[MENU_LABEL_MAX];
-    snprintf(title, sizeof(title), "Delete \"%s\"? The songs stay on the card.", currentPlaylist(app));
+    snprintf(title, sizeof(title), T("Delete \"%s\"? The songs stay on the card."), currentPlaylist(app));
     menuOpen(&app->menu, title);
-    menuAdd(&app->menu, "Delete", ACT_DELETE_CONFIRMED, 0);
-    menuAdd(&app->menu, "Cancel", ACT_CANCEL, 0);
+    menuAdd(&app->menu, T("Delete"), ACT_DELETE_CONFIRMED, 0);
+    menuAdd(&app->menu, T("Cancel"), ACT_CANCEL, 0);
 }
 
 static void confirmExit(App *app)
 {
-    menuOpen(&app->menu, "Exit KaiPlayer?");
+    menuOpen(&app->menu, T("Exit KaiPlayer?"));
     app->menu.kind = MENU_KIND_EXIT;
-    menuAdd(&app->menu, "Exit", ACT_EXIT_CONFIRMED, 0);
-    menuAdd(&app->menu, "Cancel", ACT_CANCEL, 0);
+    menuAdd(&app->menu, T("Exit"), ACT_EXIT_CONFIRMED, 0);
+    menuAdd(&app->menu, T("Cancel"), ACT_CANCEL, 0);
 }
 
 static void deletePlaylist(App *app)
 {
     const char *name = currentPlaylist(app);
-    char message[320];
-    snprintf(message, sizeof(message), playlistDelete(name) ? "Deleted \"%s\"." : "Could not delete \"%s\".", name);
+    char message[512];
+    snprintf(message, sizeof(message), playlistDelete(name) ? T("Deleted \"%s\".") : T("Could not delete \"%s\"."),
+             name);
     appToast(app, message);
     appPlaylistsClose(app);
     appPlaylistsRefresh(app);
@@ -243,10 +246,10 @@ void appConfirmRemoveSong(App *app)
         return;
     char song[SONG_TITLE_MAX], title[MENU_LABEL_MAX];
     songTitle(t->tracks.paths[t->track_cursor], song);
-    snprintf(title, sizeof(title), "Remove \"%s\" from this playlist?", song);
+    snprintf(title, sizeof(title), T("Remove \"%s\" from this playlist?"), song);
     menuOpen(&app->menu, title);
-    menuAdd(&app->menu, "Remove", ACT_REMOVE_CONFIRMED, 0);
-    menuAdd(&app->menu, "Cancel", ACT_CANCEL, 0);
+    menuAdd(&app->menu, T("Remove"), ACT_REMOVE_CONFIRMED, 0);
+    menuAdd(&app->menu, T("Cancel"), ACT_CANCEL, 0);
 }
 
 static void removeSong(App *app)
@@ -260,9 +263,9 @@ static void removeSong(App *app)
     if (t->track_cursor >= t->tracks.count && t->track_cursor > 0)
         t->track_cursor--;
     if (playlistPathFor(t->name, path, sizeof(path)) && playlistSave(path, &t->tracks))
-        snprintf(message, sizeof(message), "Removed \"%s\" from \"%s\".", song, t->name);
+        snprintf(message, sizeof(message), T("Removed \"%s\" from \"%s\"."), song, t->name);
     else
-        snprintf(message, sizeof(message), "Could not save the playlist.");
+        snprintf(message, sizeof(message), "%s", T("Could not save the playlist."));
     appToast(app, message);
 }
 
@@ -273,11 +276,11 @@ static void saveQueue(App *app)
     double position;
     trackListFree(&app->pending);
     if (!playerSnapshot(&queue, &track, &position)) {
-        appToast(app, "The queue is empty.");
+        appToast(app, T("The queue is empty."));
         return;
     }
     app->pending = queue;
-    appOpenKeyboard(app, NAME_FOR_NEW_PLAYLIST_WITH_SONGS, "Name for the new playlist", "");
+    appOpenKeyboard(app, NAME_FOR_NEW_PLAYLIST_WITH_SONGS, T("Name for the new playlist"), "");
 }
 
 // Runs the chosen item. Items that open another menu or the keyboard keep
@@ -297,17 +300,17 @@ static void runItem(App *app, const MenuItem *item)
             addPendingTo(app, app->playlists.index.names[item->arg]);
         break;
     case ACT_PICK_NEW:
-        appOpenKeyboard(app, NAME_FOR_NEW_PLAYLIST_WITH_SONGS, "Name for the new playlist", "");
+        appOpenKeyboard(app, NAME_FOR_NEW_PLAYLIST_WITH_SONGS, T("Name for the new playlist"), "");
         break;
     case ACT_SAVE_QUEUE: saveQueue(app); break;
-    case ACT_NEW: appOpenKeyboard(app, NAME_FOR_NEW_PLAYLIST, "Name for the new playlist", ""); break;
-    case ACT_RENAME: appOpenKeyboard(app, NAME_FOR_RENAME, "New name", currentPlaylist(app)); break;
+    case ACT_NEW: appOpenKeyboard(app, NAME_FOR_NEW_PLAYLIST, T("Name for the new playlist"), ""); break;
+    case ACT_RENAME: appOpenKeyboard(app, NAME_FOR_RENAME, T("New name"), currentPlaylist(app)); break;
     case ACT_DELETE: confirmDelete(app); break;
     case ACT_DELETE_CONFIRMED: deletePlaylist(app); break;
     case ACT_CANCEL: break;
     case ACT_MOVE_SONG:
         app->playlists.moving = true;
-        appToast(app, "Move the song with Up/Down, then press A.");
+        appToast(app, T("Move the song with Up/Down, then press A."));
         break;
     case ACT_REMOVE_SONG: appConfirmRemoveSong(app); break;
     case ACT_REMOVE_CONFIRMED: removeSong(app); break;

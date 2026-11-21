@@ -14,6 +14,7 @@
 #include "font.h"
 #include "gfx.h"
 #include "input.h"
+#include "lang.h"
 #include "meta.h"
 #include "catalog_scan.h"
 #include "covercache.h"
@@ -211,7 +212,7 @@ static void openStartFolder(App *app)
     bool inside = utilPathWithin(app->config.folder, root);
     if (!(inside && browserOpen(&app->browser, app->config.folder)) && !browserOpen(&app->browser, root) &&
         !browserOpen(&app->browser, "sdmc:/"))
-        appToast(app, "Could not read the SD card.");
+        appToast(app, T("Could not read the SD card."));
     if (!app->config.library[0])
         appOpenFolderPicker(app, true);
 }
@@ -356,6 +357,7 @@ int main(int argc, char **argv)
 
     static App app;
     configLoad(&app.config);
+    appStartLanguages(&app);  // Before anything is said on screen.
     appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 

@@ -6,6 +6,7 @@
 #include "app.h"
 #include "app_buttons.h"
 #include "catalog_scan.h"
+#include "lang.h"
 #include "playlist.h"
 
 #define DEVICE_ROOT "sdmc:/"
@@ -27,7 +28,7 @@ void appOpenFolderPicker(App *app, bool first_run)
 {
     const char *start = app->config.library[0] ? app->config.library : DEVICE_ROOT;
     if (!browserOpen(&app->picker, start) && !browserOpen(&app->picker, DEVICE_ROOT)) {
-        appToast(app, "Could not read the SD card.");
+        appToast(app, T("Could not read the SD card."));
         return;
     }
     app->picker_open = true;
@@ -91,9 +92,9 @@ void appPickerChoose(App *app)
     app->library.depth = 0;  // Back to the Library's first page.
     appUsePlaylistFolder(app);
     catalogScanStart(app->config.library);
-    char message[96];
-    snprintf(message, sizeof(message), "Music folder: %.60s", utilFileName(app->picker.path)[0]
-                                                               ? utilFileName(app->picker.path) : app->picker.path);
+    char message[192];
+    snprintf(message, sizeof(message), T("Music folder: %.60s"),
+             utilFileName(app->picker.path)[0] ? utilFileName(app->picker.path) : app->picker.path);
     appToast(app, message);
 }
 
@@ -109,7 +110,7 @@ void appHandleFolderPicker(App *app, uint64_t pressed)
     if ((pressed & HidNpadButton_A) && b->cursor < folders) {
         char path[UTIL_PATH_MAX];
         if (!utilJoinPath(path, sizeof(path), b->path, b->entries[b->cursor].name) || !browserOpen(b, path))
-            appToast(app, "Could not open the folder.");
+            appToast(app, T("Could not open the folder."));
     }
     if (pressed & HidNpadButton_B) {
         if (!browserGoUp(b) && !app->picker_first_run)

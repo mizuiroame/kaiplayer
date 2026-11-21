@@ -4,6 +4,7 @@
 #include <switch.h>
 
 #include "app.h"
+#include "lang.h"
 #include "player.h"
 #include "resume.h"
 
@@ -18,7 +19,7 @@ static uint64_t g_next_save_ns;
 void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, const char *playlist)
 {
     if (tracks->count == 0) {
-        appToast(app, "There are no songs to play.");
+        appToast(app, T("There are no songs to play."));
         return;
     }
     if (shuffle) {

@@ -1,0 +1,622 @@
+# KaiPlayer 한국어.
+# 영어 줄 다음에 번역 줄이 오고, 쌍 사이에는 빈 줄이 하나 있습니다.
+# %d, %s 등은 그대로, 같은 순서로 둡니다. source/lang.h 참고.
+language = 한국어
+
+%d min  (%u left)
+%d분  (%u분 남음)
+
+%zu album
+앨범 %zu개
+
+%zu albums
+앨범 %zu개
+
+%zu playlist
+재생목록 %zu개
+
+%zu playlists
+재생목록 %zu개
+
+%zu song
+%zu곡
+
+%zu songs
+%zu곡
+
+%zu track
+트랙 %zu개
+
+%zu tracks
+트랙 %zu개
+
+12-hour
+12시간제
+
+24-hour
+24시간제
+
+[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back
+[<>] 대역  [^v] 게인  [X] 프리셋  [Y] 켜기/끄기  [B] 뒤로
+
+[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause
+[<>] 선택  [A] 누르기  [^][B] 목록으로  [RS] 탐색  [L][R] 트랙  [-] 일시정지
+
+[^v] choose  [<>][A] change  [B] back
+[^v] 선택  [<>][A] 변경  [B] 뒤로
+
+[^v] choose  [>][A] open  [B] close
+[^v] 선택  [>][A] 열기  [B] 닫기
+
+[^v] move the song  [A][B] done
+[^v] 곡 이동  [A][B] 완료
+
+[A] choose  [B] cancel  [+] exit
+[A] 선택  [B] 취소  [+] 종료
+
+[A] choose  [B] close
+[A] 선택  [B] 닫기
+
+[A] choose  [B] close  [+] exit...
+[A] 선택  [B] 닫기  [+] 종료...
+
+[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 열기  [B] 뒤로  [>] 추가  [X] 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙  [+] 메뉴
+
+[A] open  [B] up  [X] use this folder
+[A] 열기  [B] 상위 폴더  [X] 이 폴더 사용
+
+[A] open  [B] up or close  [X] use this folder
+[A] 열기  [B] 상위 폴더 / 닫기  [X] 이 폴더 사용
+
+[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 열기  [LS] 이동  [RS] 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
+
+[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 열기  [X] 재생  [Y] 셔플  [LS] 이동  [RS] 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
+
+[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 열기  [X] 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
+
+[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track
+[A] 앨범 열기  [B] 뒤로  [>] 추가  [X] 아티스트 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙
+
+[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu
+[A] 일시정지  [B] 재생목록에 추가  [<>][RS] 탐색  [X] 셔플  [Y] 반복  [L][R] 트랙  [+] 메뉴
+
+[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 재생  [B] 뒤로  [>] 추가  [X] 모두 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙  [+] 메뉴
+
+[A] play  [B] back  [>] remove  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
+[A] 재생  [B] 뒤로  [>] 제거  [X] 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙  [+] 메뉴
+
+[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu
+[A] 재생  [B] 라이브러리  [>] 추가  [X] 셔플  [Y] 반복  [RS] 페이지 / 탐색  [L][R] 트랙  [+] 메뉴
+
+[A] type  [B] delete  [X] shift  [Y] space  [+] done  [-] cancel
+[A] 입력  [B] 삭제  [X] Shift  [Y] 스페이스  [+] 완료  [-] 취소
+
+[A][B] back
+[A][B] 뒤로
+
+A music player for Switch 2 homebrew on kaiHEN.
+kaiHEN용 Switch 2 홈브루 음악 플레이어입니다.
+
+A playlist with that name already exists.
+같은 이름의 재생목록이 이미 있습니다.
+
+About
+정보
+
+Accent color
+강조 색상
+
+Add "%s" to
+"%s" 추가할 재생목록
+
+Add %zu songs to
+%zu곡을 추가할 재생목록
+
+Add songs with the + buttons in Library, Queue or Now Playing.
+라이브러리, 대기열, 재생 중 화면에서 + 버튼으로 곡을 추가하세요.
+
+Add to playlist
+재생목록에 추가
+
+Added "%s" to "%s".
+"%s" 곡을 "%s" 재생목록에 추가했습니다.
+
+Added %d song to "%s".
+%d곡을 "%s" 재생목록에 추가했습니다.
+
+Added %d songs to "%s".
+%d곡을 "%s" 재생목록에 추가했습니다.
+
+After %d min idle
+조작 없이 %d분 후
+
+ALBUM
+앨범
+
+Album
+앨범 기준
+
+Albums
+앨범
+
+Albums in your library
+라이브러리의 앨범
+
+All songs
+모든 곡
+
+Already in "%s".
+이미 "%s" 재생목록에 있습니다.
+
+ARTIST
+아티스트
+
+Artists
+아티스트
+
+Audio unavailable: audout could not start.
+오디오를 사용할 수 없습니다. audout을 시작할 수 없었습니다.
+
+Auto
+자동
+
+Back
+뒤로
+
+Background
+배경
+
+Background blur
+배경 흐림
+
+Bass
+베이스
+
+Blue
+파란색
+
+Cancel
+취소
+
+Choose your music folder
+음악 폴더를 선택하세요
+
+Choose your music folder first.
+먼저 음악 폴더를 선택하세요.
+
+Choose your music folder in + > Settings > Music folder.
++ > 설정 > 음악 폴더에서 음악 폴더를 선택하세요.
+
+Classical
+클래식
+
+Clock
+시계
+
+Could not add to "%s".
+"%s" 재생목록에 추가할 수 없었습니다.
+
+Could not delete "%s".
+"%s" 재생목록을 삭제할 수 없었습니다.
+
+Could not open the folder.
+폴더를 열 수 없었습니다.
+
+Could not open: %s
+열 수 없습니다: %s
+
+Could not read %s (JPEG or PNG, up to 50 megapixels).
+%s: 읽을 수 없습니다 (JPEG 또는 PNG, 최대 5000만 화소).
+
+Could not read that playlist.
+재생목록을 읽을 수 없었습니다.
+
+Could not read the playlists folder.
+재생목록 폴더를 읽을 수 없었습니다.
+
+Could not read the SD card.
+SD 카드를 읽을 수 없었습니다.
+
+Could not save the playlist.
+재생목록을 저장할 수 없었습니다.
+
+Cover colors
+커버 색상
+
+Created "%s" with %d song.
+"%s" 재생목록을 만들었습니다 (%d곡).
+
+Created "%s" with %d songs.
+"%s" 재생목록을 만들었습니다 (%d곡).
+
+Created "%s".
+"%s" 재생목록을 만들었습니다.
+
+Custom
+사용자 지정
+
+Delete
+삭제
+
+Delete "%s"
+"%s" 삭제
+
+Delete "%s"? The songs stay on the card.
+"%s" 재생목록을 삭제하시겠습니까? 곡은 SD 카드에 남습니다.
+
+Deleted "%s".
+"%s" 재생목록을 삭제했습니다.
+
+Display
+표시
+
+Done
+완료
+
+empty
+비어 있음
+
+Equalizer
+이퀄라이저
+
+Exit
+종료
+
+Exit KaiPlayer
+KaiPlayer 종료
+
+Exit KaiPlayer?
+KaiPlayer를 종료하시겠습니까?
+
+Flat
+플랫
+
+Folders
+폴더
+
+Free and open source under the MIT license.
+MIT 라이선스의 무료 오픈 소스입니다.
+
+From cover
+커버에서
+
+Green
+초록색
+
+High
+높음
+
+Home
+홈
+
+Hz  ·  +12 to -12 dB
+Hz  ·  +12 ~ -12 dB
+
+in folder order
+폴더 순서
+
+Jazz
+재즈
+
+KaiPlayer only shows this folder and the ones inside it.
+KaiPlayer는 이 폴더와 하위 폴더만 표시합니다.
+
+Keep playing
+계속 재생
+
+Language
+언어
+
+Library
+라이브러리
+
+Looking for music...
+음악을 찾는 중...
+
+Low
+낮음
+
+Made by
+제작
+
+Medium
+보통
+
+Menu
+메뉴
+
+Move song
+곡 이동
+
+Move the song with Up/Down, then press A.
+위/아래로 곡을 옮긴 다음 A를 누르세요.
+
+moving a song
+곡 이동 중
+
+Music folder
+음악 폴더
+
+Music folder: %.60s
+음악 폴더: %.60s
+
+Name for the new playlist
+새 재생목록 이름
+
+Never
+안 함
+
+New name
+새 이름
+
+New playlist
+새 재생목록
+
+New playlist...
+새 재생목록...
+
+No folders here.
+폴더가 없습니다.
+
+No music in this folder.
+이 폴더에 음악이 없습니다.
+
+No playlists yet
+아직 재생목록이 없습니다
+
+Not affiliated with or endorsed by Nintendo.
+Nintendo와 제휴하거나 Nintendo의 승인을 받은 소프트웨어가 아닙니다.
+
+Not chosen
+선택 안 함
+
+Nothing here yet.
+아직 아무것도 없습니다.
+
+Nothing playing
+재생 중인 곡 없음
+
+Now Playing
+재생 중
+
+NOW PLAYING
+재생 중
+
+Now Playing style
+재생 중 화면 스타일
+
+Off
+끔
+
+On
+켬
+
+Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
+오픈 소스 (MIT)  ·  github.com/mizuiroame/kaiplayer
+
+Orange
+주황색
+
+Out of memory for the track list.
+트랙 목록을 처리할 메모리가 부족합니다.
+
+Paused
+일시정지
+
+PAUSED
+일시정지
+
+Pick a folder in Library or a playlist, and press X to play it.
+라이브러리에서 폴더나 재생목록을 고른 다음 X를 눌러 재생하세요.
+
+Pink
+분홍색
+
+Playback
+재생
+
+Playlist
+재생목록
+
+Playlists
+재생목록
+
+Playlists you play show up here.
+재생한 재생목록이 여기에 표시됩니다.
+
+Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
+SD 카드의 MP3, FLAC, Ogg Vorbis, WAV, DSD를 재생합니다.\n재생목록, 이퀄라이저, ReplayGain, 앨범 아트를 지원합니다.
+
+Pop
+팝
+
+Press + to create one, or to add songs from Library, Queue or Now Playing.
++를 눌러 새로 만들거나, 라이브러리, 대기열, 재생 중 화면에서 곡을 추가하세요.
+
+Purple
+보라색
+
+Put JPEG or PNG images in a Backgrounds folder in your music folder.
+음악 폴더 안의 Backgrounds 폴더에 JPEG 또는 PNG 이미지를 넣으세요.
+
+Queue
+대기열
+
+Queue is empty
+대기열이 비어 있습니다
+
+Reading your music folder...
+음악 폴더를 읽는 중...
+
+Reading your music folder... your albums will show up here.
+음악 폴더를 읽는 중... 앨범이 여기에 표시됩니다.
+
+Recent albums
+최근 앨범
+
+Recent artists
+최근 아티스트
+
+Recent playlists
+최근 재생목록
+
+Red
+빨간색
+
+Remove
+제거
+
+Remove "%s" from this playlist?
+이 재생목록에서 "%s" 곡을 제거하시겠습니까?
+
+Remove song from playlist
+재생목록에서 곡 제거
+
+Removed "%s" from "%s".
+"%s" 곡을 "%s" 재생목록에서 제거했습니다.
+
+Rename "%s"
+"%s" 이름 변경
+
+Renamed to "%s".
+이름을 변경했습니다: "%s"
+
+Repeat off
+반복 끔
+
+Repeat queue
+대기열 반복
+
+Repeat song
+한 곡 반복
+
+ReplayGain (even loudness)
+ReplayGain (음량 균일화)
+
+Resume where you left off
+마지막 위치부터 이어서 재생
+
+Rock
+록
+
+Save queue as playlist
+대기열을 재생목록으로 저장
+
+Screen off  ·  press any button or touch to wake
+화면 꺼짐  ·  아무 버튼이나 누르거나 화면을 터치하면 켜집니다
+
+Screen off while playing
+재생 중 화면 끄기
+
+Settings
+설정
+
+Shift
+Shift
+
+Shuffle off
+셔플 끔
+
+Shuffle on
+셔플 켬
+
+shuffled play order
+셔플 재생 순서
+
+Sleep %u min
+슬립 %u분
+
+Sleep timer
+슬립 타이머
+
+Sleep timer, in minutes (0 turns it off)
+슬립 타이머 (분 단위, 0이면 끔)
+
+Sleep timer: pausing.
+슬립 타이머: 일시정지합니다.
+
+Some items in this folder could not be read
+이 폴더의 일부 항목을 읽을 수 없었습니다
+
+Songs
+곡
+
+Songs you play show up here.
+재생한 곡이 여기에 표시됩니다.
+
+Space
+스페이스
+
+The queue is empty.
+대기열이 비어 있습니다.
+
+There are no songs to add.
+추가할 곡이 없습니다.
+
+There are no songs to play.
+재생할 곡이 없습니다.
+
+This folder has no subfolders or music.
+이 폴더에는 하위 폴더나 음악이 없습니다.
+
+Track
+트랙 기준
+
+Track %zu of %zu
+트랙 %zu / %zu
+
+Treble
+트레블
+
+Turn screen off (music keeps playing)
+화면 끄기 (음악은 계속 재생)
+
+Unknown artist
+알 수 없는 아티스트
+
+Up to 48 characters, without / or \, not starting with a dot.
+48자 이내로 입력하세요. / 또는 \는 사용할 수 없으며 마침표로 시작할 수 없습니다.
+
+Update the library now
+지금 라이브러리 업데이트
+
+Updating library  %zu / %zu
+라이브러리 업데이트 중  %zu / %zu
+
+Use this folder
+이 폴더 사용
+
+Version %s
+버전 %s
+
+Vocal
+보컬
+
+Welcome to KaiPlayer
+KaiPlayer에 오신 것을 환영합니다
+
+Welcome! Where is your music?
+환영합니다! 음악은 어디에 있나요?
+
+Your music folder has no songs yet. Add some over FTP.
+음악 폴더에 아직 곡이 없습니다. FTP로 추가하세요.
+
+Your top artists
+자주 듣는 아티스트
+
+Cover
+앨범 커버
+
+Vinyl record
+LP 레코드
+
+CD
+CD
+
+Cassette
+카세트

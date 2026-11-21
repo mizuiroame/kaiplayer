@@ -2,13 +2,15 @@
 
 #include <math.h>
 
+#include "lang.h"
+
 #define RGB(r, g, b) ((uint32_t)(0xFF000000u | ((uint32_t)(b) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(r)))
 #define MIN_SATURATION 0.55f
 #define MIN_VALUE 0.88f
 #define SILVER RGB(0xD8, 0xD8, 0xE2)  // For covers without color.
 
 static const char *const NAMES[THEME_ACCENT_COUNT] = {
-    "Pink", "Blue", "Green", "Purple", "Orange", "Red", "From cover",
+    N_("Pink"), N_("Blue"), N_("Green"), N_("Purple"), N_("Orange"), N_("Red"), N_("From cover"),
 };
 static const uint32_t COLORS[THEME_ACCENT_COUNT - 1] = {
     RGB(0xFF, 0x6B, 0x9A), RGB(0x4D, 0xA3, 0xFF), RGB(0x3D, 0xD6, 0x8C),
@@ -17,7 +19,7 @@ static const uint32_t COLORS[THEME_ACCENT_COUNT - 1] = {
 
 const char *themeAccentName(int accent)
 {
-    return accent >= 0 && accent < THEME_ACCENT_COUNT ? NAMES[accent] : "";
+    return accent >= 0 && accent < THEME_ACCENT_COUNT ? T(NAMES[accent]) : "";
 }
 
 static float maxf(float a, float b)

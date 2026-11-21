@@ -1,6 +1,8 @@
 // The + menu, Settings and the on-screen keyboard, drawn over the current tab.
 #include <stdio.h>
+#include <string.h>
 
+#include "lang.h"
 #include "nowstyle.h"
 #include "settings.h"
 #include "theme.h"
@@ -84,45 +86,48 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     switch (row) {
     case SETTING_SLEEP:
         if (!app->sleep_deadline_ns || app->sleep_deadline_ns <= now_ns) {
-            snprintf(out, size, "Off");
+            snprintf(out, size, "%s", T("Off"));
         } else {
             unsigned left = (unsigned)((app->sleep_deadline_ns - now_ns + NS_PER_MINUTE - 1) / NS_PER_MINUTE);
-            snprintf(out, size, "%d min  (%u left)", app->sleep_minutes, left);
+            snprintf(out, size, T("%d min  (%u left)"), app->sleep_minutes, left);
         }
         break;
     case SETTING_RESUME: {
-        static const char *const MODES[RESUME_MODE_COUNT] = {"Off", "Paused", "Keep playing"};
-        snprintf(out, size, "%s", MODES[app->config.resume % RESUME_MODE_COUNT]);
+        static const char *const MODES[RESUME_MODE_COUNT] = {N_("Off"), N_("Paused"), N_("Keep playing")};
+        snprintf(out, size, "%s", T(MODES[app->config.resume % RESUME_MODE_COUNT]));
         break;
     }
     case SETTING_LIBRARY:
         snprintf(out, size, "%.60s", app->config.library[0] ? (utilFileName(app->config.library)[0]
                                                                   ? utilFileName(app->config.library)
                                                                   : app->config.library)
-                                                           : "Not chosen");
+                                                           : T("Not chosen"));
         break;
-    case SETTING_CLOCK: snprintf(out, size, "%s", app->config.clock_24h ? "24-hour" : "12-hour"); break;
+    case SETTING_CLOCK: snprintf(out, size, "%s", app->config.clock_24h ? T("24-hour") : T("12-hour")); break;
+    case SETTING_LANGUAGE:
+        snprintf(out, size, "%s", app->config.language_name[0] ? app->config.language_name : "English");
+        break;
     case SETTING_EQUALIZER:
-        snprintf(out, size, "%s", app->config.eq_on ? eqPresetName((EqPreset)app->config.eq_preset) : "Off");
+        snprintf(out, size, "%s", app->config.eq_on ? eqPresetName((EqPreset)app->config.eq_preset) : T("Off"));
         break;
     case SETTING_REPLAYGAIN: {
-        static const char *const MODES[REPLAYGAIN_MODE_COUNT] = {"Off", "Track", "Album", "Auto"};
-        snprintf(out, size, "%s", MODES[app->config.replaygain % REPLAYGAIN_MODE_COUNT]);
+        static const char *const MODES[REPLAYGAIN_MODE_COUNT] = {N_("Off"), N_("Track"), N_("Album"), N_("Auto")};
+        snprintf(out, size, "%s", T(MODES[app->config.replaygain % REPLAYGAIN_MODE_COUNT]));
         break;
     }
     case SETTING_ACCENT: snprintf(out, size, "%s", themeAccentName(app->config.accent)); break;
     case SETTING_NOW_STYLE: snprintf(out, size, "%s", nowStyleName(app->config.now_style)); break;
     case SETTING_BACKGROUND:
-        snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : "Cover colors");
+        snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : T("Cover colors"));
         break;
     case SETTING_BACKGROUND_BLUR: snprintf(out, size, "%s", backgroundBlurName(app->config.background_blur)); break;
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
     case SETTING_SCREEN_OFF:
         if (app->config.screen_off_minutes)
-            snprintf(out, size, "After %d min idle", app->config.screen_off_minutes);
+            snprintf(out, size, T("After %d min idle"), app->config.screen_off_minutes);
         else
-            snprintf(out, size, "Never");
+            snprintf(out, size, "%s", T("Never"));
         break;
     default: snprintf(out, size, "KaiPlayer %s", KAIPLAYER_VERSION); break;
     }
@@ -142,7 +147,7 @@ static void drawSettings(const App *app, uint64_t now_ns)
     }
     fontDraw(FONT_BOLD, 24, title_x, y + 22, settingsPageTitle(app->settings_page), COLOR_TEXT);
 
-    char value[64];
+    char value[128];
     for (int n = 0; n < count; n++) {
         int i = (int)rows[n];
         int row_y = y + 76 + n * SETTINGS_ROW_H;
@@ -168,7 +173,7 @@ static void drawSettings(const App *app, uint64_t now_ns)
         uiHitAdd(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6, HIT_SETTING, i);
     }
     fontDrawClipped(FONT_REGULAR, 16, x + PANEL_PAD, y + h - 40, SETTINGS_W - 2 * PANEL_PAD,
-                    "Open source (MIT)  ·  github.com/mizuiroame/kaiplayer", COLOR_FAINT);
+                    T("Open source (MIT)  ·  github.com/mizuiroame/kaiplayer"), COLOR_FAINT);
 }
 
 static void drawKey(int x, int y, int w, const char *label, bool selected, bool lit, int hit_arg)
@@ -227,12 +232,12 @@ static void drawEqualizer(const App *app)
     int x = (GFX_WIDTH - EQ_W) / 2, y = (GFX_HEIGHT - EQ_H) / 2;
     dimScreen();
     panel(x, y, EQ_W, EQ_H);
-    fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22, "Equalizer", COLOR_TEXT);
+    fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22, T("Equalizer"), COLOR_TEXT);
 
     // Preset and on/off pills, top right.
-    char preset[48];
+    char preset[128], toggle[64];
     snprintf(preset, sizeof(preset), "X  %s", eqPresetName((EqPreset)app->config.eq_preset));
-    const char *toggle = app->config.eq_on ? "Y  On" : "Y  Off";
+    snprintf(toggle, sizeof(toggle), "Y  %s", app->config.eq_on ? T("On") : T("Off"));
     int px = x + EQ_W - PANEL_PAD - uiPillWidth(toggle);
     uiDrawPill(px, y + 22, toggle, app->config.eq_on);
     uiHitAdd(px, y + 14, uiPillWidth(toggle), 46, HIT_EQ_TOGGLE, 0);
@@ -268,7 +273,7 @@ static void drawEqualizer(const App *app)
                  COLOR_DIM);
         uiHitAdd(cx - EQ_COLUMN_W / 2, top, EQ_COLUMN_W, EQ_SLIDER_H, HIT_EQ_BAND, b);
     }
-    fontDraw(FONT_REGULAR, 16, x + PANEL_PAD, y + EQ_H - 42, "Hz  ·  +12 to -12 dB", COLOR_FAINT);
+    fontDraw(FONT_REGULAR, 16, x + PANEL_PAD, y + EQ_H - 42, T("Hz  ·  +12 to -12 dB"), COLOR_FAINT);
 }
 
 #define PICKER_W 760
@@ -284,14 +289,14 @@ static void drawFolderPicker(const App *app)
     dimScreen();
     panel(x, y, PICKER_W, h);
     fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22,
-             app->picker_first_run ? "Welcome! Where is your music?" : "Choose your music folder", COLOR_TEXT);
+             app->picker_first_run ? T("Welcome! Where is your music?") : T("Choose your music folder"), COLOR_TEXT);
     fontDrawClipped(FONT_REGULAR, 17, x + PANEL_PAD, y + 62, PICKER_W - 2 * PANEL_PAD,
-                    "KaiPlayer only shows this folder and the ones inside it.", COLOR_DIM);
+                    T("KaiPlayer only shows this folder and the ones inside it."), COLOR_DIM);
     fontDrawClipped(FONT_BOLD, 18, x + PANEL_PAD, y + 100, PICKER_W - 2 * PANEL_PAD, b->path, COLOR_ACCENT);
 
     int list_y = y + 136;
     if (folders == 0)
-        fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, list_y + 10, "No folders here.", COLOR_DIM);
+        fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, list_y + 10, T("No folders here."), COLOR_DIM);
     size_t first = b->cursor >= PICKER_ROWS ? b->cursor - PICKER_ROWS + 1 : 0;
     for (size_t i = first; i < folders && i < first + PICKER_ROWS; i++) {
         int row_y = list_y + (int)(i - first) * PICKER_ROW_H;
@@ -304,7 +309,7 @@ static void drawFolderPicker(const App *app)
     }
 
     // "Use this folder", bottom right.
-    static const char USE[] = "Use this folder";
+    const char *const USE = T("Use this folder");
     int use_w = uiIconPillWidth("X", USE), use_x = x + PICKER_W - PANEL_PAD - use_w, use_y = y + h - 54;
     uiDrawIconPill(use_x, use_y, "X", PILL_ICON_CHECK, USE, true);
     uiHitAdd(use_x, use_y - 8, use_w, 46, HIT_PICKER_USE, 0);
@@ -315,13 +320,14 @@ static void drawFolderPicker(const App *app)
 
 static void drawAbout(void)
 {
+    // One text each, drawn a line at a time: a translation may break its lines elsewhere.
     static const char *const LINES[] = {
-        "A music player for Switch 2 homebrew on kaiHEN.",
-        "Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with",
-        "playlists, an equalizer, ReplayGain and album art.",
+        N_("A music player for Switch 2 homebrew on kaiHEN."),
+        N_("Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\n"
+           "playlists, an equalizer, ReplayGain and album art."),
         "",
-        "Free and open source under the MIT license.",
-        "Not affiliated with or endorsed by Nintendo.",
+        N_("Free and open source under the MIT license."),
+        N_("Not affiliated with or endorsed by Nintendo."),
     };
     int x = (GFX_WIDTH - ABOUT_W) / 2, y = (GFX_HEIGHT - ABOUT_H) / 2;
     dimScreen();
@@ -331,14 +337,25 @@ static void drawAbout(void)
     uiDrawNoteIcon(x + PANEL_PAD + 18, y + 50, 48, COLOR_ACCENT);
     int text_x = x + PANEL_PAD + 108;
     fontDraw(FONT_BOLD, 34, text_x, y + 36, "KaiPlayer", COLOR_TEXT);
-    fontDraw(FONT_REGULAR, 20, text_x, y + 84, "Version " KAIPLAYER_VERSION, COLOR_DIM);
+    char version[64];
+    snprintf(version, sizeof(version), T("Version %s"), KAIPLAYER_VERSION);
+    fontDraw(FONT_REGULAR, 20, text_x, y + 84, version, COLOR_DIM);
 
     int line_y = y + 150;
-    fontDraw(FONT_REGULAR, 18, x + PANEL_PAD, line_y, "Made by", COLOR_DIM);
+    fontDraw(FONT_REGULAR, 18, x + PANEL_PAD, line_y, T("Made by"), COLOR_DIM);
     fontDraw(FONT_BOLD, 26, x + PANEL_PAD, line_y + 24, "Mizuiro", COLOR_ACCENT);
     line_y += 82;
-    for (size_t i = 0; i < sizeof(LINES) / sizeof(LINES[0]); i++, line_y += 28)
-        fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, line_y, LINES[i], COLOR_TEXT);
+    for (size_t i = 0; i < sizeof(LINES) / sizeof(LINES[0]); i++) {
+        const char *text = LINES[i][0] ? T(LINES[i]) : "";
+        do {  // Each of its lines.
+            const char *end = strchr(text, '\n');
+            char line[256];
+            snprintf(line, sizeof(line), "%.*s", end ? (int)(end - text) : (int)strlen(text), text);
+            fontDraw(FONT_REGULAR, 19, x + PANEL_PAD, line_y, line, COLOR_TEXT);
+            line_y += 28;
+            text = end ? end + 1 : "";
+        } while (*text);
+    }
     fontDraw(FONT_BOLD, 18, x + PANEL_PAD, y + ABOUT_H - 46, "github.com/mizuiroame/kaiplayer", COLOR_ACCENT);
 }
 
