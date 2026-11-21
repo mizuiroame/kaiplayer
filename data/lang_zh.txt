@@ -759,3 +759,6 @@ Show the network folder's library
 
 Show the SD card's library
 显示SD卡的媒体库
+
+[A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] 打开  [X] SD卡 / 网络  [Y] 随机播放  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单

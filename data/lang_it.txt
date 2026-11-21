@@ -759,3 +759,6 @@ Mostra la libreria della cartella di rete
 
 Show the SD card's library
 Mostra la libreria della scheda SD
+
+[A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] apri  [X] scheda SD / rete  [Y] casuale  [LS] muovi  [RS] scorri  [L][R] brano  [-] pausa  [+] menu

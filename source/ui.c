@@ -442,7 +442,7 @@ static const char *footerHelp(const App *app)
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
     if (app->view == VIEW_HOME && (appNetworkReady() || appLibraryIsNetwork(app)))  // X switches there (app_home.c).
-        return T("[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
+        return T("[A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
     if (app->view == VIEW_BROWSER) {
         switch (appLibraryPage((App *)app)->level) {
         case LIB_ROOT:

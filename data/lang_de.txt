@@ -759,3 +759,6 @@ Bibliothek des Netzwerkordners zeigen
 
 Show the SD card's library
 Bibliothek der SD-Karte zeigen
+
+[A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
+[A] Öffnen  [X] SD-Karte / Netzwerk  [Y] Zufall  [LS] Bewegen  [RS] Spulen  [L][R] Titel  [-] Pause  [+] Menü
