@@ -14,9 +14,10 @@ OBJDIR  := build
 NOASLR  := setarch $$(uname -m) -R
 
 NETWORK := dav.c davnet.c smbnet.c net.c davfile.c kfile.c blockcache.c util.c lang.c tracklist.c library.c \
-           decoder.c dsd.c audioformat.c tags_file.c tags_id3.c tags_vorbis.c tags_text.c cover.c
+           decoder.c dsd.c audioformat.c tags_file.c tags_id3.c tags_vorbis.c tags_text.c cover.c \
+           catalog.c md5.c json.c subsonic.c subnet.c subfile.c
 
-.PHONY: smb clean
+.PHONY: smb navidrome clean
 
 smb: $(OBJDIR)/host_smb
 	$(NOASLR) ./$(OBJDIR)/host_smb
@@ -24,6 +25,17 @@ smb: $(OBJDIR)/host_smb
 $(OBJDIR)/host_smb: host_smb.c $(addprefix $(SRC)/,$(NETWORK)) $(OBJDIR)/codecs_impl.o $(OBJDIR)/image_impl.o
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) host_smb.c $(addprefix $(SRC)/,$(NETWORK)) $(OBJDIR)/codecs_impl.o $(OBJDIR)/image_impl.o \
+		-o $@ $(LDFLAGS)
+
+# The Navidrome server, the same way:
+#   ... -e NAVIDROME=http://host.docker.internal:4533 -e NAVIDROME_USER=... -e NAVIDROME_PASS=... -e MUSIC=/music
+#   ... kaiplayer-host-live make navidrome
+navidrome: $(OBJDIR)/host_navidrome
+	$(NOASLR) ./$(OBJDIR)/host_navidrome
+
+$(OBJDIR)/host_navidrome: host_navidrome.c $(addprefix $(SRC)/,$(NETWORK)) $(OBJDIR)/codecs_impl.o $(OBJDIR)/image_impl.o
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) host_navidrome.c $(addprefix $(SRC)/,$(NETWORK)) $(OBJDIR)/codecs_impl.o $(OBJDIR)/image_impl.o \
 		-o $@ $(LDFLAGS)
 
 $(OBJDIR)/%_impl.o: $(SRC)/%_impl.c

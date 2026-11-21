@@ -30,6 +30,8 @@ install.
   at any sample rate. [More](docs/playback.md)
 - **Music from your network:** a Windows shared folder, a NAS or Samba
   (SMB), or WebDAV, as a library of its own. [More](docs/network-folder.md)
+- **Music from a Navidrome server** (or any Subsonic server): its library,
+  covers and play counts, playing the original files. [More](docs/navidrome.md)
 - **Covers** embedded in the file, or a `cover.jpg` (or similar) in the
   album's folder. [More](docs/library.md#song-details-and-album-art)
 - **Titles in any language** from the tags, including Japanese, Chinese and
@@ -83,6 +85,7 @@ full steps are in [Installing](docs/install.md).
 - [The library](docs/library.md): Home, Library, song details and album art
 - [Network folder](docs/network-folder.md): music from a shared folder or
   WebDAV on your network
+- [Navidrome](docs/navidrome.md): music from a Navidrome or Subsonic server
 - [Playback](docs/playback.md): formats, DSD, queue, resume, screen
   resolution
 - [Playlists](docs/playlists.md)

@@ -32,6 +32,7 @@ typedef struct {
     long timeout_s;               // For the whole transfer; 0: as long as data keeps coming.
     long stall_s;                 // Gives up connecting, or with no data, after this; 0: the usual.
     bool accept_json;             // Asks for JSON.
+    bool any_certificate;         // Takes an https server's own certificate (its owner turned the check off).
 } NetRequest;
 
 // Takes a piece of the answer. False stops the transfer, which then counts as fine.

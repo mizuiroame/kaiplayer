@@ -118,6 +118,20 @@ static bool fakeList(const char *location, DavEntry **out, size_t *count, char *
 
 static const KFileRemote FAKE = {fakeOpen, fakeRead, fakeClose, fakeList};
 
+// The fake server: "sub:/<cover>/x" is fixtures/x, and any cover is preview/assets/cover.jpg.
+static void *fakeServerOpen(const char *location, bool stream, int64_t *size)
+{
+    char path[512];
+    const char *name = strrchr(location, '/') + 1;
+    if (!strncmp(name, "cover-", 6))
+        snprintf(path, sizeof(path), "%s", "dav:/../preview/assets/cover.jpg");
+    else
+        snprintf(path, sizeof(path), DAV_PREFIX "%s", name);
+    return fakeOpen(path, stream, size);
+}
+
+static const KFileRemote FAKE_SERVER = {fakeServerOpen, fakeRead, fakeClose, NULL};
+
 static uint8_t *readLocal(const char *path, size_t *size)
 {
     FILE *f = fopen(path, "rb");
@@ -493,6 +507,34 @@ static void testNetworkLibrary(void)
     browserFree(&b);
 }
 
+// A server's songs and covers go to its own remote, not the network folder's.
+static void testServerLocations(void)
+{
+    CHECK(kfileIsRemote("sub:/-/tone.flac") && kfileIsRemote("dav:/a.flac") && !kfileIsRemote("sdmc:/a.flac"));
+    CHECK(kfileOpen("sub:/-/tone.flac", KFILE_PEEK) == NULL);  // No server set up.
+    kfileSetRemote(KFILE_REMOTE_SERVER, &FAKE_SERVER);
+    size_t local_size, remote_size;
+    uint8_t *local = readLocal(FIXTURES "/tone.flac", &local_size);
+    uint8_t *remote = kfileReadAll("sub:/al-1/tone.flac", 1u << 20, &remote_size, NULL);
+    CHECK(remote && remote_size == local_size && !memcmp(local, remote, local_size));
+    free(local);
+    free(remote);
+    TrackTags t;
+    tagsInit(&t);
+    CHECK(tagsRead("sub:/al-1/tone.mp3", &t) && !strcmp(t.title, "Test Title"));
+    tagsFree(&t);
+    CoverImage large, small;  // The server's cover, not a folder's listing.
+    CHECK(coverLoadFromFolder("sub:/al-1/tone.flac", &large, 64, &small, 16));
+    coverFree(&large);
+    coverFree(&small);
+    CHECK(!coverLoadFromFolder("sub:/-/tone.flac", &large, 64, &small, 16));  // It has none.
+    DavEntry *entries;
+    size_t count;
+    char why[64];
+    CHECK(!kfileList("sub:/", &entries, &count, why, sizeof(why)));  // No list: no folders.
+    kfileSetRemote(KFILE_REMOTE_SERVER, NULL);
+}
+
 static void testBlockCache(void)
 {
     BlockSlot slots[4] = {{0}};
@@ -518,14 +560,15 @@ void testKfile(void)
     testBlockCache();
     testLocal();
     kfileSetBlockSizes(TEST_STREAM_BLOCK, TEST_PEEK_BLOCK);
-    kfileSetRemote(&FAKE);
+    kfileSetRemote(KFILE_REMOTE_FOLDER, &FAKE);
     testRemoteBytes();
     testRemoteFailing();
     testInterrupt();
     testDecoderPaths();
     testTagsAndCovers();
     testNetworkLibrary();
+    testServerLocations();
     CHECK(g_fake_open_files == 0);  // Every file opened was closed.
-    kfileSetRemote(NULL);
+    kfileSetRemote(KFILE_REMOTE_FOLDER, NULL);
     kfileSetBlockSizes(0, 0);
 }

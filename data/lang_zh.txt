@@ -762,3 +762,96 @@ Show the SD card's library
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 打开  [X] SD卡 / 网络  [Y] 随机播放  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+ The connection isn't encrypted: use https outside your home.
+ 连接未加密：在家以外的地方请使用https。
+
+%s %s answers. Signed in as %s.%s
+%s %s已响应。已以%s登录。%s
+
+%s %s answers. Signed in as %s: %ld songs.%s
+%s %s已响应。已以%s登录：%ld首歌曲。%s
+
+%s server, like 192.168.0.10:4533
+%s服务器，例如 192.168.0.10:4533
+
+A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
+Navidrome服务器，或其他支持Subsonic API的服务器。在媒体库中按X切换到它的音乐。
+
+Forget this server
+忘记此服务器
+
+Library: Navidrome
+媒体库：Navidrome
+
+Navidrome
+Navidrome
+
+Navidrome's songs are in Artists, Albums and Songs: it has no folders here.
+Navidrome的歌曲在“艺人”“专辑”和“歌曲”中：这里没有文件夹。
+
+Nothing answered at that address and port. Is the server on, and is the port right (usually 4533)?
+该地址和端口没有响应。服务器是否已开启？端口是否正确（通常为4533）？
+
+Server set: now enter your user name and password.
+服务器已设置：现在请输入用户名和密码。
+
+Server set: test the connection, then press X in Library to play from it.
+服务器已设置：请测试连接，然后在媒体库中按X从中播放。
+
+Show Navidrome's library
+显示Navidrome的媒体库
+
+Sign in to the Navidrome server in Settings first.
+请先在“设置”中登录Navidrome服务器。
+
+That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533).
+该地址有响应，但不是Navidrome或Subsonic服务器。请检查端口（通常为4533）。
+
+The Navidrome server is forgotten.
+已忘记Navidrome服务器。
+
+The Navidrome server's library couldn't be read.
+无法读取Navidrome服务器的媒体库。
+
+The server doesn't let this user do that.
+服务器不允许此用户这样做。
+
+The server said: %.100s
+服务器回复：%.100s
+
+There isn't enough memory for the whole library.
+内存不足，无法载入整个媒体库。
+
+This server doesn't take KaiPlayer's way of signing in (a token).
+此服务器不接受KaiPlayer的登录方式（令牌）。
+
+This server's version of the Subsonic API is too old for KaiPlayer.
+此服务器的Subsonic API版本对KaiPlayer来说太旧。
+
+%s user name
+%s用户名
+
+Certificate check
+证书验证
+
+Enter the server's address first.
+请先输入服务器地址。
+
+Not signed in
+未登录
+
+Off: any certificate
+关：接受任何证书
+
+Server
+服务器
+
+That isn't a server's address.
+这不是服务器地址。
+
+That port may want a secure connection: write https:// before the address.
+该端口可能需要安全连接：请在地址前加上 https://。
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+服务器证书不受信任。如果服务器使用自签名证书，请关闭“证书验证”。

@@ -33,6 +33,7 @@ int coverNamePriority(const char *name);
 
 // Finds the cover image in the track's folder (Cover.jpg, folder.png...),
 // matching names without regard to case. Falls back to the folder's only
-// image if it has an unusual name.
+// image if it has an unusual name. A server's song ("sub:/") has its
+// album's cover from the server instead, asked for at large_size pixels.
 bool coverLoadFromFolder(const char *track_path, CoverImage *large, int large_size,
                          CoverImage *small, int small_size);

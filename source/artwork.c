@@ -7,6 +7,7 @@
 #include <switch.h>
 
 #include "gfx.h"
+#include "subsonic.h"
 
 #define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
 #define THREAD_PRIORITY 0x30  // Below the UI and audio threads.
@@ -38,6 +39,7 @@ static Artwork *loadArtwork(const char *path)
 
     TrackTags tags;
     tagsInit(&tags);
+    tags.skip_picture = subIsLocation(path);  // A server's song: its cover comes from the server.
     tagsRead(path, &tags);
     snprintf(a->title, sizeof(a->title), "%s", tags.title);
     snprintf(a->artist, sizeof(a->artist), "%s", tags.artist[0] ? tags.artist : tags.album_artist);

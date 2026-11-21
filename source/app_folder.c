@@ -9,19 +9,61 @@
 #include "dav.h"
 #include "lang.h"
 #include "playlist.h"
+#include "subsonic.h"
 
 #define DEVICE_ROOT "sdmc:/"
 
 const char *appMusicRoot(const App *app)
 {
-    if (app->config.use_network)
+    if (app->config.source == LIBRARY_NETWORK)
         return DAV_ROOT;
+    if (app->config.source == LIBRARY_SERVER)
+        return SUB_ROOT;
     return app->config.library[0] ? app->config.library : DEVICE_ROOT;
 }
 
-bool appLibraryIsNetwork(const App *app)
+LibrarySource appLibrarySource(const App *app)
 {
-    return app->config.use_network;
+    return app->config.source;
+}
+
+bool appLibraryIsRemote(const App *app)
+{
+    return app->config.source != LIBRARY_CARD;
+}
+
+bool appSourceReady(LibrarySource source)
+{
+    switch (source) {
+    case LIBRARY_NETWORK: return appNetworkReady();
+    case LIBRARY_SERVER: return appServerReady();
+    default: return true;
+    }
+}
+
+const char *appSourceRoot(LibrarySource source)
+{
+    return source == LIBRARY_NETWORK ? DAV_ROOT : source == LIBRARY_SERVER ? SUB_ROOT : NULL;
+}
+
+LibrarySource appNextLibrarySource(const App *app)
+{
+    for (int step = 1; step < LIBRARY_SOURCE_COUNT; step++) {
+        LibrarySource next = (LibrarySource)((app->config.source + step) % LIBRARY_SOURCE_COUNT);
+        if (appSourceReady(next))
+            return next;
+    }
+    return LIBRARY_CARD;
+}
+
+bool appCanSwitchSource(const App *app)
+{
+    return appNetworkReady() || appServerReady() || appLibraryIsRemote(app);
+}
+
+void appSwitchLibrarySource(App *app)
+{
+    appSetLibrarySource(app, appNextLibrarySource(app));
 }
 
 // The Folders page shows the music folder's top again, listed when it's opened
@@ -47,48 +89,56 @@ void appOpenFolders(App *app)
     snprintf(b->problem, sizeof(b->problem), "%s", problem[0] ? problem : T("Could not open the folder."));
 }
 
-void appSetLibrarySource(App *app, bool network)
+void appSetLibrarySource(App *app, LibrarySource source)
 {
-    if (network && !appNetworkReady()) {
-        appToast(app, T("Set up the network folder in Settings first."));
+    if (!appSourceReady(source)) {
+        appToast(app, source == LIBRARY_SERVER ? T("Sign in to the Navidrome server in Settings first.")
+                                               : T("Set up the network folder in Settings first."));
         return;
     }
-    if (app->config.use_network == network)
+    if (app->config.source == source)
         return;
-    app->config.use_network = network;
+    app->config.source = source;
     configSave(&app->config);
     app->library.depth = 0;  // Back to the Library's first page.
     app->focus = FOCUS_LIST;
     resetFolders(app);
-    if (network || app->config.library[0])
+    if (source != LIBRARY_CARD || app->config.library[0])
         catalogScanStart(appMusicRoot(app));
-    appToast(app, network ? T("Library: the network folder") : T("Library: the SD card"));
+    appToast(app, source == LIBRARY_NETWORK  ? T("Library: the network folder")
+                  : source == LIBRARY_SERVER ? T("Library: Navidrome")
+                                             : T("Library: the SD card"));
 }
 
-void appLibraryNetworkChanged(App *app, bool moved)
+void appLibraryRemoteChanged(App *app, LibrarySource source, bool moved)
 {
-    if (!appNetworkReady()) {  // Forgotten: what was found of it goes, and the card's library shows.
-        catalogScanForgetNetwork();
-        appSetLibrarySource(app, false);
+    const char *root = appSourceRoot(source);
+    if (!root)
+        return;
+    if (!appSourceReady(source)) {  // Forgotten: what was found of it goes, and the card's library shows.
+        catalogScanForgetRemote(root);
+        if (app->config.source == source)
+            appSetLibrarySource(app, LIBRARY_CARD);
         return;
     }
-    if (!app->config.use_network) {
+    if (app->config.source != source) {
         // Read now, in the background (a new address forgets the old one's): shown at once when chosen.
-        catalogScanRefreshNetwork(moved);
+        catalogScanRefreshRemote(root, moved);
         return;
     }
     app->library.depth = 0;
     resetFolders(app);
     if (moved)
-        catalogScanStartFresh(DAV_ROOT);
+        catalogScanStartFresh(root);
     else
-        catalogScanStart(DAV_ROOT);  // Another user: look again.
+        catalogScanStart(root);  // Another user: look again.
 }
 
-void appNetworkScanTapped(App *app)
+void appRemoteScanTapped(App *app, const char *root)
 {
-    appSetLibrarySource(app, true);
-    if (appLibraryIsNetwork(app))
+    LibrarySource source = subIsLocation(root) ? LIBRARY_SERVER : LIBRARY_NETWORK;
+    appSetLibrarySource(app, source);
+    if (app->config.source == source)
         appSetView(app, VIEW_BROWSER);
 }
 
@@ -160,7 +210,7 @@ void appUsePlaylistFolder(App *app)
 
 void appUpdateLibrary(App *app)
 {
-    if (!app->config.library[0] && !app->config.use_network) {
+    if (!app->config.library[0] && !appLibraryIsRemote(app)) {
         appToast(app, T("Choose your music folder first."));
         return;
     }
@@ -172,7 +222,7 @@ void appPickerChoose(App *app)
 {
     snprintf(app->config.library, sizeof(app->config.library), "%s", app->picker.path);
     snprintf(app->config.folder, sizeof(app->config.folder), "%s", app->picker.path);
-    app->config.use_network = false;  // A card folder chosen: the card's library.
+    app->config.source = LIBRARY_CARD;  // A card folder chosen: the card's library.
     configSave(&app->config);
     browserOpen(&app->browser, app->config.library);
     app->picker_open = false;

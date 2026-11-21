@@ -79,11 +79,14 @@ void appOpenMenu(App *app)
     else if (app->view == VIEW_QUEUE && status.track_count > 0)
         menuAdd(&app->menu, T("Save queue as playlist"), ACT_SAVE_QUEUE, 0);
     menuAddDivider(&app->menu);
-    if (app->config.library[0] || appLibraryIsNetwork(app))
+    if (app->config.library[0] || appLibraryIsRemote(app))
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
-    if (appNetworkReady() || appLibraryIsNetwork(app))  // Where X goes in Library, from anywhere.
-        menuAdd(&app->menu, appLibraryIsNetwork(app) ? T("Show the SD card's library")
-                                                     : T("Show the network folder's library"), ACT_SOURCE, 0);
+    if (appCanSwitchSource(app)) {  // Where X goes in Library, from anywhere.
+        LibrarySource next = appNextLibrarySource(app);
+        menuAdd(&app->menu, next == LIBRARY_NETWORK  ? T("Show the network folder's library")
+                            : next == LIBRARY_SERVER ? T("Show Navidrome's library")
+                                                     : T("Show the SD card's library"), ACT_SOURCE, 0);
+    }
     if (status.state == PLAYER_PLAYING)
         menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), ACT_SCREEN_OFF, 0);
     menuAdd(&app->menu, T("Settings"), ACT_SETTINGS, 0);
@@ -303,7 +306,7 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_SCREEN_OFF: appScreenOff(app); break;
     case ACT_RESCAN: appUpdateLibrary(app); break;
     case ACT_SOURCE:
-        appSetLibrarySource(app, !appLibraryIsNetwork(app));
+        appSwitchLibrarySource(app);
         appSetView(app, VIEW_BROWSER);  // Shown: Library, on its first page.
         break;
     case ACT_PICK:

@@ -18,3 +18,7 @@ ffmpeg -f lavfi -i "sine=frequency=440:duration=1:sample_rate=44100" -i small_co
 # tone.ogg: -c:a libvorbis -q:a 0, with the cover as a base64 FLAC picture
 # block in METADATA_BLOCK_PICTURE (ffmpeg's Ogg muxer can't attach pictures).
 ```
+
+navidrome_search3.json is what a Navidrome test server answered to `search3`
+(the Subsonic API's search with an empty query) for eight made-up songs; the
+fuzzer starts from it.

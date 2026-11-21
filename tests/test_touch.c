@@ -87,12 +87,21 @@ static void testSettings(void)
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_DISPLAY), "Display") == 0);
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_LIBRARY), "Library") == 0);
 
-    // The pages as in KaiVideo and KaiRadio: Library, the network folder (as KaiVideo's), Playback, Display,
-    // then About.
+    // The pages as in KaiVideo and KaiRadio: Library, the app's sources (the network folder, as KaiVideo's, and
+    // Navidrome), Playback, Display, then About.
     SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
-    CHECK(settingsPageRows(SETTINGS_PAGE_MAIN, rows) == 5);
-    CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_NETWORK && rows[2] == SETTING_OPEN_PLAYBACK &&
-          rows[3] == SETTING_OPEN_DISPLAY && rows[4] == SETTING_ABOUT);
+    CHECK(settingsPageRows(SETTINGS_PAGE_MAIN, rows) == 6);
+    CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_NETWORK && rows[2] == SETTING_OPEN_SERVER &&
+          rows[3] == SETTING_OPEN_PLAYBACK && rows[4] == SETTING_OPEN_DISPLAY && rows[5] == SETTING_ABOUT);
+    CHECK(settingsPageRows(SETTINGS_PAGE_SERVER, rows) == 5);
+    CHECK(rows[0] == SETTING_SRV_ADDRESS && rows[1] == SETTING_SRV_ACCOUNT && rows[2] == SETTING_SRV_TEST &&
+          rows[3] == SETTING_SRV_CERTIFICATE && rows[4] == SETTING_SRV_FORGET);
+    CHECK(settingsRowPage(SETTING_OPEN_SERVER) == SETTINGS_PAGE_SERVER &&
+          settingsPageRow(SETTINGS_PAGE_SERVER) == SETTING_OPEN_SERVER);
+    CHECK(settingsRowEditable(SETTING_SRV_CERTIFICATE) && !settingsRowEditable(SETTING_SRV_ADDRESS) &&
+          !settingsRowEditable(SETTING_SRV_ACCOUNT) && !settingsRowEditable(SETTING_SRV_TEST) &&
+          !settingsRowEditable(SETTING_SRV_FORGET));
+    CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_SERVER), "Navidrome") == 0 && settingsPageNote(SETTINGS_PAGE_SERVER));
     CHECK(settingsPageRows(SETTINGS_PAGE_NETWORK, rows) == 4);
     CHECK(rows[0] == SETTING_NET_ADDRESS && rows[1] == SETTING_NET_ACCOUNT && rows[2] == SETTING_NET_TEST &&
           rows[3] == SETTING_NET_FORGET);

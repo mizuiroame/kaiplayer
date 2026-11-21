@@ -1,12 +1,14 @@
-// One reader for the music files, on the card or in the network folder
-// ("dav:/" locations, dav.h): open, read, seek, tell, size, close. The
+// One reader for the music files, on the card, in the network folder
+// ("dav:/" locations, dav.h) or on a Navidrome server ("sub:/", subsonic.h):
+// open, read, seek, tell, size, close. The
 // decoders, the tags, the DSD reader and the covers read through it.
 //
 // A card file is read with stdio, as before. A network file comes in blocks:
 // a stream (a song playing) is read ahead on a thread of its own, so the
 // sound seldom waits for the network; a peek (tags, a cover) reads only the
 // blocks asked for, on the caller's thread. kfile.c knows blocks, not
-// servers: davfile.c gives it the network folder's reads (KFileRemote).
+// servers: davfile.c gives it the network folder's reads (KFileRemote), and
+// subfile.c the Navidrome server's.
 #pragma once
 
 #include <stdbool.h>
@@ -34,13 +36,20 @@ typedef struct {
     int64_t (*read)(void *file, int64_t offset, void *to, size_t size, const volatile bool *cancel);
     void (*close)(void *file);
     // Lists a folder ("dav:/" or "dav:/Albums"). *out is malloc'd. False with why (for the person).
+    // (A server without folders always says why not.)
     bool (*list)(const char *location, DavEntry **out, size_t *count, char *why, size_t why_size);
 } KFileRemote;
 
-// What network files are read with (kept, not copied); NULL: they can't be opened.
-void kfileSetRemote(const KFileRemote *remote);
+typedef enum {
+    KFILE_REMOTE_FOLDER,  // The network folder's "dav:/" locations.
+    KFILE_REMOTE_SERVER,  // The Navidrome server's "sub:/" locations.
+    KFILE_REMOTE_COUNT,
+} KFileRemoteKind;
 
-// True for a network folder's location.
+// What that kind's files are read with (kept, not copied); NULL: they can't be opened.
+void kfileSetRemote(KFileRemoteKind kind, const KFileRemote *remote);
+
+// True for a network folder's or a server's location.
 bool kfileIsRemote(const char *path);
 
 // NULL if it can't be opened.

@@ -11,6 +11,7 @@
 #include "ui_buttons.h"
 #include "ui_list.h"
 #include "screen.h"
+#include "subsonic.h"
 #include "catalog_scan.h"
 #include "covercache.h"
 #include "lang.h"
@@ -52,7 +53,11 @@ static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now
         path_w = COLUMN_ARTIST_X - 24 - path_x;
     }
     char shown[UTIL_PATH_MAX + DAV_ADDRESS_MAX];
-    if (kfileIsRemote(b->path))  // Where it is, as typed: not "dav:/".
+    if (subIsLocation(b->path)) {  // The server, as typed.
+        char user[8];
+        bool check;
+        appServerShown(shown, sizeof(shown), user, sizeof(user), &check);
+    } else if (kfileIsRemote(b->path))  // Where it is, as typed: not "dav:/".
         appNetworkShownPath(b->path, shown, sizeof(shown));
     else
         snprintf(shown, sizeof(shown), "%s", b->path);
@@ -233,23 +238,27 @@ static int drawStatus(const App *app, uint64_t now_ns)
     return x;
 }
 
-// True where X switches the library's source: Home and Library's first page, with a network folder.
+// True where X switches the library's source: Home and Library's first page, with a network folder or a server.
 static bool xSwitchesSource(const App *app)
 {
-    if (!(appNetworkReady() || appLibraryIsNetwork(app)) || uiOverlayOpen(app) || app->focus == FOCUS_PLAYER)
+    if (!appCanSwitchSource(app) || uiOverlayOpen(app) || app->focus == FOCUS_PLAYER)
         return false;
     return app->view == VIEW_HOME ||
            (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_ROOT);
 }
 
 // Where the library comes from, after the title, once there's a network
-// folder: "SD card", or "Network folder" with its turquoise dot, and the X
-// key where X switches it (as KaiVideo's). A tap switches it everywhere, and
-// the + menu does. Its right end.
+// folder or a server: "SD card", "Network folder" with its turquoise dot, or
+// "Navidrome" with its blue one, and the X key where X switches it (as
+// KaiVideo's). A tap switches it everywhere, and the + menu does. Its right end.
 static int drawSourcePill(const App *app, int x)
 {
-    bool network = appLibraryIsNetwork(app), key = xSwitchesSource(app);
-    const char *label = network ? T("Network folder") : T("SD card");
+    LibrarySource source = appLibrarySource(app);
+    bool key = xSwitchesSource(app);
+    const char *label = source == LIBRARY_NETWORK  ? T("Network folder")
+                        : source == LIBRARY_SERVER ? T("Navidrome")
+                                                   : T("SD card");
+    Color dot = source == LIBRARY_NETWORK ? COLOR_NETWORK : source == LIBRARY_SERVER ? COLOR_SERVER : COLOR_ACCENT;
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
     int w = 12 + key_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
     float cy = HEADER_PILL_Y + HEADER_PILL_H / 2.0f;
@@ -257,21 +266,24 @@ static int drawSourcePill(const App *app, int x)
     if (key)
         uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
     int dot_x = x + 12 + key_w;
-    gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
-                     network ? COLOR_NETWORK : COLOR_ACCENT);
+    gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2, dot);
     fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
     uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
     return x + w;
 }
 
-// While the network folder's library is read, shown or not: a ring of the
-// songs read ("312 / 1602"), or a spinner while its folders are listed. A tap
-// shows that library. Where it begins (right if there's no scan).
+// While a library on the network is read, shown or not: a ring of the songs
+// read ("312 / 1602") in its source's color, or a spinner while its folders
+// are listed (or the server doesn't say how many). A tap shows that library.
+// Where it begins (right if there's no scan).
 static int drawNetworkScanPill(int right, uint64_t now_ns)
 {
     size_t done, total;
-    if (!catalogScanNetworkProgress(&done, &total))
+    const char *root = DAV_ROOT;
+    if (!catalogScanNetworkProgress(&done, &total, &root))
         return right;
+    bool server = subIsLocation(root);
+    Color color = server ? COLOR_SERVER : COLOR_NETWORK;
     char label[48];
     snprintf(label, sizeof(label), total ? "%zu / %zu" : "...", done, total);
     int w = 12 + 2 * SCAN_RING_R + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
@@ -282,13 +294,13 @@ static int drawNetworkScanPill(int right, uint64_t now_ns)
     if (total) {
         float part = (float)done / (float)total;
         if (part > 0)
-            gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, RING_TOP, RING_TOP + RING_TURN * part, COLOR_NETWORK);
+            gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, RING_TOP, RING_TOP + RING_TURN * part, color);
     } else {
         float start = RING_TOP + RING_TURN * (float)(now_ns % SPIN_NS) / (float)SPIN_NS;
-        gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, start, start + RING_TURN / 4, COLOR_NETWORK);
+        gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, start, start + RING_TURN / 4, color);
     }
     fontDrawMiddle(FONT_BOLD, 16, x + 12 + 2 * SCAN_RING_R + 8, cy, label, COLOR_TEXT);
-    uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_NETWORK_SCAN, 0);
+    uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_NETWORK_SCAN, server ? 1 : 0);
     return x;
 }
 
@@ -305,7 +317,7 @@ static void drawHeader(const App *app, uint64_t now_ns)
     int title_w = fontDraw(FONT_BOLD, 26, MARGIN + 36, 16, "KaiPlayer", COLOR_ACCENT);
     uiHitAdd(0, 0, MARGIN + 36 + title_w + 12, HEADER_H, HIT_MENU_BUTTON, 0);
     int left = MARGIN + 36 + title_w;
-    if (appNetworkReady() || appLibraryIsNetwork(app))
+    if (appCanSwitchSource(app))
         left = drawSourcePill(app, left + HEADER_GAP);
     int right = drawStatus(app, now_ns);
     right = drawNetworkScanPill(right - HEADER_GAP, now_ns);
@@ -441,12 +453,12 @@ static const char *footerHelp(const App *app)
         return T("[^v] move the song  [A][B] done");
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
-    if (app->view == VIEW_HOME && (appNetworkReady() || appLibraryIsNetwork(app)))  // X switches there (app_home.c).
+    if (app->view == VIEW_HOME && appCanSwitchSource(app))  // X switches there (app_home.c).
         return T("[A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
     if (app->view == VIEW_BROWSER) {
         switch (appLibraryPage((App *)app)->level) {
         case LIB_ROOT:
-            return appNetworkReady() || appLibraryIsNetwork(app)
+            return appCanSwitchSource(app)
                        ? T("[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu")
                        : T("[A] open  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
         case LIB_ARTISTS:

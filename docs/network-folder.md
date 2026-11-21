@@ -31,8 +31,9 @@ In **Settings > Network folder**:
    top, or what went wrong.
 
 Then the pill next to KaiPlayer's name, at the top of every tab, says which
-library is shown: **SD card**, or **Network folder** with a turquoise dot.
-To switch:
+library is shown: **SD card**, or **Network folder** with a turquoise dot
+(or **Navidrome** with a blue one, with a [Navidrome server](navidrome.md)
+set up too: **X** goes through them in turn). To switch:
 
 - press **X** on **Home** or on **Library's first page** (the pill shows the
   **X** there, and so does the help line);

@@ -1,5 +1,6 @@
 // A small mutation fuzzer for everything that parses files from the SD card:
-// the audio decoders, the tag readers and the image decoder. Build it with
+// the audio decoders, the tag readers, the image decoder, and a music
+// server's answers. Build it with
 // AddressSanitizer and UndefinedBehaviorSanitizer (make -C tests fuzz).
 //
 // Usage: fuzz [ITERATIONS] [SEED]
@@ -13,6 +14,8 @@
 
 #include "cover.h"
 #include "decoder.h"
+#include "json.h"
+#include "subsonic.h"
 #include "tags.h"
 
 #define WORK_DIR "/tmp/kaiplayer_fuzz"
@@ -142,6 +145,39 @@ static void fuzzImage(const char *seed_path, int iterations)
     free(seed);
 }
 
+// A server's answer (subsonic.h), into a catalog.
+static void fuzzServerAnswer(const char *seed_path, int iterations)
+{
+    size_t seed_size = 0;
+    uint8_t *seed = readFile(seed_path, &seed_size);
+    if (!seed) {
+        fprintf(stderr, "missing seed %s\n", seed_path);
+        exit(2);
+    }
+    uint8_t *buf = malloc(seed_size);
+    for (int i = 0; i < iterations; i++) {
+        memcpy(buf, seed, seed_size);
+        size_t size = mutate(buf, seed_size);
+        writeFile(WORK_DIR "/input.json", buf, size);
+        JsonDoc *doc = jsonParse((const char *)buf, size);
+        const JsonValue *body;
+        int code;
+        char message[64];
+        if (doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message))) {
+            Catalog c;
+            catalogInit(&c);
+            size_t added = 0;
+            if (subAddSongs(&c, jsonGet(body, "searchResult3"), "song", NULL, &added))
+                catalogBuild(&c);
+            catalogFree(&c);
+        }
+        jsonFree(doc);
+    }
+    printf("  %-28s %d inputs\n", seed_path, iterations);
+    free(buf);
+    free(seed);
+}
+
 int main(int argc, char **argv)
 {
     int iterations = argc > 1 ? atoi(argv[1]) : 1000;
@@ -157,6 +193,7 @@ int main(int argc, char **argv)
     fuzzAudioFile("fixtures/tone.dff", "dff", iterations);
     fuzzImage("fixtures/small_cover.jpg", iterations * 4);
     fuzzImage("fixtures/small_cover.png", iterations * 4);
+    fuzzServerAnswer("fixtures/navidrome_search3.json", iterations * 4);
     printf("fuzz: done, no crashes\n");
     return 0;
 }

@@ -12,6 +12,7 @@
 #include "kfile.h"
 #include "lang.h"
 #include "library.h"
+#include "subnet.h"
 #include "tracklist.h"
 #include "util.h"
 
@@ -19,6 +20,7 @@
 #define THREAD_PRIORITY 0x32  // Below the artwork and list-tag threads.
 #define CACHE_NAME "catalog.txt"
 #define NETWORK_CACHE_NAME "catalog-network.txt"
+#define SERVER_CACHE_NAME "catalog-subsonic.txt"
 #define NETWORK_FAILURES_MAX 3  // Songs in a row whose tags can't be read: the server has gone.
 #define PROBLEM_MAX 192
 
@@ -29,28 +31,41 @@ static bool g_started, g_running;
 static char g_root[UTIL_PATH_MAX];  // Requested root.
 static bool g_pending;
 static bool g_fresh;                // Forget what was kept for g_root first.
-// The network folder's library, read in the background while the card's is
-// shown, into its cache file only. The shown library's scan goes first.
-static bool g_background;           // Asked for.
-static bool g_background_fresh;     // Forget what was kept first (another address).
-static bool g_forget_network;       // Forget what was kept, and don't read it (no network folder now).
-static bool g_in_background;        // The thread is doing it now.
-static bool g_in_network;           // The scan running is the network folder's (shown or not).
+
+// The libraries on the network: the network folder's and the Navidrome server's.
+enum { REMOTE_FOLDER, REMOTE_SERVER, REMOTES };
+static const char *const REMOTE_ROOTS[REMOTES] = {DAV_ROOT, SUB_ROOT};
+
+// Which of them root is; -1 for the card.
+static int remoteOf(const char *root)
+{
+    return davIsLocation(root) ? REMOTE_FOLDER : subIsLocation(root) ? REMOTE_SERVER : -1;
+}
+
+// A library on the network, read in the background while another is shown,
+// into its cache file only. The shown library's scan goes first.
+static bool g_background[REMOTES];        // Asked for.
+static bool g_background_fresh[REMOTES];  // Forget what was kept first (another address).
+static bool g_forget[REMOTES];            // Forget what was kept, and don't read it (not set up now).
+static bool g_in_background;        // The thread is doing one now.
+static int g_in_remote = -1;        // The scan running is this one's (shown or not); -1: the card's, or none.
 static Catalog *g_current;          // Published; read under g_lock.
 static Mutex g_progress_lock;     // Separate: read while the catalog is locked.
 static bool g_scanning;
 static size_t g_done, g_total;
-static bool g_net_scanning;         // The network folder's scan, shown or not,
+static bool g_net_scanning;         // A library on the network being read, shown or not,
+static int g_net_remote;            // which one,
 static size_t g_net_done, g_net_total;  // and its songs read so far.
 static unsigned g_generation;   // Bumped by each publish.
-static char g_problem[PROBLEM_MAX]; // Under g_progress_lock.
+static char g_problem[REMOTES][PROBLEM_MAX]; // Under g_progress_lock.
 
 // The scan running should stop: another is asked for (a background one gives
 // way to the shown library's, and to a new request of its own), or the end.
 static bool restartRequested(void)
 {
     mutexLock(&g_lock);
-    bool pending = g_pending || !g_running || (g_in_network && g_forget_network) || (g_in_background && g_background);
+    bool pending = g_pending || !g_running ||
+                   (g_in_remote >= 0 && (g_forget[g_in_remote] || (g_in_background && g_background[g_in_remote])));
     mutexUnlock(&g_lock);
     return pending;
 }
@@ -69,23 +84,27 @@ static void publish(Catalog *fresh)
     }
 }
 
-// catalog.txt in KaiPlayer's folder; the network folder's in a file of its own.
+// catalog.txt in KaiPlayer's folder; the network folder's and the server's in files of their own.
 static void cachePath(const char *root, char *out, size_t size)
 {
-    snprintf(out, size, "%s/%s", configFolder(), kfileIsRemote(root) ? NETWORK_CACHE_NAME : CACHE_NAME);
+    int remote = remoteOf(root);
+    const char *name = remote == REMOTE_FOLDER ? NETWORK_CACHE_NAME : remote == REMOTE_SERVER ? SERVER_CACHE_NAME
+                                                                                              : CACHE_NAME;
+    snprintf(out, size, "%s/%s", configFolder(), name);
 }
 
-static void setProblem(const char *text)
+static void setProblem(int remote, const char *text)
 {
     mutexLock(&g_progress_lock);
-    snprintf(g_problem, sizeof(g_problem), "%s", text);
+    snprintf(g_problem[remote], sizeof(g_problem[remote]), "%s", text);
     mutexUnlock(&g_progress_lock);
 }
 
-void catalogScanProblem(char *out, size_t size)
+void catalogScanProblem(const char *root, char *out, size_t size)
 {
+    int remote = remoteOf(root);
     mutexLock(&g_progress_lock);
-    snprintf(out, size, "%s", g_problem);
+    snprintf(out, size, "%s", remote >= 0 ? g_problem[remote] : "");
     mutexUnlock(&g_progress_lock);
 }
 
@@ -238,7 +257,7 @@ static Catalog *scanNetwork(const char *root, const Catalog *previous, bool show
     char why[PROBLEM_MAX] = "";
     if (!libraryScanNetwork(&files, root, restartRequested, why, sizeof(why))) {
         if (!restartRequested())
-            setProblem(why[0] ? why : T("The network folder couldn't be read."));
+            setProblem(REMOTE_FOLDER, why[0] ? why : T("The network folder couldn't be read."));
         return NULL;
     }
     setProgress(shown, 0, files.count);
@@ -257,7 +276,7 @@ static Catalog *scanNetwork(const char *root, const Catalog *previous, bool show
         failures = failed ? failures + 1 : 0;
         if (ok && failures >= NETWORK_FAILURES_MAX) {
             // What was read is kept, and the rest as it was found before; the next scan goes on.
-            setProblem(T("The network folder stopped answering. What was found before is kept."));
+            setProblem(REMOTE_FOLDER, T("The network folder stopped answering. What was found before is kept."));
             *partial = true;
             ok = keepRest(fresh, previous, &files, i + 1);
             break;
@@ -269,10 +288,35 @@ static Catalog *scanNetwork(const char *root, const Catalog *previous, bool show
     return finish(fresh, ok);
 }
 
+static void serverProgress(size_t done, size_t total, void *user)
+{
+    setProgress(*(const bool *)user, done, total);
+}
+
+// The Navidrome server's library, from its answers (no file is read). NULL if
+// it couldn't be read, or was stopped: then *partial is set, to read it again later.
+static Catalog *scanServer(bool shown, bool *partial)
+{
+    *partial = false;
+    setProgress(shown, 0, 0);
+    Catalog *fresh = newCatalog();
+    char why[PROBLEM_MAX] = "";
+    if (fresh && subFetchLibrary(fresh, restartRequested, serverProgress, &shown, why, sizeof(why)))
+        return finish(fresh, true);
+    if (restartRequested())
+        *partial = true;
+    else
+        setProblem(REMOTE_SERVER, why[0] ? why : T("The Navidrome server's library couldn't be read."));
+    finish(fresh, false);
+    return NULL;
+}
+
 // Scans root into a new catalog. NULL if it was cancelled or failed.
 static Catalog *scan(const char *root, const Catalog *previous, bool *partial)
 {
     *partial = false;
+    if (remoteOf(root) == REMOTE_SERVER)
+        return scanServer(true, partial);
     if (kfileIsRemote(root))
         return scanNetwork(root, previous, true, partial);
     TrackList files;
@@ -308,21 +352,24 @@ static Catalog *scan(const char *root, const Catalog *previous, bool *partial)
     return fresh;
 }
 
-static void setScanning(bool shown, bool network, bool on)
+// remote: the library on the network being scanned, or -1 for the card's.
+static void setScanning(bool shown, int remote, bool on)
 {
     mutexLock(&g_lock);
-    g_in_network = network && on;
+    g_in_remote = on ? remote : -1;
     mutexUnlock(&g_lock);
     mutexLock(&g_progress_lock);
     if (shown)
         g_scanning = on;
-    if (network)
+    if (remote >= 0) {
         g_net_scanning = on;
+        g_net_remote = remote;
+    }
     if (on && shown)
         g_done = g_total = 0;
-    if (on && network) {
+    if (on && remote >= 0) {
         g_net_done = g_net_total = 0;
-        g_problem[0] = '\0';
+        g_problem[remote][0] = '\0';
     }
     mutexUnlock(&g_progress_lock);
 }
@@ -332,8 +379,8 @@ static char g_scanned_root[UTIL_PATH_MAX];  // The folder g_current belongs to (
 // The shown library's scan: its cache shows at once, then the new catalog.
 static void scanShown(const char *root, bool fresh_start)
 {
-    bool network = kfileIsRemote(root);
-    setScanning(true, network, true);
+    int remote = remoteOf(root);
+    setScanning(true, remote, true);
     if (fresh_start) {  // What was kept belongs to another network folder.
         dropCache(root);
         g_scanned_root[0] = '\0';
@@ -355,8 +402,6 @@ static void scanShown(const char *root, bool fresh_start)
         saveCache(root, fresh);  // Even stopped part way: what was read isn't read again.
         mutexLock(&g_lock);
         bool kept = !partial || !g_pending || strcmp(g_root, root) == 0;  // Not if another folder comes next.
-        if (partial && network && (!g_pending || strcmp(g_root, root) != 0))
-            g_background = true;  // Left for another: finished in the background after it.
         mutexUnlock(&g_lock);
         if (kept)
             publish(fresh);
@@ -365,20 +410,26 @@ static void scanShown(const char *root, bool fresh_start)
             free(fresh);
         }
     }
-    setScanning(true, network, false);
+    mutexLock(&g_lock);
+    if (partial && remote >= 0 && (!g_pending || strcmp(g_root, root) != 0))
+        g_background[remote] = true;  // Left for another: finished in the background after it.
+    mutexUnlock(&g_lock);
+    setScanning(true, remote, false);
 }
 
-// The network folder's library while another is shown: into its cache only.
-static void scanBackground(bool fresh_start)
+// A library on the network while another is shown: into its cache only.
+static void scanBackground(int remote, bool fresh_start)
 {
+    const char *root = REMOTE_ROOTS[remote];
     if (fresh_start)
-        dropCache(DAV_ROOT);
-    setScanning(false, true, true);
-    Catalog *previous = loadCache(DAV_ROOT);
+        dropCache(root);
+    setScanning(false, remote, true);
+    Catalog *previous = remote == REMOTE_FOLDER ? loadCache(root) : NULL;  // The server's isn't needed.
     bool partial;
-    Catalog *fresh = scanNetwork(DAV_ROOT, previous, false, &partial);
+    Catalog *fresh = remote == REMOTE_FOLDER ? scanNetwork(root, previous, false, &partial)
+                                             : scanServer(false, &partial);
     if (fresh) {
-        saveCache(DAV_ROOT, fresh);
+        saveCache(root, fresh);
         catalogFree(fresh);
         free(fresh);
     }
@@ -388,11 +439,20 @@ static void scanBackground(bool fresh_start)
     }
     mutexLock(&g_lock);
     g_in_background = false;
-    // Stopped for the shown library's scan: finished after it (unless that one is the network folder's).
-    if (partial && g_running && !g_forget_network && !(g_pending && kfileIsRemote(g_root)))
-        g_background = true;
+    // Stopped for the shown library's scan: finished after it (unless that one is this library's).
+    if (partial && g_running && !g_forget[remote] && !(g_pending && remoteOf(g_root) == remote))
+        g_background[remote] = true;
     mutexUnlock(&g_lock);
-    setScanning(false, true, false);
+    setScanning(false, remote, false);
+}
+
+// The first remote whose flag is set, or -1.
+static int firstSet(const bool flags[REMOTES])
+{
+    for (int i = 0; i < REMOTES; i++)
+        if (flags[i])
+            return i;
+    return -1;
 }
 
 static void workerMain(void *arg)
@@ -401,11 +461,12 @@ static void workerMain(void *arg)
     char root[UTIL_PATH_MAX];
     mutexLock(&g_lock);
     while (g_running) {
-        if (g_forget_network) {  // No network folder now: what was kept of it goes.
-            g_forget_network = g_background = g_background_fresh = false;
+        int remote = firstSet(g_forget);
+        if (remote >= 0) {  // Not set up now: what was kept of it goes.
+            g_forget[remote] = g_background[remote] = g_background_fresh[remote] = false;
             mutexUnlock(&g_lock);
-            dropCache(DAV_ROOT);
-            if (kfileIsRemote(g_scanned_root)) {
+            dropCache(REMOTE_ROOTS[remote]);
+            if (remoteOf(g_scanned_root) == remote) {
                 publish(NULL);
                 g_scanned_root[0] = '\0';
             }
@@ -416,27 +477,27 @@ static void workerMain(void *arg)
             snprintf(root, sizeof(root), "%s", g_root);
             bool fresh_start = g_fresh;
             g_pending = g_fresh = false;
-            if (kfileIsRemote(root)) {  // The shown scan is the network folder's: no background one too.
-                fresh_start = fresh_start || g_background_fresh;
-                g_background = g_background_fresh = false;
+            remote = remoteOf(root);
+            if (remote >= 0) {  // The shown scan is that library's: no background one too.
+                fresh_start = fresh_start || g_background_fresh[remote];
+                g_background[remote] = g_background_fresh[remote] = false;
             }
             mutexUnlock(&g_lock);
             scanShown(root, fresh_start);
             mutexLock(&g_lock);
             continue;
         }
-        if (g_background) {
-            bool fresh_start = g_background_fresh;
-            g_background = g_background_fresh = false;
-            g_in_background = true;
-            bool shown = kfileIsRemote(g_scanned_root);
-            if (shown) {  // The network folder's library is the one shown: its scan, shown.
-                g_in_background = false;
+        remote = firstSet(g_background);
+        if (remote >= 0) {
+            bool fresh_start = g_background_fresh[remote];
+            g_background[remote] = g_background_fresh[remote] = false;
+            if (remoteOf(g_scanned_root) == remote) {  // It's the library shown: its scan, shown.
                 mutexUnlock(&g_lock);
-                scanShown(DAV_ROOT, fresh_start);
+                scanShown(REMOTE_ROOTS[remote], fresh_start);
             } else {
+                g_in_background = true;
                 mutexUnlock(&g_lock);
-                scanBackground(fresh_start);
+                scanBackground(remote, fresh_start);
             }
             mutexLock(&g_lock);
             continue;
@@ -501,33 +562,37 @@ void catalogScanStartFresh(const char *root)
     start(root, true);
 }
 
-void catalogScanRefreshNetwork(bool fresh)
+void catalogScanRefreshRemote(const char *root, bool fresh)
 {
-    if (!g_started)
+    int remote = remoteOf(root);
+    if (!g_started || remote < 0)
         return;
     mutexLock(&g_lock);
-    g_background = true;
-    g_background_fresh = g_background_fresh || fresh;
+    g_background[remote] = true;
+    g_background_fresh[remote] = g_background_fresh[remote] || fresh;
     condvarWakeOne(&g_wake);
     mutexUnlock(&g_lock);
 }
 
-void catalogScanForgetNetwork(void)
+void catalogScanForgetRemote(const char *root)
 {
-    if (!g_started)
+    int remote = remoteOf(root);
+    if (!g_started || remote < 0)
         return;
     mutexLock(&g_lock);
-    g_forget_network = true;
+    g_forget[remote] = true;
     condvarWakeOne(&g_wake);
     mutexUnlock(&g_lock);
 }
 
-bool catalogScanNetworkProgress(size_t *done, size_t *total)
+bool catalogScanNetworkProgress(size_t *done, size_t *total, const char **root)
 {
     mutexLock(&g_progress_lock);
     bool busy = g_net_scanning;
     *done = g_net_done;
     *total = g_net_total;
+    if (root)
+        *root = REMOTE_ROOTS[g_net_remote];
     mutexUnlock(&g_progress_lock);
     return busy;
 }

@@ -762,3 +762,96 @@ Mostra la libreria della scheda SD
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] apri  [X] scheda SD / rete  [Y] casuale  [LS] muovi  [RS] scorri  [L][R] brano  [-] pausa  [+] menu
+
+ The connection isn't encrypted: use https outside your home.
+ La connessione non è cifrata: usa https fuori casa.
+
+%s %s answers. Signed in as %s.%s
+%s %s risponde. Accesso come %s.%s
+
+%s %s answers. Signed in as %s: %ld songs.%s
+%s %s risponde. Accesso come %s: %ld brani.%s
+
+%s server, like 192.168.0.10:4533
+Server %s, ad esempio 192.168.0.10:4533
+
+A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
+Un server Navidrome, o un altro con l'API di Subsonic. In Libreria, X passa alla sua musica.
+
+Forget this server
+Dimentica questo server
+
+Library: Navidrome
+Libreria: Navidrome
+
+Navidrome
+Navidrome
+
+Navidrome's songs are in Artists, Albums and Songs: it has no folders here.
+I brani di Navidrome sono in Artisti, Album e Brani: qui non ha cartelle.
+
+Nothing answered at that address and port. Is the server on, and is the port right (usually 4533)?
+Nessuna risposta a quell'indirizzo e porta. Il server è acceso e la porta è giusta (di solito 4533)?
+
+Server set: now enter your user name and password.
+Server impostato: ora inserisci nome utente e password.
+
+Server set: test the connection, then press X in Library to play from it.
+Server impostato: prova la connessione, poi premi X in Libreria per ascoltarlo.
+
+Show Navidrome's library
+Mostra la libreria di Navidrome
+
+Sign in to the Navidrome server in Settings first.
+Prima accedi al server Navidrome in Impostazioni.
+
+That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533).
+Quell'indirizzo risponde, ma non come un server Navidrome o Subsonic. Controlla la porta (di solito 4533).
+
+The Navidrome server is forgotten.
+Server Navidrome dimenticato.
+
+The Navidrome server's library couldn't be read.
+Impossibile leggere la libreria del server Navidrome.
+
+The server doesn't let this user do that.
+Il server non consente questo a questo utente.
+
+The server said: %.100s
+Il server ha risposto: %.100s
+
+There isn't enough memory for the whole library.
+Non c'è abbastanza memoria per tutta la libreria.
+
+This server doesn't take KaiPlayer's way of signing in (a token).
+Questo server non accetta il modo di accedere di KaiPlayer (un token).
+
+This server's version of the Subsonic API is too old for KaiPlayer.
+La versione dell'API di Subsonic di questo server è troppo vecchia per KaiPlayer.
+
+%s user name
+Nome utente %s
+
+Certificate check
+Verifica certificato
+
+Enter the server's address first.
+Prima inserisci l'indirizzo del server.
+
+Not signed in
+Non connesso
+
+Off: any certificate
+No: qualsiasi certificato
+
+Server
+Server
+
+That isn't a server's address.
+Non è l'indirizzo di un server.
+
+That port may want a secure connection: write https:// before the address.
+Quella porta potrebbe richiedere una connessione sicura: scrivi https:// prima dell'indirizzo.
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+Il certificato del server non è attendibile. Se il server ha un certificato proprio, disattiva Verifica certificato.

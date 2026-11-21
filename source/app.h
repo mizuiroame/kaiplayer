@@ -189,14 +189,26 @@ size_t appPickerFolderCount(const App *app);
 void appPickerChoose(App *app);  // Use the folder the picker is in.
 // Looks for music in the music folder again ("Update the library"), or says to choose one first.
 void appUpdateLibrary(App *app);
-// The library from the network folder (its top is the music folder: "dav:/"), or from the card's music folder.
-void appSetLibrarySource(App *app, bool network);
-bool appLibraryIsNetwork(const App *app);
-// The network folder's account changed (moved: its address): its library is read again (in the background
-// while the card's is shown), or, gone, what was found of it is forgotten and the card's shows.
-void appLibraryNetworkChanged(App *app, bool moved);
-// The header's pill of the network folder's scan: its library, shown.
-void appNetworkScanTapped(App *app);
+// The library from the card's music folder, the network folder (its top is the music folder: "dav:/") or
+// the Navidrome server ("sub:/"). One that isn't set up says so, and the library stays.
+void appSetLibrarySource(App *app, LibrarySource source);
+LibrarySource appLibrarySource(const App *app);
+// Not the card's: the network folder's or the server's.
+bool appLibraryIsRemote(const App *app);
+// The card's always is; the others once set up (and the network is up).
+bool appSourceReady(LibrarySource source);
+// DAV_ROOT or SUB_ROOT; NULL for the card.
+const char *appSourceRoot(LibrarySource source);
+// Where X goes: the next source set up, card, network folder, Navidrome, card...
+LibrarySource appNextLibrarySource(const App *app);
+void appSwitchLibrarySource(App *app);
+// There's another source to switch to (or this one isn't the card's): X switches, and the pill shows.
+bool appCanSwitchSource(const App *app);
+// A source on the network changed its account (moved: its address): its library is read again (in the
+// background while another is shown), or, gone, what was found of it is forgotten and the card's shows.
+void appLibraryRemoteChanged(App *app, LibrarySource source, bool moved);
+// The header's pill of a library on the network being read (root: DAV_ROOT or SUB_ROOT): that library, shown.
+void appRemoteScanTapped(App *app, const char *root);
 // Lists the music folder's top for the Folders page, unless it's already in it.
 void appOpenFolders(App *app);
 // Points playlists at the music folder's Playlists folder, copying the ones
@@ -308,6 +320,20 @@ void appNetworkExit(void);
 void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size);
 // A network folder's location as the person knows it: "192.168.0.10:8098/music/Album".
 void appNetworkShownPath(const char *location, char *out, size_t size);
+
+// The Navidrome server (app_server.c, subsonic.h): its Settings page, its test, the songs played told to it.
+// Reads its account (navidrome.txt) and starts the network if there is one. Before the library's scan.
+void appServerStart(App *app);
+// True when there is a server signed in to, and the network is up.
+bool appServerReady(void);
+// A Settings row of its page (A, or a step): true if it was one.
+bool appServerActivate(App *app, SettingRow row);
+// Once a frame: a test's answer, and the playing song told to the server.
+void appServerUpdate(App *app, const PlayerStatus *status);
+// Stops its threads and closes its connections, after everything that reads files has stopped.
+void appServerExit(void);
+// What its rows show: the address ("" for none), the user ("" if not signed in), the certificate check.
+void appServerShown(char *address, size_t address_size, char *user, size_t user_size, bool *check_certificate);
 
 // Resume: restore the last queue at startup and save it while playing.
 // play: keep playing; otherwise the restored queue waits paused.

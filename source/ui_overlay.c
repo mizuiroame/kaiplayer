@@ -143,6 +143,23 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : T("Cover colors"));
         break;
     case SETTING_BACKGROUND_BLUR: snprintf(out, size, "%s", backgroundBlurName(app->config.background_blur)); break;
+    case SETTING_OPEN_SERVER:
+    case SETTING_SRV_ADDRESS:
+    case SETTING_SRV_ACCOUNT:
+    case SETTING_SRV_CERTIFICATE: {
+        char address[128], user[128];
+        bool check;
+        appServerShown(address, sizeof(address), user, sizeof(user), &check);
+        if (row == SETTING_SRV_CERTIFICATE)
+            snprintf(out, size, "%s", check ? T("On") : T("Off: any certificate"));
+        else if (row == SETTING_SRV_ACCOUNT)
+            snprintf(out, size, "%.40s", user[0] ? user : T("Not signed in"));
+        else
+            snprintf(out, size, "%.40s", address[0] ? address : T("Not set"));
+        break;
+    }
+    case SETTING_SRV_TEST:
+    case SETTING_SRV_FORGET: out[0] = '\0'; break;
     case SETTING_OPEN_LIBRARY:
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.

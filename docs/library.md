@@ -7,10 +7,11 @@ the music in your music folder. It only shows that folder and the ones inside
 it. You choose the folder the first time you open KaiPlayer, and can change it
 in **+ → Settings → Library → Music folder**.
 
-The library can also come from a [network folder](network-folder.md): with
-one set up, the pill next to KaiPlayer's name says which is shown. **X** on
-Home or on Library's first page, a tap on the pill, or **+ → Show the ...
-library** switches between the **SD card** and the **network folder**.
+The library can also come from a [network folder](network-folder.md) or a
+[Navidrome server](navidrome.md): with one set up, the pill next to
+KaiPlayer's name says which is shown. **X** on Home or on Library's first
+page, a tap on the pill, or **+ → Show the ... library** goes to the next one
+set up: **SD card**, **network folder**, **Navidrome**, and back.
 
 ## Home
 
@@ -25,7 +26,8 @@ their covers, all on one screen:
 - Before you have played anything, it shows albums from your library.
 - Use the D-pad or the left stick to move between cards and sections, **A**
   to open one, **X** to play it and **Y** to shuffle it, or tap a card. (With a
-  network folder set up, **X** switches the library instead: see above.)
+  network folder or a server set up, **X** switches the library instead: see
+  above.)
 - A song counts as played after 30 seconds (half of a song shorter than a
   minute).
 - The plays are kept in `history.txt` in KaiPlayer's folder; delete that file

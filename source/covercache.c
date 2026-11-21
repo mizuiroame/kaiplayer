@@ -7,6 +7,7 @@
 #include <switch.h>
 
 #include "gfx.h"
+#include "subsonic.h"
 #include "tags.h"
 #include "util.h"
 
@@ -69,7 +70,8 @@ static void load(const char *path, CoverImage *card, CoverImage *thumb, bool *ha
 {
     TrackTags tags;
     tagsInit(&tags);
-    tagsRead(path, &tags);
+    if (!subIsLocation(path))  // A server's song: its cover comes from the server, without reading the file.
+        tagsRead(path, &tags);
     int card_size = gfxToFb(COVERCACHE_CARD), thumb_size = gfxToFb(COVERCACHE_THUMB);  // Drawn 1:1.
     *has_cover = coverDecode(tags.picture, tags.picture_size, card, card_size, thumb, thumb_size) ||
                  coverLoadFromFolder(path, card, card_size, thumb, thumb_size);

@@ -18,9 +18,11 @@
 #include "meta.h"
 #include "catalog_scan.h"
 #include "covercache.h"
+#include "dav.h"
 #include "player.h"
 #include "resume.h"
 #include "screen.h"
+#include "subsonic.h"
 #include "sysinfo.h"
 #include "ui.h"
 
@@ -184,6 +186,7 @@ static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, 
     PlayerStatus status;
     playerGetStatus(&status);
     appTrackPlays(app, &status);
+    appServerUpdate(app, &status);  // Its test's answer, and the song playing told to the server.
     if (status.state != *last_state) {
         appletSetMediaPlaybackState(status.state == PLAYER_PLAYING);
         *last_state = status.state;
@@ -210,7 +213,7 @@ static void requestArtwork(const PlayerStatus *status)
 static void openStartFolder(App *app)
 {
     const char *root = appMusicRoot(app);
-    if (appLibraryIsNetwork(app))
+    if (appLibraryIsRemote(app))
         return;
     bool inside = utilPathWithin(app->config.folder, root);
     if (!(inside && browserOpen(&app->browser, app->config.folder)) && !browserOpen(&app->browser, root) &&
@@ -362,7 +365,8 @@ int main(int argc, char **argv)
     static App app;
     configLoad(&app.config);
     appStartLanguages(&app);  // Before anything is said on screen.
-    appNetworkStart(&app);    // Before the library: it may be the network folder's.
+    appNetworkStart(&app);    // Before the library: it may be the network folder's,
+    appServerStart(&app);     // or the server's.
     appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
@@ -380,10 +384,13 @@ int main(int argc, char **argv)
     catalogScanInit();
     coverCacheInit();
     appLoadHistory(&app);
-    if (app.config.library[0] || appLibraryIsNetwork(&app))
+    if (app.config.library[0] || appLibraryIsRemote(&app))
         catalogScanStart(appMusicRoot(&app));
-    if (appNetworkReady() && !appLibraryIsNetwork(&app))
-        catalogScanRefreshNetwork(false);  // In the background, after the card's: quick when nothing changed.
+    // The others on the network in the background, after the one shown: quick when nothing changed.
+    if (appNetworkReady() && appLibrarySource(&app) != LIBRARY_NETWORK)
+        catalogScanRefreshRemote(DAV_ROOT, false);
+    if (appServerReady() && appLibrarySource(&app) != LIBRARY_SERVER)
+        catalogScanRefreshRemote(SUB_ROOT, false);
     sysinfoInit();
     screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);
@@ -407,7 +414,8 @@ int main(int argc, char **argv)
     historyFree(&app.history);
     metaExit();
     artworkExit();
-    appNetworkExit();  // After everything that read the network folder's files.
+    appServerExit();   // After everything that read the server's files,
+    appNetworkExit();  // and the network folder's.
     sysinfoExit();
     screenExit();
     appPlaylistsClose(&app);

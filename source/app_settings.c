@@ -80,10 +80,10 @@ void appActivateSetting(App *app, SettingRow row)
         app->about_open = true;
     } else if (row == SETTING_LIBRARY) {
         appOpenFolderPicker(app, false);
-    } else if (appNetworkActivate(app, row)) {
-        return;  // The network folder's page.
+    } else if (appNetworkActivate(app, row) || appServerActivate(app, row)) {
+        return;  // The network folder's page, or the server's.
     } else if (row == SETTING_RESCAN) {
-        if (app->config.library[0] || appLibraryIsNetwork(app))
+        if (app->config.library[0] || appLibraryIsRemote(app))
             app->settings_open = false;  // Closed, as the + menu's, to see the library update.
         appUpdateLibrary(app);
     } else {
@@ -194,6 +194,7 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         app->config.screen_off_minutes = settingsScreenOffStep(app->config.screen_off_minutes, delta);
         configSave(&app->config);
         break;
+    case SETTING_SRV_CERTIFICATE: appServerActivate(app, row); break;  // On or off, either way.
     case SETTING_LANGUAGE: {  // Through the languages found: English, those in the app, config/lang's files.
         int count = languagesCount();
         int at = (languageIndex(app->config.language) + delta % count + count) % count;

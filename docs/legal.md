@@ -54,7 +54,7 @@ devkit image (not in `third_party/`, but their licenses are):
 | Library | Used for | License |
 |---------|----------|---------|
 | [libsmb2](https://github.com/sahlberg/libsmb2) 6.0.0 | Network folders over SMB | [LGPL 2.1](../third_party/libsmb2-LGPL-2.1.txt) ([its notice](../third_party/libsmb2-COPYING.txt)) |
-| [curl](https://curl.se/) | WebDAV network folders | [curl](../third_party/curl-LICENSE.txt) |
+| [curl](https://curl.se/) | WebDAV network folders, Navidrome servers | [curl](../third_party/curl-LICENSE.txt) |
 | [zlib](https://zlib.net/) | Used by curl | [zlib](../third_party/zlib-LICENSE.txt) |
 
 The `.nro` also links [libounce](https://github.com/ouncebrew/libounce), which

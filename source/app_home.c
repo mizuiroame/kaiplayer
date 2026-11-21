@@ -144,11 +144,11 @@ void appHandleHome(App *app, uint64_t pressed)
         for (int place = 0; place < HOME_ROW_COUNT && !goToPlace(app, home, place, 0); place++)
             ;
     }
-    // With a network folder, X switches the library between the card's and its (as on Library's first page);
-    // A opens a card, and play is inside it. Without one, X plays the card.
-    bool x_switches = appNetworkReady() || appLibraryIsNetwork(app);
+    // With a network folder or a server, X switches the library to the next source (as on Library's first
+    // page); A opens a card, and play is inside it. Without one, X plays the card.
+    bool x_switches = appCanSwitchSource(app);
     if ((pressed & HidNpadButton_X) && x_switches) {
-        appSetLibrarySource(app, !appLibraryIsNetwork(app));
+        appSwitchLibrarySource(app);
         pressed &= ~(uint64_t)HidNpadButton_X;
     }
     HomeRowKind row = (HomeRowKind)app->home_row;

@@ -186,8 +186,8 @@ void appHandleLibrary(App *app, uint64_t pressed)
     bool page = p->level == LIB_ARTIST || p->level == LIB_ALBUM || p->level == LIB_SONGS;
     if ((pressed & HidNpadButton_X) && p->level != LIB_ROOT)
         play(app, page, false);
-    else if ((pressed & HidNpadButton_X) && (appNetworkReady() || appLibraryIsNetwork(app)))
-        appSetLibrarySource(app, !appLibraryIsNetwork(app));  // The card's music, or the network folder's.
+    else if ((pressed & HidNpadButton_X) && appCanSwitchSource(app))
+        appSwitchLibrarySource(app);  // The card's music, the network folder's, or the server's.
     if ((pressed & HidNpadButton_Y) && p->level != LIB_ROOT)
         play(app, page, true);
 }

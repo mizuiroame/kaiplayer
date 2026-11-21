@@ -17,7 +17,12 @@
 - A network folder is read while it plays: there is a short gap between its
   songs (the next one's first piece is fetched when it starts), and nothing
   is kept on the card for playing without the network. See
-  [Network folder](network-folder.md).
+  [Network folder](network-folder.md). The same goes for a
+  [Navidrome server](navidrome.md).
+- A Navidrome (Subsonic) server: its own playlists aren't shown, Folders has
+  nothing for it, songs in formats KaiPlayer doesn't play (AAC, Opus...) are
+  left out rather than converted by the server, and a server that doesn't
+  take token sign-in (some with LDAP) can't be used.
 - DSD is converted to PCM (no native DSD and no DoP), and DST-compressed
   `.dff`, SACD `.iso` images and DSD in WavPack don't play. See
   [DSD](playback.md#dsd-dsf-dff).

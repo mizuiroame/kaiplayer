@@ -118,22 +118,27 @@ bool catalogScanProgress(size_t *done, size_t *total)
     return g_scan_busy;
 }
 
-// The network folder (app_network.c, kfile.c): set up in the scenes that show it.
-static bool g_network;
+// The network folder (app_network.c, kfile.c) and the server (app_server.c): set up in the scenes that show them.
+static bool g_network, g_server;
 static const char *g_scan_problem = "";
-static bool g_net_scan;          // The network folder's library being read,
-static size_t g_net_scan_total;  // of these songs (0: its folders are still listed).
+static bool g_net_scan;          // A library on the network being read,
+static size_t g_net_scan_total;  // of these songs (0: its folders are still listed),
+static bool g_net_scan_server;   // the server's.
 
-bool catalogScanNetworkProgress(size_t *done, size_t *total)
+bool catalogScanNetworkProgress(size_t *done, size_t *total, const char **root)
 {
     *done = g_net_scan_total ? 1234 : 0;
     *total = g_net_scan_total;
+    if (root)
+        *root = g_net_scan_server ? "sub:/" : "dav:/";
     return g_net_scan;
 }
 #define PREVIEW_ADDRESS "smb://192.168.0.168:4451/Music"
+#define PREVIEW_SERVER "192.168.0.168:4533"
 
-void catalogScanProblem(char *out, size_t size)
+void catalogScanProblem(const char *root, char *out, size_t size)
 {
+    (void)root;
     snprintf(out, size, "%s", g_scan_problem);
 }
 
@@ -142,9 +147,31 @@ bool appNetworkReady(void)
     return g_network;
 }
 
-bool appLibraryIsNetwork(const App *app)
+bool appServerReady(void)
 {
-    return app->config.use_network;
+    return g_server;
+}
+
+LibrarySource appLibrarySource(const App *app)
+{
+    return app->config.source;
+}
+
+bool appLibraryIsRemote(const App *app)
+{
+    return app->config.source != LIBRARY_CARD;
+}
+
+bool appCanSwitchSource(const App *app)
+{
+    return g_network || g_server || appLibraryIsRemote(app);
+}
+
+void appServerShown(char *address, size_t address_size, char *user, size_t user_size, bool *check_certificate)
+{
+    snprintf(address, address_size, "%s", g_server ? PREVIEW_SERVER : "");
+    snprintf(user, user_size, "%s", g_server ? "kaiplayer" : "");
+    *check_certificate = true;
 }
 
 void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size)
@@ -184,8 +211,10 @@ static void buildCatalog(void)
 // The parts of app_folder.c and app_browse.c that drawing uses.
 const char *appMusicRoot(const App *app)
 {
-    if (app->config.use_network)
+    if (app->config.source == LIBRARY_NETWORK)
         return "dav:/";
+    if (app->config.source == LIBRARY_SERVER)
+        return "sub:/";
     return app->config.library[0] ? app->config.library : "sdmc:/";
 }
 
@@ -445,6 +474,16 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->settings_cursor = SETTING_OPEN_NETWORK;
     render(dir, "settings_main_network", app, status);
     g_network = false;
+    app->settings_page = SETTINGS_PAGE_SERVER;  // The server's page, before and after it's set.
+    app->settings_cursor = SETTING_SRV_ADDRESS;
+    render(dir, "settings_server_empty", app, status);
+    g_server = true;
+    app->settings_cursor = SETTING_SRV_CERTIFICATE;
+    render(dir, "settings_server", app, status);
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_SERVER;
+    render(dir, "settings_main_server", app, status);
+    g_server = false;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->about_open = true;
     render(dir, "about", app, status);
@@ -574,7 +613,7 @@ int main(int argc, char **argv)
     app.library.depth = 1;
     app.library.stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = 3};
     render(argv[1], "library_source_card", &app, &status);
-    app.config.use_network = true;
+    app.config.source = LIBRARY_NETWORK;
     render(argv[1], "library_network", &app, &status);
     g_scan_problem = "Nothing answered at that address. Is the computer on, and is the folder shared?";
     render(argv[1], "library_network_problem", &app, &status);
@@ -593,7 +632,48 @@ int main(int argc, char **argv)
     snprintf(app.browser.problem, sizeof(app.browser.problem), "%s", "Wrong user name or password.");
     render(argv[1], "browse_network_problem", &app, &status);
     app.browser = card;
-    app.config.use_network = false;
+    app.config.source = LIBRARY_CARD;
+
+    // The server as the library: the pill, its scan, Library, its Folders, and what went wrong.
+    g_server = true;
+    app.config.source = LIBRARY_SERVER;
+    app.view = VIEW_HOME;
+    render(argv[1], "home_server_source", &app, &status);
+    g_net_scan = g_net_scan_server = true;
+    g_net_scan_total = 1602;
+    render(argv[1], "home_server_scan", &app, &status);
+    g_net_scan_total = 0;
+    render(argv[1], "home_server_scan_counting", &app, &status);
+    g_net_scan = g_net_scan_server = false;
+    app.view = VIEW_BROWSER;
+    app.library.depth = 1;
+    app.library.stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = 1};
+    render(argv[1], "library_server", &app, &status);
+    g_scan_problem = "Wrong user name or password.";
+    render(argv[1], "library_server_problem", &app, &status);
+    g_scan_problem = "";
+    card = app.browser;
+    app.browser = (Browser){0};
+    snprintf(app.browser.path, sizeof(app.browser.path), "%s", "sub:/");
+    snprintf(app.browser.problem, sizeof(app.browser.problem), "%s",
+             T("Navidrome's songs are in Artists, Albums and Songs: it has no folders here."));
+    app.library.stack[0].level = LIB_FOLDERS;
+    render(argv[1], "browse_server", &app, &status);
+    app.browser = card;
+    menuOpen(&app.menu, "KaiPlayer");  // With the network folder too, X goes on to the SD card.
+    app.menu.kind = MENU_KIND_MAIN;
+    menuAddDivider(&app.menu);
+    menuAdd(&app.menu, T("Update the library"), 0, 0);
+    menuAdd(&app.menu, T("Show the SD card's library"), 0, 0);
+    menuAdd(&app.menu, T("Settings"), 0, 0);
+    menuAdd(&app.menu, T("Exit KaiPlayer"), 0, 0);
+    app.menu.cursor = 1;
+    app.view = VIEW_HOME;
+    render(argv[1], "menu_server_source", &app, &status);
+    menuClose(&app.menu);
+    app.view = VIEW_BROWSER;
+    app.config.source = LIBRARY_CARD;
+    g_server = false;
     g_network = false;
 
     app.library.stack[0].level = LIB_FOLDERS;  // The rest of the scenes show Folders.

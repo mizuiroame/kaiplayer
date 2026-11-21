@@ -27,14 +27,21 @@ typedef enum {
     SETTING_NET_ACCOUNT,    // Types its user name and password.
     SETTING_NET_TEST,       // Tries it, and says what's at its top.
     SETTING_NET_FORGET,     // Removes its address, user and password.
+    SETTING_OPEN_SERVER,    // Opens the Navidrome server's page.
+    SETTING_SRV_ADDRESS,    // Types the server's address (subsonic.h).
+    SETTING_SRV_ACCOUNT,    // Types its user name and password, and signs in.
+    SETTING_SRV_TEST,       // Tries it, and says what it is.
+    SETTING_SRV_CERTIFICATE,// Whether an https server's certificate must be trusted.
+    SETTING_SRV_FORGET,     // Removes its address and sign-in.
     SETTING_COUNT,
 } SettingRow;
 
-// Settings opens on the main page; Library, Network folder, Playback and Display hold the rest.
+// Settings opens on the main page; Library, Network folder, Navidrome, Playback and Display hold the rest.
 typedef enum {
     SETTINGS_PAGE_MAIN,
     SETTINGS_PAGE_LIBRARY,
     SETTINGS_PAGE_NETWORK,
+    SETTINGS_PAGE_SERVER,
     SETTINGS_PAGE_PLAYBACK,
     SETTINGS_PAGE_DISPLAY,
     SETTINGS_PAGE_COUNT,

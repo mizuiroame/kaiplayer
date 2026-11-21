@@ -71,9 +71,14 @@ static void drawRoot(const App *app, const Catalog *c, size_t cursor)
         char detail[64] = "";
         if (i < 3 && c)
             snprintf(detail, sizeof(detail), "%zu", counts[i]);
-        else if (i == 3 && appLibraryIsNetwork(app)) {
+        else if (i == 3 && appLibrarySource(app) == LIBRARY_NETWORK) {
             char address[64], user[8];
             appNetworkShown(address, sizeof(address), user, sizeof(user));
+            snprintf(detail, sizeof(detail), "%.40s", address);
+        } else if (i == 3 && appLibrarySource(app) == LIBRARY_SERVER) {
+            char address[64], user[8];
+            bool check;
+            appServerShown(address, sizeof(address), user, sizeof(user), &check);
             snprintf(detail, sizeof(detail), "%.40s", address);
         } else if (i == 3)
             snprintf(detail, sizeof(detail), "%.28s", utilFileName(appMusicRoot(app)));
@@ -153,8 +158,8 @@ static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
             snprintf(scan, sizeof(scan), T("Updating library  %zu / %zu"), done, total);
         else
             snprintf(scan, sizeof(scan), "%s", T("Looking for music..."));
-    } else if (appLibraryIsNetwork(app)) {  // Why the network folder's couldn't be looked at.
-        catalogScanProblem(scan, sizeof(scan));
+    } else if (appLibraryIsRemote(app)) {  // Why the network folder's or the server's couldn't be looked at.
+        catalogScanProblem(appMusicRoot(app), scan, sizeof(scan));
         problem = scan[0] != '\0';
     }
     int scan_w = scan[0] ? fontTextWidth(FONT_REGULAR, TEXT_SMALL, scan) : 0;

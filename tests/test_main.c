@@ -358,6 +358,7 @@ int main(void)
     testKinetic();
     testLang();
     testDav();
+    testSubsonic();
     testKfile();
 
     printf("%d checks, %d failures\n", g_checks, g_failures);

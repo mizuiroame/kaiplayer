@@ -37,7 +37,7 @@ static void useNetwork(void)
     if (davConfigured() && !g_network) {
         g_network = netInit();
         if (g_network)
-            kfileSetRemote(davFileRemote());  // Network files can be read from now on.
+            kfileSetRemote(KFILE_REMOTE_FOLDER, davFileRemote());  // Network files can be read from now on.
     }
 }
 
@@ -47,8 +47,8 @@ void appNetworkStart(App *app)
     accountPath(path, sizeof(path));
     davLoadAccount(path);
     useNetwork();
-    if (app->config.use_network && !davConfigured())
-        app->config.use_network = false;  // Forgotten: the card's.
+    if (app->config.source == LIBRARY_NETWORK && !davConfigured())
+        app->config.source = LIBRARY_CARD;  // Forgotten: the card's.
 }
 
 bool appNetworkReady(void)
@@ -87,7 +87,7 @@ static void save(App *app, const DavAccount *a)
     if (!davSaveAccount(path))
         appToast(app, T("It couldn't be written to the card."));
     useNetwork();
-    appLibraryNetworkChanged(app, moved);
+    appLibraryRemoteChanged(app, LIBRARY_NETWORK, moved);
 }
 
 static void typeAddress(App *app)
@@ -233,7 +233,7 @@ void appNetworkUpdate(App *app)
 void appNetworkExit(void)
 {
     joinTest(true);
-    kfileSetRemote(NULL);
+    kfileSetRemote(KFILE_REMOTE_FOLDER, NULL);
     smbForget();
     davFileForget();
     if (g_network)

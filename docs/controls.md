@@ -34,9 +34,10 @@ If a song has played for more than 3 seconds, **L** restarts it. Otherwise
 
 On Home, use the D-pad or the left stick to move between cards and sections,
 **A** to open one, **X** to play it and **Y** to shuffle it. See
-[Home](library.md#home). With a [network folder](network-folder.md) set up,
-**X** on Home and on Library's first page switches the library between the
-SD card and the network folder instead (the pill at the top shows the **X**).
+[Home](library.md#home). With a [network folder](network-folder.md) or a
+[Navidrome server](navidrome.md) set up, **X** on Home and on Library's first
+page switches the library to the next one instead: SD card, network folder,
+Navidrome (the pill at the top shows the **X**).
 
 ## The player bar
 

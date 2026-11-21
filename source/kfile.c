@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "blockcache.h"
+#include "subsonic.h"
 
 // A song playing: blocks of 256 KB, 4 MB read ahead (about 30 s of FLAC),
 // some kept behind for a short seek back.
@@ -26,7 +27,7 @@
 #define NS_PER_S 1000000000L
 
 static size_t g_stream_block = STREAM_BLOCK, g_peek_block = PEEK_BLOCK;
-static const KFileRemote *g_remote;
+static const KFileRemote *g_remotes[KFILE_REMOTE_COUNT];
 static unsigned g_stream_interrupts;  // Streams opened before the last interrupt give up.
 
 typedef struct {
@@ -57,19 +58,24 @@ struct KFile {
     bool failed;
 };
 
-void kfileSetRemote(const KFileRemote *remote)
+void kfileSetRemote(KFileRemoteKind kind, const KFileRemote *remote)
 {
-    __atomic_store_n(&g_remote, remote, __ATOMIC_RELEASE);
+    if (kind >= 0 && kind < KFILE_REMOTE_COUNT)
+        __atomic_store_n(&g_remotes[kind], remote, __ATOMIC_RELEASE);
 }
 
-static const KFileRemote *remoteOps(void)
+// What reads a location: the network folder's ("dav:/") or the server's ("sub:/"). NULL for neither.
+static const KFileRemote *remoteOps(const char *location)
 {
-    return __atomic_load_n(&g_remote, __ATOMIC_ACQUIRE);
+    KFileRemoteKind kind = davIsLocation(location) ? KFILE_REMOTE_FOLDER
+                         : subIsLocation(location) ? KFILE_REMOTE_SERVER
+                                                   : KFILE_REMOTE_COUNT;
+    return kind == KFILE_REMOTE_COUNT ? NULL : __atomic_load_n(&g_remotes[kind], __ATOMIC_ACQUIRE);
 }
 
 bool kfileIsRemote(const char *path)
 {
-    return davIsLocation(path);
+    return davIsLocation(path) || subIsLocation(path);
 }
 
 void kfileSetBlockSizes(size_t stream, size_t peek)
@@ -249,7 +255,7 @@ static bool startStream(Remote *r)
 
 static Remote *remoteOpen(const char *location, KFileMode mode)
 {
-    const KFileRemote *ops = remoteOps();
+    const KFileRemote *ops = remoteOps(location);
     Remote *r = ops ? calloc(1, sizeof(*r)) : NULL;
     if (!r)
         return NULL;
@@ -425,7 +431,7 @@ static uint8_t *readAllLocal(const char *path, size_t max, size_t *size)
 
 static uint8_t *readAllRemote(const char *path, size_t max, size_t *size, bool *failed)
 {
-    const KFileRemote *ops = remoteOps();
+    const KFileRemote *ops = remoteOps(path);
     int64_t total = -1;
     void *file = ops ? ops->open(path, false, &total) : NULL;
     if (!file) {
@@ -455,7 +461,7 @@ uint8_t *kfileReadAll(const char *path, size_t max, size_t *size, bool *failed)
 
 bool kfileList(const char *location, DavEntry **out, size_t *count, char *why, size_t why_size)
 {
-    const KFileRemote *ops = remoteOps();
+    const KFileRemote *ops = remoteOps(location);
     *out = NULL;
     *count = 0;
     if (!ops || !ops->list) {

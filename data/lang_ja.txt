@@ -762,3 +762,96 @@ SDカードのライブラリーを表示
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 開く  [X] SDカード / ネットワーク  [Y] シャッフル  [LS] 移動  [RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+ The connection isn't encrypted: use https outside your home.
+ 接続は暗号化されていません。自宅の外では https を使ってください。
+
+%s %s answers. Signed in as %s.%s
+%s %sが応答しました。%sとしてログインしています。%s
+
+%s %s answers. Signed in as %s: %ld songs.%s
+%s %sが応答しました。%sとしてログイン: %ld曲。%s
+
+%s server, like 192.168.0.10:4533
+%sサーバー（例: 192.168.0.10:4533）
+
+A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
+Navidromeサーバー、またはSubsonic APIに対応したサーバー。ライブラリーでXを押すとその音楽に切り替わります。
+
+Forget this server
+このサーバーの登録を解除
+
+Library: Navidrome
+ライブラリー: Navidrome
+
+Navidrome
+Navidrome
+
+Navidrome's songs are in Artists, Albums and Songs: it has no folders here.
+Navidromeの曲は「アーティスト」「アルバム」「曲」にあります。ここにはフォルダーはありません。
+
+Nothing answered at that address and port. Is the server on, and is the port right (usually 4533)?
+そのアドレスとポートから応答がありません。サーバーは起動していますか？ポートは正しいですか（通常は4533）？
+
+Server set: now enter your user name and password.
+サーバーを設定しました。次にユーザー名とパスワードを入力してください。
+
+Server set: test the connection, then press X in Library to play from it.
+サーバーを設定しました。接続をテストしてから、ライブラリーでXを押すとそこから再生できます。
+
+Show Navidrome's library
+Navidromeのライブラリーを表示
+
+Sign in to the Navidrome server in Settings first.
+先に「設定」でNavidromeサーバーにログインしてください。
+
+That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533).
+そのアドレスは応答しましたが、NavidromeまたはSubsonicサーバーではありません。ポートを確認してください（通常は4533）。
+
+The Navidrome server is forgotten.
+Navidromeサーバーの登録を解除しました。
+
+The Navidrome server's library couldn't be read.
+Navidromeサーバーのライブラリーを読み込めませんでした。
+
+The server doesn't let this user do that.
+サーバーはこのユーザーにその操作を許可していません。
+
+The server said: %.100s
+サーバーの応答: %.100s
+
+There isn't enough memory for the whole library.
+ライブラリー全体を読み込むにはメモリーが足りません。
+
+This server doesn't take KaiPlayer's way of signing in (a token).
+このサーバーはKaiPlayerのログイン方式（トークン）に対応していません。
+
+This server's version of the Subsonic API is too old for KaiPlayer.
+このサーバーのSubsonic APIのバージョンはKaiPlayerには古すぎます。
+
+%s user name
+%sのユーザー名
+
+Certificate check
+証明書の確認
+
+Enter the server's address first.
+先にサーバーのアドレスを入力してください。
+
+Not signed in
+未ログイン
+
+Off: any certificate
+オフ：どの証明書も許可
+
+Server
+サーバー
+
+That isn't a server's address.
+サーバーのアドレスではありません。
+
+That port may want a secure connection: write https:// before the address.
+そのポートは安全な接続が必要かもしれません。アドレスの前に https:// を付けてください。
+
+The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
+サーバーの証明書は信頼されていません。サーバーが独自の証明書を使っている場合は、「証明書の確認」をオフにしてください。

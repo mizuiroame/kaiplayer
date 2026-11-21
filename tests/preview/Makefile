@@ -6,7 +6,7 @@ OUT     := build
 CFLAGS  := -std=gnu11 -O1 -g -Wall -Wextra -I$(SRC) -I../../third_party -I$(OUT)
 UI_SRC  := gfx.c audioformat.c font.c ui.c ui_now.c ui_nowstyle.c ui_cassette.c background.c ui_common.c ui_list.c ui_playlists.c ui_overlay.c ui_buttons.c ui_library.c library_tab.c catalog.c ui_home.c home.c history.c \
            keyboard.c menu.c settings.c ui_hit.c theme.c eq.c util.c cover.c image_impl.c lang.c \
-           browser.c kfile.c blockcache.c dav.c
+           browser.c kfile.c blockcache.c dav.c md5.c json.c subsonic.c
 
 .PHONY: run clean
 

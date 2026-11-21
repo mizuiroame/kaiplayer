@@ -166,7 +166,7 @@ static NetProblem problemOf(CURLcode rc, long status)
 static void setOptions(CURL *curl, const NetRequest *r, struct curl_slist *headers, Transfer *t, char *error)
 {
     curl_easy_reset(curl);  // Keeps the connection.
-    if (!__atomic_load_n(&g_check_certificates, __ATOMIC_RELAXED)) {
+    if (r->any_certificate || !__atomic_load_n(&g_check_certificates, __ATOMIC_RELAXED)) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }

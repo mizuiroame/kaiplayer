@@ -16,10 +16,18 @@ typedef enum {
     RESUME_MODE_COUNT,
 } ResumeMode;
 
+// Where the library comes from.
+typedef enum {
+    LIBRARY_CARD,     // The music folder on the card.
+    LIBRARY_NETWORK,  // The network folder (dav.h).
+    LIBRARY_SERVER,   // The Navidrome server (subsonic.h).
+    LIBRARY_SOURCE_COUNT,
+} LibrarySource;
+
 typedef struct {
     char folder[UTIL_PATH_MAX];  // Last folder browsed.
     char library[UTIL_PATH_MAX]; // The music folder; empty until chosen.
-    bool use_network;            // The library is the network folder's (dav.h), not the card's.
+    LibrarySource source;        // Where the library shown comes from.
     bool playlists_moved;        // The old sdmc:/playlists were copied into it.
     bool shuffle;
     RepeatMode repeat;

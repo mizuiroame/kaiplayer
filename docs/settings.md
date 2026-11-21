@@ -2,8 +2,8 @@
 
 [Back to the README](../README.md)
 
-Open **+ → Settings**. It opens on five rows: **Library**, **Network
-folder**, **Playback**, **Display** and **About**.
+Open **+ → Settings**. It opens on six rows: **Library**, **Network
+folder**, **Navidrome**, **Playback**, **Display** and **About**.
 
 - **A** or **→** opens a page.
 - **B** (or the **Back** button) goes back, and **B** on the first page
@@ -18,6 +18,11 @@ folder**, **Playback**, **Display** and **About**.
 | Network folder | User and password | **A** types them; empty for the folder's guest access |
 | Network folder | Test the connection | **A** tries it, and says what's at its top or what went wrong |
 | Network folder | Forget this folder | **A** removes the address, user and password |
+| Navidrome | Server | `192.168.0.10:4533` or an `https://` address; **A** types it. See [Navidrome](navidrome.md) |
+| Navidrome | User and password | **A** types them and signs in (only a token is kept) |
+| Navidrome | Test the connection | **A** tries it, and says which server answered and how many songs it has, or what went wrong |
+| Navidrome | Certificate check | On (default), or Off for an `https://` server with its own certificate |
+| Navidrome | Forget this server | **A** removes the address and the sign-in |
 | Playback | Sleep timer | Off, or any number of minutes up to 600 |
 | Playback | Resume where you left off | Keep playing (default), Paused or Off |
 | Playback | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |

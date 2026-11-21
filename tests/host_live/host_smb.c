@@ -205,7 +205,7 @@ int main(void)
     if (!address || !user || !pass || !g_music || !netInit())
         return 2;
     use(address, user, pass);
-    kfileSetRemote(davFileRemote());
+    kfileSetRemote(KFILE_REMOTE_FOLDER, davFileRemote());
     char text[256];
     EXPECT(davTest(text, sizeof(text)), "test: %s", text);
     printf("test: %s\n", text);
@@ -242,7 +242,7 @@ int main(void)
     use(smb ? "\\\\127.0.0.1:1\\Music" : "http://127.0.0.1:1/", user, pass);
     EXPECT(!davTest(text, sizeof(text)), "nobody there answered");
     printf("nobody there: %s\n", text);
-    kfileSetRemote(NULL);
+    kfileSetRemote(KFILE_REMOTE_FOLDER, NULL);
     smbForget();
     davFileForget();
     netExit();

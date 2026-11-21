@@ -34,3 +34,4 @@ void testKinetic(void);
 void testLang(void);
 void testKfile(void);
 void testDav(void);
+void testSubsonic(void);
