@@ -192,8 +192,11 @@ void appUpdateLibrary(App *app);
 // The library from the network folder (its top is the music folder: "dav:/"), or from the card's music folder.
 void appSetLibrarySource(App *app, bool network);
 bool appLibraryIsNetwork(const App *app);
-// The network folder's account changed (moved: its address): its library is looked for again, or, gone, the card's shows.
+// The network folder's account changed (moved: its address): its library is read again (in the background
+// while the card's is shown), or, gone, what was found of it is forgotten and the card's shows.
 void appLibraryNetworkChanged(App *app, bool moved);
+// The header's pill of the network folder's scan: its library, shown.
+void appNetworkScanTapped(App *app);
 // Lists the music folder's top for the Folders page, unless it's already in it.
 void appOpenFolders(App *app);
 // Points playlists at the music folder's Playlists folder, copying the ones

@@ -753,3 +753,9 @@ User name (empty: none; DOMAIN\user for a domain)
 
 Wrong user name or password.
 用户名或密码错误。
+
+Show the network folder's library
+显示网络文件夹的媒体库
+
+Show the SD card's library
+显示SD卡的媒体库

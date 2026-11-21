@@ -30,13 +30,19 @@ In **Settings > Network folder**:
 3. **Test the connection**: it says how many folders and songs are at the
    top, or what went wrong.
 
-Then, in **Library**, press **X** (or tap the pill next to "Library") to
-switch the library between the **SD card** and the **network folder**. The
-pill shows which one it is: the network folder's has a turquoise dot.
+Then the pill next to KaiPlayer's name, at the top of every tab, says which
+library is shown: **SD card**, or **Network folder** with a turquoise dot.
+Tap it to switch, or press **X** on Library's first page, or choose **+ →
+Show the network folder's library** (**Show the SD card's library** to go
+back).
 
 - **Artists, Albums and Songs** come from the songs' tags, read over the
-  network the first time and kept on the card: the next times, the library
-  shows at once and only new or changed songs are read again.
+  network and kept on the card. KaiPlayer starts reading them as soon as the
+  folder is set up, in the background, even while the card's library is
+  shown, and looks for changes each time it starts. A pill at the top right
+  shows the songs read so far (`1234 / 1602`); tap it to see that library.
+  After the first time, only new or changed songs are read again, and the
+  library shows at once.
 - **Folders** browses the network folder, folder by folder.
 - **X** again goes back to the card's music folder. Each keeps its own
   library.

@@ -753,3 +753,9 @@ User name (empty: none; DOMAIN\user for a domain)
 
 Wrong user name or password.
 ユーザー名またはパスワードが違います。
+
+Show the network folder's library
+ネットワークフォルダーのライブラリーを表示
+
+Show the SD card's library
+SDカードのライブラリーを表示

@@ -124,6 +124,7 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
         break;
     case HIT_ADD: addFromRow(app, r->arg); break;
     case HIT_SOURCE: appSetLibrarySource(app, !appLibraryIsNetwork(app)); break;
+    case HIT_NETWORK_SCAN: appNetworkScanTapped(app); break;
     case HIT_LIST:
     case HIT_PANEL: break;
     }

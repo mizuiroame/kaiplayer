@@ -753,3 +753,9 @@ Usuário (vazio: nenhum; DOMÍNIO\usuário para um domínio)
 
 Wrong user name or password.
 Usuário ou senha incorretos.
+
+Show the network folder's library
+Mostrar a biblioteca da pasta de rede
+
+Show the SD card's library
+Mostrar a biblioteca do cartão SD

@@ -34,6 +34,7 @@ typedef enum {
     HIT_OVERLAY_BACK,  // Like B in an overlay: a Settings page's Back.
     HIT_PANEL,         // An overlay's panel: a tap on it does nothing (not the backdrop's close).
     HIT_SOURCE,        // Library's source: the card's music, or the network folder's.
+    HIT_NETWORK_SCAN,  // The network folder's library being read: shows it.
 } HitKind;
 
 typedef struct {

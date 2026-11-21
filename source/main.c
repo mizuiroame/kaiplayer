@@ -382,6 +382,8 @@ int main(int argc, char **argv)
     appLoadHistory(&app);
     if (app.config.library[0] || appLibraryIsNetwork(&app))
         catalogScanStart(appMusicRoot(&app));
+    if (appNetworkReady() && !appLibraryIsNetwork(&app))
+        catalogScanRefreshNetwork(false);  // In the background, after the card's: quick when nothing changed.
     sysinfoInit();
     screenInit();
     app.audio_ok = playerInit(app.config.shuffle, app.config.repeat);

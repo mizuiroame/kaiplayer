@@ -31,6 +31,7 @@ typedef enum {
     ACT_MOVE_SONG,
     ACT_REMOVE_SONG,    // Asks to confirm.
     ACT_REMOVE_CONFIRMED,
+    ACT_SOURCE,         // The library from the other source: the card's or the network folder's.
 } MenuAction;
 
 // The playlist the menu acts on: the open one, or the selected one.
@@ -80,6 +81,9 @@ void appOpenMenu(App *app)
     menuAddDivider(&app->menu);
     if (app->config.library[0] || appLibraryIsNetwork(app))
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
+    if (appNetworkReady() || appLibraryIsNetwork(app))  // Where X goes in Library, from anywhere.
+        menuAdd(&app->menu, appLibraryIsNetwork(app) ? T("Show the SD card's library")
+                                                     : T("Show the network folder's library"), ACT_SOURCE, 0);
     if (status.state == PLAYER_PLAYING)
         menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), ACT_SCREEN_OFF, 0);
     menuAdd(&app->menu, T("Settings"), ACT_SETTINGS, 0);
@@ -298,6 +302,10 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_SETTINGS: appOpenSettings(app); break;
     case ACT_SCREEN_OFF: appScreenOff(app); break;
     case ACT_RESCAN: appUpdateLibrary(app); break;
+    case ACT_SOURCE:
+        appSetLibrarySource(app, !appLibraryIsNetwork(app));
+        appSetView(app, VIEW_BROWSER);  // Shown: Library, on its first page.
+        break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
             addPendingTo(app, app->playlists.index.names[item->arg]);

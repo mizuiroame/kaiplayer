@@ -67,12 +67,14 @@ void appSetLibrarySource(App *app, bool network)
 
 void appLibraryNetworkChanged(App *app, bool moved)
 {
-    if (moved)
-        catalogScanDropCache(DAV_ROOT);  // What was found belonged to the old address.
-    if (!app->config.use_network)
-        return;
-    if (!appNetworkReady()) {  // Forgotten: the card's.
+    if (!appNetworkReady()) {  // Forgotten: what was found of it goes, and the card's library shows.
+        catalogScanForgetNetwork();
         appSetLibrarySource(app, false);
+        return;
+    }
+    if (!app->config.use_network) {
+        // Read now, in the background (a new address forgets the old one's): shown at once when chosen.
+        catalogScanRefreshNetwork(moved);
         return;
     }
     app->library.depth = 0;
@@ -81,6 +83,13 @@ void appLibraryNetworkChanged(App *app, bool moved)
         catalogScanStartFresh(DAV_ROOT);
     else
         catalogScanStart(DAV_ROOT);  // Another user: look again.
+}
+
+void appNetworkScanTapped(App *app)
+{
+    appSetLibrarySource(app, true);
+    if (appLibraryIsNetwork(app))
+        appSetView(app, VIEW_BROWSER);
 }
 
 size_t appPickerFolderCount(const App *app)

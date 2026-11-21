@@ -753,3 +753,9 @@ User name (empty: none; DOMAIN\user for a domain)
 
 Wrong user name or password.
 사용자 이름 또는 비밀번호가 올바르지 않습니다.
+
+Show the network folder's library
+네트워크 폴더의 라이브러리 보기
+
+Show the SD card's library
+SD 카드의 라이브러리 보기

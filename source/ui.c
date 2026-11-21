@@ -11,6 +11,7 @@
 #include "ui_buttons.h"
 #include "ui_list.h"
 #include "screen.h"
+#include "catalog_scan.h"
 #include "covercache.h"
 #include "lang.h"
 #include "theme.h"
@@ -146,9 +147,18 @@ static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_n
 
 #define TAB_TEXT_MIDDLE 28.5f  // Middle of the tab names' capitals.
 #define HINT_GAP 14
+#define HEADER_PILL_Y 14
+#define HEADER_PILL_H 30
+#define HEADER_GAP 16
+#define SOURCE_DOT 10
+#define SCAN_RING_R 8
+#define RING_TURN 6.2832f
+#define RING_TOP (-1.5708f)  // Rings start at the top.
+#define SPIN_NS 1000000000ull  // A turn of the spinner.
 
-// The tabs, centered, between the ZL and ZR hints.
-static void drawTabs(const App *app)
+// The tabs, centered between the ZL and ZR hints, and kept between left and
+// right (the header's pills) when the screen's middle would put them over one.
+static void drawTabs(const App *app, int left, int right)
 {
     int widths[VIEW_COUNT], total = 0;
     for (int i = 0; i < VIEW_COUNT; i++) {
@@ -156,6 +166,10 @@ static void drawTabs(const App *app)
         total += widths[i] + (i > 0 ? TAB_GAP : 0);
     }
     int x = (GFX_WIDTH - total) / 2;
+    int last = right - HEADER_GAP - HINT_GAP - uiButtonWidth("ZR") - total;  // The ZR hint's end at right.
+    int first = left + HEADER_GAP + HINT_GAP + uiButtonWidth("ZL");          // The ZL hint's start at left.
+    x = x > last ? last : x;
+    x = x < first ? first : x;
     uiDrawButton(x - HINT_GAP - uiButtonWidth("ZL"), TAB_TEXT_MIDDLE, "ZL", COLOR_SURFACE_HI, COLOR_DIM);
     for (int i = 0; i < VIEW_COUNT; i++) {
         bool active = (int)app->view == i;
@@ -188,8 +202,8 @@ static void drawBattery(int x, int y, int percent, bool charging)
     }
 }
 
-// Clock, battery and the sleep timer in the top right corner.
-static void drawStatus(const App *app, uint64_t now_ns)
+// Clock, battery and the sleep timer in the top right corner. Where they begin.
+static int drawStatus(const App *app, uint64_t now_ns)
 {
     const SysInfo *sys = &app->sys;
     int x = GFX_WIDTH - MARGIN;
@@ -216,6 +230,52 @@ static void drawStatus(const App *app, uint64_t now_ns)
         x -= fontTextWidth(FONT_BOLD, 16, sleep);
         fontDraw(FONT_BOLD, 16, x, 20, sleep, COLOR_ACCENT);
     }
+    return x;
+}
+
+// Where the library comes from, after the title, once there's a network
+// folder: "SD card", or "Network folder" with its turquoise dot. A tap
+// switches (X does on Library's first page, the + menu everywhere). Its right end.
+static int drawSourcePill(const App *app, int x)
+{
+    bool network = appLibraryIsNetwork(app);
+    const char *label = network ? T("Network folder") : T("SD card");
+    int w = 12 + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
+    float cy = HEADER_PILL_Y + HEADER_PILL_H / 2.0f;
+    gfxFillRoundRect(x, HEADER_PILL_Y, w, HEADER_PILL_H, HEADER_PILL_H / 2, COLOR_SURFACE_HI);
+    gfxFillRoundRect(x + 12, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
+                     network ? COLOR_NETWORK : COLOR_ACCENT);
+    fontDrawMiddle(FONT_BOLD, 16, x + 12 + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
+    uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
+    return x + w;
+}
+
+// While the network folder's library is read, shown or not: a ring of the
+// songs read ("312 / 1602"), or a spinner while its folders are listed. A tap
+// shows that library. Where it begins (right if there's no scan).
+static int drawNetworkScanPill(int right, uint64_t now_ns)
+{
+    size_t done, total;
+    if (!catalogScanNetworkProgress(&done, &total))
+        return right;
+    char label[48];
+    snprintf(label, sizeof(label), total ? "%zu / %zu" : "...", done, total);
+    int w = 12 + 2 * SCAN_RING_R + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
+    int x = right - w;
+    float cx = (float)(x + 12 + SCAN_RING_R), cy = HEADER_PILL_Y + HEADER_PILL_H / 2.0f;
+    gfxFillRoundRect(x, HEADER_PILL_Y, w, HEADER_PILL_H, HEADER_PILL_H / 2, COLOR_SURFACE_HI);
+    gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, 0, RING_TURN, COLOR_FAINT);
+    if (total) {
+        float part = (float)done / (float)total;
+        if (part > 0)
+            gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, RING_TOP, RING_TOP + RING_TURN * part, COLOR_NETWORK);
+    } else {
+        float start = RING_TOP + RING_TURN * (float)(now_ns % SPIN_NS) / (float)SPIN_NS;
+        gfxArc(cx, cy, SCAN_RING_R - 1.5f, 2.5f, start, start + RING_TURN / 4, COLOR_NETWORK);
+    }
+    fontDrawMiddle(FONT_BOLD, 16, x + 12 + 2 * SCAN_RING_R + 8, cy, label, COLOR_TEXT);
+    uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_NETWORK_SCAN, 0);
+    return x;
 }
 
 // Three bars before the title: the touch way into the + menu.
@@ -230,8 +290,12 @@ static void drawHeader(const App *app, uint64_t now_ns)
     drawMenuButton();
     int title_w = fontDraw(FONT_BOLD, 26, MARGIN + 36, 16, "KaiPlayer", COLOR_ACCENT);
     uiHitAdd(0, 0, MARGIN + 36 + title_w + 12, HEADER_H, HIT_MENU_BUTTON, 0);
-    drawTabs(app);
-    drawStatus(app, now_ns);
+    int left = MARGIN + 36 + title_w;
+    if (appNetworkReady() || appLibraryIsNetwork(app))
+        left = drawSourcePill(app, left + HEADER_GAP);
+    int right = drawStatus(app, now_ns);
+    right = drawNetworkScanPill(right - HEADER_GAP, now_ns);
+    drawTabs(app, left, right);
 }
 
 #define BAR_CONTROL_GAP 76

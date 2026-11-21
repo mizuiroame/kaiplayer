@@ -121,6 +121,15 @@ bool catalogScanProgress(size_t *done, size_t *total)
 // The network folder (app_network.c, kfile.c): set up in the scenes that show it.
 static bool g_network;
 static const char *g_scan_problem = "";
+static bool g_net_scan;          // The network folder's library being read,
+static size_t g_net_scan_total;  // of these songs (0: its folders are still listed).
+
+bool catalogScanNetworkProgress(size_t *done, size_t *total)
+{
+    *done = g_net_scan_total ? 1234 : 0;
+    *total = g_net_scan_total;
+    return g_net_scan;
+}
 #define PREVIEW_ADDRESS "smb://192.168.0.168:4451/Music"
 
 void catalogScanProblem(char *out, size_t size)
@@ -537,6 +546,31 @@ int main(int argc, char **argv)
     render(argv[1], "library_album", &app, &status);
     // The network folder as the library: its source in Library, its Folders, and what went wrong.
     g_network = true;
+    app.view = VIEW_HOME;  // The source in the header, and the network folder read in the background.
+    render(argv[1], "home_network_source", &app, &status);
+    g_net_scan = true;
+    g_net_scan_total = 1602;
+    render(argv[1], "home_network_scan", &app, &status);
+    g_net_scan_total = 0;
+    app.view = VIEW_NOW_PLAYING;
+    render(argv[1], "now_playing_network_listing", &app, &status);
+    app.sleep_deadline_ns = 24ull * 60000000000ull;  // Everything in the header at once.
+    g_net_scan_total = 1602;
+    render(argv[1], "now_playing_header_full", &app, &status);
+    app.sleep_deadline_ns = 0;
+    g_net_scan = false;
+    menuOpen(&app.menu, "KaiPlayer");  // The + menu's way to the other library.
+    app.menu.kind = MENU_KIND_MAIN;
+    menuAddDivider(&app.menu);
+    menuAdd(&app.menu, T("Update the library"), 0, 0);
+    menuAdd(&app.menu, T("Show the network folder's library"), 0, 0);
+    menuAdd(&app.menu, T("Turn screen off (music keeps playing)"), 0, 0);
+    menuAdd(&app.menu, T("Settings"), 0, 0);
+    menuAdd(&app.menu, T("Exit KaiPlayer"), 0, 0);
+    app.menu.cursor = 1;
+    render(argv[1], "menu_network_source", &app, &status);
+    menuClose(&app.menu);
+    app.view = VIEW_BROWSER;
     app.library.depth = 1;
     app.library.stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = 3};
     render(argv[1], "library_source_card", &app, &status);

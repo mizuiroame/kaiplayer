@@ -8,8 +8,9 @@ it. You choose the folder the first time you open KaiPlayer, and can change it
 in **+ → Settings → Library → Music folder**.
 
 The library can also come from a [network folder](network-folder.md): with
-one set up, **X** on Library's first page (or a tap on the pill next to
-"Library") switches between the **SD card** and the **network folder**.
+one set up, the pill next to KaiPlayer's name says which is shown; a tap on
+it, **X** on Library's first page, or **+ → Show the ... library** switches
+between the **SD card** and the **network folder**.
 
 ## Home
 

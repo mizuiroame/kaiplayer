@@ -16,8 +16,6 @@
 #define ICON_SIZE 30
 #define COLUMN_X 760
 #define COLOR_ARTIST GFX_RGB(0xC3, 0x9B, 0xFF)
-#define SOURCE_DOT 10
-#define SOURCE_PILL_H 30
 
 // An artist: their latest album's cover in a circle, or a person icon.
 static void drawArtistIcon(int x, int y, const char *song_path)
@@ -123,25 +121,6 @@ static void drawSongRow(const App *app, const Catalog *c, size_t song, size_t ro
     uiDrawTrackRow(&r);
 }
 
-// Where the library comes from, after its title: [X] and a dot of its color. Its right end.
-static int drawSource(const App *app, int x)
-{
-    bool network = appLibraryIsNetwork(app);
-    const char *label = network ? T("Network folder") : T("SD card");
-    int key_w = uiButtonWidth("X");
-    int w = 8 + key_w + 8 + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, TEXT_SMALL, label) + 14;
-    int y = SUBTITLE_Y - 6;
-    float cy = (float)y + SOURCE_PILL_H / 2.0f;
-    gfxFillRoundRect(x, y, w, SOURCE_PILL_H, SOURCE_PILL_H / 2, COLOR_SURFACE_HI);
-    uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
-    int dot_x = x + 16 + key_w;
-    gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
-                     network ? COLOR_NETWORK : COLOR_ACCENT);
-    fontDrawMiddle(FONT_BOLD, TEXT_SMALL, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
-    uiHitAdd(x - 4, y - 6, w + 8, SOURCE_PILL_H + 12, HIT_SOURCE, 0);
-    return x + w;
-}
-
 // The line under the tabs: where we are, and what the scan is doing.
 static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
 {
@@ -180,13 +159,7 @@ static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
     }
     int scan_w = scan[0] ? fontTextWidth(FONT_REGULAR, TEXT_SMALL, scan) : 0;
     scan_w = scan_w > GFX_WIDTH / 2 ? GFX_WIDTH / 2 : scan_w;
-    if (p->level == LIB_ROOT && (appNetworkReady() || appLibraryIsNetwork(app))) {
-        int title_w = fontTextWidth(FONT_BOLD, TEXT_SMALL, line);
-        fontDraw(FONT_BOLD, TEXT_SMALL, x, SUBTITLE_Y, line, COLOR_DIM);
-        drawSource(app, x + title_w + 16);
-    } else {
-        fontDrawClipped(FONT_BOLD, TEXT_SMALL, x, SUBTITLE_Y, GFX_WIDTH - MARGIN - x - scan_w - 24, line, COLOR_DIM);
-    }
+    fontDrawClipped(FONT_BOLD, TEXT_SMALL, x, SUBTITLE_Y, GFX_WIDTH - MARGIN - x - scan_w - 24, line, COLOR_DIM);
     if (scan[0])
         fontDrawClipped(FONT_REGULAR, TEXT_SMALL, GFX_WIDTH - MARGIN - scan_w, SUBTITLE_Y, scan_w, scan,
                         problem ? COLOR_ERROR : COLOR_ACCENT);
