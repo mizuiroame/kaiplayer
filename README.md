@@ -3,794 +3,99 @@
 An **open-source homebrew music player** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen). Pick a folder on your microSD
 card and KaiPlayer builds a library of your artists, albums and songs from
-their tags.
+their tags. It plays MP3, FLAC, Ogg Vorbis, WAV and DSD, with nothing else to
+install.
 
-![Home](docs/screenshots/home.png)
+| Home | Library | Playlists |
+|------|---------|-----------|
+| ![Home](docs/screenshots/home.png) | ![Library](docs/screenshots/library.png) | ![Playlists](docs/screenshots/playlists.png) |
 
-| Now Playing | Library | Queue |
-|-------------|---------|-------|
-| ![Now Playing](docs/screenshots/now_playing.png) | ![Library](docs/screenshots/library.png) | ![Queue](docs/screenshots/queue.png) |
-
-Now Playing can also show the song on a turning **record**, a **CD** or a
-**cassette**, and every view can have a **picture of yours** behind it:
+| Queue | Now Playing | A background picture |
+|-------|-------------|----------------------|
+| ![Queue](docs/screenshots/queue.png) | ![Now Playing](docs/screenshots/now_playing.png) | ![A background picture behind Now Playing](docs/screenshots/background.png) |
 
 | Vinyl record | CD | Cassette |
 |--------------|----|----------|
-| ![Vinyl record](docs/screenshots/now_playing_vinyl.png) | ![CD](docs/screenshots/now_playing_cd.png) | ![Cassette](docs/screenshots/now_playing_cassette.png) |
+| ![Now Playing as a vinyl record](docs/screenshots/now_playing_vinyl.png) | ![Now Playing as a CD](docs/screenshots/now_playing_cd.png) | ![Now Playing as a cassette](docs/screenshots/now_playing_cassette.png) |
 
 > KaiPlayer is an independent project. It is not affiliated with, endorsed by
-> or sponsored by Nintendo. See the [Legal notice](#legal-notice).
+> or sponsored by Nintendo. See the [legal notice](docs/legal.md).
 
-- [For users: install the .nro](#for-users-install-the-nro)
-- [Supported audio formats](#supported-audio-formats)
-- [Controls](#controls)
-- [Touch screen](#touch-screen)
-- [Settings](#settings)
-- [Playlists](#playlists)
-- [Resume where you left off](#resume-where-you-left-off)
-- [Song details and album art](#song-details-and-album-art)
-- [File names and tags](#file-names-and-tags)
-- [Troubleshooting](#troubleshooting)
-- [For developers: build from source](#for-developers-build-from-source)
-- [Legal notice](#legal-notice)
-- [License](#license)
+## What it can do
 
----
+- **A library from your tags:** artists, albums, songs and folders. Home shows
+  your top artists, recent albums, playlists and artists, with their covers.
+  [More](docs/library.md)
+- **MP3, FLAC, Ogg Vorbis, WAV and DSD** (`.dsf`, `.dff`, converted to PCM),
+  at any sample rate. [More](docs/playback.md)
+- **Covers** embedded in the file, or a `cover.jpg` (or similar) in the
+  album's folder. [More](docs/library.md#song-details-and-album-art)
+- **Titles in any language** from the tags, including Japanese, Chinese and
+  Korean. [More](docs/file-names.md)
+- **Playlists** as standard `.m3u8` files in your music folder, with names in
+  any language. [More](docs/playlists.md)
+- **Queue, shuffle, repeat**, and it resumes where you left off.
+  [More](docs/playback.md#queue-shuffle-and-repeat)
+- **Now Playing as a cover, a turning record, a CD or a cassette**, and a
+  picture of yours behind every view. [More](docs/settings.md#now-playing-style)
+- **10-band equalizer, ReplayGain, sleep timer** and screen off while
+  playing. [More](docs/settings.md)
+- **Drawn with the GPU** at the screen's resolution: 1080p handheld, up to 4K
+  docked. [More](docs/playback.md#screen-and-resolution)
+- **Touch and buttons** for every control. Lists glide under your finger.
+  [Controls](docs/controls.md)
 
-## For users: install the .nro
+## Install
 
-You don't need to build anything. Everything is copied over Wi-Fi with
-OunceShell's FTP server, so the microSD card stays in the console.
+You need a Switch 2 with **kaiHEN** running (launch a game while holding
+**R** to open hbmenu), and OunceShell's FTP server with an FTP client such as
+[FileZilla](https://filezilla-project.org/) on a PC on the same Wi-Fi. The
+full steps are in [Installing](docs/install.md).
 
 > **Don't take the microSD card out while kaiHEN is running.** Removing it
 > means restarting the console, and kaiHEN has to be started again after
 > that.
 
-### Requirements
-
-- A Switch 2 with **kaiHEN** running. Launch a game while holding **R** to open
-  the homebrew menu (hbmenu).
-- **OunceShell**, which comes with kaiHEN.
-- A PC on the same Wi-Fi network as the console, with an FTP client such as
-  [FileZilla](https://filezilla-project.org/).
-
-### 1. Download
-
-Go to the repository's **[Releases](../../releases)** page and download
-`KaiPlayer.nro` from the latest release.
-
-### 2. Copy the .nro to the console
-
-1. In hbmenu, open **OunceShell** and start its FTP server. OunceShell shows
-   the console's IP address and port (for example `192.168.0.51`, port
-   `1337`).
-2. In FileZilla, enter that address as **Host** and that number as **Port**,
-   leave **Username** and **Password** empty, and click **Quickconnect**.
-3. In the remote pane (the console), open the `switch` folder (create it if
-   it doesn't exist) and make a `kaiplayer` folder inside it.
-4. Drag `KaiPlayer.nro` from your PC into `kaiplayer`. Its path on the card
-   is then `sdmc:/switch/kaiplayer/KaiPlayer.nro`. (Straight in `switch`
-   works too.)
-
-To update KaiPlayer later, upload the new `KaiPlayer.nro` the same way and
-let it replace the old one.
-
-### 3. Copy your music
-
-1. With the same FTP connection, create a folder for your music, for example
-   `Music`.
-2. Drag your album folders into it. Subfolders (artist, album and so on) are
-   fine.
+1. Download `KaiPlayer.nro` from the latest release on the
+   **[Releases](../../releases)** page.
+2. In hbmenu, open **OunceShell** and start its FTP server. It shows the
+   console's address and port.
+3. Connect to it from your PC, make a `kaiplayer` folder inside the `switch`
+   folder and copy `KaiPlayer.nro` into it, so it is
+   `sdmc:/switch/kaiplayer/KaiPlayer.nro`.
+4. Copy your music to a folder on the card, for example `Music`.
+5. Open hbmenu and select **KaiPlayer**. The first time, open your music
+   folder with **A** and press **X** to use it.
 
 > **Use plain letters (A–Z, no accents) in file and folder names.** On
-> Switch 2, a file or folder whose name has any character outside basic
-> ASCII (accents such as `á é ñ ü`, typographic quotes such as `’`, or
-> Japanese) is saved, but the console's file system doesn't show it: no app
-> can list it, KaiPlayer included. The easiest way around it is
+> Switch 2, names with accents (`á é ñ ü`), typographic quotes (`’`) or
+> Japanese are hidden by the console's file system, in every app. Upload with
 > [KaiDrop](https://github.com/mizuiroame/kaidrop) (work in progress), which
-> uploads your music over FTP with plain names on the console and leaves your
-> files untouched. Or rename the files before uploading, for example
-> `06 Canción.mp3` → `06 Cancion.mp3`. KaiPlayer still shows the song's real
-> title, artist and album, with accents or in Japanese, from its tags. See
-> [File names and tags](#file-names-and-tags).
-
-### 4. Play it
-
-1. Open hbmenu (launch a game while holding **R**) and select **KaiPlayer**.
-2. The first time, KaiPlayer asks where your music is: open your music
-   folder (for example `Music`) with **A** and press **X** to use it.
-   KaiPlayer only shows that folder and the ones inside it. You can change
-   it later in **+ → Settings → Music folder**.
-3. KaiPlayer reads your songs' tags in the background and builds your
-   library. Open **Library → Artists** or **Albums**, pick one and press
-   **X** to play it, or **A** on a song to start from there.
-
-KaiPlayer remembers the music folder and the shuffle and repeat modes in
-`settings.txt` in its folder (see below).
-
-### Where KaiPlayer keeps its files
-
-Settings, play history, the library catalog and where you left off are kept
-in a `config` folder next to `KaiPlayer.nro`, in its own folder:
-
-| Where `KaiPlayer.nro` is | Its files |
-|--------------------------|-----------|
-| `sdmc:/switch/KaiPlayer.nro` | `sdmc:/switch/kaiplayer/config/` |
-| `sdmc:/switch/kaiplayer/KaiPlayer.nro` | `sdmc:/switch/kaiplayer/config/` |
-| `sdmc:/brewstore/apps/kaiplayer/KaiPlayer.nro` | `sdmc:/brewstore/apps/kaiplayer/config/` |
-
-Before 1.0.0-rc2 they were in `sdmc:/config/kaiplayer`. The first time a newer
-KaiPlayer opens, it copies them over (and leaves that folder as it is, so you
-can delete it once everything is there). Your music, playlists and
-backgrounds stay where they are.
-
----
-
-## Supported audio formats
-
-The decoders are built into the `.nro`, so you don't need to install anything
-else.
-
-| Format         | Extensions     | Notes                                                 |
-|----------------|----------------|-------------------------------------------------------|
-| **MP3**        | `.mp3`         | CBR and VBR. The MP3 patents expired in 2017.         |
-| **FLAC**       | `.flac`        | Lossless, 8 to 32 bits.                               |
-| **Ogg Vorbis** | `.ogg`, `.oga` | Vorbis only. `.ogg` files that contain Opus don't play. |
-| **WAV**        | `.wav`         | PCM, IEEE float, A-law and µ-law.                     |
-| **DSD**        | `.dsf`, `.dff` | DSD64 to DSD512, converted to PCM. See [DSD](#dsd-dsf-dff). |
-
-- **Sample rates:** any sample rate works (44.1 kHz, 48 kHz, 96 kHz and so on).
-  KaiPlayer converts it to the console's 48 kHz.
-- **Channels:** mono is played on both channels. For files with more than two
-  channels, KaiPlayer plays the front left and front right channels.
-
-**Not supported yet:** Opus, AAC/M4A, ALAC, WMA and DRM-protected files. AAC
-and WMA won't be added, because they need paid licenses.
-
-### DSD (.dsf, .dff)
-
-KaiPlayer plays DSD files **by converting them to PCM as they play**. The
-console's audio output only takes PCM, so there is no native DSD and no DoP:
-what you hear is 48 kHz PCM, like every other format on the console.
-
-| | |
-|---|---|
-| **Plays** | `.dsf` (DSF) and `.dff` (DSDIFF), uncompressed |
-| **Rates** | DSD64, DSD128 and DSD256 (tested on the console); DSD512 also opens. Both the 44.1 kHz family (2.8, 5.6, 11.2 MHz) and the 48 kHz family (3.1, 6.1, 12.3 MHz) |
-| **Channels** | Stereo or mono; from multichannel files (up to 6 channels), the front left and right |
-| **Tags** | The ID3v2 tag of `.dsf` files (title, artist, album, cover, ReplayGain); `.dff` files only when they carry an `ID3 ` chunk |
-| **Doesn't play** | DST-compressed `.dff` (common in SACD rips: convert them to uncompressed DSF or DFF first), SACD `.iso` images, DSD in WavPack (`.wv`) |
-
-**How it's converted.** A low-pass filter removes what's above about 38 kHz
-(where DSD keeps its noise) and the 1-bit stream becomes 88.2 kHz PCM
-(96 kHz for the 48 kHz family), which then goes to 48 kHz like any other
-file. The decoder is KaiPlayer's own (`source/dsd.c`), written from the
-published DSF and DSDIFF format descriptions; it uses no third-party code.
-
-**Volume.** A SACD's full level is half of PCM's full scale, so DSD plays
-about **6 dB quieter** than a CD-level track. KaiPlayer leaves it that way so
-loud passages never clip. With ReplayGain on and tagged files, the levels
-usually even out.
-
----
-
-## Controls
-
-KaiPlayer has five tabs: **Home**, **Library**, **Playlists**, **Queue** and
-**Now Playing**. Press **ZL** / **ZR** to move between them. Starting a song keeps
-you where you are; open Now Playing with **ZR** or by tapping the player bar.
-
-| Button    | Library                      | Playlists                    | Queue                      | Now Playing                |
-|-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | — |
-| →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
-| A         | Open an artist, album or folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume |
-| B         | Back (up a page or a folder) | Back to the playlist list    | Back to Library            | Add the song to a playlist |
-| X         | Play the artist, album, list or folder | Play the playlist            | Shuffle on / off           | Shuffle on / off           |
-| Y         | Shuffle it                   | Shuffle the playlist         | Repeat: off / queue / song | Repeat: off / queue / song |
-
-In every tab:
-
-| Button  | Action |
-|---------|--------|
-| ZL / ZR | Previous / next tab |
-| L / R   | Previous / next track |
-| −       | Pause / resume |
-| RS ← →  | Rewind / fast-forward 10 s |
-| RS ↑ ↓  | Previous / next page of a list |
-| +       | Open the menu. Press **+** again to exit KaiPlayer: it asks you to confirm. |
-
-### Home
-
-**Home** is the first tab: four sections of up to four cards each, with
-their covers, all on one screen:
-
-| | |
-|---|---|
-| **Your top artists** (the ones you play most) | **Recent playlists** |
-| **Recent albums** | **Recent artists** |
-
-Before you have played anything, it shows albums from your library. Use the
-D-pad or the left stick to move between cards and sections, **A** to open one, **X** to play it and
-**Y** to shuffle it, or tap a card. A song counts as played after 30 seconds
-(half of a song shorter than a minute). The plays are kept in
-`history.txt` in KaiPlayer's folder; delete that file to start over.
-
-### Library
-
-**Library** organizes your music folder like a music app:
-
-- **Artists:** each artist's albums, newest last. **X** plays everything by
-  the artist.
-- **Albums:** every album, with its cover. Its songs go in track order.
-- **Songs:** every song by title.
-- **Folders:** the folders of your music folder, as they are on the card.
-
-Artists and albums come from the tags (album artist, artist, album, track
-and disc numbers, year), **not from the folder names**: a folder named
-`Miki Matsubara` whose songs are tagged 松原みき shows as **松原みき**. Songs
-without tags are grouped by folder, as `Artist/Album/song.mp3`. KaiPlayer keeps the library in
-`catalog.txt` in its folder so it shows at once next time, and
-updates it in the background, reading only new or changed files; the
-progress shows at the top right. **+ → Update the library now** checks the
-folder again after you add music.
-
-### The + menu
-
-**+** opens a menu with actions for the current tab:
-
-| Tab         | Menu items |
-|-------------|------------|
-| Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
-| Queue       | Save the whole queue as a playlist |
-| All         | Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
-
-Adding songs to a playlist isn't in the menu: use the add-to-playlist
-buttons, a list with a small plus (see
-[Playlists](#playlists)).
-
-Use ↑ ↓ and **A** to choose, and **B** to close the menu. To exit, press
-**+** twice and confirm with **A** (or press **+** a third time).
-
-Use the console's volume buttons to change the volume; KaiPlayer plays at
-full level and has no volume of its own. The top right corner shows the
-time and the battery level (green while charging, red at 15% or less).
-
-**X** and **Y** also play the subfolders. When you press them in the root of
-the card, KaiPlayer skips the system and homebrew folders there (`switch`,
-`config`, `Nintendo`, `atmosphere`, kaiHEN's folders and so on), so their
-sound effects don't end up in the queue. The queue shows the folder each
-track comes from.
-
-Song rows in Library, Playlists and Queue show the song's **title**,
-**Artist** and **Album** from its tags, like Now Playing. They are read in
-the background, so they appear a moment after a list opens; until then, and
-for songs without tags, the row shows the file name (and the folder name in
-grey instead of the album). The song
-that is playing has moving bars next to its name (still while paused).
-
-**Repeat queue** plays the whole queue again after its last song. **Repeat
-song** plays the current song over and over. With **Shuffle on**, the Queue
-tab lists the songs in the shuffled order they will play in.
-
-The player bar under Home, Library, Playlists and Queue has ⏮ ⏯ ⏭, Shuffle and
-Repeat. To use them with the buttons, press ↓ on the last row of the list:
-← → choose a control, **A** presses it, and ↑ or **B** go back to the list.
-**−**, **L** and **R** also pause and change the song from anywhere.
-
-If a song has played for more than 3 seconds, **L** restarts it. Otherwise
-**L** goes to the previous song.
-
-### Touch screen
-
-Everything can also be done by touch:
-
-- **Tabs:** tap a tab name to open it.
-- **Lists:** tap a song to play it, or a folder or playlist to open it. Drag
-  up or down to scroll: the list follows your finger and glides on when you
-  let go, as on a phone, and a touch stops it. **‹ Back** (next to the folder path, or the playlist
-  name) goes up a folder or back to the playlist list.
-- **Add-to-playlist buttons:** every song and folder row ends with a button
-  (a list with a small plus) that adds it to a playlist, and so does **Add
-  to playlist** in Now Playing.
-- **Player bar** (below Home, Library, Playlists and Queue): tap ⏮ ⏯ ⏭ to go back,
-  play or pause, and skip. Tap **Shuffle** or **Repeat** to change them, or
-  anywhere else on the bar to open Now Playing.
-- **Now Playing:** tap ⏮ ⏯ ⏭, tap the progress bar to jump to that point
-  (or drag along it and let go where you want), and tap the Shuffle and
-  Repeat buttons.
-- **Menu:** tap the ☰ button or the KaiPlayer title in the top left to open
-  the + menu. Tap an item to choose it, or outside the menu to close it.
-
-### Settings
-
-Open **+ → Settings**. It opens on four rows: **Music folder**, **Playback**,
-**Display** and **About**. **A** or **→** opens Playback or Display, **B** (or
-the **Back** button) goes back, and **B** on the first page closes Settings.
-Change a setting with ← → or **A** (or tap it).
-
-| Page | Setting | Values |
-|------|---------|--------|
-| — | Music folder | The folder KaiPlayer shows; **A** chooses another |
-| Playback | Sleep timer | Off, or any number of minutes up to 600 |
-| Playback | Resume where you left off | Keep playing (default), Paused or Off |
-| Playback | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
-| Playback | ReplayGain (even loudness) | Off (default), Track, Album or Auto |
-| Display | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
-| Display | Now Playing style | Cover (default), Vinyl record, CD or Cassette |
-| Display | Background | Cover colors (default), or a picture from your `Backgrounds` folder |
-| Display | Background blur | Off, Low, Medium (default) or High |
-| Display | Clock | 24-hour (default) or 12-hour |
-| Display | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
-| — | About | The KaiPlayer version; **A** shows more about the app and its author |
-
-**Sleep timer:** press **A** (or tap the row) to type the minutes on the
-number pad, or use ← → to change it by 5 minutes. **0** turns it off. When
-the time runs out, the music fades out over 10 seconds
-and pauses. The minutes left show in the top right corner. Pausing or
-changing the song during the fade cancels it. The timer isn't saved when you
-exit.
-
-**Resume where you left off:** **Keep playing** reopens the last song and
-plays on; **Paused** reopens it paused; **Off** forgets it (and deletes the
-saved queue).
-
-**Equalizer:** ← → on the row steps through Off, the presets (Flat, Bass,
-Treble, Rock, Pop, Jazz, Classical, Vocal) and Custom. **A** (or a tap) opens
-the editor, with 10 bands from 31 Hz to 16 kHz and ±12 dB each:
-
-- ← → choose a band, ↑ ↓ change it by 1 dB. Tap or drag a slider to set it.
-- **X** (or tap the preset name) goes to the next preset; **Y** turns the
-  equalizer on or off. **B** goes back to Settings.
-- Changing a band of a preset turns it into **Custom**, starting from that
-  preset. Your Custom settings are saved.
-- The overall level is lowered by as much as the loudest boost, so boosting
-  bands doesn't make the sound clip.
-
-**ReplayGain:** plays songs at the same loudness, using the
-`REPLAYGAIN_TRACK_GAIN` / `REPLAYGAIN_ALBUM_GAIN` tags (Vorbis comments in
-FLAC and Ogg, `TXXX` frames in MP3) that tools such as foobar2000, MusicBrainz
-Picard or `loudgain` write. **Track** levels every song; **Album** keeps the
-differences between songs of an album (and uses the track gain if a song has
-no album gain). **Auto** picks for you: album gain when you play a folder in
-order, and track gain for playlists and shuffle, where songs from different
-albums follow each other. Songs without these tags play as they are. KaiPlayer only
-turns songs down, never up, so nothing clips. A new mode applies from the
-next song.
-
-**Accent color:** the color of the highlights, buttons and progress bar.
-**From cover** takes a bright version of the most prominent color in the
-playing song's album art; black-and-white covers give a silver accent.
-
-**Now Playing style:** how Now Playing shows the song.
-
-| Style | What you see |
-|-------|--------------|
-| **Cover** | The album art, large |
-| **Vinyl record** | A black record with the album art as its label, turning at 33⅓ rpm, with the tonearm on it |
-| **CD** | A CD with the album art printed on it, turning |
-| **Cassette** | A cassette with the title on its label, the artist and album written on its lines, the album art and the song's length beside the window; its reels turn, and the tape winds from the left reel to the right one as the song plays |
-
-They turn only while a song plays, and stop when you pause.
-
-**Background:** instead of the dark background tinted with the album's
-colors, show a picture of yours behind every view. Put JPEG or PNG images (up
-to 50 megapixels: photos from a phone or a camera are fine) in a folder called **Backgrounds** inside your music
-folder (for example `sdmc:/Music/Backgrounds/`), then choose one here with
-← →; **Cover colors** goes back to the tinted background. KaiPlayer crops the
-picture to fill the screen, blurs it and darkens it, so text stays readable
-over it. **Background blur** sets how much: **Off** keeps it sharp, **High**
-turns it into soft color. Use plain file names (no accents): the console hides the others.
-
-![A background picture behind Now Playing](docs/screenshots/background.png)
-
-**Screen off while playing:** after that long without touching the console
-while music plays, the screen turns off to save battery and the music keeps
-playing. You can also turn it off at once with **+ → Turn screen off**. Any
-button or a touch turns it back on; that press does nothing else. Menus
-don't turn it off while they are open. Docked, or if the console doesn't let
-homebrew control the backlight, the screen goes black instead.
-
-### Playlists
-
-Playlists are saved as standard `.m3u8` files in the **Playlists** folder
-inside your music folder (for example `sdmc:/Music/Playlists/`), so all your
-music and playlists live in one folder. Paths are relative to that folder
-(for example `../Album/01 Song.flac`). Other music players can read them,
-and you can also copy `.m3u` or `.m3u8` playlists made on your PC into that
-folder. Playlists from older versions (`sdmc:/playlists/`) are copied there
-the first time; the old files stay where they were.
-
-- **Create one:** in the Playlists tab, press **+** and choose
-  **New playlist**. Or, in any tab, choose **Add … to playlist** and then
-  **New playlist...**.
-- **Add songs:** tap the add-to-playlist button on a song or folder in
-  Library (an artist, album or folder adds all its songs) or on a song in
-  Queue, or **Add to playlist** in Now Playing. Then pick the playlist, or
-  **New playlist...**. With buttons, select the row and press **→** (in Now
-  Playing, press **B**). Songs already in the playlist aren't added twice.
-- **Save the queue:** in Queue, press **+** and choose **Save queue as
-  playlist**.
-- **Play:** in the Playlists tab, **X** plays a playlist, **Y** shuffles it,
-  and **A** opens it to play from a song.
-- **Reorder:** open a playlist, select a song, press **+** and choose **Move
-  song**. Move it with ↑ ↓ and press **A** to place it.
-- **Remove a song:** inside a playlist, each song's row button (a list
-  with a minus) removes it from the playlist after you confirm; the file
-  stays on the card. It is also in the **+** menu.
-- **Rename or delete a playlist:** with **+** in the
-  Playlists tab. Deleting a playlist doesn't delete any songs.
-
-Playlist names are typed on the console's own keyboard and can have **any
-characters**: accents (`Español`), Japanese (`松原みき`) and so on, up to 48.
-Since the console hides files whose names have such characters (see
-[File names and tags](#file-names-and-tags)), the file gets a plain version
-of the name (`Espanol.m3u8`, or `Playlist.m3u8` when nothing readable is
-left) and the real name is kept inside it, in a `#PLAYLIST:` line that other
-players ignore. Names can't start with a dot or contain `/` or `\`. If a
-name isn't accepted, the keyboard opens again with the reason.
-
-If a playlist names a song that is no longer on the card, KaiPlayer skips it
-when playing.
-
-### Resume where you left off
-
-Unless you turn it off in Settings, KaiPlayer remembers the queue, the
-current song and the position. When you open it again, it starts in Now
-Playing and keeps playing from that spot (or waits paused, if you chose
-**Paused** in Settings). It saves this in `resume.m3u8` and
-`resume.txt` in its folder when the song changes, when you pause, every 30 seconds while
-playing, and when you exit.
-
-### Screen and resolution
-
-KaiPlayer draws with the console's GPU, at the screen's own resolution:
-1920 × 1080 handheld, and the TV's resolution docked (1440p and 4K TVs get
-text and edges drawn at their full sharpness). Going in and out of the dock,
-sleep, and turning the screen off while music plays all work. Album art and
-background pictures are made at 1080p and scaled up on bigger screens.
-
-Now Playing shows the song's format above the progress bar, and the player
-bar before the time: **FLAC · 24-bit · 96 kHz**, **MP3 · 44.1 kHz**,
-**DSD64 · 2.8 MHz** (bits only for lossless PCM formats).
-
-### Song details and album art
-
-Now Playing shows the album cover, title, artist and album. The mini player
-at the bottom of Home, Library and Queue shows a small cover, the title and the
-artist.
-
-KaiPlayer reads the song details from the file's tags:
-
-| Format     | Tags read |
-|------------|-----------|
-| MP3        | ID3v2.2, v2.3 and v2.4 (title, artist, album, cover); ID3v1 as a fallback |
-| FLAC       | Vorbis comments and the embedded picture |
-| Ogg Vorbis | Vorbis comments and the embedded picture (`METADATA_BLOCK_PICTURE`) |
-| WAV        | None |
-| DSF        | ID3v2 (the tag at the end of the file) |
-| DSDIFF     | ID3v2 in an `ID3 ` chunk, if the file has one |
-
-When a file has no title tag, KaiPlayer shows its file name without the
-extension. When it has no artist tag, Now Playing shows "Unknown artist" and
-the mini player shows the name of the song's folder.
-
-KaiPlayer looks for the cover in this order:
-
-1. **The cover embedded in the file.** If a file has several pictures,
-   KaiPlayer prefers the front cover.
-2. **An image in the song's folder** named `cover`, `folder`, `front` or
-   `albumart…`, in that order. Letter case doesn't matter (`Cover.jpg` and
-   `FOLDER.PNG` work), and the image can be `.jpg`, `.jpeg` or `.png`.
-3. **The folder's only image**, whatever its name, if the folder has exactly
-   one image file.
-
-Covers can be JPEG or PNG, up to 4096×4096 pixels and 8 MB. For a folder of
-FLAC files without embedded art, uploading the album's `Cover.jpg` next to
-them is enough.
-
-### File names and tags
-
-Text in tags and file names can be in any language:
-
-- **Latin, Greek and Cyrillic** are drawn with KaiPlayer's own font (Noto
-  Sans).
-- **Japanese (kanji and kana), Chinese and Korean** are drawn with the fonts
-  built into the console.
-
-**File and folder names, however, must use plain ASCII letters.** This is a
-limitation of the console, not of KaiPlayer: on Switch 2, a file or folder
-whose name has any non-ASCII character (accented letters such as á, é, ñ or
-ü, typographic quotes such as ’, or Japanese) is written correctly, but the
-console's file system leaves it out of the folder: it isn't listed, and it
-isn't even counted among the folder's entries. FTP listings, OunceShell and
-KaiPlayer all see folders through it, so the file is invisible in all of
-them, even though it is on the card and takes up space. No app on the
-console can find it, so the fix has to happen before the file gets there.
-
-**Tags carry the real names.** KaiPlayer takes each song's title, artist and
-album from its tags (ID3 in MP3 and DSD, Vorbis comments in FLAC and Ogg), not from
-the file name, and tags can hold any language. A file renamed
-`04 Mizuiro no Ame.mp3` is still shown as **みずいろの雨 · 八神純子 · 素顔の私**,
-with its embedded cover, and `06 Cancion.flac` as **Canción**. Make sure your
-songs are tagged (most music from stores or ripped with a good tool is): a
-song without tags shows its file name, and is grouped by its folders, so with
-a plain file name it shows without its accents.
-
-**Upload with plain names, without renaming your files.** FileZilla can't
-rename files as it uploads them. Use [KaiDrop](https://github.com/mizuiroame/kaidrop)
-(work in progress), a small Windows app (also runs on macOS and Linux) that
-sends folders over FTP and gives the copies on the console plain names, with
-a preview of every name.
-Or, from the command line, the repository includes a small script,
-[`tools/kaiupload.py`](tools/kaiupload.py) (Python 3.8 or later, nothing to
-install). It uploads a folder over FTP and gives the copies on the console
-plain names; the files on your computer are not changed:
-
-```
-python kaiupload.py 192.168.1.50 "G:\Music\Spanish album" /music --port 5000
-```
-
-Use the IP address and port that OunceShell's FTP screen shows (the same
-ones you use in FileZilla); add `--user` and `--password` if your FTP server
-asks for them. Accents are dropped (`06 Canción.mp3` → `06 Cancion.mp3`,
-`Ñandú` → `Nandu`), and characters such as Japanese become `_`
-(`04 みずいろの雨.mp3` → `04 _.mp3`). Run it with `--dry-run` first to see
-the names it will use. Files already on the console with the same size are
-skipped, so you can run it again after adding songs or if an upload stops.
-
-If you already uploaded a file with such a name, it is on the card but
-hidden. You can rename or delete it with FileZilla's
-**Server → Enter custom command** (use the folder that holds it as the
-current remote folder):
-
-```
-RNFR 04 みずいろの雨.mp3
-RNTO 04 Mizuiro no Ame.mp3
-```
-
-or, to delete it:
-
-```
-DELE 04 みずいろの雨.mp3
-```
-
-`SIZE <name>` tells you whether a hidden file is there: it answers `213`
-followed by the file size.
-
-### Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| "No music in this folder" | Check that the files have one of the extensions in the formats table. |
-| A file or folder doesn't appear | If its name has accents (á, ñ…), Japanese or other non-ASCII characters, rename it with plain letters. See [File names and tags](#file-names-and-tags). Otherwise check that it has a supported extension. |
-| "Some items in this folder could not be read" | The console reported an error while listing the folder, so some files may be missing from the list. This can happen with non-ASCII file names. |
-| "Could not open: file" | The file is damaged, or it isn't in the format its extension says. KaiPlayer skips it. |
-| No cover | The file has no embedded cover and its folder has no `cover.jpg` (or similar), or the image is larger than 4096×4096 or 8 MB. |
-| `?` in titles | The character isn't in KaiPlayer's font or in the console's fonts. |
-| An MP3's length shows as `--:--` | That MP3 has no Xing/Info header. It plays normally, only without a length. |
-| The volume bar is gone | KaiPlayer has no volume of its own. Use the console's volume buttons. |
-| A playlist name isn't accepted | Use up to 48 characters, without `/` or `\`, not starting with a dot, and a name no other playlist has (capitals don't count: `Mix` and `mix` are the same). |
-| A playlist made on the PC doesn't appear | It must be in the `Playlists` folder of your music folder, end in `.m3u` or `.m3u8`, and have a plain file name (no accents): the console hides the others. To show a name with accents, add a line `#PLAYLIST:Name` at the top. |
-| Taps land in the wrong place | Please open an issue with your console model and where you tapped. The buttons always work. |
-| "Audio unavailable" | The console's audio service could not start. Restart and open KaiPlayer again. If it keeps happening, open an issue. |
-
----
-
-## For developers: build from source
-
-KaiPlayer is built with [ounce-devkit](https://github.com/ouncebrew/ounce-devkit),
-which is devkitPro plus libounce, a libnx for Switch 2. Docker is the easiest
-way to build it.
-
-### With Docker (Windows, Linux, macOS)
-
-1. Build the devkit image. You only need to do this once:
-
-   ```sh
-   git -c core.autocrlf=false clone https://github.com/ouncebrew/ounce-devkit
-   cd ounce-devkit
-   docker build -t ounce-devkit .
-   ```
-
-   > On Windows you must clone with `core.autocrlf=false`. Otherwise the
-   > scripts get CRLF line endings and `install.sh` fails inside the image.
-
-2. Build KaiPlayer.
-
-   On Windows (PowerShell):
-
-   ```powershell
-   .\build.ps1           # builds KaiPlayer.nro
-   .\build.ps1 test      # host tests (ASan/UBSan + coverage)
-   .\build.ps1 fuzz      # fuzzes every file parser ($env:ITER sets the count)
-   .\build.ps1 preview   # renders UI screenshots, no console needed
-   .\build.ps1 clean
-   ```
-
-   On Linux or macOS:
-
-   ```sh
-   docker run --rm -v "$PWD:/build/kaiplayer" -w /build/kaiplayer ounce-devkit make
-   docker run --rm --security-opt seccomp=unconfined \
-     -v "$PWD:/build/kaiplayer" -w /build/kaiplayer/tests ounce-devkit make coverage
-   docker run --rm --security-opt seccomp=unconfined \
-     -v "$PWD:/build/kaiplayer" -w /build/kaiplayer/tests ounce-devkit make fuzz ITER=3000
-   docker run --rm -v "$PWD:/build/kaiplayer" -w /build/kaiplayer/tests/preview ounce-devkit make
-   ```
-
-The output is `KaiPlayer.nro`, in the project root.
-
-`preview` compiles the real interface code on the host with a fake player
-and writes `tests/preview/build/*.ppm` screenshots of each tab.
-
-The tests and the fuzzer run with ASLR turned off (`setarch -R`), because GCC 12's
-AddressSanitizer can hang on recent kernels. In Docker, turning ASLR off needs
-`--security-opt seccomp=unconfined`.
-
-### Without Docker
-
-Install [devkitPro pacman](https://devkitpro.org/wiki/devkitPro_pacman), then
-run `sh install.sh` inside `ounce-devkit/`. After that, in this folder, run:
-
-```sh
-make                 # KaiPlayer.nro
-make -C tests run    # tests (needs the system gcc)
-```
-
-### Making a release
-
-1. Bump `APP_VERSION` in the `Makefile`.
-2. Run `.\build.ps1 clean`, then `.\build.ps1`.
-3. Tag the release (`git tag v1.0.0 && git push --tags`).
-4. Create the GitHub release and attach `KaiPlayer.nro`.
-
-### Project layout
-
-```
-source/
-  main.c          main loop and controls
-  player.c        audio thread: decode → resample → audout
-  decoder.c       common interface for MP3 / FLAC / Vorbis / WAV / DSD
-  dsd.c           DSF and DSDIFF: reads the 1-bit stream and filters it to PCM
-  resampler.c     sample rate conversion (linear interpolation)
-  queue.c         play order, shuffle and repeat
-  library.c       finds the music in a folder (recursively)
-  browser.c       folder browser
-  tags_*.c        ID3 and Vorbis comment readers (title, artist, album, cover)
-  cover.c         decodes and scales album art (JPEG / PNG)
-  artwork.c       loads tags and covers on a background thread
-  meta*.c         title, artist and album for the lists, read in the background
-  gfx.h           drawing: shapes, gradients, images, text masks (layout units)
-  gfx_gl.c        ...with the GPU (OpenGL ES 3): the console's backend
-  gfx_gl_switch.c EGL on the console's window, at its resolution
-  gfx.c           ...with the CPU: the host preview and tests (GPU=0 on the console)
-  audioformat.c   the "FLAC · 24-bit · 96 kHz" label
-  font.c          anti-aliased text with the embedded fonts
-  ui*.c           the tabs, the menu and the keyboard
-  ui_nowstyle.c   Now Playing's record and CD (ui_cassette.c: the cassette)
-  background.c    the background picture: crop, blur and darken
-  plainname.c     plain file names the console can list (playlists)
-  catalog*.c      the library: artists, albums and songs from the tags (and its cache)
-  covercache.c    album covers for Home and the album rows
-  history.c home.c  plays, and the Home tab's rows
-  config.c        settings saved on the SD card
-  input.c         button auto-repeat
-  tracklist.c     lists of song paths (folders, playlists, the queue)
-  playlist.c      .m3u8 playlists in <music folder>/Playlists
-  resume.c        saves and restores the last queue and position
-  keyboard*.c     playlist names: the console's keyboard, and a fallback
-  menu.c          the + menu and dialogs
-  settings.c      the Settings rows and sleep timer choices
-  eq.c            10-band equalizer (peaking filters) and its presets
-  theme.c         accent colors, including the one taken from the cover
-  screen.c        turning the screen off (backlight)
-  touch.c         taps and drags from the touch screen
-  ui_hit.c        touch targets recorded as the UI is drawn
-  app_*.c         input handling for each tab, the menu, settings, equalizer, touch and resume
-data/           Noto Sans Regular and Bold, embedded in the .nro
-third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
-tests/          host tests, fuzzer, fixtures and the UI preview
-tools/          kaiupload.py (FTP upload with plain names), gltest (the GPU
-                backend checked against the CPU one), gpu-spike (a GPU test .nro)
-icon.jpg        256×256 icon for hbmenu
-```
-
-### Known limitations
-
-- Rewinding in a very long MP3 can take a moment, because dr_mp3 decodes again
-  from the start of the file.
-- Pause and track changes have about 140 ms of latency, the size of the audio
-  buffers.
-- A play list holds up to 8192 tracks, from up to 8 levels of subfolders.
-- Files and folders with non-ASCII names (accented letters or Japanese) are left out
-  of directory listings on Switch 2, in every app. Opening them by path
-  works (FTP `SIZE` finds them), so the console's directory read seems to
-  stop at such entries. KaiPlayer can't list what the console doesn't return;
-  see [File names and tags](#file-names-and-tags) for the workaround.
-- Opus, AAC, ALAC and WMA aren't supported.
-
----
-
-## Security
-
-Under kaiHEN, homebrew runs with broad system access. A bug in an app that
-reads untrusted files could therefore affect the whole console. KaiPlayer
-reduces that risk in these ways:
-
-- **Small attack surface.** No network access. The app only reads the files
-  and folders you browse, and only writes its own files (settings, history,
-  catalog, resume) in its folder, and the playlists you save.
-- **Untrusted input is bounded.**
-  - Paths and settings use length-checked buffers.
-  - Audio headers with unsupported channel counts (0 or more than 8) or sample
-    rates (below 1 kHz or above 768 kHz) are rejected.
-  - Folder listings and recursive scans have entry, depth and track limits.
-- **Images are checked before decoding.** Only JPEG and PNG are decoded, and
-  images over 4096×4096 pixels or 8 MB are refused before any memory is
-  allocated for them. The tag readers check every length against the data.
-- **Hardening.** The `.nro` is built with `-fstack-protector-strong` and
-  `-fwrapv` (signed overflow wraps instead of being undefined). The host
-  tests run under AddressSanitizer and UndefinedBehaviorSanitizer.
-- **Fuzzing.** `make -C tests fuzz` feeds thousands of corrupted MP3, FLAC,
-  Ogg, WAV, DSF, DSDIFF, JPEG and PNG files to every parser, with the sanitizers on. Run it
-  before each release.
-- **Pinned dependencies.** The libraries in `third_party/` and the fonts in
-  `data/` are pinned to upstream commits with SHA-256 sums. See
-  [third_party/VERSIONS.md](third_party/VERSIONS.md), and check them with
-  `sh third_party/verify.sh`.
-
-The main remaining risk is in the third-party decoders, which parse files from
-the SD card. Only play files from sources you trust.
-
-To report a vulnerability, please open a private security advisory on GitHub
-instead of a public issue.
-
----
-
-## Legal notice
-
-- **Independent project.** KaiPlayer is not affiliated with, endorsed by or
-  sponsored by Nintendo Co., Ltd. or its subsidiaries.
-- **Trademarks.** "Nintendo", "Nintendo Switch" and "Switch 2" are trademarks
-  of their owners. They are used here only to say which hardware this program
-  works with. "Direct Stream Digital", "DSD" and "Super Audio CD" are
-  trademarks of their owners, used only to name the file formats KaiPlayer
-  plays.
-- **No Nintendo material.** This repository and its releases contain no
-  Nintendo code, SDK, firmware, cryptographic keys, games, or graphics or audio
-  assets. KaiPlayer is built only with open-source tools and libraries.
-- **No circumvention.** KaiPlayer does not circumvent any technical protection
-  measure, and it can't be used to copy or run commercial software. It plays
-  the audio files that users put on their own card. It doesn't read SACD
-  discs or disc images, and it doesn't decode DST-compressed DSD.
-- **User responsibility.** Only play music you have the right to listen to.
-  Running homebrew (kaiHEN) can put your console at risk, can affect its
-  warranty and can go against the manufacturer's terms of service. You do it at
-  your own risk.
-- **No warranty.** The software is provided "as is", without warranty of any
-  kind. See [LICENSE](LICENSE).
-
-This notice is not legal advice.
-
----
+> gives the copies plain names, or rename the files first. KaiPlayer still
+> shows the real names from the tags. See [File names and tags](docs/file-names.md).
+
+## Documentation
+
+- [Installing](docs/install.md): every step, updating, where KaiPlayer keeps
+  its files
+- [The library](docs/library.md): Home, Library, song details and album art
+- [Playback](docs/playback.md): formats, DSD, queue, resume, screen
+  resolution
+- [Playlists](docs/playlists.md)
+- [Controls](docs/controls.md): buttons, the + menu, touch screen
+- [Settings](docs/settings.md): sleep timer, equalizer, ReplayGain, Now
+  Playing styles, backgrounds
+- [File names and tags](docs/file-names.md): non-ASCII names, KaiDrop and
+  `kaiupload.py`
+- [Troubleshooting](docs/troubleshooting.md)
+- [Known limitations](docs/limitations.md)
+- [Building](docs/building.md): building from source, releases, project
+  layout
+- [Security](docs/security.md)
+- [Legal notice and licenses](docs/legal.md)
 
 ## License
 
-KaiPlayer is released under the [MIT License](LICENSE), which also contains
-the legal notice above.
-
-Copyright (c) 2026 Mizuiro.
-
-Third-party libraries in `third_party/`:
-
-| Library | Used for | License |
-|---------|----------|---------|
-| [dr_mp3, dr_flac, dr_wav](https://github.com/mackron/dr_libs) | Decoding MP3, FLAC and WAV | Public domain (Unlicense) or MIT-0 |
-| [stb_vorbis](https://github.com/nothings/stb) | Decoding Ogg Vorbis | Public domain or MIT |
-| [stb_image](https://github.com/nothings/stb) | Decoding album art (JPEG, PNG) | Public domain or MIT |
-| [stb_truetype](https://github.com/nothings/stb) | Drawing text | Public domain or MIT |
-| [Noto Sans](https://github.com/notofonts/latin-greek-cyrillic) (`data/`) | Interface font | SIL Open Font License 1.1 ([third_party/NotoSans-OFL.txt](third_party/NotoSans-OFL.txt)) |
-
-The `.nro` also links [libounce](https://github.com/ouncebrew/libounce), which
-uses the ISC license (its bundled mimalloc uses MIT).
+KaiPlayer is released under the [MIT License](LICENSE). Copyright (c) 2026
+Mizuiro. It uses dr_libs, stb and the Noto Sans font; the full list is in
+[docs/legal.md](docs/legal.md#licenses).
