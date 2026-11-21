@@ -233,19 +233,33 @@ static int drawStatus(const App *app, uint64_t now_ns)
     return x;
 }
 
+// True where X switches the library's source: Home and Library's first page, with a network folder.
+static bool xSwitchesSource(const App *app)
+{
+    if (!(appNetworkReady() || appLibraryIsNetwork(app)) || uiOverlayOpen(app) || app->focus == FOCUS_PLAYER)
+        return false;
+    return app->view == VIEW_HOME ||
+           (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_ROOT);
+}
+
 // Where the library comes from, after the title, once there's a network
-// folder: "SD card", or "Network folder" with its turquoise dot. A tap
-// switches (X does on Library's first page, the + menu everywhere). Its right end.
+// folder: "SD card", or "Network folder" with its turquoise dot, and the X
+// key where X switches it (as KaiVideo's). A tap switches it everywhere, and
+// the + menu does. Its right end.
 static int drawSourcePill(const App *app, int x)
 {
-    bool network = appLibraryIsNetwork(app);
+    bool network = appLibraryIsNetwork(app), key = xSwitchesSource(app);
     const char *label = network ? T("Network folder") : T("SD card");
-    int w = 12 + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
+    int key_w = key ? uiButtonWidth("X") + 8 : 0;
+    int w = 12 + key_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
     float cy = HEADER_PILL_Y + HEADER_PILL_H / 2.0f;
     gfxFillRoundRect(x, HEADER_PILL_Y, w, HEADER_PILL_H, HEADER_PILL_H / 2, COLOR_SURFACE_HI);
-    gfxFillRoundRect(x + 12, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
+    if (key)
+        uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
+    int dot_x = x + 12 + key_w;
+    gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2,
                      network ? COLOR_NETWORK : COLOR_ACCENT);
-    fontDrawMiddle(FONT_BOLD, 16, x + 12 + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
+    fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
     uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
     return x + w;
 }
@@ -427,6 +441,8 @@ static const char *footerHelp(const App *app)
         return T("[^v] move the song  [A][B] done");
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
+    if (app->view == VIEW_HOME && (appNetworkReady() || appLibraryIsNetwork(app)))  // X switches there (app_home.c).
+        return T("[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
     if (app->view == VIEW_BROWSER) {
         switch (appLibraryPage((App *)app)->level) {
         case LIB_ROOT:
