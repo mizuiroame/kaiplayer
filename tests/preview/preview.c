@@ -221,6 +221,54 @@ static void checkTouch(const char *name, const App *app)
     }
 }
 
+// A tap in the middle of the first target of this kind (and arg, unless any_arg) lands on it.
+static const HitRegion *tapTarget(HitKind kind, int arg, bool any_arg)
+{
+    for (int i = 0; i < uiHitCount(); i++) {
+        const HitRegion *r = uiHitAt(i);
+        if (r->kind == kind && (any_arg || r->arg == arg))
+            return uiHitFind(r->x + r->w / 2, r->y + r->h / 2);
+    }
+    return NULL;
+}
+
+static void touchProblem(const char *name, const char *what)
+{
+    printf("TOUCH: %s: %s\n", name, what);
+    g_touch_problems++;
+}
+
+// A menu's items each answer a tap, the line between them in the way of none.
+static void checkMenuTouch(const char *name, const Menu *m)
+{
+    for (int i = 0; i < m->count && i < 9; i++) {
+        const HitRegion *r = tapTarget(HIT_MENU_ITEM, i, false);
+        if (!r || r->kind != HIT_MENU_ITEM || r->arg != i)
+            touchProblem(name, "a menu item doesn't answer a tap");
+    }
+}
+
+// Settings: the main page's rows that open a page answer with that row
+// (app_touch.c opens its page); a page's Back answers.
+static void checkSettingsTouch(const char *name, const App *app)
+{
+    if (app->settings_page == SETTINGS_PAGE_MAIN) {
+        for (int page = 0; page < SETTINGS_PAGE_COUNT; page++) {
+            if (page == SETTINGS_PAGE_MAIN)
+                continue;
+            const HitRegion *r = tapTarget(HIT_SETTING, settingsPageRow((SettingsPage)page), false);
+            if (!r || r->kind != HIT_SETTING || settingsRowPage((SettingRow)r->arg) != (SettingsPage)page)
+                touchProblem(name, "a page's row doesn't open it");
+        }
+        if (tapTarget(HIT_OVERLAY_BACK, 0, true))
+            touchProblem(name, "the main page has a Back button");
+        return;
+    }
+    const HitRegion *back = tapTarget(HIT_OVERLAY_BACK, 0, true);
+    if (!back || back->kind != HIT_OVERLAY_BACK)
+        touchProblem(name, "Back doesn't answer a tap");
+}
+
 static void render(const char *dir, const char *name, const App *app, const PlayerStatus *status)
 {
     static uint32_t pixels[GFX_FB_WIDTH * GFX_FB_HEIGHT];
@@ -229,6 +277,10 @@ static void render(const char *dir, const char *name, const App *app, const Play
     uiDraw(app, status, 0);
     gfxSetTarget(NULL, 0);
     checkTouch(name, app);
+    if (app->menu.open && !app->keyboard_open)
+        checkMenuTouch(name, &app->menu);
+    else if (app->settings_open && !app->about_open && !app->eq_open && !app->picker_open && !app->keyboard_open)
+        checkSettingsTouch(name, app);
     snprintf(path, sizeof(path), "%s/%s.ppm", dir, name);
     if (!writePpm(path, pixels))
         fprintf(stderr, "cannot write %s\n", path);
@@ -246,6 +298,23 @@ static void loadArtwork(const char *cover_path)
         coverLoadFromFolder(cover_path, &g_art_card, gfxToFb(COVERCACHE_CARD), &g_art_thumb_small,
                             gfxToFb(COVERCACHE_THUMB));
     g_has_art = true;
+}
+
+static void openMainMenu(App *app, bool playlist_actions)
+{
+    menuOpen(&app->menu, "KaiPlayer");
+    app->menu.kind = MENU_KIND_MAIN;
+    if (playlist_actions) {
+        menuAdd(&app->menu, T("Move song"), 0, 0);
+        menuAdd(&app->menu, T("Remove song from playlist"), 0, 0);
+        menuAdd(&app->menu, "Rename \"Road Trip 2026\"", 0, 0);
+        menuAdd(&app->menu, "Delete \"Road Trip 2026\"", 0, 0);
+    }
+    menuAddDivider(&app->menu);
+    menuAdd(&app->menu, T("Update the library"), 0, 0);
+    menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), 0, 0);
+    menuAdd(&app->menu, T("Settings"), 0, 0);
+    menuAdd(&app->menu, T("Exit KaiPlayer"), 0, 0);
 }
 
 static char *const PLAYLIST_NAMES[] = {"Chill evenings", "Road Trip 2026", "Workout"};
@@ -271,14 +340,14 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     render(dir, "playlist_focus_back", app, status);
     app->focus = FOCUS_LIST;
 
-    menuOpen(&app->menu, "Menu");
-    menuAdd(&app->menu, "Move song", 0, 0);
-    menuAdd(&app->menu, "Remove song from playlist", 0, 0);
-    menuAdd(&app->menu, "Rename \"Road Trip 2026\"", 0, 0);
-    menuAdd(&app->menu, "Delete \"Road Trip 2026\"", 0, 0);
-    menuAdd(&app->menu, "Exit KaiPlayer", 0, 0);
+    // The + menu as app_menu.c builds it: this screen's actions, a line, the app's.
+    openMainMenu(app, true);
     app->menu.cursor = 1;
     render(dir, "menu", app, status);
+    openMainMenu(app, false);  // A screen with no actions of its own: no line.
+    app->view = VIEW_NOW_PLAYING;
+    render(dir, "menu_app_only", app, status);
+    app->view = VIEW_PLAYLISTS;
 
     app->view = VIEW_BROWSER;
     menuOpen(&app->menu, "Add \"01 - Overpass.mp3\" to");
@@ -313,14 +382,18 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->view = VIEW_NOW_PLAYING;
     app->settings_open = true;
     app->settings_page = SETTINGS_PAGE_MAIN;
-    app->settings_cursor = SETTING_OPEN_PLAYBACK;
+    app->settings_cursor = SETTING_OPEN_LIBRARY;
     render(dir, "settings", app, status);
+    app->settings_page = SETTINGS_PAGE_LIBRARY;
+    app->settings_cursor = SETTING_RESCAN;
+    render(dir, "settings_library", app, status);
     app->settings_page = SETTINGS_PAGE_DISPLAY;
     app->settings_cursor = SETTING_NOW_STYLE;
     render(dir, "settings_display", app, status);
     app->settings_page = SETTINGS_PAGE_PLAYBACK;
     app->settings_cursor = SETTING_SLEEP;
     render(dir, "settings_playback", app, status);
+    app->settings_page = SETTINGS_PAGE_MAIN;
     app->about_open = true;
     render(dir, "about", app, status);
     app->about_open = false;

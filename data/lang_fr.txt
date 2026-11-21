@@ -57,8 +57,8 @@ language = Français
 [A] choose  [B] close
 [A] choisir  [B] fermer
 
-[A] choose  [B] close  [+] exit...
-[A] choisir  [B] fermer  [+] quitter...
+[A] choose  [B] close  [+] exit
+[A] choisir  [B] fermer  [+] quitter
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] ouvrir  [B] retour  [>] ajouter  [X] lire  [Y] aléatoire  [RS] page / position  [L][R] piste  [+] menu
@@ -327,9 +327,6 @@ Créé par
 Medium
 Moyen
 
-Menu
-Menu
-
 Move song
 Déplacer le titre
 
@@ -582,11 +579,14 @@ Artiste inconnu
 Up to 48 characters, without / or \, not starting with a dot.
 48 caractères max., sans / ni \, sans point au début.
 
-Update the library now
-Actualiser la bibliothèque maintenant
+Update the library
+Actualiser la bibliothèque
 
 Updating library  %zu / %zu
 Actualisation de la bibliothèque  %zu / %zu
+
+Updating the library...
+Actualisation de la bibliothèque...
 
 Use this folder
 Choisir ce dossier

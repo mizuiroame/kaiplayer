@@ -57,8 +57,8 @@ language = Español (Latinoamérica)
 [A] choose  [B] close
 [A] elegir  [B] cerrar
 
-[A] choose  [B] close  [+] exit...
-[A] elegir  [B] cerrar  [+] salir...
+[A] choose  [B] close  [+] exit
+[A] elegir  [B] cerrar  [+] salir
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] abrir  [B] atrás  [>] agregar  [X] reproducir  [Y] mezclar  [RS] página / avanzar  [L][R] pista  [+] menú
@@ -327,9 +327,6 @@ Hecho por
 Medium
 Media
 
-Menu
-Menú
-
 Move song
 Mover canción
 
@@ -582,11 +579,14 @@ Artista desconocido
 Up to 48 characters, without / or \, not starting with a dot.
 Hasta 48 caracteres, sin / ni \, sin empezar con punto.
 
-Update the library now
-Actualizar la biblioteca ahora
+Update the library
+Actualizar la biblioteca
 
 Updating library  %zu / %zu
 Actualizando la biblioteca  %zu / %zu
+
+Updating the library...
+Actualizando la biblioteca...
 
 Use this folder
 Usar esta carpeta

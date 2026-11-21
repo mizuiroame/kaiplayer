@@ -57,8 +57,8 @@ language = 한국어
 [A] choose  [B] close
 [A] 선택  [B] 닫기
 
-[A] choose  [B] close  [+] exit...
-[A] 선택  [B] 닫기  [+] 종료...
+[A] choose  [B] close  [+] exit
+[A] 선택  [B] 닫기  [+] 종료
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] 열기  [B] 뒤로  [>] 추가  [X] 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙  [+] 메뉴
@@ -327,9 +327,6 @@ Made by
 Medium
 보통
 
-Menu
-메뉴
-
 Move song
 곡 이동
 
@@ -582,11 +579,14 @@ Unknown artist
 Up to 48 characters, without / or \, not starting with a dot.
 48자 이내로 입력하세요. / 또는 \는 사용할 수 없으며 마침표로 시작할 수 없습니다.
 
-Update the library now
-지금 라이브러리 업데이트
+Update the library
+라이브러리 업데이트
 
 Updating library  %zu / %zu
 라이브러리 업데이트 중  %zu / %zu
+
+Updating the library...
+라이브러리 업데이트 중...
 
 Use this folder
 이 폴더 사용

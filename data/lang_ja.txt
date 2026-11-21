@@ -57,8 +57,8 @@ language = 日本語
 [A] choose  [B] close
 [A] 決定  [B] 閉じる
 
-[A] choose  [B] close  [+] exit...
-[A] 決定  [B] 閉じる  [+] 終了...
+[A] choose  [B] close  [+] exit
+[A] 決定  [B] 閉じる  [+] 終了
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] 開く  [B] 戻る  [>] 追加  [X] 再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り  [+] メニュー
@@ -327,9 +327,6 @@ Made by
 Medium
 中
 
-Menu
-メニュー
-
 Move song
 曲を移動
 
@@ -582,11 +579,14 @@ Unknown artist
 Up to 48 characters, without / or \, not starting with a dot.
 48文字まで。/ と \ は使えず、先頭をドットにはできません。
 
-Update the library now
-今すぐライブラリーを更新
+Update the library
+ライブラリーを更新
 
 Updating library  %zu / %zu
 ライブラリーを更新中  %zu / %zu
+
+Updating the library...
+ライブラリーを更新中...
 
 Use this folder
 このフォルダーを使う

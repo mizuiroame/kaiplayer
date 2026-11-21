@@ -19,12 +19,15 @@ typedef struct {
     MenuItem items[MENU_MAX_ITEMS];
     int count;
     int cursor;
-    int kind;  // Which menu this is; defined by the app, 0 after menuOpen.
+    int kind;     // Which menu this is; defined by the app, 0 after menuOpen.
+    int divider;  // A line drawn above this item (0: none). Not an item: the cursor never lands on it.
 } Menu;
 
 void menuOpen(Menu *m, const char *title);
 void menuClose(Menu *m);
 // Adds an item. False if the menu is full.
 bool menuAdd(Menu *m, const char *label, int action, int arg);
+// A line between the items added so far and the next ones; none if there are none so far.
+void menuAddDivider(Menu *m);
 void menuMove(Menu *m, int delta);
 const MenuItem *menuSelected(const Menu *m);

@@ -57,8 +57,8 @@ language = Deutsch
 [A] choose  [B] close
 [A] Wählen  [B] Schließen
 
-[A] choose  [B] close  [+] exit...
-[A] Wählen  [B] Schließen  [+] Beenden...
+[A] choose  [B] close  [+] exit
+[A] Wählen  [B] Schließen  [+] Beenden
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] Öffnen  [B] Zurück  [>] Hinzu  [X] Abspielen  [Y] Zufall  [RS] Seite/Spulen  [L][R] Titel  [+] Menü
@@ -327,9 +327,6 @@ Erstellt von
 Medium
 Mittel
 
-Menu
-Menü
-
 Move song
 Song verschieben
 
@@ -582,11 +579,14 @@ Unbekannter Künstler
 Up to 48 characters, without / or \, not starting with a dot.
 Bis zu 48 Zeichen, ohne / oder \, nicht mit einem Punkt am Anfang.
 
-Update the library now
-Bibliothek jetzt aktualisieren
+Update the library
+Bibliothek aktualisieren
 
 Updating library  %zu / %zu
 Bibliothek wird aktualisiert  %zu / %zu
+
+Updating the library...
+Bibliothek wird aktualisiert...
 
 Use this folder
 Diesen Ordner verwenden

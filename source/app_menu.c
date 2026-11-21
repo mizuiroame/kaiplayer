@@ -63,11 +63,13 @@ static void addPlaylistItems(App *app)
     }
 }
 
+// First this screen's actions, then a line and the app's, the same on every
+// screen (as KaiVideo's and KaiRadio's): Settings, then Exit last.
 void appOpenMenu(App *app)
 {
     PlayerStatus status;
     playerGetStatus(&status);
-    menuOpen(&app->menu, T("Menu"));
+    menuOpen(&app->menu, "KaiPlayer");  // With its version beside it (ui_overlay.c).
     app->menu.kind = MENU_KIND_MAIN;
     // Adding songs to a playlist is on the + buttons of each row and of Now
     // Playing, so the menu keeps the actions that have no button.
@@ -75,8 +77,9 @@ void appOpenMenu(App *app)
         addPlaylistItems(app);
     else if (app->view == VIEW_QUEUE && status.track_count > 0)
         menuAdd(&app->menu, T("Save queue as playlist"), ACT_SAVE_QUEUE, 0);
-    if (app->view == VIEW_BROWSER && app->config.library[0])
-        menuAdd(&app->menu, T("Update the library now"), ACT_RESCAN, 0);
+    menuAddDivider(&app->menu);
+    if (app->config.library[0])
+        menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
     if (status.state == PLAYER_PLAYING)
         menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), ACT_SCREEN_OFF, 0);
     menuAdd(&app->menu, T("Settings"), ACT_SETTINGS, 0);
@@ -294,7 +297,7 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_EXIT_CONFIRMED: app->quit = true; break;
     case ACT_SETTINGS: appOpenSettings(app); break;
     case ACT_SCREEN_OFF: appScreenOff(app); break;
-    case ACT_RESCAN: catalogScanStart(app->config.library); break;
+    case ACT_RESCAN: appUpdateLibrary(app); break;
     case ACT_PICK:
         if ((size_t)item->arg < app->playlists.index.count)
             addPendingTo(app, app->playlists.index.names[item->arg]);

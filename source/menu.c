@@ -26,6 +26,11 @@ bool menuAdd(Menu *m, const char *label, int action, int arg)
     return true;
 }
 
+void menuAddDivider(Menu *m)
+{
+    m->divider = m->count;
+}
+
 void menuMove(Menu *m, int delta)
 {
     if (m->count == 0)

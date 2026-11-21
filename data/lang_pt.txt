@@ -57,8 +57,8 @@ language = Português (Brasil)
 [A] choose  [B] close
 [A] escolher  [B] fechar
 
-[A] choose  [B] close  [+] exit...
-[A] escolher  [B] fechar  [+] sair...
+[A] choose  [B] close  [+] exit
+[A] escolher  [B] fechar  [+] sair
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] abrir  [B] voltar  [>] incluir  [X] tocar  [Y] aleatório  [RS] pág. / posição  [L][R] faixa  [+] menu
@@ -339,9 +339,6 @@ Feito por
 Medium
 Médio
 
-Menu
-Menu
-
 Move song
 Mover música
 
@@ -594,11 +591,14 @@ Artista desconhecido
 Up to 48 characters, without / or \, not starting with a dot.
 Até 48 caracteres, sem / ou \, sem começar com ponto.
 
-Update the library now
-Atualizar a biblioteca agora
+Update the library
+Atualizar a biblioteca
 
 Updating library  %zu / %zu
 Atualizando a biblioteca  %zu / %zu
+
+Updating the library...
+Atualizando a biblioteca...
 
 Use this folder
 Usar esta pasta

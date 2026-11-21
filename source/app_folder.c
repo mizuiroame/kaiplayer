@@ -82,6 +82,16 @@ void appUsePlaylistFolder(App *app)
     appPlaylistsRefresh(app);
 }
 
+void appUpdateLibrary(App *app)
+{
+    if (!app->config.library[0]) {
+        appToast(app, T("Choose your music folder first."));
+        return;
+    }
+    catalogScanStart(app->config.library);
+    appToast(app, T("Updating the library..."));  // Its progress shows on the Library tab.
+}
+
 void appPickerChoose(App *app)
 {
     snprintf(app->config.library, sizeof(app->config.library), "%s", app->picker.path);

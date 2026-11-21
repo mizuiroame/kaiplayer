@@ -24,19 +24,19 @@ static uint64_t nowNs(void)
     return armTicksToNs(armGetSystemTick());
 }
 
-void appOpenSettings(App *app)
-{
-    app->settings_open = true;
-    app->settings_page = SETTINGS_PAGE_MAIN;
-    app->settings_cursor = SETTING_OPEN_PLAYBACK;
-}
-
+// A page, on its first row.
 static void openPage(App *app, SettingsPage page)
 {
     SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
     settingsPageRows(page, rows);
     app->settings_page = page;
     app->settings_cursor = rows[0];
+}
+
+void appOpenSettings(App *app)
+{
+    app->settings_open = true;
+    openPage(app, SETTINGS_PAGE_MAIN);
 }
 
 static void setSleep(App *app, int minutes)
@@ -80,6 +80,10 @@ void appActivateSetting(App *app, SettingRow row)
         app->about_open = true;
     } else if (row == SETTING_LIBRARY) {
         appOpenFolderPicker(app, false);
+    } else if (row == SETTING_RESCAN) {
+        if (app->config.library[0])
+            app->settings_open = false;  // Closed, as the + menu's, to see the library update.
+        appUpdateLibrary(app);
     } else {
         appChangeSetting(app, row, 1);
     }

@@ -57,8 +57,8 @@ language = Italiano
 [A] choose  [B] close
 [A] scegli  [B] chiudi
 
-[A] choose  [B] close  [+] exit...
-[A] scegli  [B] chiudi  [+] esci...
+[A] choose  [B] close  [+] exit
+[A] scegli  [B] chiudi  [+] esci
 
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] apri  [B] indietro  [>] aggiungi  [X] riproduci  [Y] casuale  [RS] pagina / scorri  [L][R] brano  [+] menu
@@ -336,9 +336,6 @@ Creato da
 Medium
 Media
 
-Menu
-Menu
-
 Move song
 Sposta brano
 
@@ -591,11 +588,14 @@ Artista sconosciuto
 Up to 48 characters, without / or \, not starting with a dot.
 Fino a 48 caratteri, senza / o \, senza un punto all'inizio.
 
-Update the library now
-Aggiorna la libreria ora
+Update the library
+Aggiorna la libreria
 
 Updating library  %zu / %zu
 Aggiornamento libreria  %zu / %zu
+
+Updating the library...
+Aggiornamento libreria...
 
 Use this folder
 Usa questa cartella

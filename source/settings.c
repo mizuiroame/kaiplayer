@@ -6,25 +6,30 @@ static const char *const ROW_LABELS[SETTING_COUNT] = {
     N_("Music folder"), N_("Sleep timer"), N_("Resume where you left off"), N_("Clock"), N_("Equalizer"),
     N_("ReplayGain (even loudness)"), N_("Accent color"), N_("Now Playing style"), N_("Background"),
     N_("Background blur"), N_("Screen off while playing"), N_("About"), N_("Playback"), N_("Display"),
-    N_("Language"),
+    N_("Language"), N_("Library"), N_("Update the library"),
 };
 
-static const SettingRow MAIN_ROWS[] = {SETTING_LIBRARY, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY, SETTING_ABOUT};
-static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_EQUALIZER, SETTING_REPLAYGAIN};
-static const SettingRow DISPLAY_ROWS[] = {SETTING_LANGUAGE,   SETTING_ACCENT,          SETTING_NOW_STYLE,
-                                          SETTING_BACKGROUND, SETTING_BACKGROUND_BLUR, SETTING_CLOCK,
-                                          SETTING_SCREEN_OFF};
+// The same pages, in the same order, as KaiVideo's and KaiRadio's Settings.
+static const SettingRow MAIN_ROWS[] = {SETTING_OPEN_LIBRARY, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY,
+                                       SETTING_ABOUT};
+static const SettingRow LIBRARY_ROWS[] = {SETTING_LIBRARY, SETTING_RESCAN};
+static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_SCREEN_OFF, SETTING_EQUALIZER,
+                                           SETTING_REPLAYGAIN};
+static const SettingRow DISPLAY_ROWS[] = {SETTING_LANGUAGE,        SETTING_ACCENT, SETTING_BACKGROUND,
+                                          SETTING_BACKGROUND_BLUR, SETTING_CLOCK,  SETTING_NOW_STYLE};
 
 #define COUNT_OF(a) ((int)(sizeof(a) / sizeof((a)[0])))
 
 int settingsPageRows(SettingsPage page, SettingRow rows[SETTINGS_PAGE_MAX_ROWS])
 {
-    const SettingRow *from = page == SETTINGS_PAGE_PLAYBACK ? PLAYBACK_ROWS
-                           : page == SETTINGS_PAGE_DISPLAY  ? DISPLAY_ROWS
-                                                            : MAIN_ROWS;
-    int count = page == SETTINGS_PAGE_PLAYBACK ? COUNT_OF(PLAYBACK_ROWS)
-              : page == SETTINGS_PAGE_DISPLAY  ? COUNT_OF(DISPLAY_ROWS)
-                                               : COUNT_OF(MAIN_ROWS);
+    const SettingRow *from = MAIN_ROWS;
+    int count = COUNT_OF(MAIN_ROWS);
+    switch (page) {
+    case SETTINGS_PAGE_LIBRARY: from = LIBRARY_ROWS; count = COUNT_OF(LIBRARY_ROWS); break;
+    case SETTINGS_PAGE_PLAYBACK: from = PLAYBACK_ROWS; count = COUNT_OF(PLAYBACK_ROWS); break;
+    case SETTINGS_PAGE_DISPLAY: from = DISPLAY_ROWS; count = COUNT_OF(DISPLAY_ROWS); break;
+    default: break;
+    }
     for (int i = 0; i < count; i++)
         rows[i] = from[i];
     return count;
@@ -32,23 +37,31 @@ int settingsPageRows(SettingsPage page, SettingRow rows[SETTINGS_PAGE_MAX_ROWS])
 
 SettingsPage settingsRowPage(SettingRow row)
 {
-    return row == SETTING_OPEN_PLAYBACK ? SETTINGS_PAGE_PLAYBACK
-         : row == SETTING_OPEN_DISPLAY  ? SETTINGS_PAGE_DISPLAY
-                                        : SETTINGS_PAGE_MAIN;
+    switch (row) {
+    case SETTING_OPEN_LIBRARY: return SETTINGS_PAGE_LIBRARY;
+    case SETTING_OPEN_PLAYBACK: return SETTINGS_PAGE_PLAYBACK;
+    case SETTING_OPEN_DISPLAY: return SETTINGS_PAGE_DISPLAY;
+    default: return SETTINGS_PAGE_MAIN;
+    }
 }
 
 SettingRow settingsPageRow(SettingsPage page)
 {
-    return page == SETTINGS_PAGE_PLAYBACK ? SETTING_OPEN_PLAYBACK
-         : page == SETTINGS_PAGE_DISPLAY  ? SETTING_OPEN_DISPLAY
-                                          : SETTING_LIBRARY;
+    switch (page) {
+    case SETTINGS_PAGE_PLAYBACK: return SETTING_OPEN_PLAYBACK;
+    case SETTINGS_PAGE_DISPLAY: return SETTING_OPEN_DISPLAY;
+    default: return SETTING_OPEN_LIBRARY;
+    }
 }
 
 const char *settingsPageTitle(SettingsPage page)
 {
-    return page == SETTINGS_PAGE_PLAYBACK  ? T("Playback")
-           : page == SETTINGS_PAGE_DISPLAY ? T("Display")
-                                           : T("Settings");
+    switch (page) {
+    case SETTINGS_PAGE_LIBRARY: return T("Library");
+    case SETTINGS_PAGE_PLAYBACK: return T("Playback");
+    case SETTINGS_PAGE_DISPLAY: return T("Display");
+    default: return T("Settings");
+    }
 }
 
 int settingsSleepClamp(long minutes)
@@ -88,6 +101,7 @@ const char *settingsRowLabel(SettingRow row)
 
 bool settingsRowEditable(SettingRow row)
 {
-    // Those open with A: About, the folder picker and the pages.
-    return row != SETTING_ABOUT && row != SETTING_LIBRARY && settingsRowPage(row) == SETTINGS_PAGE_MAIN;
+    // Those A opens or does: About, the folder picker, Update the library and the pages.
+    return row != SETTING_ABOUT && row != SETTING_LIBRARY && row != SETTING_RESCAN &&
+           settingsRowPage(row) == SETTINGS_PAGE_MAIN;
 }

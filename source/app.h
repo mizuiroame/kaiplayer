@@ -187,6 +187,8 @@ void appHandleFolderPicker(App *app, uint64_t pressed);
 // Picker rows are folders only: how many of the listing's entries those are.
 size_t appPickerFolderCount(const App *app);
 void appPickerChoose(App *app);  // Use the folder the picker is in.
+// Looks for music in the music folder again ("Update the library"), or says to choose one first.
+void appUpdateLibrary(App *app);
 // Points playlists at the music folder's Playlists folder, copying the ones
 // in sdmc:/playlists there the first time.
 void appUsePlaylistFolder(App *app);

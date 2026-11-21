@@ -258,6 +258,22 @@ static void testMenu(void)
     CHECK(menuSelected(&m)->action == 2 && menuSelected(&m)->arg == 5);
     menuMove(&m, -9);
     CHECK(menuSelected(&m)->action == 1);
+    CHECK(m.divider == 0);
+    menuAddDivider(&m);  // A line before the next item; not an item itself.
+    CHECK(m.divider == 2 && m.count == 2);
+    menuAdd(&m, "Three", 3, 0);
+    menuMove(&m, 1);
+    CHECK(menuSelected(&m)->action == 2);
+    menuMove(&m, 1);
+    CHECK(menuSelected(&m)->action == 3);
+
+    menuOpen(&m, "Empty above");
+    menuAddDivider(&m);  // Nothing above: no line.
+    menuAdd(&m, "One", 1, 0);
+    CHECK(m.divider == 0);
+    menuOpen(&m, "Title");
+    menuAdd(&m, "One", 1, 0);
+    menuAdd(&m, "Two", 2, 5);
     for (int i = 0; i < MENU_MAX_ITEMS; i++)
         menuAdd(&m, "x", 0, 0);
     CHECK(m.count == MENU_MAX_ITEMS && !menuAdd(&m, "full", 0, 0));

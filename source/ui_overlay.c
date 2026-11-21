@@ -18,6 +18,7 @@
 #define MENU_W 640
 #define MENU_ROW_H 48
 #define MENU_VISIBLE 9
+#define MENU_DIVIDER_H 12
 #define SETTINGS_W 760
 #define SETTINGS_ROW_H 48
 #define KEY_W 76
@@ -54,18 +55,36 @@ static void drawRowHighlight(int x, int y, int w, int h)
     gfxFillRect(x, y + 10, 3, h - 20, COLOR_ACCENT);
 }
 
+// The + menu's line between this screen's actions and the app's: room above
+// the item after it, the line in the middle of the gap.
+static bool dividerShown(const Menu *m, int first, int rows)
+{
+    return m->divider > first && m->divider < first + rows && m->divider < m->count;
+}
+
 static void drawMenu(const Menu *m)
 {
     int rows = m->count < MENU_VISIBLE ? m->count : MENU_VISIBLE;
-    int h = 76 + rows * MENU_ROW_H + 20;
+    int first = firstVisibleItem(m->cursor, m->count);
+    bool divider = dividerShown(m, first, rows);
+    int h = 76 + rows * MENU_ROW_H + (divider ? MENU_DIVIDER_H : 0) + 20;
     int x = (GFX_WIDTH - MENU_W) / 2, y = (GFX_HEIGHT - h) / 2;
     dimScreen();
     panel(x, y, MENU_W, h);
-    fontDrawClipped(FONT_BOLD, 22, x + PANEL_PAD, y + 24, MENU_W - 2 * PANEL_PAD, m->title, COLOR_TEXT);
+    if (m->kind == MENU_KIND_MAIN) {  // The app's name in its color, its version beside it (as KaiVideo's).
+        int title_w = fontDraw(FONT_BOLD, 22, x + PANEL_PAD, y + 24, m->title, COLOR_ACCENT);
+        fontDraw(FONT_REGULAR, 15, x + PANEL_PAD + title_w + 12, y + 31, KAIPLAYER_VERSION, COLOR_FAINT);
+    } else {
+        fontDrawClipped(FONT_BOLD, 22, x + PANEL_PAD, y + 24, MENU_W - 2 * PANEL_PAD, m->title, COLOR_TEXT);
+    }
 
-    int first = firstVisibleItem(m->cursor, m->count);
     for (int i = first; i < m->count && i < first + rows; i++) {
         int row_y = y + 76 + (i - first) * MENU_ROW_H;
+        if (divider && i >= m->divider) {
+            row_y += MENU_DIVIDER_H;
+            if (i == m->divider)  // Inset like the rows, in the gap between them.
+                gfxFillRect(x + 16, row_y - (MENU_DIVIDER_H + 6) / 2, MENU_W - 32, 1, COLOR_SURFACE_HI);
+        }
         bool selected = i == m->cursor;
         if (selected)
             drawRowHighlight(x + 16, row_y, MENU_W - 32, MENU_ROW_H - 6);
@@ -121,8 +140,10 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : T("Cover colors"));
         break;
     case SETTING_BACKGROUND_BLUR: snprintf(out, size, "%s", backgroundBlurName(app->config.background_blur)); break;
+    case SETTING_OPEN_LIBRARY:
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
+    case SETTING_RESCAN: out[0] = '\0'; break;         // Just the A button when chosen.
     case SETTING_SCREEN_OFF:
         if (app->config.screen_off_minutes)
             snprintf(out, size, T("After %d min idle"), app->config.screen_off_minutes);
@@ -161,14 +182,15 @@ static void drawSettings(const App *app, uint64_t now_ns)
         settingValue(app, (SettingRow)i, now_ns, value, sizeof(value));
         int value_w = fontTextWidth(FONT_BOLD, 20, value);
         int value_x = x + SETTINGS_W - PANEL_PAD - value_w - (editable || opens ? 24 : 0);
-        fontDraw(FONT_BOLD, 20, value_x, row_y + 9, value, editable ? COLOR_ACCENT : COLOR_DIM);
+        if (value[0])
+            fontDraw(FONT_BOLD, 20, value_x, row_y + 9, value, editable ? COLOR_ACCENT : COLOR_DIM);
         if (opens) {  // A page: an arrow into it.
             gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 13, 10, 16, selected ? COLOR_TEXT : COLOR_DIM);
         } else if (editable) {
             gfxFillTriangleLeft(value_x - 22, row_y + 13, 10, 16, COLOR_DIM);
             gfxFillTriangleRight(x + SETTINGS_W - PANEL_PAD - 12, row_y + 13, 10, 16, COLOR_DIM);
-        } else if (selected) {  // About: A opens it.
-            uiDrawButton(value_x - 34, (float)row_y + 21.0f, "A", COLOR_SURFACE, COLOR_TEXT);
+        } else if (selected) {  // A opens or does it: About, the music folder, Update the library.
+            uiDrawButton(value_x - (value[0] ? 34 : 22), (float)row_y + 21.0f, "A", COLOR_SURFACE, COLOR_TEXT);
         }
         uiHitAdd(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6, HIT_SETTING, i);
     }

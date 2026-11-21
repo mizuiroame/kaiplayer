@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 typedef enum {
-    SETTING_LIBRARY,
+    SETTING_LIBRARY,        // The music folder: opens the folder picker.
     SETTING_SLEEP,
     SETTING_RESUME,
     SETTING_CLOCK,
@@ -20,12 +20,15 @@ typedef enum {
     SETTING_OPEN_PLAYBACK,  // Rows that open a page.
     SETTING_OPEN_DISPLAY,
     SETTING_LANGUAGE,       // The language KaiPlayer is shown in (languages.h).
+    SETTING_OPEN_LIBRARY,
+    SETTING_RESCAN,         // Looks for music again, as the + menu's "Update the library".
     SETTING_COUNT,
 } SettingRow;
 
-// Settings opens on the main page; Playback and Display hold the rest.
+// Settings opens on the main page; Library, Playback and Display hold the rest.
 typedef enum {
     SETTINGS_PAGE_MAIN,
+    SETTINGS_PAGE_LIBRARY,
     SETTINGS_PAGE_PLAYBACK,
     SETTINGS_PAGE_DISPLAY,
     SETTINGS_PAGE_COUNT,

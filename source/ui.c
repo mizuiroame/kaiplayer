@@ -347,7 +347,7 @@ static const char *footerHelp(const App *app)
     if (app->menu.open && app->menu.kind == MENU_KIND_EXIT)
         return T("[A] choose  [B] cancel  [+] exit");
     if (app->menu.open)
-        return app->menu.kind == MENU_KIND_MAIN ? T("[A] choose  [B] close  [+] exit...") : T("[A] choose  [B] close");
+        return app->menu.kind == MENU_KIND_MAIN ? T("[A] choose  [B] close  [+] exit") : T("[A] choose  [B] close");
     if (app->playlists.moving)
         return T("[^v] move the song  [A][B] done");
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
