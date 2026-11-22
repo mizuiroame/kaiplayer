@@ -46,9 +46,10 @@ playing the selected card: **A** opens the card, and you play it from there
 (**Y** still shuffles it).
 
 - **Artists, Albums and Songs** come from the songs' tags, read over the
-  network and kept on the card. KaiPlayer starts reading them as soon as the
-  folder is set up, in the background, even while the card's library is
-  shown, and looks for changes each time it starts. A pill at the top right
+  network and kept on the card. As soon as the folder is set up, its
+  library is the one shown and KaiPlayer starts reading it; each time it
+  starts, it looks for changes in the background, even while the card's
+  library is shown. A pill at the top right
   shows the songs read so far (`1234 / 1602`); tap it to see that library.
   After the first time, only new or changed songs are read again, and the
   library shows at once.

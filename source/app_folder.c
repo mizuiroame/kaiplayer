@@ -122,9 +122,12 @@ void appLibraryRemoteChanged(App *app, LibrarySource source, bool moved)
         return;
     }
     if (app->config.source != source) {
-        // Read now, in the background (a new address forgets the old one's): shown at once when chosen.
-        catalogScanRefreshRemote(root, moved);
-        return;
+        // Just set up (a server signed in, a folder set): its library is the one shown, as KaiVideo does
+        // after a sign-in, and it's read now with the pill. Not doing so left the old one on screen.
+        app->config.source = source;
+        configSave(&app->config);
+        app->focus = FOCUS_LIST;
+        appToast(app, source == LIBRARY_NETWORK ? T("Library: the network folder") : T("Library: Navidrome"));
     }
     app->library.depth = 0;
     resetFolders(app);

@@ -33,8 +33,9 @@ a tap on the pill, or the **+ menu** goes to the next library that is set up:
 **SD card**, **Network folder**, **Navidrome**, then the SD card again.
 
 - **Artists, Albums and Songs** come from the server. KaiPlayer reads them as
-  soon as you sign in, in the background, even while another library is shown,
-  and again each time it starts. A blue pill at the top right shows the songs
+  soon as you sign in, and its library becomes the one shown; each time
+  KaiPlayer starts, it reads it again in the background, even while another
+  library is shown. A blue pill at the top right shows the songs
   read so far; tap it to see that library. After the first time, the library
   shows at once from what was kept on the card (`catalog-subsonic.txt`).
 - **Folders** has nothing to show for a server: its songs are in Artists,
