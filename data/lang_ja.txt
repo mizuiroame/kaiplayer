@@ -754,11 +754,11 @@ User name (empty: none; DOMAIN\user for a domain)
 Wrong user name or password.
 ユーザー名またはパスワードが違います。
 
-Show the network folder's library
-ネットワークフォルダーのライブラリーを表示
+Go to the network folder library
+ネットワークフォルダーのライブラリーへ
 
-Show the SD card's library
-SDカードのライブラリーを表示
+Go to the SD card library
+SDカードのライブラリーへ
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 開く  [X] SDカード / ネットワーク  [Y] シャッフル  [LS] 移動  [RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
@@ -799,8 +799,8 @@ Server set: now enter your user name and password.
 Server set: test the connection, then press X in Library to play from it.
 サーバーを設定しました。接続をテストしてから、ライブラリーでXを押すとそこから再生できます。
 
-Show Navidrome's library
-Navidromeのライブラリーを表示
+Go to the Navidrome library
+Navidromeのライブラリーへ
 
 Sign in to the Navidrome server in Settings first.
 先に「設定」でNavidromeサーバーにログインしてください。

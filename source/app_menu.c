@@ -83,9 +83,9 @@ void appOpenMenu(App *app)
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
     if (appCanSwitchSource(app)) {  // Where X goes in Library, from anywhere.
         LibrarySource next = appNextLibrarySource(app);
-        menuAdd(&app->menu, next == LIBRARY_NETWORK  ? T("Show the network folder's library")
-                            : next == LIBRARY_SERVER ? T("Show Navidrome's library")
-                                                     : T("Show the SD card's library"), ACT_SOURCE, 0);
+        menuAdd(&app->menu, next == LIBRARY_NETWORK  ? T("Go to the network folder library")
+                            : next == LIBRARY_SERVER ? T("Go to the Navidrome library")
+                                                     : T("Go to the SD card library"), ACT_SOURCE, 0);
     }
     if (status.state == PLAYER_PLAYING)
         menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), ACT_SCREEN_OFF, 0);

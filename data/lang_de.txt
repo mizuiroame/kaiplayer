@@ -754,11 +754,11 @@ Benutzername (leer: keiner; DOMÄNE\Benutzer für eine Domäne)
 Wrong user name or password.
 Falscher Benutzername oder falsches Passwort.
 
-Show the network folder's library
-Bibliothek des Netzwerkordners zeigen
+Go to the network folder library
+Zur Bibliothek des Netzwerkordners
 
-Show the SD card's library
-Bibliothek der SD-Karte zeigen
+Go to the SD card library
+Zur Bibliothek der SD-Karte
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] Öffnen  [X] SD-Karte / Netzwerk  [Y] Zufall  [LS] Bewegen  [RS] Spulen  [L][R] Titel  [-] Pause  [+] Menü
@@ -799,8 +799,8 @@ Server eingerichtet: Gib jetzt deinen Benutzernamen und dein Passwort ein.
 Server set: test the connection, then press X in Library to play from it.
 Server eingerichtet: Teste die Verbindung und drücke dann X in der Bibliothek, um daraus abzuspielen.
 
-Show Navidrome's library
-Bibliothek von Navidrome zeigen
+Go to the Navidrome library
+Zur Navidrome-Bibliothek
 
 Sign in to the Navidrome server in Settings first.
 Melde dich zuerst in den Einstellungen beim Navidrome-Server an.

@@ -754,11 +754,11 @@ User name (empty: none; DOMAIN\user for a domain)
 Wrong user name or password.
 사용자 이름 또는 비밀번호가 올바르지 않습니다.
 
-Show the network folder's library
-네트워크 폴더의 라이브러리 보기
+Go to the network folder library
+네트워크 폴더 라이브러리로 이동
 
-Show the SD card's library
-SD 카드의 라이브러리 보기
+Go to the SD card library
+SD 카드 라이브러리로 이동
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 열기  [X] SD 카드 / 네트워크  [Y] 셔플  [LS] 이동  [RS] 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
@@ -799,8 +799,8 @@ Server set: now enter your user name and password.
 Server set: test the connection, then press X in Library to play from it.
 서버를 설정했습니다. 연결을 테스트한 다음 라이브러리에서 X를 눌러 재생하세요.
 
-Show Navidrome's library
-Navidrome의 라이브러리 보기
+Go to the Navidrome library
+Navidrome 라이브러리로 이동
 
 Sign in to the Navidrome server in Settings first.
 먼저 설정에서 Navidrome 서버에 로그인하세요.

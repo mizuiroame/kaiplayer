@@ -38,7 +38,7 @@ set up too: **X** goes through them in turn). To switch:
 - press **X** on **Home** or on **Library's first page** (the pill shows the
   **X** there, and so does the help line);
 - tap the pill, on any tab;
-- or choose **+ → Show the network folder's library** (**Show the SD card's
+- or choose **+ → Go to the network folder library** (**Go to the SD card
   library** to go back).
 
 With a network folder set up, **X** on Home switches the library instead of

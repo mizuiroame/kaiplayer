@@ -754,11 +754,11 @@ User name (empty: none; DOMAIN\user for a domain)
 Wrong user name or password.
 用户名或密码错误。
 
-Show the network folder's library
-显示网络文件夹的媒体库
+Go to the network folder library
+前往网络文件夹的媒体库
 
-Show the SD card's library
-显示SD卡的媒体库
+Go to the SD card library
+前往SD卡的媒体库
 
 [A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 打开  [X] SD卡 / 网络  [Y] 随机播放  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
@@ -799,8 +799,8 @@ Server set: now enter your user name and password.
 Server set: test the connection, then press X in Library to play from it.
 服务器已设置：请测试连接，然后在媒体库中按X从中播放。
 
-Show Navidrome's library
-显示Navidrome的媒体库
+Go to the Navidrome library
+前往Navidrome媒体库
 
 Sign in to the Navidrome server in Settings first.
 请先在“设置”中登录Navidrome服务器。
