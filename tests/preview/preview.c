@@ -602,7 +602,7 @@ int main(int argc, char **argv)
     app.menu.kind = MENU_KIND_MAIN;
     menuAddDivider(&app.menu);
     menuAdd(&app.menu, T("Update the library"), 0, 0);
-    menuAdd(&app.menu, T("Show the network folder's library"), 0, 0);
+    menuAdd(&app.menu, T("Go to the network folder library"), 0, 0);
     menuAdd(&app.menu, T("Turn screen off (music keeps playing)"), 0, 0);
     menuAdd(&app.menu, T("Settings"), 0, 0);
     menuAdd(&app.menu, T("Exit KaiPlayer"), 0, 0);
@@ -664,7 +664,7 @@ int main(int argc, char **argv)
     app.menu.kind = MENU_KIND_MAIN;
     menuAddDivider(&app.menu);
     menuAdd(&app.menu, T("Update the library"), 0, 0);
-    menuAdd(&app.menu, T("Show the SD card's library"), 0, 0);
+    menuAdd(&app.menu, T("Go to the SD card library"), 0, 0);
     menuAdd(&app.menu, T("Settings"), 0, 0);
     menuAdd(&app.menu, T("Exit KaiPlayer"), 0, 0);
     app.menu.cursor = 1;
