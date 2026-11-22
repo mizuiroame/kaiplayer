@@ -35,3 +35,20 @@ cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a  NotoSans-OFL.t
 478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823  ../data/font_regular.ttf
 1df075a380fc7cb898acf64c1f7b3b4dd780de3caa860178bf929de35817a913  ../data/font_bold.ttf
 ```
+
+## Libraries linked into the .nro
+
+These come from the devkit image (not this folder) and are linked statically.
+Their licenses are here:
+
+| Library | Version | Where from | License |
+|---------|---------|------------|---------|
+| FFmpeg (libavformat, libavcodec, libswresample, libavutil) | 7.1 | Built by `ffmpeg/Dockerfile` from ffmpeg.org's release tarball (SHA-256 checked), only the AAC, ALAC and Opus decoders, the MP4, Ogg and ADTS demuxers and the resampler | LGPL 2.1 (`FFmpeg-LGPL-2.1.txt`) |
+| libsmb2 | 6.0.0 | Built by `smb/Dockerfile` from its release tarball (SHA-256 checked) | LGPL 2.1 (`libsmb2-LGPL-2.1.txt`, `libsmb2-COPYING.txt`) |
+| libcurl | - | devkitPro's `switch-curl` package | curl license (`curl-LICENSE.txt`) |
+| zlib | - | devkitPro's `switch-zlib` package | zlib license (`zlib-LICENSE.txt`) |
+| libounce (libnx fork) | - | ounce-devkit | ISC |
+
+Under the LGPL, you may change FFmpeg or libsmb2 and relink KaiPlayer with
+your version: the whole source and the scripts that build them are in this
+repository.

@@ -1,5 +1,6 @@
 // Reads title, artist, album and embedded cover art from audio files:
-// ID3v2/ID3v1 (MP3), FLAC metadata blocks and Vorbis comments (FLAC, Ogg).
+// ID3v2/ID3v1 (MP3), FLAC metadata blocks and Vorbis comments (FLAC, Ogg),
+// and through FFmpeg's metadata (ffaudio.c) MP4/M4A, AAC and Opus.
 // The parsers work on memory, take untrusted input and check every length.
 #pragma once
 

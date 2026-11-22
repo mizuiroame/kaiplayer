@@ -8,6 +8,7 @@
 #include "stb_vorbis.c"
 
 #include "dsd.h"
+#include "ffaudio.h"
 #include "kfile.h"
 #include "tags.h"
 #include "tags_text.h"
@@ -158,6 +159,8 @@ static bool readOggHead(KFile *f, TrackTags *t)
 
 static bool readOgg(KFile *f, TrackTags *t)
 {
+    if (ffaudioOggIsOpus(f))
+        return ffaudioReadTags(f, t);
     if (!kfileStdio(f))
         return readOggHead(f, t);
     int error = 0;
@@ -180,13 +183,16 @@ bool tagsRead(const char *path, TrackTags *t)
     bool ogg = utilHasExtension(path, "ogg") || utilHasExtension(path, "oga");
     bool mp3 = utilHasExtension(path, "mp3");
     bool dsd = utilHasExtension(path, "dsf") || utilHasExtension(path, "dff");
-    if (!ogg && !mp3 && !dsd && !utilHasExtension(path, "flac"))
+    bool ffmpeg = ffaudioIsFile(path);
+    if (!ogg && !mp3 && !dsd && !ffmpeg && !utilHasExtension(path, "flac"))
         return true;  // A WAV: no tags to read.
     KFile *f = kfileOpen(path, KFILE_PEEK);
     if (!f)
         return false;
     bool ok = true;
-    if (ogg)
+    if (ffmpeg)
+        ok = ffaudioReadTags(f, t) || !kfileFailed(f);  // Not a file it knows: no tags, as for a broken FLAC.
+    else if (ogg)
         ok = readOgg(f, t);
     else if (mp3)
         readMp3(f, t);

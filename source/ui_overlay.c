@@ -421,10 +421,10 @@ static void drawAbout(void)
     // One text each, drawn a line at a time: a translation may break its lines elsewhere.
     static const char *const LINES[] = {
         N_("A music player for Switch 2 homebrew on kaiHEN."),
-        N_("Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\n"
+        N_("Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\n"
            "playlists, an equalizer, ReplayGain and album art."),
         "",
-        N_("Free and open source under the MIT license."),
+        N_("Free and open source under the MIT license; FFmpeg under the LGPL."),
         N_("Not affiliated with or endorsed by Nintendo."),
     };
     int x = (GFX_WIDTH - ABOUT_W) / 2, y = (GFX_HEIGHT - ABOUT_H) / 2;

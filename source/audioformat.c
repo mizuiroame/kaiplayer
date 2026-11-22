@@ -25,6 +25,8 @@ void decoderFormatLabel(const AudioFormat *f, char *out, size_t size)
     rateText(f->sample_rate, rate, sizeof(rate), &unit);
     if (f->bits && !dsd)
         snprintf(out, size, "%s \xC2\xB7 %u-bit \xC2\xB7 %s %s", f->codec, f->bits, rate, unit);
+    else if (f->kbps)
+        snprintf(out, size, "%s \xC2\xB7 %u kbps", f->codec, f->kbps);
     else
         snprintf(out, size, "%s \xC2\xB7 %s %s", f->codec, rate, unit);
 }

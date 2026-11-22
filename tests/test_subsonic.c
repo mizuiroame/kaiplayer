@@ -186,8 +186,9 @@ static void testSongs(void)
     catalogInit(&c);
     size_t added = 0;
     CHECK(subAddSongs(&c, jsonGet(body, "searchResult3"), "song", NULL, &added));
-    CHECK(added == 3 && c.song_count == 3);
+    CHECK(added == 4 && c.song_count == 4);  // Not the video; the Opus song plays (FFmpeg).
     CHECK(catalogBuild(&c));
+    CHECK(catalogFind(&c, "sub:/-/w1.opus") >= 0);
     long i = catalogFind(&c, "sub:/al-75ke_f772/5hz6.flac");
     CHECK(i >= 0);
     if (i >= 0) {

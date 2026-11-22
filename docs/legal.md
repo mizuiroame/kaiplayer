@@ -18,10 +18,14 @@
   measure, and it can't be used to copy or run commercial software. It plays
   the audio files that users put on their own card. It doesn't read SACD
   discs or disc images, and it doesn't decode DST-compressed DSD.
-- **libsmb2.** For network folders over SMB, KaiPlayer uses libsmb2's
-  client library, under the LGPL 2.1. The script that builds it
-  (`smb/Dockerfile`, from its release, checked by SHA-256) is in this
+- **FFmpeg and libsmb2.** KaiPlayer plays AAC, ALAC and Opus with FFmpeg,
+  built under the LGPL 2.1 (only its audio decoders, no GPL or non-free
+  parts), and reaches network folders over SMB with libsmb2's client library,
+  under the same license. The scripts that build them (`ffmpeg/` and
+  `smb/Dockerfile`, from their releases, checked by SHA-256) are in this
   repository, so KaiPlayer can be rebuilt, changed and relinked.
+- **Patents.** AAC is played with FFmpeg's decoder; it may be covered by
+  patents in some countries. ALAC and Opus are royalty-free.
 - **User responsibility.** Only play music you have the right to listen to.
   Running homebrew (kaiHEN) can put your console at risk, can affect its
   warranty and can go against the manufacturer's terms of service. You do it at
@@ -34,7 +38,7 @@ This notice is not legal advice.
 ## Licenses
 
 KaiPlayer is released under the [MIT License](../LICENSE), which also contains
-the legal notice above.
+the legal notice above. FFmpeg and libsmb2 are released under the LGPL 2.1.
 
 Copyright (c) 2026 Mizuiro.
 
@@ -48,14 +52,19 @@ Third-party libraries in `third_party/`:
 | [stb_truetype](https://github.com/nothings/stb) | Drawing text | Public domain or MIT |
 | [Noto Sans](https://github.com/notofonts/latin-greek-cyrillic) (`data/`) | Interface font | SIL Open Font License 1.1 ([third_party/NotoSans-OFL.txt](../third_party/NotoSans-OFL.txt)) |
 
-Linked into the `.nro` for the [network folder](network-folder.md), from the
-devkit image (not in `third_party/`, but their licenses are):
+Linked into the `.nro` from the devkit image (not in `third_party/`, but their
+licenses are):
 
 | Library | Used for | License |
 |---------|----------|---------|
+| [FFmpeg](https://ffmpeg.org/) 7.1 (libavformat, libavcodec, libswresample, libavutil) | Playing AAC, ALAC and Opus | [LGPL 2.1](../third_party/FFmpeg-LGPL-2.1.txt) |
 | [libsmb2](https://github.com/sahlberg/libsmb2) 6.0.0 | Network folders over SMB | [LGPL 2.1](../third_party/libsmb2-LGPL-2.1.txt) ([its notice](../third_party/libsmb2-COPYING.txt)) |
 | [curl](https://curl.se/) | WebDAV network folders, Navidrome servers | [curl](../third_party/curl-LICENSE.txt) |
 | [zlib](https://zlib.net/) | Used by curl | [zlib](../third_party/zlib-LICENSE.txt) |
 
 The `.nro` also links [libounce](https://github.com/ouncebrew/libounce), which
 uses the ISC license (its bundled mimalloc uses MIT).
+
+Under the LGPL, you may change FFmpeg or libsmb2 and relink KaiPlayer with
+your version: the whole source and the scripts that build them are in this
+repository ([building.md](building.md)).

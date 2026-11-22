@@ -167,9 +167,11 @@ static void play(const char *location)
     tagsRead(path, &x);
     EXPECT(tagsRead(location, &y), "tags of %s", location);
     EXPECT(!strcmp(x.title, y.title) && !strcmp(x.artist, y.artist) && !strcmp(x.album, y.album) &&
-               x.track_number == y.track_number && x.picture_size == y.picture_size,
+               x.track_number == y.track_number && x.picture_size == y.picture_size &&
+               x.has_track_gain == y.has_track_gain && x.track_gain_db == y.track_gain_db && y.title[0],
            "tags of %s differ", location);
-    printf("  tags: %s / %s / %s\n", y.title, y.artist, y.album);
+    printf("  tags: %s / %s / %s, picture %zu bytes, gain %s%.2f dB\n", y.title, y.artist, y.album, y.picture_size,
+           y.has_track_gain ? "" : "none ", y.track_gain_db);
     tagsFree(&x);
     tagsFree(&y);
     CoverImage large = {0}, small = {0}, card_large = {0}, card_small = {0};
@@ -193,7 +195,7 @@ static void scan(void)
     for (size_t i = 0; i < files.count; i++)
         printf("  %s %lld %lld\n", files.files[i].path, (long long)files.files[i].size,
                (long long)files.files[i].modified);
-    EXPECT(files.count == 8, "8 songs, not %zu", files.count);
+    EXPECT(files.count == 12, "12 songs, not %zu", files.count);
     libraryFilesFree(&files);
 }
 
@@ -223,6 +225,10 @@ int main(void)
     play("dav:/Aurora Fields/Paper Boats/01 - Morning Light.flac");
     play("dav:/Aurora Fields/Neon Harbor/01 - Neon Harbor.mp3");
     play("dav:/The Night Drive Band/Night Drive/02 - Tail Lights.ogg");
+    play("dav:/Aurora Fields/Tidal Lines/01 - Salt Air.m4a");          // AAC, its cover inside.
+    play("dav:/Aurora Fields/Tidal Lines/02 - Harbour Lights.m4a");    // ALAC, 24-bit, 96 kHz.
+    play("dav:/The Night Drive Band/Night Drive/04 - Dawn Patrol.opus");
+    play("dav:/The Night Drive Band/Night Drive/05 - Rear View.ogg");  // Opus in an .ogg file.
     scan();
     EXPECT(!davList("dav:/Not a folder", &e, &n, text, sizeof(text)), "a missing folder listed");
     printf("missing folder: %s\n", text);

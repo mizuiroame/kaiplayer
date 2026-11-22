@@ -5,23 +5,35 @@
 ## Supported audio formats
 
 The decoders are built into the `.nro`, so you don't need to install anything
-else.
+else. AAC, ALAC and Opus are decoded by [FFmpeg](https://ffmpeg.org/) (LGPL 2.1,
+see [Legal](legal.md)); the others by small single-file libraries.
 
 | Format         | Extensions     | Notes                                                 |
 |----------------|----------------|-------------------------------------------------------|
 | **MP3**        | `.mp3`         | CBR and VBR. The MP3 patents expired in 2017.         |
 | **FLAC**       | `.flac`        | Lossless, 8 to 32 bits.                               |
-| **Ogg Vorbis** | `.ogg`, `.oga` | Vorbis only. `.ogg` files that contain Opus don't play. |
+| **Ogg Vorbis** | `.ogg`, `.oga` | Vorbis. An `.ogg` file that holds Opus plays as Opus. |
+| **AAC**        | `.m4a`, `.mp4`, `.aac` | AAC-LC and HE-AAC (v1, v2), in MP4/M4A or as raw ADTS `.aac`. |
+| **ALAC**       | `.m4a`         | Apple Lossless, 16 to 32 bits.                        |
+| **Opus**       | `.opus`, `.ogg`, `.oga` | Opus in Ogg.                                 |
 | **WAV**        | `.wav`         | PCM, IEEE float, A-law and µ-law.                     |
 | **DSD**        | `.dsf`, `.dff` | DSD64 to DSD512, converted to PCM. See [DSD](#dsd-dsf-dff). |
 
 - **Sample rates:** any sample rate works (44.1 kHz, 48 kHz, 96 kHz and so on).
   KaiPlayer converts it to the console's 48 kHz.
-- **Channels:** mono is played on both channels. For files with more than two
-  channels, KaiPlayer plays the front left and front right channels.
+- **Channels:** mono is played on both channels. For AAC, ALAC and Opus files
+  with more than two channels, all of them are mixed down to stereo; for the
+  other formats, KaiPlayer plays the front left and front right channels.
+- **`.mp4` files** play their sound (their main audio track); a video in them
+  isn't shown.
+- **Tags** of AAC, ALAC and Opus files are read as for FLAC: title, artist,
+  album, album artist, track and disc numbers, year, ReplayGain
+  (`replaygain_*` in MP4 files' iTunes tags; for Opus also `R128_TRACK_GAIN`
+  and `R128_ALBUM_GAIN`) and the embedded cover (MP4 `covr`, Opus
+  `METADATA_BLOCK_PICTURE`). See [Library](library.md#song-details-and-album-art).
 
-**Not supported yet:** Opus, AAC/M4A, ALAC, WMA and DRM-protected files. AAC
-and WMA won't be added, because they need paid licenses.
+**Not supported:** WMA, WavPack, APE, and DRM-protected files (such as old
+iTunes Store `.m4p` songs).
 
 ## DSD (.dsf, .dff)
 
@@ -51,8 +63,10 @@ tagged files, the levels usually even out.
 ## The format label
 
 Now Playing shows the song's format above the progress bar, and the player
-bar before the time: **FLAC · 24-bit · 96 kHz**, **MP3 · 44.1 kHz**,
-**DSD64 · 2.8 MHz** (bits only for lossless PCM formats).
+bar before the time: **FLAC · 24-bit · 96 kHz**, **ALAC · 24-bit · 96 kHz**,
+**MP3 · 44.1 kHz**, **AAC · 256 kbps**, **Opus · 128 kbps**, **DSD64 · 2.8 MHz**
+(bits only for lossless formats; the bit rate for AAC and Opus, which for Opus
+and `.aac` files is worked out from the file's size and length).
 
 ## Queue, shuffle and repeat
 

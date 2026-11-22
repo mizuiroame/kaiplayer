@@ -279,8 +279,8 @@ Neutral
 Folders
 Ordner
 
-Free and open source under the MIT license.
-Frei und quelloffen unter der MIT-Lizenz.
+Free and open source under the MIT license; FFmpeg under the LGPL.
+Frei und quelloffen unter der MIT-Lizenz; FFmpeg unter der LGPL.
 
 From cover
 Vom Cover
@@ -426,8 +426,8 @@ Playlists
 Playlists you play show up here.
 Playlists, die du abspielst, erscheinen hier.
 
-Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
-Spielt MP3, FLAC, Ogg Vorbis, WAV und DSD von deiner SD-Karte, mit\nPlaylists, Equalizer, ReplayGain und Albumcovern.
+Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
+Spielt MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV und DSD, mit\nPlaylists, Equalizer, ReplayGain und Albumcovern.
 
 Pop
 Pop

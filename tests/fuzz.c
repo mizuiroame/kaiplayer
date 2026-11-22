@@ -191,6 +191,11 @@ int main(int argc, char **argv)
     fuzzAudioFile("fixtures/tone.wav", "wav", iterations);
     fuzzAudioFile("fixtures/tone.dsf", "dsf", iterations);
     fuzzAudioFile("fixtures/tone.dff", "dff", iterations);
+    fuzzAudioFile("fixtures/tone.m4a", "m4a", iterations);
+    fuzzAudioFile("fixtures/tone_alac.m4a", "m4a", iterations);
+    fuzzAudioFile("fixtures/tone.opus", "opus", iterations);
+    fuzzAudioFile("fixtures/tone_opus.ogg", "ogg", iterations);
+    fuzzAudioFile("fixtures/tone.aac", "aac", iterations);
     fuzzImage("fixtures/small_cover.jpg", iterations * 4);
     fuzzImage("fixtures/small_cover.png", iterations * 4);
     fuzzServerAnswer("fixtures/navidrome_search3.json", iterations * 4);

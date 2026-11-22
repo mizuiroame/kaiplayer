@@ -288,8 +288,8 @@ Neutro
 Folders
 Cartelle
 
-Free and open source under the MIT license.
-Libero e open source con licenza MIT.
+Free and open source under the MIT license; FFmpeg under the LGPL.
+Libero e open source con licenza MIT; FFmpeg con licenza LGPL.
 
 From cover
 Dalla copertina
@@ -435,8 +435,8 @@ Playlist
 Playlists you play show up here.
 Le playlist che ascolti appaiono qui.
 
-Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
-Riproduce MP3, FLAC, Ogg Vorbis, WAV e DSD dalla tua scheda SD, con\nplaylist, equalizzatore, ReplayGain e copertine.
+Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
+Riproduce MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV e DSD, con\nplaylist, equalizzatore, ReplayGain e copertine.
 
 Pop
 Pop

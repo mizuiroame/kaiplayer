@@ -9,6 +9,7 @@
 #include "dr_mp3.h"
 #include "dr_wav.h"
 #include "dsd.h"
+#include "ffaudio.h"
 #define STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.c"
 
@@ -23,11 +24,11 @@
 // into memory first (Ogg songs are small).
 #define VORBIS_MEMORY_MAX (64u << 20)
 
-typedef enum { KIND_WAV, KIND_FLAC, KIND_MP3, KIND_VORBIS, KIND_DSD } DecoderKind;
+typedef enum { KIND_WAV, KIND_FLAC, KIND_MP3, KIND_VORBIS, KIND_DSD, KIND_FFMPEG } DecoderKind;
 
 struct Decoder {
     DecoderKind kind;
-    KFile *file;            // What the dr_libs and stb_vorbis read (not DSD: dsd.c opens its own).
+    KFile *file;            // What the dr_libs, stb_vorbis and FFmpeg read (not DSD: dsd.c opens its own).
     uint8_t *memory;        // A network Ogg file, whole.
     uint32_t channels;
     uint32_t sample_rate;
@@ -38,6 +39,7 @@ struct Decoder {
         drmp3 mp3;
         stb_vorbis *vorbis;
         DsdDecoder *dsd;
+        FfAudio *ff;
     } u;
     float scratch[SCRATCH_FRAMES * MAX_CHANNELS];
 };
@@ -167,7 +169,19 @@ static bool openDsd(Decoder *d, const char *path)
     return true;
 }
 
-// The kind of file, by its extension. False if no decoder reads it.
+// AAC, ALAC and Opus with FFmpeg, reading the file through kfile.
+static bool openFfmpeg(Decoder *d)
+{
+    d->u.ff = ffaudioOpen(d->file);
+    if (!d->u.ff)
+        return false;
+    d->channels = ffaudioChannels(d->u.ff);
+    d->sample_rate = ffaudioSampleRate(d->u.ff);
+    d->total_frames = ffaudioTotalFrames(d->u.ff);
+    return true;
+}
+
+// The kind of file, by its extension (an .ogg's codec comes later). False if no decoder reads it.
 static bool kindOf(const char *path, DecoderKind *kind)
 {
     if (utilHasExtension(path, "wav"))
@@ -180,6 +194,8 @@ static bool kindOf(const char *path, DecoderKind *kind)
         *kind = KIND_VORBIS;
     else if (utilHasExtension(path, "dsf") || utilHasExtension(path, "dff"))
         *kind = KIND_DSD;
+    else if (ffaudioIsFile(path))
+        *kind = KIND_FFMPEG;
     else
         return false;
     return true;
@@ -201,6 +217,8 @@ Decoder *decoderOpen(const char *path)
         d->file = kfileOpen(path, KFILE_STREAM);
         ok = d->file != NULL;
     }
+    if (ok && d->kind == KIND_VORBIS && ffaudioOggIsOpus(d->file))
+        d->kind = KIND_FFMPEG;  // Opus in an .ogg file.
     if (ok) {
         switch (d->kind) {
         case KIND_WAV: ok = openWav(d); break;
@@ -208,6 +226,7 @@ Decoder *decoderOpen(const char *path)
         case KIND_MP3: ok = openMp3(d); break;
         case KIND_VORBIS: ok = openVorbis(d); break;
         case KIND_DSD: ok = openDsd(d, path); break;
+        case KIND_FFMPEG: ok = openFfmpeg(d); break;
         }
     }
 
@@ -235,6 +254,7 @@ void decoderClose(Decoder *d)
     case KIND_MP3: drmp3_uninit(&d->u.mp3); break;
     case KIND_VORBIS: stb_vorbis_close(d->u.vorbis); break;
     case KIND_DSD: dsdClose(d->u.dsd); break;
+    case KIND_FFMPEG: ffaudioClose(d->u.ff); break;
     }
     closeFiles(d);  // After the decoder: it may read on closing.
     free(d);
@@ -260,6 +280,7 @@ static uint64_t readNative(Decoder *d, float *out, uint64_t frames)
         return (uint64_t)stb_vorbis_get_samples_float_interleaved(
             d->u.vorbis, (int)d->channels, out, (int)(frames * d->channels));
     case KIND_DSD: return dsdRead(d->u.dsd, out, frames);
+    case KIND_FFMPEG: return ffaudioRead(d->u.ff, out, frames);
     }
     return 0;
 }
@@ -292,7 +313,7 @@ uint64_t decoderReadStereo(Decoder *d, float *out, uint64_t frames)
 
 void decoderFormat(const Decoder *d, AudioFormat *out)
 {
-    *out = (AudioFormat){"", d->sample_rate, 0};
+    *out = (AudioFormat){.sample_rate = d->sample_rate};
     switch (d->kind) {
     case KIND_WAV:
         snprintf(out->codec, sizeof(out->codec), "WAV");
@@ -310,6 +331,7 @@ void decoderFormat(const Decoder *d, AudioFormat *out)
         snprintf(out->codec, sizeof(out->codec), "DSD%u", out->sample_rate / base);
         break;
     }
+    case KIND_FFMPEG: ffaudioFormat(d->u.ff, out); break;
     }
 }
 
@@ -321,6 +343,7 @@ bool decoderSeek(Decoder *d, uint64_t frame)
     case KIND_MP3: return drmp3_seek_to_pcm_frame(&d->u.mp3, frame);
     case KIND_VORBIS: return stb_vorbis_seek(d->u.vorbis, (unsigned)frame) != 0;
     case KIND_DSD: return dsdSeek(d->u.dsd, frame);
+    case KIND_FFMPEG: return ffaudioSeek(d->u.ff, frame);
     }
     return false;
 }

@@ -86,6 +86,9 @@ KaiPlayer reads the song details from the file's tags:
 | MP3        | ID3v2.2, v2.3 and v2.4 (title, artist, album, cover); ID3v1 as a fallback |
 | FLAC       | Vorbis comments and the embedded picture |
 | Ogg Vorbis | Vorbis comments and the embedded picture (`METADATA_BLOCK_PICTURE`) |
+| Opus       | The same, read with FFmpeg; ReplayGain also from `R128_TRACK_GAIN`/`R128_ALBUM_GAIN` |
+| AAC, ALAC (`.m4a`, `.mp4`) | iTunes-style MP4 tags, ReplayGain from `----` (`replaygain_*`) tags, the cover (`covr`), read with FFmpeg |
+| AAC (`.aac`) | An ID3v2 tag at the start, if it has one |
 | WAV        | None |
 | DSF        | ID3v2 (the tag at the end of the file) |
 | DSDIFF     | ID3v2 in an `ID3 ` chunk, if the file has one |

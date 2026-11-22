@@ -5,7 +5,8 @@
 
 #include "util.h"
 
-#define CACHE_HEADER "KAIPLAYER-CATALOG 2"
+#define CACHE_HEADER "KAIPLAYER-CATALOG 3"
+#define CACHE_HEADER_V2 "KAIPLAYER-CATALOG 2"  // Before Opus played: its .ogg songs were kept without tags.
 #define CACHE_HEADER_V1 "KAIPLAYER-CATALOG 1"  // Without the times.
 #define CACHE_FIELDS 10
 #define CACHE_LINE_MAX (UTIL_PATH_MAX + 5 * TAGS_TEXT_MAX + 64)
@@ -335,13 +336,16 @@ bool catalogLoad(Catalog *c, FILE *f)
         return false;
     bool ok = fgets(line, CACHE_LINE_MAX, f) != NULL;
     bool v1 = ok && strncmp(line, CACHE_HEADER_V1, strlen(CACHE_HEADER_V1)) == 0;
-    ok = ok && (v1 || strncmp(line, CACHE_HEADER, strlen(CACHE_HEADER)) == 0);
+    bool v2 = ok && strncmp(line, CACHE_HEADER_V2, strlen(CACHE_HEADER_V2)) == 0;
+    ok = ok && (v1 || v2 || strncmp(line, CACHE_HEADER, strlen(CACHE_HEADER)) == 0);
     int fields = v1 ? CACHE_FIELDS - 1 : CACHE_FIELDS;
     while (ok && fgets(line, CACHE_LINE_MAX, f)) {
         line[strcspn(line, "\r\n")] = '\0';
         char *field[CACHE_FIELDS], **rest = field + (v1 ? 1 : 2);  // After the size and the time.
         if (splitTabs(line, field, fields) != fields || !rest[3][0])
             continue;  // A damaged line: that song is read again from the file.
+        if ((v1 || v2) && (utilHasExtension(rest[3], "ogg") || utilHasExtension(rest[3], "oga")))
+            continue;  // Perhaps Opus, whose tags weren't read then: read again.
         CatalogSong s = {
             .size = strtol(field[0], NULL, 10), .modified = v1 ? 0 : strtoll(field[1], NULL, 10),
             .track = atoi(rest[0]), .disc = atoi(rest[1]), .year = atoi(rest[2]), .path = rest[3],

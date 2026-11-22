@@ -279,8 +279,8 @@ Plano
 Folders
 Carpetas
 
-Free and open source under the MIT license.
-Libre y de código abierto con licencia MIT.
+Free and open source under the MIT license; FFmpeg under the LGPL.
+Libre y de código abierto con licencia MIT; FFmpeg con licencia LGPL.
 
 From cover
 De la portada
@@ -426,8 +426,8 @@ Listas
 Playlists you play show up here.
 Las listas que reproduces aparecen aquí.
 
-Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
-Reproduce MP3, FLAC, Ogg Vorbis, WAV y DSD de tu tarjeta SD, con\nlistas, un ecualizador, ReplayGain y portadas de álbumes.
+Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
+Reproduce MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV y DSD, con\nlistas, un ecualizador, ReplayGain y portadas de álbumes.
 
 Pop
 Pop

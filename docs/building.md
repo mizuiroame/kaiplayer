@@ -3,9 +3,10 @@
 [Back to the README](../README.md)
 
 KaiPlayer is built with [ounce-devkit](https://github.com/ouncebrew/ounce-devkit),
-which is devkitPro plus libounce, a libnx for Switch 2, and libsmb2 (for
-network folders over SMB) built over it: the `kaiplayer-devkit` image. Docker
-is the easiest way to build it.
+which is devkitPro plus libounce, a libnx for Switch 2, with two libraries
+built over it: libsmb2 (for network folders over SMB) and FFmpeg (for AAC,
+ALAC and Opus). That is the `kaiplayer-devkit` image. Docker is the easiest
+way to build it.
 
 ## With Docker (Windows, Linux, macOS)
 
@@ -16,8 +17,11 @@ is the easiest way to build it.
    cd ounce-devkit
    docker build -t ounce-devkit .
    cd ../kaiplayer
-   docker build -t kaiplayer-devkit smb   # libsmb2 6.0.0 over ounce-devkit
+   docker build -t kaiplayer-devkit:smb smb   # libsmb2 6.0.0 over ounce-devkit
+   docker build --build-arg DEVKIT_IMAGE=kaiplayer-devkit:smb -t kaiplayer-devkit ffmpeg
    ```
+
+   The chain is ounce-devkit → `kaiplayer-devkit:smb` → `kaiplayer-devkit`.
 
    > On Windows you must clone with `core.autocrlf=false`. Otherwise the
    > scripts get CRLF line endings and `install.sh` fails inside the image.
@@ -25,6 +29,15 @@ is the easiest way to build it.
    `smb/Dockerfile` builds libsmb2 6.0.0 (LGPL 2.1) from its release tarball,
    checked by SHA-256, with the Switch 2 environment. curl comes with the
    devkit.
+
+   `ffmpeg/Dockerfile` builds FFmpeg 7.1 (LGPL 2.1) from ffmpeg.org's release
+   tarball, checked by SHA-256, twice with the same options
+   (`ffmpeg/configure.sh`): for Switch 2 (with KaiRadio's `horizon.patch`)
+   into the devkit's portlibs, and for the host tests into `/opt/ffmpeg-host`.
+   Only the AAC, ALAC and Opus decoders, the MP4/M4A, Ogg and ADTS demuxers,
+   their parsers and the resampler; no programs, no network code, and the
+   build fails if anything GPL or non-free gets in. It adds about 1.3 MB to
+   the `.nro`.
 
 2. Build KaiPlayer.
 
@@ -58,11 +71,17 @@ The unit tests read network folders through a fake one (the fixtures behind
 `dav:/` names), with blocks small enough that every read crosses some: the
 decoders, tags and covers must read the same as from the card.
 
+The tests decode the AAC, ALAC and Opus fixtures through kfile and compare
+the samples with FFmpeg decoding the same file on its own; they check seeks,
+the format labels, tags, ReplayGain and covers, on the card and through the
+fake network folder.
+
 `tests/host_live/` tests a real network folder on a PC: it lists it, reads
 songs on their own connection and the shared one, plays them through the
 same reader as the console (the samples must be the card's copy's), reads
 their tags and covers, and checks that a wrong password, share or address
-each say so. Its image has gcc, curl and libsmb2 6.0.0:
+each say so. Its image has gcc, curl, libsmb2 6.0.0 and the host FFmpeg,
+copied from `kaiplayer-devkit` (build that one first):
 
 ```sh
 docker build -t kaiplayer-host-live tests/host_live
@@ -73,8 +92,10 @@ docker run --rm --security-opt seccomp=unconfined --add-host=host.docker.interna
 ```
 
 An `http://` address in `SMB_ADDRESS` tests a WebDAV folder the same way.
-The test expects the made-up album layout of the owner's test server (8 songs
-in "Aurora Fields" and "The Night Drive Band").
+The test expects the made-up album layout of the owner's test server (12
+songs in "Aurora Fields" and "The Night Drive Band", among them AAC, ALAC and
+Opus ones). If `host.docker.internal` resolves to an IPv6 address that
+doesn't reach the server, use the computer's LAN address instead.
 
 The tests and the fuzzer run with ASLR turned off (`setarch -R`), because
 GCC 12's AddressSanitizer can hang on recent kernels. In Docker, turning ASLR
@@ -103,7 +124,8 @@ make -C tests run    # tests (needs the system gcc)
 source/
   main.c          main loop and controls
   player.c        audio thread: decode → resample → audout
-  decoder.c       common interface for MP3 / FLAC / Vorbis / WAV / DSD
+  decoder.c       common interface for MP3 / FLAC / Vorbis / WAV / DSD / AAC / ALAC / Opus
+  ffaudio.c       AAC, ALAC and Opus with FFmpeg, read through kfile; their tags and covers
   dsd.c           DSF and DSDIFF: reads the 1-bit stream and filters it to PCM
   resampler.c     sample rate conversion (linear interpolation)
   queue.c         play order, shuffle and repeat
@@ -149,8 +171,10 @@ source/
   ui_hit.c        touch targets recorded as the UI is drawn
   app_*.c         input handling for each tab, the menu, settings, equalizer, touch and resume
 smb/            the Dockerfile that adds libsmb2 to the devkit image
+ffmpeg/         the Dockerfile and options that add FFmpeg (Switch 2 and host) to it
 data/           Noto Sans Regular and Bold, embedded in the .nro
-third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain)
+third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain);
+                the licenses of FFmpeg, libsmb2, curl and zlib
 tests/          host tests, fuzzer, fixtures and the UI preview; host_live/: a real network folder
 tools/          kaiupload.py (FTP upload with plain names), gltest (the GPU
                 backend checked against the CPU one), gpu-spike (a GPU test .nro)

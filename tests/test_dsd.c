@@ -99,7 +99,7 @@ static void testFormats(void)
     checkFormat(FIXTURES "/tone.ogg", "OGG", 44100, 0);
     checkFormat(FIXTURES "/tone.dsf", "DSD64", 2822400, 0);
     checkFormat(FIXTURES "/tone.dff", "DSD64", 2822400, 0);
-    AudioFormat flac = {"FLAC", 96000, 24}, mp3 = {"MP3", 44100, 0}, dsd = {"DSD128", 5644800, 0}, none = {"", 0, 0};
+    AudioFormat flac = {"FLAC", 96000, 24, 0}, mp3 = {"MP3", 44100, 0, 0}, dsd = {"DSD128", 5644800, 0, 0}, none = {"", 0, 0, 0};
     CHECK(label(&flac, "FLAC · 24-bit · 96 kHz"));
     CHECK(label(&mp3, "MP3 · 44.1 kHz"));
     CHECK(label(&dsd, "DSD128 · 5.6 MHz"));

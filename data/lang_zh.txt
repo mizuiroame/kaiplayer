@@ -279,8 +279,8 @@ Flat
 Folders
 文件夹
 
-Free and open source under the MIT license.
-基于MIT许可证的免费开源软件。
+Free and open source under the MIT license; FFmpeg under the LGPL.
+基于MIT许可证的免费开源软件；FFmpeg基于LGPL许可证。
 
 From cover
 取自封面
@@ -426,8 +426,8 @@ Playlists
 Playlists you play show up here.
 播放过的播放列表会显示在这里。
 
-Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
-可播放SD卡中的MP3、FLAC、Ogg Vorbis、WAV和DSD，\n支持播放列表、均衡器、ReplayGain和专辑封面。
+Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
+可播放MP3、FLAC、AAC、ALAC、Opus、Ogg Vorbis、WAV和DSD，\n支持播放列表、均衡器、ReplayGain和专辑封面。
 
 Pop
 流行

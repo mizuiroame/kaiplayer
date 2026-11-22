@@ -12,6 +12,7 @@
 
 #include "cover.h"
 #include "decoder.h"
+#include "ffaudio.h"
 #include "kfile.h"
 #include "net.h"
 #include "subfile.h"
@@ -162,7 +163,8 @@ static void checkSongs(const Catalog *c)
                s->year);
         char path[1024];
         EXPECT(findLocal(g_music, s->title, ext, path, sizeof(path)), "the card's copy of %s", s->title);
-        if (!strstr(seen, ext)) {  // One of each kind: it's slow with the sanitizers.
+        // One of each kind (it's slow with the sanitizers); every AAC, ALAC and Opus song (FFmpeg's).
+        if (!strstr(seen, ext) || ffaudioIsFile(s->path) || !strcmp(ext, "ogg")) {
             strcat(seen, ext);
             readThrough(s->path, path);
             play(s->path, path);
@@ -212,7 +214,7 @@ int main(void)
     EXPECT(catalogBuild(&c), "built");
     printf("library: %zu songs, %zu albums, %zu artists in %.2f s\n", c.song_count, c.album_count, c.artist_count,
            secondsNow() - start);
-    EXPECT(c.song_count == 8, "8 songs, not %zu", c.song_count);
+    EXPECT(c.song_count == 12, "12 songs, not %zu", c.song_count);
     checkSongs(&c);
     EXPECT(c.song_count && subScrobble(c.songs[0].path, false), "now playing");
     catalogFree(&c);

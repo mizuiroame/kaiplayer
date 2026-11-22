@@ -279,8 +279,8 @@ Flat
 Folders
 폴더
 
-Free and open source under the MIT license.
-MIT 라이선스의 무료 오픈 소스입니다.
+Free and open source under the MIT license; FFmpeg under the LGPL.
+MIT 라이선스의 무료 오픈 소스입니다. FFmpeg는 LGPL 라이선스입니다.
 
 From cover
 커버에서
@@ -426,8 +426,8 @@ Playlists
 Playlists you play show up here.
 재생한 재생목록이 여기에 표시됩니다.
 
-Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
-SD 카드의 MP3, FLAC, Ogg Vorbis, WAV, DSD를 재생합니다.\n재생목록, 이퀄라이저, ReplayGain, 앨범 아트를 지원합니다.
+Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
+MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV, DSD를 재생합니다.\n재생목록, 이퀄라이저, ReplayGain, 앨범 아트를 지원합니다.
 
 Pop
 팝

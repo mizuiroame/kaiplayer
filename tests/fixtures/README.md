@@ -19,6 +19,11 @@ ffmpeg -f lavfi -i "sine=frequency=440:duration=1:sample_rate=44100" -i small_co
 # block in METADATA_BLOCK_PICTURE (ffmpeg's Ogg muxer can't attach pictures).
 ```
 
+tone.m4a (AAC, with tags, ReplayGain and the cover), tone_alac.m4a (ALAC,
+24-bit, 96 kHz), tone.opus (Opus with tags, R128 gain and the cover),
+tone_opus.ogg (mono Opus in an .ogg file) and tone.aac (ADTS, no tags) are
+made by `python make_ffmpeg_tones.py`, with ffmpeg in Docker.
+
 navidrome_search3.json is what a Navidrome test server answered to `search3`
 (the Subsonic API's search with an empty query) for eight made-up songs; the
 fuzzer starts from it.

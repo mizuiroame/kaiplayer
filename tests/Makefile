@@ -6,17 +6,19 @@ CC      ?= gcc
 SRC     := ../source
 SAN     := -fsanitize=address,undefined -fno-omit-frame-pointer
 # -fwrapv as in the .nro: corrupt FLAC data overflows dr_flac's LPC sums.
-CFLAGS  := -std=gnu11 -g -O1 -Wall -Wextra -fwrapv -I$(SRC) -I../third_party $(SAN)
-LDFLAGS := $(SAN) -lm -lpthread
+# FFmpeg 7.1 for the host, built in the devkit image with the console's options (ffmpeg/).
+FFMPEG  ?= /opt/ffmpeg-host
+CFLAGS  := -std=gnu11 -g -O1 -Wall -Wextra -fwrapv -I$(SRC) -I../third_party -isystem $(FFMPEG)/include $(SAN)
+LDFLAGS := $(SAN) -L$(FFMPEG)/lib -lavformat -lavcodec -lswresample -lavutil -lm -lpthread
 OBJDIR  := build
 
-TESTED  := util.c audioformat.c queue.c resampler.c decoder.c dsd.c library.c browser.c \
+TESTED  := util.c audioformat.c queue.c resampler.c decoder.c dsd.c ffaudio.c library.c browser.c \
            tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
            tracklist.c plainname.c playlist.c background.c gfx.c resume.c keyboard.c menu.c touch.c ui_hit.c settings.c eq.c theme.c metacache.c replaygain.c catalog.c history.c home.c approot.c kinetic.c lang.c \
            kfile.c blockcache.c dav.c md5.c json.c subsonic.c
 TESTS   := test_main.c test_tags.c test_cover.c test_playlist.c test_touch.c test_eq.c test_meta.c test_catalog.c test_home.c test_dsd.c test_style.c test_approot.c test_kinetic.c test_lang.c \
-           test_kfile.c test_dav.c test_subsonic.c
-PARSERS := util.c decoder.c dsd.c tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
+           test_kfile.c test_dav.c test_subsonic.c test_ffaudio.c
+PARSERS := util.c decoder.c dsd.c ffaudio.c tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
            kfile.c blockcache.c dav.c codecs_impl.c image_impl.c md5.c json.c subsonic.c catalog.c
 ITER    ?= 1000
 

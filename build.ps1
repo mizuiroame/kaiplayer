@@ -1,4 +1,5 @@
-# Builds KaiPlayer.nro with the kaiplayer-devkit Docker image (ounce-devkit plus libsmb2, smb/Dockerfile).
+# Builds KaiPlayer.nro with the kaiplayer-devkit Docker image: ounce-devkit, plus libsmb2
+# (smb/Dockerfile), plus FFmpeg for the console and the host tests (ffmpeg/Dockerfile).
 #   .\build.ps1           build the .nro
 #   .\build.ps1 test      run the host tests with coverage
 #   .\build.ps1 fuzz      fuzz the file parsers (set $env:ITER for more inputs)
@@ -12,7 +13,11 @@ $image = 'kaiplayer-devkit'
 
 docker image inspect $image *> $null
 if ($LASTEXITCODE -ne 0) {
-    throw "Docker image '$image' not found. Build ounce-devkit (in its folder: docker build -t ounce-devkit .), then here: docker build -t $image smb"
+    throw "Docker image '$image' not found. Build ounce-devkit (in its folder: docker build -t ounce-devkit .), then here: docker build -t ${image}:smb smb; docker build --build-arg DEVKIT_IMAGE=${image}:smb -t $image ffmpeg"
+}
+docker run --rm $image test -d /opt/ffmpeg-host *> $null
+if ($LASTEXITCODE -ne 0) {
+    throw "Docker image '$image' has no FFmpeg. Here: docker tag $image ${image}:smb; docker build --build-arg DEVKIT_IMAGE=${image}:smb -t $image ffmpeg"
 }
 
 $mount = "${project}:/build/kaiplayer"

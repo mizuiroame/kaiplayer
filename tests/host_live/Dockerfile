@@ -1,6 +1,11 @@
-# What the network folder's live tests need on a PC: gcc, libcurl, and
-# libsmb2 6.0.0 (as smb/Dockerfile builds for the console) from its release:
+# What the network folder's live tests need on a PC: gcc, libcurl, libsmb2
+# 6.0.0 (as smb/Dockerfile builds for the console) from its release, and the
+# host FFmpeg 7.1 that the devkit image builds (ffmpeg/Dockerfile), copied
+# from it: build kaiplayer-devkit first.
 #   docker build -t kaiplayer-host-live tests/host_live
+ARG DEVKIT_IMAGE=kaiplayer-devkit:latest
+FROM ${DEVKIT_IMAGE} AS devkit
+
 FROM debian:bookworm-slim
 
 ARG LIBSMB2_VERSION=6.0.0
@@ -14,4 +19,5 @@ RUN curl -fsSL -o libsmb2.tar.gz "https://github.com/sahlberg/libsmb2/archive/re
  && tar xzf libsmb2.tar.gz --strip-components=1 \
  && cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=OFF \
  && cmake --build build -j"$(nproc)" && cmake --install build && rm -rf /tmp/libsmb2
+COPY --from=devkit /opt/ffmpeg-host /opt/ffmpeg-host
 WORKDIR /w

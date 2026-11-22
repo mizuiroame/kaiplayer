@@ -20,6 +20,7 @@
 #include "dr_flac.h"
 #include "dr_mp3.h"
 #include "dr_wav.h"
+#include "ffaudio.h"
 #include "kfile.h"
 #include "library.h"
 #include "tags.h"
@@ -402,7 +403,8 @@ static bool sameSamples(const float *a, const float *b, uint64_t frames)
 
 static void testDecoderPaths(void)
 {
-    static const char *const NAMES[] = {"tone.wav", "tone.flac", "tone.mp3", "tone.ogg", "tone.dsf", "tone.dff"};
+    static const char *const NAMES[] = {"tone.wav", "tone.flac", "tone.mp3", "tone.ogg", "tone.dsf", "tone.dff",
+                                        "tone.m4a", "tone_alac.m4a", "tone.opus", "tone_opus.ogg", "tone.aac"};
     for (size_t i = 0; i < sizeof(NAMES) / sizeof(NAMES[0]); i++) {
         char path[256], location[256];
         snprintf(path, sizeof(path), FIXTURES "/%s", NAMES[i]);
@@ -412,7 +414,9 @@ static void testDecoderPaths(void)
         float *remote = decodeWith(location, &remote_frames);
         CHECK(local && local_frames > 1000);
         CHECK(remote_frames == local_frames && sameSamples(local, remote, local_frames));  // The "network" plays the same.
-        if (!strstr(NAMES[i], ".dsf") && !strstr(NAMES[i], ".dff")) {  // DSD has no library of its own to compare with.
+        // DSD has no library of its own to compare with; FFmpeg's files are compared in test_ffaudio.c.
+        if (!strstr(NAMES[i], ".dsf") && !strstr(NAMES[i], ".dff") && !ffaudioIsFile(NAMES[i]) &&
+            strcmp(NAMES[i], "tone_opus.ogg") != 0) {
             float *direct = decodeDirect(path, &direct_frames);
             CHECK(direct_frames == local_frames && sameSamples(local, direct, local_frames));
             free(direct);
@@ -437,7 +441,8 @@ static void testDecoderPaths(void)
 // Tags and covers read over the "network" are the card's.
 static void testTagsAndCovers(void)
 {
-    static const char *const NAMES[] = {"tone.mp3", "tone.flac", "tone.ogg", "tone.dsf", "tone.dff"};
+    static const char *const NAMES[] = {"tone.mp3", "tone.flac", "tone.ogg", "tone.dsf", "tone.dff",
+                                        "tone.m4a", "tone_alac.m4a", "tone.opus", "tone_opus.ogg"};
     for (size_t i = 0; i < sizeof(NAMES) / sizeof(NAMES[0]); i++) {
         char path[256], location[256];
         snprintf(path, sizeof(path), FIXTURES "/%s", NAMES[i]);
@@ -448,6 +453,7 @@ static void testTagsAndCovers(void)
         CHECK(tagsRead(path, &a));
         CHECK(tagsRead(location, &b));
         CHECK(!strcmp(a.title, b.title) && !strcmp(a.artist, b.artist) && !strcmp(a.album, b.album));
+        CHECK(a.title[0] && a.track_gain_db == b.track_gain_db && a.track_number == b.track_number);
         CHECK(a.picture_size == b.picture_size && (!a.picture_size || !memcmp(a.picture, b.picture, a.picture_size)));
         tagsFree(&a);
         tagsFree(&b);
@@ -455,6 +461,11 @@ static void testTagsAndCovers(void)
     TrackTags t;
     tagsInit(&t);
     CHECK(!tagsRead("dav:/missing.mp3", &t));
+    CHECK(!tagsRead("dav:/missing.m4a", &t));
+    g_fail_from = 2000;
+    CHECK(!tagsRead("dav:/tone.m4a", &t));  // Its moov is at the end: the network failed before it.
+    CHECK(!tagsRead("dav:/tone.opus", &t));
+    g_fail_from = -1;
     g_fail_from = 500;
     CHECK(!tagsRead("dav:/tone.mp3", &t));  // The network failed: it says so.
     g_fail_from = -1;
@@ -480,11 +491,11 @@ static void testNetworkLibrary(void)
     LibraryFiles files;
     char why[128];
     CHECK(libraryScanNetwork(&files, "dav:/", NULL, why, sizeof(why)));
-    CHECK(files.count == 6);  // The tones; not the pictures, the scripts or __pycache__'s.
+    CHECK(files.count == 11);  // The tones; not the pictures, the scripts or __pycache__'s.
     bool sorted = true, sized = true;
     for (size_t i = 0; i < files.count; i++) {
         sorted = sorted && (i == 0 || utilCompareNames(files.files[i - 1].path, files.files[i].path) < 0);
-        sized = sized && files.files[i].size > 0 && !strncmp(files.files[i].path, "dav:/tone.", 10);
+        sized = sized && files.files[i].size > 0 && !strncmp(files.files[i].path, "dav:/tone", 9);
     }
     CHECK(sorted && sized);
     libraryFilesFree(&files);
@@ -492,7 +503,7 @@ static void testNetworkLibrary(void)
     CHECK(files.count == 0 && files.files == NULL);
 
     TrackList list;
-    CHECK(libraryScan(&list, "dav:/", true) && list.count == 6 && !strcmp(list.paths[0], "dav:/tone.dff"));
+    CHECK(libraryScan(&list, "dav:/", true) && list.count == 11 && !strcmp(list.paths[0], "dav:/tone.aac"));
     trackListFree(&list);
 
     Browser b = {0};
@@ -502,7 +513,7 @@ static void testNetworkLibrary(void)
         dirs += b.entries[i].is_dir;
         songs += !b.entries[i].is_dir;
     }
-    CHECK(songs == 6 && dirs <= 1);  // A __pycache__ folder may be there.
+    CHECK(songs == 11 && dirs <= 1);  // A __pycache__ folder may be there.
     CHECK(!browserOpen(&b, "dav:/none") && !strcmp(b.problem, "no folder") && !strcmp(b.path, "dav:/"));
     browserFree(&b);
 }

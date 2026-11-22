@@ -67,9 +67,11 @@ library goes back to the card.
   network, or use `https://`.
 - **A server that doesn't take tokens** (some that sign in with LDAP, for
   example) says so when you test it: KaiPlayer doesn't send passwords.
-- **Formats**: songs KaiPlayer plays (MP3, FLAC, Ogg Vorbis, WAV, DSD) are
-  listed; others (AAC, Opus...) are left out of the library.
-- **Ogg Vorbis** songs are read whole before they play (they're small).
+- **Formats**: songs KaiPlayer plays (MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis,
+  WAV, DSD) are listed; others (WMA, WavPack...) are left out of the library.
+  Songs play as they are on the server, never converted by it.
+- **Ogg Vorbis** songs are read whole before they play (they're small);
+  Opus songs, in `.opus` or `.ogg` files, play as they come, like the others.
 - **If the server stops answering**, the song stops after about 20 seconds,
   and KaiPlayer stops trying after three songs in a row can't be opened.
 - **Large libraries**: a server's library is read 500 songs at a time; up to

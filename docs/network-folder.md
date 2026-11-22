@@ -82,7 +82,8 @@ Printer Sharing** is allowed in Windows Firewall for private networks.
 - **Playing** reads each song a little ahead (about 30 seconds of FLAC), so a
   short pause on the network isn't heard. Changing songs waits for the next
   one's first piece: a moment on a home network.
-- **Ogg Vorbis** songs are read whole before they play (they're small).
+- **Ogg Vorbis** songs are read whole before they play (they're small);
+  Opus songs, in `.opus` or `.ogg` files, play as they come, like the others.
 - **If the server stops answering**, the song stops after about 20 seconds,
   and KaiPlayer stops trying after three songs in a row can't be opened.
   Pressing next or previous doesn't wait for it.

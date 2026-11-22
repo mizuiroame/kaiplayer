@@ -45,7 +45,8 @@ reduces that risk in these ways:
   `-fwrapv` (signed overflow wraps instead of being undefined). The host
   tests run under AddressSanitizer and UndefinedBehaviorSanitizer.
 - **Fuzzing.** `make -C tests fuzz` feeds thousands of corrupted MP3, FLAC,
-  Ogg, WAV, DSF, DSDIFF, JPEG and PNG files to every parser, with the
+  Ogg (Vorbis and Opus), WAV, DSF, DSDIFF, M4A (AAC and ALAC), Opus, ADTS AAC,
+  JPEG and PNG files to every parser, with the
   sanitizers on. Run it before each release.
 - **Pinned dependencies.** The libraries in `third_party/` and the fonts in
   `data/` are pinned to upstream commits with SHA-256 sums. See

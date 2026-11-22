@@ -35,3 +35,4 @@ void testLang(void);
 void testKfile(void);
 void testDav(void);
 void testSubsonic(void);
+void testFfaudio(void);

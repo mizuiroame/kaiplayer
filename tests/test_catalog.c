@@ -133,6 +133,17 @@ static void testCacheTimes(void)
           back.songs[0].modified == 0 && strcmp(back.songs[0].title, "A") == 0 && strcmp(back.songs[0].album, "Album") == 0);
     fclose(old);
     catalogFree(&back);
+
+    // A cache from before Opus played: its .ogg songs are read again, the others kept.
+    old = tmpfile();
+    fputs("KAIPLAYER-CATALOG 2\n100\t0\t3\t1\t2001\tsdmc:/music/a.mp3\tA\tArtist\tArtist\tAlbum\n"
+          "200\t0\t1\t1\t2001\tsdmc:/music/b.ogg\tb\tArtist\tArtist\tAlbum\n", old);
+    rewind(old);
+    catalogInit(&back);
+    CHECK(catalogLoad(&back, old) && catalogBuild(&back) && back.song_count == 1);
+    CHECK(catalogFind(&back, "sdmc:/music/a.mp3") >= 0 && catalogFind(&back, "sdmc:/music/b.ogg") < 0);
+    fclose(old);
+    catalogFree(&back);
     tagsFree(&t);
 }
 

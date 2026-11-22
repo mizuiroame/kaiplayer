@@ -1,6 +1,6 @@
 // One interface over the bundled decoders: MP3, FLAC, WAV (dr_libs),
-// Ogg Vorbis (stb_vorbis) and DSF/DFF (dsd.c, as PCM). Output is always
-// interleaved stereo float.
+// Ogg Vorbis (stb_vorbis), DSF/DFF (dsd.c, as PCM), and AAC, ALAC and Opus
+// (FFmpeg, ffaudio.c). Output is always interleaved stereo float.
 #pragma once
 
 #include <stdbool.h>

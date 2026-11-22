@@ -5,7 +5,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
-static const char *const AUDIO_EXTENSIONS[] = {"mp3", "flac", "ogg", "oga", "wav", "dsf", "dff"};
+static const char *const AUDIO_EXTENSIONS[] = {"mp3", "flac", "ogg", "oga", "wav", "dsf", "dff",
+                                               "m4a", "mp4", "aac", "opus"};
 
 bool utilIsAudioFile(const char *name)
 {

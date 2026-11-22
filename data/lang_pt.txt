@@ -291,8 +291,8 @@ Plano
 Folders
 Pastas
 
-Free and open source under the MIT license.
-Livre e de código aberto sob a licença MIT.
+Free and open source under the MIT license; FFmpeg under the LGPL.
+Livre e de código aberto sob a licença MIT; FFmpeg sob a LGPL.
 
 From cover
 Da capa
@@ -438,8 +438,8 @@ Playlists
 Playlists you play show up here.
 As playlists que você tocar aparecem aqui.
 
-Plays MP3, FLAC, Ogg Vorbis, WAV and DSD from your SD card, with\nplaylists, an equalizer, ReplayGain and album art.
-Toca MP3, FLAC, Ogg Vorbis, WAV e DSD do seu cartão SD, com\nplaylists, equalizador, ReplayGain e capas de álbum.
+Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
+Toca MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV e DSD, com\nplaylists, equalizador, ReplayGain e capas de álbum.
 
 Pop
 Pop

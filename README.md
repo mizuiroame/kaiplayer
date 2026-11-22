@@ -3,8 +3,8 @@
 An **open-source homebrew music player** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen). Pick a folder on your microSD
 card and KaiPlayer builds a library of your artists, albums and songs from
-their tags. It plays MP3, FLAC, Ogg Vorbis, WAV and DSD, with nothing else to
-install.
+their tags. It plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD,
+with nothing else to install.
 
 | Home | Library | Playlists |
 |------|---------|-----------|
@@ -26,7 +26,8 @@ install.
 - **A library from your tags:** artists, albums, songs and folders. Home shows
   your top artists, recent albums, playlists and artists, with their covers.
   [More](docs/library.md)
-- **MP3, FLAC, Ogg Vorbis, WAV and DSD** (`.dsf`, `.dff`, converted to PCM),
+- **MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD** (`.m4a`, `.mp4`,
+  `.aac` and `.opus` with FFmpeg; `.dsf`, `.dff` converted to PCM),
   at any sample rate. [More](docs/playback.md)
 - **Music from your network:** a Windows shared folder, a NAS or Samba
   (SMB), or WebDAV, as a library of its own. [More](docs/network-folder.md)
@@ -104,5 +105,6 @@ full steps are in [Installing](docs/install.md).
 ## License
 
 KaiPlayer is released under the [MIT License](LICENSE). Copyright (c) 2026
-Mizuiro. It uses dr_libs, stb, curl, libsmb2 (under the LGPL 2.1) and the
-Noto Sans font; the full list is in [docs/legal.md](docs/legal.md#licenses).
+Mizuiro. It uses dr_libs, stb, FFmpeg and libsmb2 (both under the LGPL 2.1),
+curl and the Noto Sans font; the full list is in
+[docs/legal.md](docs/legal.md#licenses).
