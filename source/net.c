@@ -14,6 +14,7 @@
 #define STALL_TIMEOUT_S 20L  // No data for this long: the transfer has failed.
 #define STALL_BYTES_PER_S 1L
 #define MAX_REDIRECTS 5L
+#define NET_TOTAL_MAX (1LL << 40)  // 1 TB: no song is larger.
 #define HEADER_MAX 1024
 #define CONTENT_RANGE "content-range:"
 
@@ -107,8 +108,10 @@ static size_t onHeader(char *data, size_t one, size_t count, void *user)
         memcpy(line, data, n);
         line[n] = '\0';
         const char *slash = strchr(line, '/');
-        if (slash && slash[1] != '*')
-            *total = strtoll(slash + 1, NULL, 10);
+        if (slash && slash[1] != '*') {
+            long long value = strtoll(slash + 1, NULL, 10);
+            *total = value > 0 && value <= NET_TOTAL_MAX ? value : 0;  // An absurd size is no size.
+        }
     }
     return n;
 }
@@ -163,17 +166,30 @@ static NetProblem problemOf(CURLcode rc, long status)
     }
 }
 
+// Only http and https may be fetched. An https address may not be redirected to plain http.
+static void limitProtocols(CURL *curl, const char *url)
+{
+    long redirects = strncasecmp(url, "https://", 8) == 0 ? CURLPROTO_HTTPS : CURLPROTO_HTTP | CURLPROTO_HTTPS;
+    curl_easy_setopt(curl, CURLOPT_PROTOCOLS, (long)(CURLPROTO_HTTP | CURLPROTO_HTTPS));
+    curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS, redirects);
+}
+
 static void setOptions(CURL *curl, const NetRequest *r, struct curl_slist *headers, Transfer *t, char *error)
 {
     curl_easy_reset(curl);  // Keeps the connection.
     if (r->any_certificate || !__atomic_load_n(&g_check_certificates, __ATOMIC_RELAXED)) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    } else {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
     }
     curl_easy_setopt(curl, CURLOPT_URL, r->url);
+    limitProtocols(curl, r->url);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, NET_USER_AGENT);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    // A sign-in body (password) is never re-sent to wherever a redirect points.
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, r->post_json ? 0L : 1L);
     curl_easy_setopt(curl, CURLOPT_MAXREDIRS, MAX_REDIRECTS);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, r->stall_s ? r->stall_s : CONNECT_TIMEOUT_S);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, r->timeout_s);

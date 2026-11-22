@@ -26,6 +26,31 @@ static size_t schemeLength(const char *s)
     return 0;
 }
 
+bool davAddressIsLocal(const char *address)
+{
+    const char *host = strstr(address, "://");
+    host = host ? host + 3 : address;
+    if (memchr(host, '@', strcspn(host, "/?#")))
+        return false;
+    char name[256];
+    size_t n = strcspn(host, ":/?#");
+    if (n == 0 || n >= sizeof(name))
+        return false;
+    memcpy(name, host, n);
+    name[n] = '\0';
+    unsigned a, b, c, d;
+    char extra;
+    if (sscanf(name, "%u.%u.%u.%u%c", &a, &b, &c, &d, &extra) == 4)
+        return a == 10 || a == 127 || (a == 192 && b == 168) || (a == 172 && b >= 16 && b <= 31) ||
+               (a == 169 && b == 254);
+    return !strchr(name, '.') || (n > 6 && !strcmp(name + n - 6, ".local"));
+}
+
+bool davAddressIsExposed(const char *address)
+{
+    return strncasecmp(address, "https://", 8) != 0 && !davIsSmbAddress(address) && !davAddressIsLocal(address);
+}
+
 bool davIsSmbAddress(const char *address)
 {
     return !strncasecmp(address, SMB, sizeof(SMB) - 1);

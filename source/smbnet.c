@@ -161,26 +161,27 @@ static bool usable(const char *name)
     if (!length || length >= DAV_NAME_MAX || !strcmp(name, ".") || !strcmp(name, ".."))
         return false;
     for (const unsigned char *p = (const unsigned char *)name; *p; p++)
-        if (*p < 0x20 || *p == 0x7f)
+        if (*p < 0x20 || *p == 0x7f || *p == '/' || *p == '\\')  // A slash would make it a path.
             return false;
     return true;
 }
 
-// Under g_lock, with g_list connected.
-static bool listOnce(const char *path, DavEntry **out, size_t *count, char *why, size_t why_size)
+// On smb2, a connected share (g_list under g_lock, or one of the caller's own).
+static bool listOnce(struct smb2_context *smb2, const char *path, DavEntry **out, size_t *count, char *why,
+                     size_t why_size)
 {
-    struct smb2dir *dir = smb2_opendir(g_list, path);
+    struct smb2dir *dir = smb2_opendir(smb2, path);
     if (!dir) {
-        explain(g_list, -ENOENT, why, why_size);
+        explain(smb2, -ENOENT, why, why_size);
         return false;
     }
     size_t capacity = 0;
     bool ok = true;
     struct smb2dirent *d;
-    while (ok && (d = smb2_readdir(g_list, dir)) != NULL)
+    while (ok && (d = smb2_readdir(smb2, dir)) != NULL)
         if (usable(d->name) && d->st.smb2_type != SMB2_TYPE_LINK)
             ok = add(out, count, &capacity, d);
-    smb2_closedir(g_list, dir);
+    smb2_closedir(smb2, dir);
     if (!ok)
         snprintf(why, why_size, "%s", T("Out of memory."));
     return ok;
@@ -223,7 +224,7 @@ bool smbList(const DavAccount *a, const char *location, DavEntry **out, size_t *
         bool fresh = false;
         if (!useList(a, &fresh, why, why_size))
             break;
-        ok = listOnce(path, out, count, why, why_size);
+        ok = listOnce(g_list, path, out, count, why, why_size);
         if (!ok) {
             free(*out);
             *out = NULL;
@@ -234,6 +235,30 @@ bool smbList(const DavAccount *a, const char *location, DavEntry **out, size_t *
         }
     }
     pthread_mutex_unlock(&g_lock);
+    return ok;
+}
+
+bool smbListFresh(const DavAccount *a, const char *location, DavEntry **out, size_t *count, char *why,
+                  size_t why_size)
+{
+    *out = NULL;
+    *count = 0;
+    char path[PATH_MAX_SMB];
+    if (!davSmbPath(a->address, location, path, sizeof(path))) {
+        snprintf(why, why_size, "%s", T("That folder's name is too long."));
+        return false;
+    }
+    struct smb2_context *smb2 = connectShare(a, why, why_size);
+    if (!smb2)
+        return false;
+    bool ok = listOnce(smb2, path, out, count, why, why_size);
+    if (!ok) {
+        free(*out);
+        *out = NULL;
+        *count = 0;
+    }
+    smb2_disconnect_share(smb2);
+    smb2_destroy_context(smb2);
     return ok;
 }
 

@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define COVER_MAX_DIMENSION 4096
+#define COVER_MAX_DIMENSION 2048  // Larger covers are refused: a 4096 one would take 64 MB.
 #define COVER_FILE_MAX (8u << 20)
 
 typedef struct {

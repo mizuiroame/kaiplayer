@@ -33,6 +33,12 @@ static void testAddresses(void)
     CHECK(davNormalizeAddress(" //192.168.0.10:4450/Videos ", out, sizeof(out)));
     CHECK_STR(out, "smb://192.168.0.10:4450/Videos/");
     CHECK(davIsSmbAddress(out) && !davIsSmbAddress("http://pc/"));
+    // A password over plain http outside the home is flagged; at home, over https or SMB it isn't.
+    CHECK(davAddressIsLocal("http://192.168.0.20:8098/dav") && davAddressIsLocal("http://nas.local/"));
+    CHECK(davAddressIsLocal("http://nas:5005") && !davAddressIsLocal("http://media.example.org/dav"));
+    CHECK(!davAddressIsLocal("http://192.168.0.2:1@evil.example/") && !davAddressIsLocal("http://nas@evil.example"));
+    CHECK(davAddressIsExposed("http://media.example.org/dav") && !davAddressIsExposed("https://media.example.org/dav"));
+    CHECK(!davAddressIsExposed("http://192.168.0.20/dav") && !davAddressIsExposed("smb://pc/Music"));
     CHECK(!davNormalizeAddress("smb://PC", out, sizeof(out)));
     CHECK(!davNormalizeAddress("\\\\PC\\", out, sizeof(out)));
     CHECK(!davNormalizeAddress("smb://me:pw@PC/Videos", out, sizeof(out)));

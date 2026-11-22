@@ -79,8 +79,42 @@ static void testHomeRows(void)
     catalogFree(&c);
 }
 
+// Navidrome's cover ids change ("al-x_<when>") when it scans again: a play still
+// counts for its song, found by the song's id.
+static void testServerPlaysAfterRescan(void)
+{
+    Catalog c;
+    catalogInit(&c);
+    TrackTags t;
+    memset(&t, 0, sizeof(t));
+    snprintf(t.artist, sizeof(t.artist), "Okills");
+    snprintf(t.album, sizeof(t.album), "America");
+    CHECK(catalogAdd(&c, "sub:/mf-1AU_7679dc/1AU.flac", 1, &t, "sub:/"));
+    snprintf(t.artist, sizeof(t.artist), "Camilo");
+    snprintf(t.album, sizeof(t.album), "Maya");
+    CHECK(catalogAdd(&c, "sub:/-/5SW.flac", 1, &t, "sub:/"));
+    CHECK(catalogBuild(&c));
+
+    History h;
+    historyInit(&h);
+    historyAdd(&h, HISTORY_SONG, "sub:/mf-1AU/1AU.flac");          // Before the rescan.
+    historyAdd(&h, HISTORY_SONG, "sub:/mf-1AU_4ce1e2/1AU.flac");
+    historyAdd(&h, HISTORY_SONG, "sub:/al-9_4ce1e2/5SW.flac");     // Its cover since gone.
+    historyAdd(&h, HISTORY_SONG, "sub:/al-9_4ce1e2/gone.flac");    // Not on the server any more.
+    historyAdd(&h, HISTORY_SONG, "sdmc:/m/1AU.flac");              // A card's song never matches a server's.
+    Home home;
+    homeCompute(&home, &c, &h);
+    const HomeRow *top = &home.rows[HOME_TOP_ARTISTS], *recent = &home.rows[HOME_RECENT_ARTISTS];
+    CHECK(top->count == 2 && strcmp(c.artists[top->items[0]].name, "Okills") == 0);
+    CHECK(recent->count == 2 && strcmp(c.artists[recent->items[0]].name, "Camilo") == 0);
+    CHECK(!home.albums_from_library && home.rows[HOME_RECENT_ALBUMS].count == 2);
+    historyFree(&h);
+    catalogFree(&c);
+}
+
 void testHome(void)
 {
     testHistoryFile();
     testHomeRows();
+    testServerPlaysAfterRescan();
 }

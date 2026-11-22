@@ -1,5 +1,7 @@
 #include "subnet.h"
 
+#include "dav.h"
+
 #include <ctype.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -91,9 +93,13 @@ bool subSaveAccount(const char *path)
 
 // --- Asking ---
 
-// What a connection's failure means, for the person.
-static const char *problemText(NetProblem problem)
+// What a connection's failure means, for the person. any_certificate: the
+// certificate check was off, so the console's TLS reporting a certificate
+// means the handshake itself failed (a plain http server at an https address).
+static const char *problemText(NetProblem problem, bool any_certificate)
 {
+    if (problem == NET_CERTIFICATE && any_certificate)
+        problem = NET_SECURE;
     switch (problem) {
     case NET_NO_NAME: return T("The name in the address couldn't be found. Check it, or use the server's IP address.");
     case NET_NO_CONNECT:
@@ -166,7 +172,7 @@ JsonDoc *subCall(NetClient *client, const char *method, const char *params, cons
     else if (!fetched && response.problem == NET_STATUS)
         statusText(plain_http, response.status, why, why_size);
     else if (!fetched)
-        snprintf(why, why_size, "%s", problemText(response.problem));
+        snprintf(why, why_size, "%s", problemText(response.problem, request.any_certificate));
     else if (!(doc = jsonParse(response.data, response.size)))
         statusText(plain_http, 0, why, why_size);
     netResponseFree(&response);
@@ -184,21 +190,6 @@ JsonDoc *subCall(NetClient *client, const char *method, const char *params, cons
         return NULL;
     }
     return doc;
-}
-
-// A home address: private IPv4, a name without dots, or .local.
-static bool isLocal(const char *address)
-{
-    const char *host = strstr(address, "://");
-    host = host ? host + 3 : address;
-    char name[SUB_ADDRESS_MAX];
-    snprintf(name, sizeof(name), "%.*s", (int)strcspn(host, ":/"), host);
-    int a, b, c, d;
-    if (sscanf(name, "%d.%d.%d.%d", &a, &b, &c, &d) == 4)
-        return a == 10 || a == 127 || (a == 192 && b == 168) || (a == 172 && b >= 16 && b <= 31) ||
-               (a == 169 && b == 254);
-    size_t length = strlen(name);
-    return !strchr(name, '.') || (length > 6 && !strcmp(name + length - 6, ".local"));
 }
 
 bool subTest(char *out, size_t size)
@@ -219,7 +210,7 @@ bool subTest(char *out, size_t size)
     jsonFree(scan);
     SubAccount a;
     subGetAccount(&a);
-    const char *plain = strncmp(a.address, "https://", 8) && !isLocal(a.address)
+    const char *plain = davAddressIsExposed(a.address)
                             ? T(" The connection isn't encrypted: use https outside your home.")
                             : "";
     char who[SUB_TEXT_MAX];

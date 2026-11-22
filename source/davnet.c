@@ -205,7 +205,13 @@ bool davTest(char *out, size_t size)
 {
     DavEntry *entries;
     size_t count;
-    if (!davList(DAV_ROOT, &entries, &count, out, size))
+    DavAccount a;
+    davGetAccount(&a);
+    // SMB on a connection of its own: an answer even while the library waits on the server.
+    bool listed = davIsSmbAddress(a.address) ? smbListFresh(&a, DAV_ROOT, &entries, &count, out, size)
+                                             : davList(DAV_ROOT, &entries, &count, out, size);
+    memset(&a, 0, sizeof(a));
+    if (!listed)
         return false;
     int folders = 0, songs = 0;
     for (size_t i = 0; i < count; i++) {
@@ -215,6 +221,11 @@ bool davTest(char *out, size_t size)
             songs++;
     }
     free(entries);
-    snprintf(out, size, T("The network folder answers. At its top: folders %d, songs %d."), folders, songs);
+    davGetAccount(&a);
+    bool exposed = davAddressIsExposed(a.address);
+    memset(&a, 0, sizeof(a));
+    int n = snprintf(out, size, T("The network folder answers. At its top: folders %d, songs %d."), folders, songs);
+    if (exposed && n > 0 && (size_t)n < size)
+        snprintf(out + n, size - (size_t)n, "%s", T(" The connection isn't encrypted: use https outside your home."));
     return true;
 }

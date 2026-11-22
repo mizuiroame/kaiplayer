@@ -149,6 +149,10 @@ static void testLocations(void)
     CHECK_STR(t.id, "tr%2F1%20%3F");  // As the URL takes it.
     CHECK(!subCoverLocation(song, 300, cover, sizeof(cover)));  // No cover.
     CHECK(!subParseLocation("sub:/-/cover-300.jpg", &t));
+    // A playlist line can't add to the query the id goes into.
+    CHECK(!subParseLocation("sub:/0/x&time=1&u=other.mp3", &t));
+    CHECK(!subParseLocation("sub:/0/x#y.mp3", &t) && !subParseLocation("sub:/0/x%zz.mp3", &t));
+    CHECK(!subParseLocation("sub:/a&b=c/cover-300.jpg", &t));
     CHECK(!subSongLocation("", "c", "mp3", song, sizeof(song)));
     CHECK(!subSongLocation("id", "c", "", song, sizeof(song)));
     CHECK(!subSongLocation("id", "c", "mp3/../x", song, sizeof(song)));

@@ -47,6 +47,11 @@ bool davIsLocation(const char *path);
 bool davNormalizeAddress(const char *typed, char *out, size_t size);
 // True for an SMB share's address.
 bool davIsSmbAddress(const char *address);
+// A home address: private IPv4, a name without dots, or .local. An address with a user part
+// ("http://192.168.0.2@example.com") isn't one, since it goes to the host after the '@'.
+bool davAddressIsLocal(const char *address);
+// True when a password sent to address can be read on the way: plain http outside the home.
+bool davAddressIsExposed(const char *address);
 // An SMB address's parts: the server ("PC" or "PC:4450"), the share, and the
 // folder in it ("" or "Media/Music", no slash at either end). False if it isn't one.
 bool davSmbParts(const char *address, char *server, size_t server_size, char *share, size_t share_size, char *folder,

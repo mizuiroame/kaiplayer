@@ -251,6 +251,23 @@ bool subCoverLocation(const char *song, int px, char *out, size_t size)
     return n > 0 && (size_t)n < size;
 }
 
+// An id as subEncode leaves it: unreserved characters and "%XX". Anything else ('&', '=', '#')
+// would add to the query it goes into.
+static bool idIsPlain(const char *id)
+{
+    for (const char *p = id; *p; p++) {
+        unsigned char c = (unsigned char)*p;
+        if (isalnum(c) || c == '-' || c == '.' || c == '_' || c == '~')
+            continue;
+        if (c == '%' && isxdigit((unsigned char)p[1]) && isxdigit((unsigned char)p[2])) {
+            p += 2;
+            continue;
+        }
+        return false;
+    }
+    return id[0] != '\0';
+}
+
 bool subParseLocation(const char *location, SubTarget *out)
 {
     memset(out, 0, sizeof(*out));
@@ -268,13 +285,13 @@ bool subParseLocation(const char *location, SubTarget *out)
         out->cover = true;
         out->px = (int)px;
         snprintf(out->id, sizeof(out->id), "%s", cover);
-        return true;
+        return idIsPlain(out->id);
     }
     const char *dot = strrchr(name, '.');
     if (!dot || dot == name || (size_t)(dot - name) >= sizeof(out->id))
         return false;
     snprintf(out->id, sizeof(out->id), "%.*s", (int)(dot - name), name);
-    return true;
+    return idIsPlain(out->id);
 }
 
 // --- Answers ---
