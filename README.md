@@ -103,7 +103,7 @@ full steps are in [Installing](docs/install.md).
 - [Known limitations](docs/limitations.md)
 - [Building](docs/building.md): building from source, releases, project
   layout
-- [Security](docs/security.md)
+- [Security](docs/security.md), and [how to report a problem](SECURITY.md)
 - [Legal notice and licenses](docs/legal.md)
 
 ## License
