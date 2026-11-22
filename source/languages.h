@@ -1,4 +1,4 @@
-// The languages KaiPlayer can be shown in: English, Spanish (in the app), and
+// The languages KaiPlayer can be shown in: English, the eight in the app (data/lang_*.txt), and
 // any language file put in config/lang (a .txt, see lang.h), by its name.
 // Chosen in Settings > Display > Language and kept as its id: "en", "es" or
 // the file's name.

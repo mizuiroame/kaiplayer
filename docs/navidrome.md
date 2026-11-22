@@ -14,7 +14,7 @@ the original files, and covers come from the server.
 
 ## Setting it up
 
-In **Settings > Navidrome**:
+In **+ → Settings → Navidrome**:
 
 1. **Server**: the server's address and port, like `192.168.0.10:4533`
    (Navidrome's port is usually 4533), or a full `https://` address, with its
@@ -29,7 +29,8 @@ In **Settings > Navidrome**:
 
 Then the pill next to KaiPlayer's name says **Navidrome**, with a blue dot,
 when its library is shown. **X** on **Home** or on **Library's first page**,
-a tap on the pill, or the **+ menu** goes to the next library that is set up:
+a tap on the pill, or **+ → Go to the … library** goes to the next library
+that is set up:
 **SD card**, **Network folder**, **Navidrome**, then the SD card again.
 
 - **Artists, Albums and Songs** come from the server. KaiPlayer reads them as

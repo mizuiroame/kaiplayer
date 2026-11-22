@@ -47,6 +47,9 @@ with nothing else to install.
   playing. [More](docs/settings.md)
 - **Drawn with the GPU** at the screen's resolution: 1080p handheld, up to 4K
   docked. [More](docs/playback.md#screen-and-resolution)
+- **In nine languages**: English, Spanish, French, Italian, Portuguese, German,
+  Japanese, Chinese and Korean, and any other you add as a text file.
+  [More](docs/languages.md)
 - **Touch and buttons** for every control. Lists glide under your finger.
   [Controls](docs/controls.md)
 
@@ -93,6 +96,7 @@ full steps are in [Installing](docs/install.md).
 - [Controls](docs/controls.md): buttons, the + menu, touch screen
 - [Settings](docs/settings.md): sleep timer, equalizer, ReplayGain, Now
   Playing styles, backgrounds
+- [Languages](docs/languages.md): choosing one, and translating KaiPlayer
 - [File names and tags](docs/file-names.md): non-ASCII names, KaiDrop and
   `kaiupload.py`
 - [Troubleshooting](docs/troubleshooting.md)
@@ -106,5 +110,5 @@ full steps are in [Installing](docs/install.md).
 
 KaiPlayer is released under the [MIT License](LICENSE). Copyright (c) 2026
 Mizuiro. It uses dr_libs, stb, FFmpeg and libsmb2 (both under the LGPL 2.1),
-curl and the Noto Sans font; the full list is in
+curl, zlib and the Noto Sans font; the full list is in
 [docs/legal.md](docs/legal.md#licenses).

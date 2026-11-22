@@ -81,9 +81,9 @@ const char *settingsPageTitle(SettingsPage page)
 const char *settingsPageNote(SettingsPage page)
 {
     if (page == SETTINGS_PAGE_SERVER)
-        return T("A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.");
+        return T("A Navidrome server, or another with the Subsonic API. On Home and Library, X switches to its music.");
     return page == SETTINGS_PAGE_NETWORK
-               ? T("A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.")
+               ? T("A shared folder (SMB) or WebDAV folder on your network. On Home and Library, X switches to its music.")
                : NULL;
 }
 

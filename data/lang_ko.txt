@@ -279,8 +279,8 @@ Flat
 Folders
 폴더
 
-Free and open source under the MIT license; FFmpeg under the LGPL.
-MIT 라이선스의 무료 오픈 소스입니다. FFmpeg는 LGPL 라이선스입니다.
+Free and open source under the MIT license; FFmpeg and libsmb2 under the LGPL.
+MIT 라이선스의 무료 오픈 소스입니다. FFmpeg와 libsmb2는 LGPL 라이선스입니다.
 
 From cover
 커버에서
@@ -428,6 +428,9 @@ Playlists you play show up here.
 
 Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
 MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV, DSD를 재생합니다.\n재생목록, 이퀄라이저, ReplayGain, 앨범 아트를 지원합니다.
+
+From the SD card, a network folder (SMB or WebDAV) or a Navidrome server.
+SD 카드, 네트워크 폴더(SMB 또는 WebDAV), Navidrome 서버에서 재생합니다.
 
 Pop
 팝
@@ -625,8 +628,8 @@ Cassette
 [A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 열기  [X] SD 카드 / 네트워크  [LS] 이동  [RS] 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
 
-A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
-네트워크의 공유 폴더(SMB) 또는 WebDAV 폴더입니다. 라이브러리에서 X로 SD 카드와 전환합니다.
+A shared folder (SMB) or WebDAV folder on your network. On Home and Library, X switches to its music.
+네트워크의 공유 폴더(SMB) 또는 WebDAV 폴더입니다. 홈과 라이브러리에서 X를 누르면 그 음악으로 전환됩니다.
 
 Address
 주소
@@ -652,8 +655,8 @@ Library: the SD card
 Network folder
 네트워크 폴더
 
-Network folder set: test the connection, then press X in Library to play from it.
-네트워크 폴더를 설정했습니다. 연결을 테스트한 다음 라이브러리에서 X를 눌러 재생하세요.
+Network folder set: test the connection to check it.
+네트워크 폴더를 설정했습니다. 연결을 테스트해 확인하세요.
 
 None
 없음
@@ -775,8 +778,8 @@ SD 카드 라이브러리로 이동
 %s server, like 192.168.0.10:4533
 %s 서버 (예: 192.168.0.10:4533)
 
-A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
-Navidrome 서버 또는 Subsonic API를 지원하는 다른 서버. 라이브러리에서 X를 누르면 그 음악으로 전환됩니다.
+A Navidrome server, or another with the Subsonic API. On Home and Library, X switches to its music.
+Navidrome 서버 또는 Subsonic API를 지원하는 다른 서버. 홈과 라이브러리에서 X를 누르면 그 음악으로 전환됩니다.
 
 Forget this server
 이 서버 설정 삭제
@@ -796,8 +799,8 @@ Nothing answered at that address and port. Is the server on, and is the port rig
 Server set: now enter your user name and password.
 서버를 설정했습니다. 이제 사용자 이름과 비밀번호를 입력하세요.
 
-Server set: test the connection, then press X in Library to play from it.
-서버를 설정했습니다. 연결을 테스트한 다음 라이브러리에서 X를 눌러 재생하세요.
+Server set: test the connection to check it.
+서버를 설정했습니다. 연결을 테스트해 확인하세요.
 
 Go to the Navidrome library
 Navidrome 라이브러리로 이동

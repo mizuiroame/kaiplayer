@@ -16,7 +16,7 @@ install on it:
 
 ## Setting it up
 
-In **Settings > Network folder**:
+In **+ → Settings → Network folder**:
 
 1. **Address**: one of these.
    - `\\PC\Music` or `smb://PC/Music` for a shared folder (SMB). A folder

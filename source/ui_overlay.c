@@ -414,7 +414,7 @@ static void drawFolderPicker(const App *app)
 }
 
 #define ABOUT_W 700
-#define ABOUT_H 470
+#define ABOUT_H 498
 
 static void drawAbout(void)
 {
@@ -423,8 +423,9 @@ static void drawAbout(void)
         N_("A music player for Switch 2 homebrew on kaiHEN."),
         N_("Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\n"
            "playlists, an equalizer, ReplayGain and album art."),
+        N_("From the SD card, a network folder (SMB or WebDAV) or a Navidrome server."),
         "",
-        N_("Free and open source under the MIT license; FFmpeg under the LGPL."),
+        N_("Free and open source under the MIT license; FFmpeg and libsmb2 under the LGPL."),
         N_("Not affiliated with or endorsed by Nintendo."),
     };
     int x = (GFX_WIDTH - ABOUT_W) / 2, y = (GFX_HEIGHT - ABOUT_H) / 2;

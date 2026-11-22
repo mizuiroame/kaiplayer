@@ -279,8 +279,8 @@ Flat
 Folders
 文件夹
 
-Free and open source under the MIT license; FFmpeg under the LGPL.
-基于MIT许可证的免费开源软件；FFmpeg基于LGPL许可证。
+Free and open source under the MIT license; FFmpeg and libsmb2 under the LGPL.
+基于MIT许可证的免费开源软件；FFmpeg和libsmb2基于LGPL许可证。
 
 From cover
 取自封面
@@ -428,6 +428,9 @@ Playlists you play show up here.
 
 Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
 可播放MP3、FLAC、AAC、ALAC、Opus、Ogg Vorbis、WAV和DSD，\n支持播放列表、均衡器、ReplayGain和专辑封面。
+
+From the SD card, a network folder (SMB or WebDAV) or a Navidrome server.
+可从SD卡、网络文件夹（SMB或WebDAV）或Navidrome服务器播放。
 
 Pop
 流行
@@ -625,8 +628,8 @@ Cassette
 [A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 打开  [X] SD卡 / 网络  [LS] 移动  [RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
 
-A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
-网络中的共享文件夹（SMB）或WebDAV文件夹。在媒体库中按X可在它和SD卡之间切换。
+A shared folder (SMB) or WebDAV folder on your network. On Home and Library, X switches to its music.
+网络中的共享文件夹（SMB）或WebDAV文件夹。在首页和媒体库中按X切换到它的音乐。
 
 Address
 地址
@@ -652,8 +655,8 @@ Library: the SD card
 Network folder
 网络文件夹
 
-Network folder set: test the connection, then press X in Library to play from it.
-网络文件夹已设置：请测试连接，然后在媒体库中按X从中播放。
+Network folder set: test the connection to check it.
+网络文件夹已设置：请测试连接以进行检查。
 
 None
 无
@@ -775,8 +778,8 @@ Go to the SD card library
 %s server, like 192.168.0.10:4533
 %s服务器，例如 192.168.0.10:4533
 
-A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
-Navidrome服务器，或其他支持Subsonic API的服务器。在媒体库中按X切换到它的音乐。
+A Navidrome server, or another with the Subsonic API. On Home and Library, X switches to its music.
+Navidrome服务器，或其他支持Subsonic API的服务器。在首页和媒体库中按X切换到它的音乐。
 
 Forget this server
 忘记此服务器
@@ -796,8 +799,8 @@ Nothing answered at that address and port. Is the server on, and is the port rig
 Server set: now enter your user name and password.
 服务器已设置：现在请输入用户名和密码。
 
-Server set: test the connection, then press X in Library to play from it.
-服务器已设置：请测试连接，然后在媒体库中按X从中播放。
+Server set: test the connection to check it.
+服务器已设置：请测试连接以进行检查。
 
 Go to the Navidrome library
 前往Navidrome媒体库

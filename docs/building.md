@@ -65,7 +65,13 @@ way to build it.
 The output is `KaiPlayer.nro`, in the project root.
 
 `preview` compiles the real interface code on the host with a fake player
-and writes `tests/preview/build/*.ppm` screenshots of each tab.
+and writes `tests/preview/build/*.ppm` screenshots of each tab, then the same
+in every language of `data/` (`tests/preview/build/<language>/`), to see what
+no longer fits.
+
+After changing a text in the code, check every language file against it
+(`python tools/lang_check.py data/lang_es.txt`, and so on): it must say 0
+missing, 0 wrong and 0 unused. See [Languages](languages.md).
 
 The unit tests read network folders through a fake one (the fixtures behind
 `dav:/` names), with blocks small enough that every read crosses some: the
@@ -139,6 +145,13 @@ source/
   net.c           HTTP(S) with curl
   smbnet.c        SMB with libsmb2: listing, reading, connections kept or own
   app_network.c   the Network folder page, its test, and starting the console's network
+  subsonic.c      the Navidrome (Subsonic) server's address, account file, token and answers
+  subnet.c        asks the server for its library, covers and songs, and tells it the plays
+  subfile.c       reads the server's songs and covers for kfile.c (HTTP ranges)
+  app_server.c    the Navidrome page, its sign-in and test, and the scrobbles
+  json.c md5.c    the server's JSON answers, and the token's MD5
+  lang.c          T(): the texts in the language in use (data/lang_*.txt)
+  languages.c     the languages in the app and in config/lang, for Settings
   tags_*.c        ID3 and Vorbis comment readers (title, artist, album, cover)
   cover.c         decodes and scales album art (JPEG / PNG)
   artwork.c       loads tags and covers on a background thread
@@ -172,11 +185,14 @@ source/
   app_*.c         input handling for each tab, the menu, settings, equalizer, touch and resume
 smb/            the Dockerfile that adds libsmb2 to the devkit image
 ffmpeg/         the Dockerfile and options that add FFmpeg (Switch 2 and host) to it
-data/           Noto Sans Regular and Bold, embedded in the .nro
+data/           Noto Sans Regular and Bold, and the eight translations (lang_*.txt),
+                embedded in the .nro
 third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain);
-                the licenses of FFmpeg, libsmb2, curl and zlib
+                the licenses of FFmpeg, libsmb2, curl, zlib, OunceVK (Mesa) and libounce
 tests/          host tests, fuzzer, fixtures and the UI preview; host_live/: a real network folder
-tools/          kaiupload.py (FTP upload with plain names), gltest (the GPU
-                backend checked against the CPU one), gpu-spike (a GPU test .nro)
+tools/          kaiupload.py (FTP upload with plain names), lang_check.py (a
+                language file against the texts in the code), make_icon.py
+                (icon.jpg), gltest (the GPU backend checked against the CPU
+                one), gpu-spike (a GPU test .nro)
 icon.jpg        256×256 icon for hbmenu
 ```

@@ -45,9 +45,10 @@ Their licenses are here:
 |---------|---------|------------|---------|
 | FFmpeg (libavformat, libavcodec, libswresample, libavutil) | 7.1 | Built by `ffmpeg/Dockerfile` from ffmpeg.org's release tarball (SHA-256 checked), only the AAC, ALAC and Opus decoders, the MP4, Ogg and ADTS demuxers and the resampler | LGPL 2.1 (`FFmpeg-LGPL-2.1.txt`) |
 | libsmb2 | 6.0.0 | Built by `smb/Dockerfile` from its release tarball (SHA-256 checked) | LGPL 2.1 (`libsmb2-LGPL-2.1.txt`, `libsmb2-COPYING.txt`) |
-| libcurl | - | devkitPro's `switch-curl` package | curl license (`curl-LICENSE.txt`) |
-| zlib | - | devkitPro's `switch-zlib` package | zlib license (`zlib-LICENSE.txt`) |
-| libounce (libnx fork) | - | ounce-devkit | ISC |
+| libcurl | 7.69.1 | devkitPro's `switch-curl` package | curl license (`curl-LICENSE.txt`) |
+| zlib | 1.3.1 | devkitPro's `switch-zlib` package | zlib license (`zlib-LICENSE.txt`) |
+| OunceVK (Mesa's NVK and Zink: EGL and OpenGL ES), `libEGL.a` and `libouncevk-gl.a` | - | ounce-devkit | MIT (`Mesa-MIT.txt`, `Mesa-license.rst`) |
+| libounce (libnx fork, with mimalloc) | - | ounce-devkit | ISC (`libounce-ISC.txt`, `libnx-ISC.txt`); mimalloc MIT (`mimalloc-MIT.txt`) |
 
 Under the LGPL, you may change FFmpeg or libsmb2 and relink KaiPlayer with
 your version: the whole source and the scripts that build them are in this

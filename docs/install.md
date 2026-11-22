@@ -64,7 +64,9 @@ let it replace the old one.
 2. The first time, KaiPlayer asks where your music is: open your music
    folder (for example `Music`) with **A** and press **X** to use it.
    KaiPlayer only shows that folder and the ones inside it. You can change
-   it later in **+ → Settings → Music folder**.
+   it later in **+ → Settings → Library → Music folder**. Music can also
+   come from a [network folder](network-folder.md) or a
+   [Navidrome server](navidrome.md).
 3. KaiPlayer reads your songs' tags in the background and builds your
    library. Open **Library → Artists** or **Albums**, pick one and press
    **X** to play it, or **A** on a song to start from there.

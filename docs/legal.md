@@ -59,11 +59,10 @@ licenses are):
 |---------|----------|---------|
 | [FFmpeg](https://ffmpeg.org/) 7.1 (libavformat, libavcodec, libswresample, libavutil) | Playing AAC, ALAC and Opus | [LGPL 2.1](../third_party/FFmpeg-LGPL-2.1.txt) |
 | [libsmb2](https://github.com/sahlberg/libsmb2) 6.0.0 | Network folders over SMB | [LGPL 2.1](../third_party/libsmb2-LGPL-2.1.txt) ([its notice](../third_party/libsmb2-COPYING.txt)) |
-| [curl](https://curl.se/) | WebDAV network folders, Navidrome servers | [curl](../third_party/curl-LICENSE.txt) |
-| [zlib](https://zlib.net/) | Used by curl | [zlib](../third_party/zlib-LICENSE.txt) |
-
-The `.nro` also links [libounce](https://github.com/ouncebrew/libounce), which
-uses the ISC license (its bundled mimalloc uses MIT).
+| [curl](https://curl.se/) 7.69.1 | WebDAV network folders, Navidrome servers | [curl](../third_party/curl-LICENSE.txt) |
+| [zlib](https://zlib.net/) 1.3.1 | Used by curl | [zlib](../third_party/zlib-LICENSE.txt) |
+| [OunceVK](https://github.com/ouncebrew/ouncevk) (Mesa) | Drawing on the GPU (EGL and OpenGL ES) | [MIT](../third_party/Mesa-MIT.txt) ([Mesa's notes](../third_party/Mesa-license.rst)) |
+| [libounce](https://github.com/ouncebrew/libounce) (a libnx fork, with mimalloc) | The Switch 2 system library | ISC: [libounce](../third_party/libounce-ISC.txt), [libnx](../third_party/libnx-ISC.txt); [MIT](../third_party/mimalloc-MIT.txt) (mimalloc) |
 
 Under the LGPL, you may change FFmpeg or libsmb2 and relink KaiPlayer with
 your version: the whole source and the scripts that build them are in this

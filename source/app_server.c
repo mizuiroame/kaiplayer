@@ -177,7 +177,7 @@ static void typeAddress(App *app)
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a, true);
-        appToast(app, subSignedIn(&a) ? T("Server set: test the connection, then press X in Library to play from it.")
+        appToast(app, subSignedIn(&a) ? T("Server set: test the connection to check it.")
                                       : T("Server set: now enter your user name and password."));
     }
     memset(&a, 0, sizeof(a));

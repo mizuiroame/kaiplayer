@@ -10,7 +10,7 @@ in **+ → Settings → Library → Music folder**.
 The library can also come from a [network folder](network-folder.md) or a
 [Navidrome server](navidrome.md): with one set up, the pill next to
 KaiPlayer's name says which is shown. **X** on Home or on Library's first
-page, a tap on the pill, or **+ → Show the ... library** goes to the next one
+page, a tap on the pill, or **+ → Go to the … library** goes to the next one
 set up: **SD card**, **network folder**, **Navidrome**, and back.
 
 ## Home
@@ -51,8 +51,9 @@ without tags are grouped by folder, as `Artist/Album/song.mp3`.
 
 KaiPlayer keeps the library in `catalog.txt` in its folder so it shows at
 once next time, and updates it in the background, reading only new or changed
-files; the progress shows at the top right. **+ → Update the library now**
-checks the folder again after you add music.
+files; the progress shows at the top right. **+ → Update the library** (or
+**+ → Settings → Library → Update the library**) checks the folder again after
+you add music.
 
 ## Playing folders
 
@@ -76,8 +77,8 @@ Song rows in Library, Playlists and Queue show the song's **title**,
 ## Song details and album art
 
 Now Playing shows the album cover, title, artist and album. The mini player
-at the bottom of Home, Library and Queue shows a small cover, the title and
-the artist.
+at the bottom of Home, Library, Playlists and Queue shows a small cover, the
+title and the artist.
 
 KaiPlayer reads the song details from the file's tags:
 

@@ -110,7 +110,7 @@ static void typeAddress(App *app)
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a);
-        appToast(app, T("Network folder set: test the connection, then press X in Library to play from it."));
+        appToast(app, T("Network folder set: test the connection to check it."));
     }
     memset(&a, 0, sizeof(a));
 }

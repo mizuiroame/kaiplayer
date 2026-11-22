@@ -25,14 +25,15 @@ folder**, **Navidrome**, **Playback**, **Display** and **About**.
 | Navidrome | Forget this server | **A** removes the address and the sign-in |
 | Playback | Sleep timer | Off, or any number of minutes up to 600 |
 | Playback | Resume where you left off | Keep playing (default), Paused or Off |
+| Playback | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
 | Playback | Equalizer | Off (default), a preset, or Custom; **A** opens the editor |
 | Playback | ReplayGain (even loudness) | Off (default), Track, Album or Auto |
+| Display | Language | English (default), or one of the other eight. See [Languages](languages.md) |
 | Display | Accent color | Pink (default), Blue, Green, Purple, Orange, Red, or From cover |
-| Display | Now Playing style | Cover (default), Vinyl record, CD or Cassette |
 | Display | Background | Cover colors (default), or a picture from your `Backgrounds` folder |
 | Display | Background blur | Off, Low, Medium (default) or High |
 | Display | Clock | 24-hour (default) or 12-hour |
-| Playback | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
+| Display | Now Playing style | Cover (default), Vinyl record, CD or Cassette |
 | — | About | The KaiPlayer version; **A** shows more about the app and its author |
 
 ## Sleep timer
@@ -80,6 +81,12 @@ write.
 
 Songs without these tags play as they are. KaiPlayer only turns songs down,
 never up, so nothing clips. A new mode applies from the next song.
+
+## Language
+
+KaiPlayer comes in nine languages: English, Spanish, French, Italian,
+Portuguese, German, Japanese, Chinese and Korean. Choose one with ← →; the
+change shows at once. See [Languages](languages.md), also for adding one.
 
 ## Accent color
 

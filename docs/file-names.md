@@ -30,7 +30,8 @@ limitation of the console, not of KaiPlayer:
 ## Tags carry the real names
 
 KaiPlayer takes each song's title, artist and album from its tags (ID3 in MP3
-and DSD, Vorbis comments in FLAC and Ogg), not from the file name, and tags
+and DSD, Vorbis comments in FLAC, Ogg and Opus, MP4 tags in `.m4a`), not from
+the file name, and tags
 can hold any language. A file renamed `04 Mizuiro no Ame.mp3` is still shown
 as **みずいろの雨 · 八神純子 · 素顔の私**, with its embedded cover, and
 `06 Cancion.flac` as **Canción**.

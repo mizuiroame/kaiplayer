@@ -279,8 +279,8 @@ Flat
 Folders
 フォルダー
 
-Free and open source under the MIT license; FFmpeg under the LGPL.
-MIT ライセンスの無料オープンソースソフトです。FFmpeg は LGPL です。
+Free and open source under the MIT license; FFmpeg and libsmb2 under the LGPL.
+MIT ライセンスの無料オープンソースソフトです。FFmpeg と libsmb2 は LGPL です。
 
 From cover
 ジャケットから
@@ -428,6 +428,9 @@ Playlists you play show up here.
 
 Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
 MP3、FLAC、AAC、ALAC、Opus、Ogg Vorbis、WAV、DSD を再生します。\nプレイリスト、イコライザー、ReplayGain、アルバムアートにも対応しています。
+
+From the SD card, a network folder (SMB or WebDAV) or a Navidrome server.
+SDカード、ネットワークフォルダー（SMB または WebDAV）、Navidrome サーバーから再生できます。
 
 Pop
 ポップ
@@ -625,8 +628,8 @@ Cassette
 [A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] 開く  [X] SDカード / ネットワーク  [LS] 移動  [RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
 
-A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
-ネットワーク上の共有フォルダー（SMB）または WebDAV フォルダーです。ライブラリーでXを押すと、SDカードと切り替わります。
+A shared folder (SMB) or WebDAV folder on your network. On Home and Library, X switches to its music.
+ネットワーク上の共有フォルダー（SMB）または WebDAV フォルダーです。ホームとライブラリーでXを押すと、その音楽に切り替わります。
 
 Address
 アドレス
@@ -652,8 +655,8 @@ Library: the SD card
 Network folder
 ネットワークフォルダー
 
-Network folder set: test the connection, then press X in Library to play from it.
-ネットワークフォルダーを設定しました。接続をテストしてから、ライブラリーでXを押すとそこから再生できます。
+Network folder set: test the connection to check it.
+ネットワークフォルダーを設定しました。接続をテストして確認してください。
 
 None
 なし
@@ -775,8 +778,8 @@ SDカードのライブラリーへ
 %s server, like 192.168.0.10:4533
 %sサーバー（例: 192.168.0.10:4533）
 
-A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
-Navidromeサーバー、またはSubsonic APIに対応したサーバー。ライブラリーでXを押すとその音楽に切り替わります。
+A Navidrome server, or another with the Subsonic API. On Home and Library, X switches to its music.
+Navidromeサーバー、またはSubsonic APIに対応したサーバー。ホームとライブラリーでXを押すとその音楽に切り替わります。
 
 Forget this server
 このサーバーの登録を解除
@@ -796,8 +799,8 @@ Nothing answered at that address and port. Is the server on, and is the port rig
 Server set: now enter your user name and password.
 サーバーを設定しました。次にユーザー名とパスワードを入力してください。
 
-Server set: test the connection, then press X in Library to play from it.
-サーバーを設定しました。接続をテストしてから、ライブラリーでXを押すとそこから再生できます。
+Server set: test the connection to check it.
+サーバーを設定しました。接続をテストして確認してください。
 
 Go to the Navidrome library
 Navidromeのライブラリーへ

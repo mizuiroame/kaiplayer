@@ -279,8 +279,8 @@ Neutre
 Folders
 Dossiers
 
-Free and open source under the MIT license; FFmpeg under the LGPL.
-Libre et open source sous licence MIT ; FFmpeg sous licence LGPL.
+Free and open source under the MIT license; FFmpeg and libsmb2 under the LGPL.
+Libre et open source sous licence MIT ; FFmpeg et libsmb2 sous licence LGPL.
 
 From cover
 De la pochette
@@ -428,6 +428,9 @@ Les playlists que vous écoutez apparaissent ici.
 
 Plays MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV and DSD, with\nplaylists, an equalizer, ReplayGain and album art.
 Lit les MP3, FLAC, AAC, ALAC, Opus, Ogg Vorbis, WAV et DSD, avec\nplaylists, égaliseur, ReplayGain et pochettes d'album.
+
+From the SD card, a network folder (SMB or WebDAV) or a Navidrome server.
+Depuis la carte SD, un dossier réseau (SMB ou WebDAV) ou un serveur Navidrome.
 
 Pop
 Pop
@@ -625,8 +628,8 @@ Cassette
 [A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu
 [A] ouvrir  [X] carte SD / réseau  [LS] déplacer  [RS] position  [L][R] piste  [-] pause  [+] menu
 
-A shared folder (SMB) or WebDAV folder on your network. In Library, X switches between it and the SD card.
-Un dossier partagé (SMB) ou WebDAV de votre réseau. Dans Bibliothèque, X passe de lui à la carte SD.
+A shared folder (SMB) or WebDAV folder on your network. On Home and Library, X switches to its music.
+Un dossier partagé (SMB) ou WebDAV de votre réseau. Dans Accueil et Bibliothèque, X passe à sa musique.
 
 Address
 Adresse
@@ -652,8 +655,8 @@ Bibliothèque : la carte SD
 Network folder
 Dossier réseau
 
-Network folder set: test the connection, then press X in Library to play from it.
-Dossier réseau défini : testez la connexion, puis appuyez sur X dans Bibliothèque pour l'écouter.
+Network folder set: test the connection to check it.
+Dossier réseau défini : testez la connexion pour le vérifier.
 
 None
 Aucun
@@ -775,8 +778,8 @@ Aller à la bibliothèque de la carte SD
 %s server, like 192.168.0.10:4533
 Serveur %s, par ex. 192.168.0.10:4533
 
-A Navidrome server, or another with the Subsonic API. In Library, X switches to its music.
-Un serveur Navidrome, ou un autre avec l'API Subsonic. Dans Bibliothèque, X passe à sa musique.
+A Navidrome server, or another with the Subsonic API. On Home and Library, X switches to its music.
+Un serveur Navidrome, ou un autre avec l'API Subsonic. Dans Accueil et Bibliothèque, X passe à sa musique.
 
 Forget this server
 Oublier ce serveur
@@ -796,8 +799,8 @@ Rien n'a répondu à cette adresse et ce port. Le serveur est-il allumé, et le 
 Server set: now enter your user name and password.
 Serveur défini : saisissez maintenant votre nom d'utilisateur et votre mot de passe.
 
-Server set: test the connection, then press X in Library to play from it.
-Serveur défini : testez la connexion, puis appuyez sur X dans Bibliothèque pour l'écouter.
+Server set: test the connection to check it.
+Serveur défini : testez la connexion pour le vérifier.
 
 Go to the Navidrome library
 Aller à la bibliothèque Navidrome

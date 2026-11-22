@@ -54,10 +54,13 @@ list. **−**, **L** and **R** also pause and change the song from anywhere.
 |-------------|------------|
 | Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
 | Queue       | Save the whole queue as a playlist |
-| All         | Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
+| All         | Update the library, Go to the … library (with a network folder or a Navidrome server set up), Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
 
-**+ → Update the library now** checks the music folder again after you add
-music (see [Library](library.md#library)).
+**+ → Update the library** checks the music folder again after you add
+music (see [Library](library.md#library)). **+ → Go to the … library**
+switches to the next library set up, as **X** does on Home, and opens Library
+on it; the item says which one (**SD card**, **network folder** or
+**Navidrome**).
 
 Adding songs to a playlist isn't in the menu: use the add-to-playlist
 buttons, a list with a small plus (see [Playlists](playlists.md)).
@@ -86,3 +89,7 @@ Everything can also be done by touch:
   Repeat buttons.
 - **Menu:** tap the ☰ button or the KaiPlayer title in the top left to open
   the + menu. Tap an item to choose it, or outside the menu to close it.
+- **Library source:** with a network folder or a Navidrome server set up,
+  tap the pill next to the KaiPlayer title to switch to the next library, and
+  the pill at the top right (while a library on the network is read) to see
+  that one.
