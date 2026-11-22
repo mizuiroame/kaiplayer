@@ -18,6 +18,9 @@ bool davSaveAccount(const char *path);
 
 // True when the folder is an SMB share (read with smbnet.h), not WebDAV.
 bool davIsSmb(void);
+// True when the folder has a user whose password isn't remembered and hasn't been
+// typed since KaiPlayer started: listing and reading fail at once, without the server.
+bool davPasswordMissing(void);
 // Opens a song of an SMB folder (smbnet.h): on a connection of its own, or
 // shared with the listing (smbFileOpenShared). NULL with why if it can't be.
 struct SmbFile *davSmbOpen(const char *location, bool shared, char *why, size_t why_size);

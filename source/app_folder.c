@@ -98,6 +98,8 @@ void appSetLibrarySource(App *app, LibrarySource source)
     }
     if (app->config.source == source)
         return;
+    if (source == LIBRARY_NETWORK)
+        appNetworkEnsurePassword(app);  // Without it, what was read before shows.
     app->config.source = source;
     configSave(&app->config);
     app->library.depth = 0;  // Back to the Library's first page.
@@ -217,6 +219,8 @@ void appUpdateLibrary(App *app)
         appToast(app, T("Choose your music folder first."));
         return;
     }
+    if (app->config.source == LIBRARY_NETWORK && !appNetworkEnsurePassword(app))
+        return;
     catalogScanStart(appMusicRoot(app));
     appToast(app, T("Updating the library..."));  // Its progress shows on the Library tab.
 }

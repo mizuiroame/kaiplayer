@@ -166,6 +166,18 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_RESCAN:                               // Just the A button when chosen.
     case SETTING_NET_TEST:
     case SETTING_NET_FORGET: out[0] = '\0'; break;
+    case SETTING_NET_REMEMBER:
+    case SETTING_NET_UNSIGNED: {
+        bool remember, allow_unsigned, smb;
+        appNetworkChoices(&remember, &allow_unsigned, &smb);
+        if (row == SETTING_NET_REMEMBER)
+            snprintf(out, size, "%s", remember ? T("On") : T("Off: asked when the folder is used"));
+        else if (!smb)
+            snprintf(out, size, "%s", T("Only for shared folders (SMB)"));
+        else
+            snprintf(out, size, "%s", allow_unsigned ? T("On: not signed") : T("Off"));
+        break;
+    }
     case SETTING_OPEN_NETWORK:
     case SETTING_NET_ADDRESS:
     case SETTING_NET_ACCOUNT: {

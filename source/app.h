@@ -318,6 +318,11 @@ void appNetworkUpdate(App *app);
 void appNetworkExit(void);
 // What its rows show: the address ("" for none) and the user.
 void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size);
+// Its switches: the password kept on the card, signing not required; and whether it's an SMB folder.
+void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb);
+// Before using the network folder: its password, when it isn't remembered and hasn't been
+// typed since KaiPlayer started, is asked for now. False if it wasn't given.
+bool appNetworkEnsurePassword(App *app);
 // A network folder's location as the person knows it: "192.168.0.10:8098/music/Album".
 void appNetworkShownPath(const char *location, char *out, size_t size);
 

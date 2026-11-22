@@ -39,6 +39,13 @@ void smbLastError(char *out, size_t size)
     pthread_mutex_unlock(&g_error_lock);
 }
 
+// What a refused signed connection is told as, when the server can't sign.
+static const char *oldNasText(void)
+{
+    return T("The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust "
+             "your home network, turn on Allow without signing on this page.");
+}
+
 static void explain(struct smb2_context *smb2, int rc, char *why, size_t size)
 {
     const char *error = smb2 ? smb2_get_error(smb2) : "";
@@ -46,7 +53,10 @@ static void explain(struct smb2_context *smb2, int rc, char *why, size_t size)
     snprintf(g_last_error, sizeof(g_last_error), "%d: %s", rc, error);
     pthread_mutex_unlock(&g_error_lock);
     const char *text;
-    if (strstr(error, "LOGON_FAILURE") || strstr(error, "ACCOUNT_") || strstr(error, "PASSWORD_") ||
+    // Signing required (connectShare) and the server can't: an old NAS, or a guest's session, which has no key.
+    if (strstr(error, "does not support signing") || strstr(error, "Session Key is not available"))
+        text = oldNasText();
+    else if (strstr(error, "LOGON_FAILURE") || strstr(error, "ACCOUNT_") || strstr(error, "PASSWORD_") ||
         strstr(error, "WRONG_PASSWORD"))
         text = T("Wrong user name or password.");
     else if (strstr(error, "BAD_NETWORK_NAME"))
@@ -74,8 +84,10 @@ static void explain(struct smb2_context *smb2, int rc, char *why, size_t size)
     snprintf(why, size, "%s", text);
 }
 
-// A connection to the account's share. NULL with why if it can't be made.
-static struct smb2_context *connectShare(const DavAccount *a, char *why, size_t why_size)
+// A connection to the account's share, signed or not, in version (SMB2_VERSION_ANY:
+// the newest both know). NULL with why if it can't be made.
+static struct smb2_context *connectOnce(const DavAccount *a, bool sign, enum smb2_negotiate_version version,
+                                        char *why, size_t why_size)
 {
     char server[DAV_ADDRESS_MAX], share[DAV_ADDRESS_MAX], folder[DAV_ADDRESS_MAX];
     if (!davSmbParts(a->address, server, sizeof(server), share, sizeof(share), folder, sizeof(folder))) {
@@ -90,7 +102,15 @@ static struct smb2_context *connectShare(const DavAccount *a, char *why, size_t 
     char domain[DAV_TEXT_MAX], name[DAV_TEXT_MAX];
     davSplitUser(a->user, domain, sizeof(domain), name, sizeof(name));
     smb2_set_timeout(smb2, SMB_TIMEOUT_S);
-    smb2_set_security_mode(smb2, SMB2_NEGOTIATE_SIGNING_ENABLED);
+    smb2_set_version(smb2, version);
+    // Signed, so nobody on the way can change what's read; an old NAS that can't
+    // sign only with the folder's Allow without signing on.
+    if (!sign) {
+        smb2_set_security_mode(smb2, SMB2_NEGOTIATE_SIGNING_ENABLED);
+    } else {
+        smb2_set_security_mode(smb2, SMB2_NEGOTIATE_SIGNING_ENABLED | SMB2_NEGOTIATE_SIGNING_REQUIRED);
+        smb2_set_sign(smb2, 1);
+    }
     if (domain[0])
         smb2_set_domain(smb2, domain);
     if (name[0]) {
@@ -107,6 +127,49 @@ static struct smb2_context *connectShare(const DavAccount *a, char *why, size_t 
         return NULL;
     }
     return smb2;
+}
+
+// True when the last failure may come from the signing: the server refused the
+// session (a NAS that made it a guest's can't check what's signed) rather than
+// being unreachable or the folder missing.
+static bool mayBeSigning(void)
+{
+    pthread_mutex_lock(&g_error_lock);
+    bool may = strstr(g_last_error, "ACCESS_DENIED") || strstr(g_last_error, "LOGON_FAILURE") ||
+               strstr(g_last_error, "ignature");
+    pthread_mutex_unlock(&g_error_lock);
+    return may;
+}
+
+// Unsigned. libsmb2 still signs the share's connection in SMB 3.1.1, which a
+// guest's session can't check: refused so, it's tried again in SMB 2.
+static struct smb2_context *connectUnsigned(const DavAccount *a, char *why, size_t why_size)
+{
+    struct smb2_context *smb2 = connectOnce(a, false, SMB2_VERSION_ANY, why, why_size);
+    if (!smb2 && mayBeSigning())
+        smb2 = connectOnce(a, false, SMB2_VERSION_ANY2, why, why_size);
+    return smb2;
+}
+
+// The account's share, signed unless the folder allows otherwise. Refused while
+// signed, it tries once unsigned, only to tell why: if that gets in, the server
+// can't sign (an old NAS, guests), the person is told so, and that connection is
+// closed unused.
+static struct smb2_context *connectShare(const DavAccount *a, char *why, size_t why_size)
+{
+    if (a->allow_unsigned)
+        return connectUnsigned(a, why, why_size);
+    struct smb2_context *smb2 = connectOnce(a, true, SMB2_VERSION_ANY, why, why_size);
+    if (smb2 || !mayBeSigning())
+        return smb2;
+    char unused[256];
+    struct smb2_context *probe = connectUnsigned(a, unused, sizeof(unused));
+    if (probe) {
+        smb2_disconnect_share(probe);
+        smb2_destroy_context(probe);
+        snprintf(why, why_size, "%s", oldNasText());
+    }
+    return NULL;
 }
 
 // --- Listing, on a connection kept between folders (a library's scan asks for many) ---
@@ -189,7 +252,8 @@ static bool listOnce(struct smb2_context *smb2, const char *path, DavEntry **out
 
 static bool sameAccount(const DavAccount *a, const DavAccount *b)
 {
-    return !strcmp(a->address, b->address) && !strcmp(a->user, b->user) && !strcmp(a->password, b->password);
+    return !strcmp(a->address, b->address) && !strcmp(a->user, b->user) && !strcmp(a->password, b->password) &&
+           a->allow_unsigned == b->allow_unsigned;
 }
 
 // g_list, connected for a (again if it was another's). *fresh: it was just made. Under g_lock.

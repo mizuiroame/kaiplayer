@@ -150,6 +150,9 @@ Alben in deiner Bibliothek
 All songs
 Alle Songs
 
+Allow without signing (old NAS)
+Ohne Signierung erlauben (alter NAS)
+
 Already in "%s".
 Schon in "%s".
 
@@ -372,6 +375,9 @@ Nicht mit Nintendo verbunden oder von Nintendo unterstützt.
 Not chosen
 Nicht gewählt
 
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+Nicht signiert: Jemand in deinem Netzwerk könnte ändern, was gelesen wird. Nur für einen alten NAS verwenden.
+
 Nothing here yet.
 Noch nichts hier.
 
@@ -390,8 +396,17 @@ Stil von Jetzt läuft
 Off
 Aus
 
+Off: asked when the folder is used
+Aus: wird abgefragt, wenn der Ordner gebraucht wird
+
 On
 An
+
+On: not signed
+An: nicht signiert
+
+Only for shared folders (SMB)
+Nur für freigegebene Ordner (SMB)
 
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
 Quelloffen (MIT)  ·  github.com/mizuiroame/kaiplayer
@@ -401,6 +416,9 @@ Orange
 
 Out of memory for the track list.
 Kein Speicher mehr für die Titelliste.
+
+Password for %s (%s)
+Passwort für %s (%s)
 
 Paused
 Pausiert
@@ -468,6 +486,9 @@ Letzte Playlists
 Red
 Rot
 
+Remember the password
+Passwort merken
+
 Remove
 Entfernen
 
@@ -507,6 +528,15 @@ Rock
 Save queue as playlist
 Warteschlange als Playlist speichern
 
+Saved until KaiPlayer closes: the password isn't kept on the card.
+Gespeichert, bis KaiPlayer geschlossen wird: Das Passwort wird nicht auf der Karte gespeichert.
+
+Saved: the card keeps the password's hash, not the password.
+Gespeichert: Die Karte enthält den Hash des Passworts, nicht das Passwort.
+
+Saved: the password is only encoded on the card. Use a user that can only read the music.
+Gespeichert: Das Passwort ist auf der Karte nur kodiert. Nutze einen Benutzer, der die Musik nur lesen darf.
+
 Screen off  ·  press any button or touch to wake
 Bildschirm aus  ·  Taste drücken oder tippen zum Aufwecken
 
@@ -527,6 +557,9 @@ Zufall an
 
 shuffled play order
 zufällige Reihenfolge
+
+Signing is only for shared folders (SMB).
+Die Signierung gibt es nur für freigegebene Ordner (SMB).
 
 Sleep %u min
 Timer %u min
@@ -552,8 +585,26 @@ Songs, die du abspielst, erscheinen hier.
 Space
 Leerzeichen
 
+That password can't be used.
+Dieses Passwort kann nicht verwendet werden.
+
+The connection is signed again.
+Die Verbindung wird wieder signiert.
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+Das Passwort des Netzwerkordners wird nicht gespeichert: Es wird abgefragt, wenn der Ordner gebraucht wird.
+
+The password is kept on the card.
+Das Passwort wird auf der Karte gespeichert.
+
+The password won't be kept on the card: KaiPlayer asks for it when the folder is used.
+Das Passwort wird nicht auf der Karte gespeichert: KaiPlayer fragt danach, wenn der Ordner gebraucht wird.
+
 The queue is empty.
 Die Warteschlange ist leer.
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+Der Server signiert die Verbindung nicht (ein alter NAS oder ein Ordner für Gäste). Wenn du deinem Heimnetz vertraust, schalte auf dieser Seite „Ohne Signierung erlauben“ ein.
 
 There are no songs to add.
 Es gibt keine Songs zum Hinzufügen.
@@ -605,6 +656,9 @@ Willkommen bei KaiPlayer
 
 Welcome! Where is your music?
 Willkommen! Wo ist deine Musik?
+
+Without the password the network folder can't be read.
+Ohne das Passwort kann der Netzwerkordner nicht gelesen werden.
 
 Your music folder has no songs yet. Add some over FTP.
 Dein Musikordner hat noch keine Songs. Füge welche per FTP hinzu.

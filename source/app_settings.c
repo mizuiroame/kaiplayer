@@ -194,7 +194,11 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         app->config.screen_off_minutes = settingsScreenOffStep(app->config.screen_off_minutes, delta);
         configSave(&app->config);
         break;
-    case SETTING_SRV_CERTIFICATE: appServerActivate(app, row); break;  // On or off, either way.
+    case SETTING_SRV_CERTIFICATE:  // On or off, either way.
+        appServerActivate(app, row);
+        break;
+    case SETTING_NET_REMEMBER:
+    case SETTING_NET_UNSIGNED: appNetworkActivate(app, row); break;
     case SETTING_LANGUAGE: {  // Through the languages found: English, those in the app, config/lang's files.
         int count = languagesCount();
         int at = (languageIndex(app->config.language) + delta % count + count) % count;

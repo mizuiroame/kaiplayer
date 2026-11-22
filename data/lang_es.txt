@@ -150,6 +150,9 @@ Albums in your library
 All songs
 Todas las canciones
 
+Allow without signing (old NAS)
+Permitir sin firma (NAS antiguo)
+
 Already in "%s".
 Ya está en "%s".
 
@@ -372,6 +375,9 @@ Sin relación ni respaldo de Nintendo.
 Not chosen
 Sin elegir
 
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+Sin firma: alguien en tu red podría cambiar lo que se lee. Úsalo solo con un NAS antiguo.
+
 Nothing here yet.
 Todavía no hay nada aquí.
 
@@ -390,8 +396,17 @@ Estilo de En reproducción
 Off
 No
 
+Off: asked when the folder is used
+No: se pide al usar la carpeta
+
 On
 Sí
+
+On: not signed
+Sí: sin firma
+
+Only for shared folders (SMB)
+Solo para carpetas compartidas (SMB)
 
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
 Código abierto (MIT)  ·  github.com/mizuiroame/kaiplayer
@@ -401,6 +416,9 @@ Naranja
 
 Out of memory for the track list.
 No hay memoria para la lista de pistas.
+
+Password for %s (%s)
+Contraseña de %s (%s)
 
 Paused
 En pausa
@@ -468,6 +486,9 @@ Listas recientes
 Red
 Rojo
 
+Remember the password
+Recordar la contraseña
+
 Remove
 Quitar
 
@@ -507,6 +528,15 @@ Rock
 Save queue as playlist
 Guardar la cola como lista
 
+Saved until KaiPlayer closes: the password isn't kept on the card.
+Guardada hasta que KaiPlayer se cierre: la contraseña no se guarda en la tarjeta.
+
+Saved: the card keeps the password's hash, not the password.
+Guardada: la tarjeta tiene el hash de la contraseña, no la contraseña.
+
+Saved: the password is only encoded on the card. Use a user that can only read the music.
+Guardada: en la tarjeta la contraseña solo está codificada. Usa un usuario que solo pueda leer la música.
+
 Screen off  ·  press any button or touch to wake
 Pantalla apagada  ·  pulsa cualquier botón o toca para encenderla
 
@@ -527,6 +557,9 @@ Aleatorio: sí
 
 shuffled play order
 orden aleatorio
+
+Signing is only for shared folders (SMB).
+La firma es solo para carpetas compartidas (SMB).
 
 Sleep %u min
 Dormir %u min
@@ -552,8 +585,26 @@ Las canciones que reproduces aparecen aquí.
 Space
 Espacio
 
+That password can't be used.
+Esa contraseña no se puede usar.
+
+The connection is signed again.
+La conexión vuelve a ir firmada.
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+La contraseña de la carpeta de red no se recuerda: se pide al usar la carpeta.
+
+The password is kept on the card.
+La contraseña se guarda en la tarjeta.
+
+The password won't be kept on the card: KaiPlayer asks for it when the folder is used.
+La contraseña no se guardará en la tarjeta: KaiPlayer la pedirá cuando se use la carpeta.
+
 The queue is empty.
 La cola está vacía.
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+El servidor no firma la conexión (un NAS antiguo, o una carpeta abierta a invitados). Si confías en tu red de casa, activa Permitir sin firma en esta página.
 
 There are no songs to add.
 No hay canciones para agregar.
@@ -605,6 +656,9 @@ Te damos la bienvenida a KaiPlayer
 
 Welcome! Where is your music?
 ¡Te damos la bienvenida! ¿Dónde está tu música?
+
+Without the password the network folder can't be read.
+Sin la contraseña no se puede leer la carpeta de red.
 
 Your music folder has no songs yet. Add some over FTP.
 Tu carpeta de música todavía no tiene canciones. Agrega algunas por FTP.

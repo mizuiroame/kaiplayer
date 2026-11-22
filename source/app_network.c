@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "app.h"
+#include "catalog_scan.h"
 #include "davfile.h"
 #include "davnet.h"
 #include "kfile.h"
@@ -115,6 +116,19 @@ static void typeAddress(App *app)
     memset(&a, 0, sizeof(a));
 }
 
+// After a password is typed: how the card keeps it.
+static void sayHowKept(App *app, const DavAccount *a)
+{
+    if (!a->user[0] || !a->password[0])
+        return;
+    if (a->forget_password)
+        appToast(app, T("Saved until KaiPlayer closes: the password isn't kept on the card."));
+    else if (davIsSmbAddress(a->address))
+        appToast(app, T("Saved: the card keeps the password's hash, not the password."));
+    else
+        appToast(app, T("Saved: the password is only encoded on the card. Use a user that can only read the music."));
+}
+
 static void typeAccount(App *app)
 {
     DavAccount a;
@@ -133,10 +147,81 @@ static void typeAccount(App *app)
         appToast(app, T("The keyboard couldn't open."));
     } else if (result == SYSTEM_KEYBOARD_OK) {
         snprintf(a.user, sizeof(a.user), "%s", user);
-        snprintf(a.password, sizeof(a.password), "%s", password);
-        save(app, &a);
+        if (davSetPassword(&a, password)) {
+            save(app, &a);
+            sayHowKept(app, &a);
+        } else {
+            appToast(app, T("That password can't be used."));
+        }
     }
     memset(password, 0, sizeof(password));
+    memset(&a, 0, sizeof(a));
+}
+
+bool appNetworkEnsurePassword(App *app)
+{
+    if (!davPasswordMissing())
+        return true;
+    DavAccount a;
+    davGetAccount(&a);
+    char password[DAV_TEXT_MAX] = "", prompt[DAV_ADDRESS_MAX + 64], shown[DAV_ADDRESS_MAX];
+    davShownAddress(a.address, shown, sizeof(shown));
+    snprintf(prompt, sizeof(prompt), T("Password for %s (%s)"), a.user, shown);
+    SystemKeyboardResult result = systemKeyboardPassword(prompt, password, sizeof(password), sizeof(password) - 1);
+    bool ok = result == SYSTEM_KEYBOARD_OK && password[0] && davSetPassword(&a, password);
+    if (ok) {
+        davUseAccount(&a);  // Kept until KaiPlayer closes; the card's file stays without it.
+        smbForget();
+        davFileForget();
+        // Its library, read until now without the password, is read again.
+        if (app->config.source == LIBRARY_NETWORK)
+            catalogScanStart(DAV_ROOT);
+        else
+            catalogScanRefreshRemote(DAV_ROOT, false);
+    } else if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
+        appToast(app, T("The keyboard couldn't open."));
+    } else {
+        appToast(app, T("Without the password the network folder can't be read."));
+    }
+    memset(password, 0, sizeof(password));
+    memset(&a, 0, sizeof(a));
+    return ok;
+}
+
+static void toggleRemember(App *app)
+{
+    DavAccount a;
+    davGetAccount(&a);
+    a.forget_password = !a.forget_password;
+    save(app, &a);  // Not remembered: the password leaves the card's file now.
+    appToast(app, a.forget_password ? T("The password won't be kept on the card: KaiPlayer asks for it when the folder is used.")
+                                    : T("The password is kept on the card."));
+    memset(&a, 0, sizeof(a));
+}
+
+static void toggleUnsigned(App *app)
+{
+    DavAccount a;
+    davGetAccount(&a);
+    if (!davIsSmbAddress(a.address)) {
+        appToast(app, T("Signing is only for shared folders (SMB)."));
+    } else {
+        a.allow_unsigned = !a.allow_unsigned;
+        save(app, &a);
+        appToast(app, a.allow_unsigned ? T("Not signed: someone on your network could change what's read. Use it "
+                                           "only for an old NAS.")
+                                       : T("The connection is signed again."));
+    }
+    memset(&a, 0, sizeof(a));
+}
+
+void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb)
+{
+    DavAccount a;
+    davGetAccount(&a);
+    *remember = !a.forget_password;
+    *allow_unsigned = a.allow_unsigned;
+    *smb = davIsSmbAddress(a.address);
     memset(&a, 0, sizeof(a));
 }
 
@@ -175,6 +260,8 @@ static void test(App *app)
         appToast(app, T("The network can't be used."));
         return;
     }
+    if (!appNetworkEnsurePassword(app))
+        return;
     joinTest(false);
     if (g_test_started) {  // One is running.
         appToast(app, T("Testing the connection..."));
@@ -211,6 +298,8 @@ bool appNetworkActivate(App *app, SettingRow row)
     case SETTING_NET_ACCOUNT: typeAccount(app); return true;
     case SETTING_NET_TEST: test(app); return true;
     case SETTING_NET_FORGET: forget(app); return true;
+    case SETTING_NET_REMEMBER: toggleRemember(app); return true;
+    case SETTING_NET_UNSIGNED: toggleUnsigned(app); return true;
     default: return false;
     }
 }

@@ -129,8 +129,11 @@ static void openRow(App *app)
     catalogUnlock();
     if (level == LIB_ROOT) {
         static const LibraryLevel ROWS[LIB_ROOT_ROWS] = {LIB_ARTISTS, LIB_ALBUMS, LIB_SONGS, LIB_FOLDERS};
-        if (cursor < LIB_ROOT_ROWS && ROWS[cursor] == LIB_FOLDERS)
-            appOpenFolders(app);  // Listed now (a network folder's waits for its server).
+        if (cursor < LIB_ROOT_ROWS && ROWS[cursor] == LIB_FOLDERS) {
+            if (appLibrarySource(app) == LIBRARY_NETWORK)
+                appNetworkEnsurePassword(app);  // Without it, Folders says why.
+            appOpenFolders(app);
+        }  // Listed now (a network folder's waits for its server).
         if (cursor < LIB_ROOT_ROWS)
             push(app, ROWS[cursor], 0);
         return;

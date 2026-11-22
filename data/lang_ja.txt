@@ -150,6 +150,9 @@ Albums in your library
 All songs
 すべての曲
 
+Allow without signing (old NAS)
+署名なしを許可（古いNAS）
+
 Already in "%s".
 すでに「%s」に入っています。
 
@@ -372,6 +375,9 @@ Nintendo とは無関係で、承認を受けたものではありません。
 Not chosen
 未選択
 
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+署名なし：ネットワーク上の誰かが読み込む内容を書き換えられます。古いNASの場合だけ使ってください。
+
 Nothing here yet.
 まだ何もありません。
 
@@ -390,8 +396,17 @@ Now Playing style
 Off
 オフ
 
+Off: asked when the folder is used
+オフ：フォルダーを使うときに入力
+
 On
 オン
+
+On: not signed
+オン：署名なし
+
+Only for shared folders (SMB)
+共有フォルダー（SMB）のみ
 
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
 オープンソース（MIT）  ·  github.com/mizuiroame/kaiplayer
@@ -401,6 +416,9 @@ Orange
 
 Out of memory for the track list.
 曲リストに必要なメモリーが足りません。
+
+Password for %s (%s)
+%s のパスワード（%s）
 
 Paused
 一時停止中
@@ -468,6 +486,9 @@ Recent playlists
 Red
 レッド
 
+Remember the password
+パスワードを保存
+
 Remove
 外す
 
@@ -507,6 +528,15 @@ Rock
 Save queue as playlist
 キューをプレイリストとして保存
 
+Saved until KaiPlayer closes: the password isn't kept on the card.
+KaiPlayerを閉じるまで保持します。パスワードはカードに保存されません。
+
+Saved: the card keeps the password's hash, not the password.
+保存しました。カードにはパスワードではなく、そのハッシュが保存されます。
+
+Saved: the password is only encoded on the card. Use a user that can only read the music.
+保存しました。カード上のパスワードはエンコードされているだけです。音楽を読むことしかできないユーザーを使ってください。
+
 Screen off  ·  press any button or touch to wake
 画面オフ  ·  ボタンかタッチで復帰します
 
@@ -527,6 +557,9 @@ Shuffle on
 
 shuffled play order
 シャッフルした再生順
+
+Signing is only for shared folders (SMB).
+署名は共有フォルダー（SMB）だけのものです。
 
 Sleep %u min
 スリープ %u分
@@ -552,8 +585,26 @@ Songs you play show up here.
 Space
 スペース
 
+That password can't be used.
+そのパスワードは使えません。
+
+The connection is signed again.
+接続は再び署名されます。
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+ネットワークフォルダーのパスワードは保存されていません。フォルダーを使うときに入力を求めます。
+
+The password is kept on the card.
+パスワードはカードに保存されます。
+
+The password won't be kept on the card: KaiPlayer asks for it when the folder is used.
+パスワードはカードに保存されません。フォルダーを使うときに入力を求めます。
+
 The queue is empty.
 キューは空です。
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+サーバーが接続に署名しません（古いNAS、またはゲストに公開されたフォルダー）。家のネットワークを信頼できるなら、このページで「署名なしを許可」をオンにしてください。
 
 There are no songs to add.
 追加する曲がありません。
@@ -605,6 +656,9 @@ KaiPlayer へようこそ
 
 Welcome! Where is your music?
 ようこそ！音楽はどこにありますか？
+
+Without the password the network folder can't be read.
+パスワードがないとネットワークフォルダーを読めません。
 
 Your music folder has no songs yet. Add some over FTP.
 音楽フォルダーにまだ曲がありません。FTP で追加してください。

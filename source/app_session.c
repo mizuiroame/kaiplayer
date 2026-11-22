@@ -4,6 +4,7 @@
 #include <switch.h>
 
 #include "app.h"
+#include "dav.h"
 #include "lang.h"
 #include "player.h"
 #include "resume.h"
@@ -22,6 +23,13 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, cons
         appToast(app, T("There are no songs to play."));
         return;
     }
+    for (size_t i = 0; i < tracks->count; i++) {  // A network folder's song: its password first, if it's asked for.
+        if (davIsLocation(tracks->paths[i])) {
+            if (!appNetworkEnsurePassword(app))
+                return;
+            break;
+        }
+    }
     if (shuffle) {
         playerSetShuffle(true);
         start = (size_t)(armGetSystemTick() % tracks->count);
@@ -38,6 +46,12 @@ void appRestoreSession(App *app, bool play)
     double position;
     if (!resumeLoad(&queue, &track, &position))
         return;
+    for (size_t i = 0; play && i < queue.count; i++) {  // Playing on from the network folder: its password first.
+        if (davIsLocation(queue.paths[i])) {
+            play = appNetworkEnsurePassword(app);
+            break;
+        }
+    }
     playerRestore(&queue, track, position);
     if (play)
         playerTogglePause();  // Restored paused: this resumes it.

@@ -150,6 +150,9 @@ Albums in your library
 All songs
 모든 곡
 
+Allow without signing (old NAS)
+서명 없이 허용 (오래된 NAS)
+
 Already in "%s".
 이미 "%s" 재생목록에 있습니다.
 
@@ -372,6 +375,9 @@ Nintendo와 제휴하거나 Nintendo의 승인을 받은 소프트웨어가 아�
 Not chosen
 선택 안 함
 
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+서명 없음: 네트워크의 누군가가 읽는 내용을 바꿀 수 있습니다. 오래된 NAS에만 사용하세요.
+
 Nothing here yet.
 아직 아무것도 없습니다.
 
@@ -390,8 +396,17 @@ Now Playing style
 Off
 끔
 
+Off: asked when the folder is used
+끔: 폴더를 사용할 때 입력
+
 On
 켬
+
+On: not signed
+켬: 서명 없음
+
+Only for shared folders (SMB)
+공유 폴더(SMB) 전용
 
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
 오픈 소스 (MIT)  ·  github.com/mizuiroame/kaiplayer
@@ -401,6 +416,9 @@ Orange
 
 Out of memory for the track list.
 트랙 목록을 처리할 메모리가 부족합니다.
+
+Password for %s (%s)
+%s의 비밀번호 (%s)
 
 Paused
 일시정지
@@ -468,6 +486,9 @@ Recent playlists
 Red
 빨간색
 
+Remember the password
+비밀번호 기억
+
 Remove
 제거
 
@@ -507,6 +528,15 @@ Rock
 Save queue as playlist
 대기열을 재생목록으로 저장
 
+Saved until KaiPlayer closes: the password isn't kept on the card.
+KaiPlayer를 닫을 때까지 보관합니다. 비밀번호는 카드에 저장되지 않습니다.
+
+Saved: the card keeps the password's hash, not the password.
+저장했습니다. 카드에는 비밀번호가 아니라 그 해시가 저장됩니다.
+
+Saved: the password is only encoded on the card. Use a user that can only read the music.
+저장했습니다. 카드의 비밀번호는 인코딩만 되어 있습니다. 음악을 읽기만 할 수 있는 사용자를 쓰세요.
+
 Screen off  ·  press any button or touch to wake
 화면 꺼짐  ·  아무 버튼이나 누르거나 화면을 터치하면 켜집니다
 
@@ -527,6 +557,9 @@ Shuffle on
 
 shuffled play order
 셔플 재생 순서
+
+Signing is only for shared folders (SMB).
+서명은 공유 폴더(SMB)에만 해당합니다.
 
 Sleep %u min
 슬립 %u분
@@ -552,8 +585,26 @@ Songs you play show up here.
 Space
 스페이스
 
+That password can't be used.
+그 비밀번호는 사용할 수 없습니다.
+
+The connection is signed again.
+연결이 다시 서명됩니다.
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+네트워크 폴더의 비밀번호는 저장되지 않습니다. 폴더를 사용할 때 물어봅니다.
+
+The password is kept on the card.
+비밀번호를 카드에 저장합니다.
+
+The password won't be kept on the card: KaiPlayer asks for it when the folder is used.
+비밀번호를 카드에 저장하지 않습니다. 폴더를 사용할 때 물어봅니다.
+
 The queue is empty.
 대기열이 비어 있습니다.
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+서버가 연결에 서명하지 않습니다(오래된 NAS 또는 게스트에게 열린 폴더). 집 네트워크를 신뢰한다면 이 페이지에서 서명 없이 허용을 켜세요.
 
 There are no songs to add.
 추가할 곡이 없습니다.
@@ -605,6 +656,9 @@ KaiPlayer에 오신 것을 환영합니다
 
 Welcome! Where is your music?
 환영합니다! 음악은 어디에 있나요?
+
+Without the password the network folder can't be read.
+비밀번호가 없으면 네트워크 폴더를 읽을 수 없습니다.
 
 Your music folder has no songs yet. Add some over FTP.
 음악 폴더에 아직 곡이 없습니다. FTP로 추가하세요.

@@ -33,6 +33,8 @@ typedef enum {
     SETTING_SRV_TEST,       // Tries it, and says what it is.
     SETTING_SRV_CERTIFICATE,// Whether an https server's certificate must be trusted.
     SETTING_SRV_FORGET,     // Removes its address and sign-in.
+    SETTING_NET_REMEMBER,   // Whether the network folder's password is kept on the card.
+    SETTING_NET_UNSIGNED,   // Whether an SMB server that doesn't sign is used (an old NAS).
     SETTING_COUNT,
 } SettingRow;
 

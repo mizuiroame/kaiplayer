@@ -150,6 +150,9 @@ Albums de votre bibliothèque
 All songs
 Tous les titres
 
+Allow without signing (old NAS)
+Autoriser sans signature (ancien NAS)
+
 Already in "%s".
 Déjà dans "%s".
 
@@ -372,6 +375,9 @@ Ni affilié à Nintendo, ni approuvé par Nintendo.
 Not chosen
 Non choisi
 
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+Sans signature : quelqu'un sur votre réseau pourrait modifier ce qui est lu. À utiliser seulement pour un ancien NAS.
+
 Nothing here yet.
 Rien ici pour l'instant.
 
@@ -390,8 +396,17 @@ Style de Lecture en cours
 Off
 Non
 
+Off: asked when the folder is used
+Non : demandé à l'utilisation du dossier
+
 On
 Oui
+
+On: not signed
+Oui : sans signature
+
+Only for shared folders (SMB)
+Uniquement pour les dossiers partagés (SMB)
 
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
@@ -401,6 +416,9 @@ Orange
 
 Out of memory for the track list.
 Mémoire insuffisante pour la liste des pistes.
+
+Password for %s (%s)
+Mot de passe de %s (%s)
 
 Paused
 En pause
@@ -468,6 +486,9 @@ Playlists récentes
 Red
 Rouge
 
+Remember the password
+Mémoriser le mot de passe
+
 Remove
 Retirer
 
@@ -507,6 +528,15 @@ Rock
 Save queue as playlist
 Enregistrer la file comme playlist
 
+Saved until KaiPlayer closes: the password isn't kept on the card.
+Enregistré jusqu'à la fermeture de KaiPlayer : le mot de passe n'est pas gardé sur la carte.
+
+Saved: the card keeps the password's hash, not the password.
+Enregistré : la carte garde l'empreinte (hash) du mot de passe, pas le mot de passe.
+
+Saved: the password is only encoded on the card. Use a user that can only read the music.
+Enregistré : sur la carte, le mot de passe est seulement encodé. Utilisez un utilisateur qui peut seulement lire la musique.
+
 Screen off  ·  press any button or touch to wake
 Écran éteint  ·  touchez l'écran ou un bouton pour le rallumer
 
@@ -527,6 +557,9 @@ Aléatoire activé
 
 shuffled play order
 ordre de lecture aléatoire
+
+Signing is only for shared folders (SMB).
+La signature ne concerne que les dossiers partagés (SMB).
 
 Sleep %u min
 Veille %u min
@@ -552,8 +585,26 @@ Les titres que vous écoutez apparaissent ici.
 Space
 Espace
 
+That password can't be used.
+Ce mot de passe ne peut pas être utilisé.
+
+The connection is signed again.
+La connexion est de nouveau signée.
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+Le mot de passe du dossier réseau n'est pas mémorisé : il est demandé à l'utilisation du dossier.
+
+The password is kept on the card.
+Le mot de passe est gardé sur la carte.
+
+The password won't be kept on the card: KaiPlayer asks for it when the folder is used.
+Le mot de passe ne sera pas gardé sur la carte : KaiPlayer le demandera quand le dossier sera utilisé.
+
 The queue is empty.
 La file d'attente est vide.
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+Le serveur ne signe pas la connexion (un ancien NAS, ou un dossier ouvert aux invités). Si vous faites confiance à votre réseau domestique, activez Autoriser sans signature sur cette page.
 
 There are no songs to add.
 Aucun titre à ajouter.
@@ -605,6 +656,9 @@ Bienvenue dans KaiPlayer
 
 Welcome! Where is your music?
 Bienvenue ! Où se trouve votre musique ?
+
+Without the password the network folder can't be read.
+Sans le mot de passe, le dossier réseau ne peut pas être lu.
 
 Your music folder has no songs yet. Add some over FTP.
 Votre dossier musique ne contient encore aucun titre. Ajoutez-en par FTP.

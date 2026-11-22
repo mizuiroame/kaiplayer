@@ -150,6 +150,9 @@ Albums in your library
 All songs
 所有歌曲
 
+Allow without signing (old NAS)
+允许不签名（旧 NAS）
+
 Already in "%s".
 已在“%s”中。
 
@@ -372,6 +375,9 @@ Not affiliated with or endorsed by Nintendo.
 Not chosen
 未选择
 
+Not signed: someone on your network could change what's read. Use it only for an old NAS.
+未签名：你网络中的人可能篡改读取的内容。仅用于旧 NAS。
+
 Nothing here yet.
 这里还没有内容。
 
@@ -390,8 +396,17 @@ Now Playing style
 Off
 关
 
+Off: asked when the folder is used
+关：使用文件夹时询问
+
 On
 开
+
+On: not signed
+开：不签名
+
+Only for shared folders (SMB)
+仅用于共享文件夹（SMB）
 
 Open source (MIT)  ·  github.com/mizuiroame/kaiplayer
 开源软件（MIT）  ·  github.com/mizuiroame/kaiplayer
@@ -401,6 +416,9 @@ Orange
 
 Out of memory for the track list.
 内存不足，无法载入曲目列表。
+
+Password for %s (%s)
+%s 的密码（%s）
 
 Paused
 已暂停
@@ -468,6 +486,9 @@ Recent playlists
 Red
 红色
 
+Remember the password
+记住密码
+
 Remove
 移除
 
@@ -507,6 +528,15 @@ Rock
 Save queue as playlist
 将队列存为播放列表
 
+Saved until KaiPlayer closes: the password isn't kept on the card.
+保留到 KaiPlayer 关闭：密码不会存到卡上。
+
+Saved: the card keeps the password's hash, not the password.
+已保存：卡上存的是密码的哈希，而不是密码。
+
+Saved: the password is only encoded on the card. Use a user that can only read the music.
+已保存：卡上的密码只是经过编码。请使用只能读取音乐的用户。
+
 Screen off  ·  press any button or touch to wake
 屏幕已关闭  ·  按任意按钮或触摸屏幕唤醒
 
@@ -527,6 +557,9 @@ Shuffle on
 
 shuffled play order
 随机播放顺序
+
+Signing is only for shared folders (SMB).
+签名仅适用于共享文件夹（SMB）。
 
 Sleep %u min
 定时%u分钟
@@ -552,8 +585,26 @@ Songs you play show up here.
 Space
 空格
 
+That password can't be used.
+无法使用该密码。
+
+The connection is signed again.
+连接重新启用签名。
+
+The network folder's password isn't remembered: it's asked for when the folder is used.
+网络文件夹的密码未保存：使用该文件夹时会询问。
+
+The password is kept on the card.
+密码会存在卡上。
+
+The password won't be kept on the card: KaiPlayer asks for it when the folder is used.
+密码不会存到卡上：使用该文件夹时会询问。
+
 The queue is empty.
 队列为空。
+
+The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
+服务器不对连接签名（旧 NAS，或对访客开放的文件夹）。如果你信任家里的网络，请在此页面打开“允许不签名”。
 
 There are no songs to add.
 没有可添加的歌曲。
@@ -605,6 +656,9 @@ Welcome to KaiPlayer
 
 Welcome! Where is your music?
 欢迎！你的音乐在哪里？
+
+Without the password the network folder can't be read.
+没有密码就无法读取网络文件夹。
 
 Your music folder has no songs yet. Add some over FTP.
 音乐文件夹中还没有歌曲。请通过FTP添加。

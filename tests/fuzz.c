@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include "cover.h"
+#include "dav.h"
 #include "decoder.h"
 #include "json.h"
 #include "subsonic.h"
@@ -178,6 +179,30 @@ static void fuzzServerAnswer(const char *seed_path, int iterations)
     free(seed);
 }
 
+// The network folder's account file (dav.h): read, and written back.
+static void fuzzAccountFile(int iterations)
+{
+    static const char *const SEEDS[] = {
+        "address=smb://NAS/Music/\nuser=kai\npassword=ntlm:8846F7EAEE8FB117AD06BDD830B7586C\nallow_unsigned=1\n",
+        "address=http://pc:8098/dav/\nuser=kai\npassword=b64:c2U9Y3JldCDDsQ==\n",
+        "address=smb://PC/Music/\nuser=DOM\\kai\npassword=contrase\xC3\xB1" "a\nforget_password=1\n",
+    };
+    char buf[1024], out[1024];
+    for (int i = 0; i < iterations; i++) {
+        const char *seed = SEEDS[rnd() % (sizeof(SEEDS) / sizeof(SEEDS[0]))];
+        size_t size = strlen(seed);
+        memcpy(buf, seed, size);
+        size = mutate((uint8_t *)buf, size);
+        buf[size] = '\0';
+        writeFile(WORK_DIR "/input.account", (const uint8_t *)buf, size);
+        DavAccount a, back;
+        davAccountRead(&a, buf);
+        if (davAccountWrite(&a, out, sizeof(out)))
+            davAccountRead(&back, out);
+    }
+    printf("  %-28s %d inputs\n", "network.txt", iterations);
+}
+
 int main(int argc, char **argv)
 {
     int iterations = argc > 1 ? atoi(argv[1]) : 1000;
@@ -199,6 +224,7 @@ int main(int argc, char **argv)
     fuzzImage("fixtures/small_cover.jpg", iterations * 4);
     fuzzImage("fixtures/small_cover.png", iterations * 4);
     fuzzServerAnswer("fixtures/navidrome_search3.json", iterations * 4);
+    fuzzAccountFile(iterations * 20);
     printf("fuzz: done, no crashes\n");
     return 0;
 }
