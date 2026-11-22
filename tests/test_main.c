@@ -355,6 +355,9 @@ int main(void)
     testMeta();
     testCatalog();
     testHome();
+    testUpdate();
+    testUpdateRelease();
+    testNotice();
     testKinetic();
     testLang();
     testDav();

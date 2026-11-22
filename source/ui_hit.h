@@ -35,6 +35,7 @@ typedef enum {
     HIT_PANEL,         // An overlay's panel: a tap on it does nothing (not the backdrop's close).
     HIT_SOURCE,        // Library's source: the card's music, the network folder's, or the server's.
     HIT_NETWORK_SCAN,  // A library on the network being read: shows it. arg: 0 the network folder's, 1 the server's.
+    HIT_NOTICE,        // The notice bubble at the top, over any layer: a tap sends it away.
 } HitKind;
 
 typedef struct {

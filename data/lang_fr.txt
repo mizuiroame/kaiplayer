@@ -6,6 +6,21 @@ language = Français
 %d min  (%u left)
 %d min  (%u restantes)
 
+%s installed: open KaiPlayer again
+%s installée : rouvrez KaiPlayer
+
+%s is out
+La %s est sortie
+
+%s is out, in Brewstore
+La %s est sortie, dans Brewstore
+
+%s is out: A installs it
+La %s est sortie : A l'installe
+
+%s is out: A looks again
+La %s est sortie : A cherche à nouveau
+
 %zu album
 %zu album
 
@@ -156,6 +171,9 @@ Autoriser sans signature (ancien NAS)
 Already in "%s".
 Déjà dans "%s".
 
+Already on it.
+C'est déjà en cours.
+
 ARTIST
 ARTISTE
 
@@ -186,6 +204,9 @@ Bleu
 Cancel
 Annuler
 
+Check once a day
+Vérifier une fois par jour
+
 Choose your music folder
 Choisissez votre dossier musique
 
@@ -200,6 +221,9 @@ Classique
 
 Clock
 Horloge
+
+Close KaiPlayer and open it again to use the new version.
+Fermez KaiPlayer et rouvrez-le pour utiliser la nouvelle version.
 
 Could not add to "%s".
 Impossible d'ajouter à "%s".
@@ -228,6 +252,9 @@ Impossible de lire la carte SD.
 Could not save the playlist.
 Impossible d'enregistrer la playlist.
 
+Couldn't look: A tries again
+Recherche impossible : A réessaie
+
 Cover colors
 Couleurs de la pochette
 
@@ -239,6 +266,9 @@ Created "%s" with %d songs.
 
 Created "%s".
 "%s" créée.
+
+Credits and licenses
+Crédits et licences
 
 Custom
 Personnalisé
@@ -260,6 +290,9 @@ Affichage
 
 Done
 OK
+
+Downloading %s... %d%%
+Téléchargement de la %s... %d%%
 
 empty
 vide
@@ -288,6 +321,12 @@ Libre et open source sous licence MIT ; FFmpeg et libsmb2 sous licence LGPL.
 From cover
 De la pochette
 
+GitHub couldn't be reached.
+Impossible de joindre GitHub.
+
+GitHub's answer about the latest version couldn't be used.
+La réponse de GitHub sur la dernière version est inutilisable.
+
 Green
 Vert
 
@@ -306,6 +345,21 @@ dans l'ordre du dossier
 Jazz
 Jazz
 
+KaiPlayer %s is installed: it runs from the next start.
+KaiPlayer %s est installée : elle sera utilisée au prochain démarrage.
+
+KaiPlayer %s is out, on its GitHub page.
+KaiPlayer %s est sortie, sur sa page GitHub.
+
+KaiPlayer %s is out: Settings > About installs it.
+KaiPlayer %s est sortie : Paramètres > À propos l'installe.
+
+KaiPlayer %s is out: update it in Brewstore.
+KaiPlayer %s est sortie : mettez-la à jour dans Brewstore.
+
+KaiPlayer is up to date.
+KaiPlayer est à jour.
+
 KaiPlayer only shows this folder and the ones inside it.
 KaiPlayer n'affiche que ce dossier et ses sous-dossiers.
 
@@ -318,8 +372,14 @@ Langue
 Library
 Bibliothèque
 
+Look for an update
+Chercher une mise à jour
+
 Looking for music...
 Recherche de musique...
+
+Looking...
+Recherche...
 
 Low
 Faible
@@ -374,6 +434,9 @@ Ni affilié à Nintendo, ni approuvé par Nintendo.
 
 Not chosen
 Non choisi
+
+Not installed: A tries again
+Non installée : A réessaie
 
 Not signed: someone on your network could change what's read. Use it only for an old NAS.
 Sans signature : quelqu'un sur votre réseau pourrait modifier ce qui est lu. À utiliser seulement pour un ancien NAS.
@@ -591,8 +654,17 @@ Ce mot de passe ne peut pas être utilisé.
 The connection is signed again.
 La connexion est de nouveau signée.
 
+The download didn't match GitHub's checksum: nothing was changed.
+Le téléchargement ne correspond pas à la somme de contrôle de GitHub : rien n'a été modifié.
+
 The network folder's password isn't remembered: it's asked for when the folder is used.
 Le mot de passe du dossier réseau n'est pas mémorisé : il est demandé à l'utilisation du dossier.
+
+The new version couldn't be downloaded.
+Impossible de télécharger la nouvelle version.
+
+The new version couldn't be written to the card: nothing was changed.
+Impossible d'écrire la nouvelle version sur la carte : rien n'a été modifié.
 
 The password is kept on the card.
 Le mot de passe est gardé sur la carte.
@@ -615,6 +687,9 @@ Aucun titre à lire.
 This folder has no subfolders or music.
 Ce dossier ne contient ni sous-dossier ni musique.
 
+This is %s: A looks now
+Version %s : A cherche maintenant
+
 Track
 Piste
 
@@ -632,6 +707,12 @@ Artiste inconnu
 
 Up to 48 characters, without / or \, not starting with a dot.
 48 caractères max., sans / ni \, sans point au début.
+
+Up to date
+À jour
+
+Update it in Brewstore.
+Mettez-la à jour dans Brewstore.
 
 Update the library
 Actualiser la bibliothèque

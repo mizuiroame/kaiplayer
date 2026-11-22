@@ -159,7 +159,7 @@ void appOpenFolderPicker(App *app, bool first_run)
 {
     const char *start = app->config.library[0] ? app->config.library : DEVICE_ROOT;
     if (!browserOpen(&app->picker, start) && !browserOpen(&app->picker, DEVICE_ROOT)) {
-        appToast(app, T("Could not read the SD card."));
+        appNotify(app, NOTICE_ERROR, T("Could not read the SD card."));
         return;
     }
     app->picker_open = true;
@@ -254,7 +254,7 @@ void appHandleFolderPicker(App *app, uint64_t pressed)
     if ((pressed & HidNpadButton_A) && b->cursor < folders) {
         char path[UTIL_PATH_MAX];
         if (!utilJoinPath(path, sizeof(path), b->path, b->entries[b->cursor].name) || !browserOpen(b, path))
-            appToast(app, T("Could not open the folder."));
+            appNotify(app, NOTICE_ERROR, T("Could not open the folder."));
     }
     if (pressed & HidNpadButton_B) {
         if (!browserGoUp(b) && !app->picker_first_run)

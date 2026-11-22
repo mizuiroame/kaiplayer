@@ -180,6 +180,23 @@ void appNetworkShown(char *address, size_t address_size, char *user, size_t user
     snprintf(user, user_size, "%s", g_network ? "kaiplayer" : "");
 }
 
+void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb)
+{
+    *remember = true;
+    *allow_unsigned = false;
+    *smb = g_network;
+}
+
+// About's update rows: a newer version found, for the shot.
+void appUpdatesValue(const App *app, int row, char *out, size_t size)
+{
+    (void)app;
+    if (row == SETTING_UPDATE_AUTO)
+        snprintf(out, size, "%s", T("On"));
+    else
+        snprintf(out, size, T("%s is out: A installs it"), "1.4.0");
+}
+
 void appNetworkShownPath(const char *location, char *out, size_t size)
 {
     snprintf(out, size, "%s%s", PREVIEW_ADDRESS, strcmp(location, "dav:/") ? location + 4 : "");
@@ -285,7 +302,7 @@ static void checkTouch(const char *name, const App *app)
     }
     for (int i = overlay ? backdrop + 1 : 0; i < uiHitCount(); i++) {
         const HitRegion *r = uiHitAt(i);
-        if (uiHitIsOverlayTarget(r->kind) != overlay) {
+        if (r->kind != HIT_NOTICE && uiHitIsOverlayTarget(r->kind) != overlay) {  // The notice answers over any layer.
             printf("TOUCH: %s: target kind %d at %d,%d wouldn't answer a tap\n", name, r->kind, r->x, r->y);
             g_touch_problems++;
         }
@@ -484,10 +501,20 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->settings_cursor = SETTING_OPEN_SERVER;
     render(dir, "settings_main_server", app, status);
     g_server = false;
-    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_page = SETTINGS_PAGE_ABOUT;  // About: the credits, and updates.
+    app->settings_cursor = SETTING_UPDATE_NOW;
+    render(dir, "settings_about", app, status);
     app->about_open = true;
     render(dir, "about", app, status);
     app->about_open = false;
+    // A notice over Settings: the bubble at the top, over everything.
+    noticePush(&app->notices, NOTICE_DONE, T("Saved: the card keeps the password's hash, not the password."), 1);
+    noticeShown(&app->notices, 1000000000ull, &app->notice_slide);
+    app->notice = noticeShown(&app->notices, 2000000000ull, &app->notice_slide);
+    render(dir, "notice_settings", app, status);
+    app->notices = (Notices){0};
+    app->notice = NULL;
+    app->settings_page = SETTINGS_PAGE_MAIN;
     app->eq_open = true;
     app->config.eq_on = true;
     app->config.eq_preset = EQ_PRESET_ROCK;

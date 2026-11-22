@@ -11,6 +11,7 @@
 #include "config.h"
 #include "keyboard.h"
 #include "menu.h"
+#include "notice.h"
 #include "history.h"
 #include "home.h"
 #include "kinetic.h"
@@ -139,8 +140,11 @@ typedef struct {
     PlaylistsTab playlists;
     bool audio_ok;
     SysInfo sys;  // Clock and battery, refreshed by the main loop.
-    char toast[512];
-    uint64_t toast_until_ns;
+    Notices notices;            // Messages, shown one at a time in a bubble at the top.
+    const Notice *notice;       // The one to draw this frame (NULL for none),
+    float notice_slide;         // and how far it has slid in (0 to 1).
+    unsigned update_seen;       // The update status's serial already said on screen.
+    bool update_manual;         // Settings asked: say "up to date" and failures too.
 
     Menu menu;              // The + menu and the dialogs it opens.
     bool keyboard_open;
@@ -170,8 +174,24 @@ typedef struct {
     bool quit;
 } App;
 
-// Shows a short message above the player bar.
+// A short message in the notice bubble at the top: something to know, done, or failed.
+void appNotify(App *app, NoticeKind kind, const char *message);
+// The same, as something to know.
 void appToast(App *app, const char *message);
+// The newest notice's text ("" for none): the keyboard asks again with it.
+const char *appLastNotice(const App *app);
+
+// app_update.c: Settings > About's updates. Start: the daily look, if due (nro_path: argv[0]).
+void appStartUpdates(App *app, const char *nro_path);
+void appStopUpdates(void);
+// Once per frame: what the look or the install found, said on screen.
+void appUpdatesTick(App *app);
+// A on "Look for an update": looks, or installs the version found.
+void appUpdatesActivate(App *app);
+// The daily look on or off.
+void appUpdatesToggle(App *app);
+// What the update rows show.
+void appUpdatesValue(const App *app, int row, char *out, size_t size);
 
 // Moves the focus between a list, its "< Back" (Up from the first row) and
 // the player bar (Down from the last row; Up returns). Returns the buttons

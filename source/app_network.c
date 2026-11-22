@@ -86,7 +86,7 @@ static void save(App *app, const DavAccount *a)
     char path[UTIL_PATH_MAX];
     accountPath(path, sizeof(path));
     if (!davSaveAccount(path))
-        appToast(app, T("It couldn't be written to the card."));
+        appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."));
     useNetwork();
     appLibraryRemoteChanged(app, LIBRARY_NETWORK, moved);
 }
@@ -101,9 +101,9 @@ static void typeAddress(App *app)
     SystemKeyboardResult result = systemKeyboardText(T("Address: \\\\PC\\Music (a shared folder) or 192.168.0.10:8098 (WebDAV)"),
                                                      shown, text, sizeof(text), sizeof(text) - 10);
     if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
-        appToast(app, T("The keyboard couldn't open."));
+        appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."));
     } else if (result == SYSTEM_KEYBOARD_OK && !davNormalizeAddress(text, address, sizeof(address))) {
-        appToast(app, T("That isn't a network folder's address: \\\\PC\\Music, smb://, http:// or https://."));
+        appNotify(app, NOTICE_ERROR, T("That isn't a network folder's address: \\\\PC\\Music, smb://, http:// or https://."));
     } else if (result == SYSTEM_KEYBOARD_OK) {
         if (!davSameServer(address, a.address)) {  // Another server: the old one's password isn't sent there.
             a.user[0] = '\0';
@@ -111,7 +111,7 @@ static void typeAddress(App *app)
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a);
-        appToast(app, T("Network folder set: test the connection to check it."));
+        appNotify(app, NOTICE_DONE, T("Network folder set: test the connection to check it."));
     }
     memset(&a, 0, sizeof(a));
 }
@@ -122,11 +122,11 @@ static void sayHowKept(App *app, const DavAccount *a)
     if (!a->user[0] || !a->password[0])
         return;
     if (a->forget_password)
-        appToast(app, T("Saved until KaiPlayer closes: the password isn't kept on the card."));
+        appNotify(app, NOTICE_DONE, T("Saved until KaiPlayer closes: the password isn't kept on the card."));
     else if (davIsSmbAddress(a->address))
-        appToast(app, T("Saved: the card keeps the password's hash, not the password."));
+        appNotify(app, NOTICE_DONE, T("Saved: the card keeps the password's hash, not the password."));
     else
-        appToast(app, T("Saved: the password is only encoded on the card. Use a user that can only read the music."));
+        appNotify(app, NOTICE_DONE, T("Saved: the password is only encoded on the card. Use a user that can only read the music."));
 }
 
 static void typeAccount(App *app)
@@ -144,14 +144,14 @@ static void typeAccount(App *app)
     if (result == SYSTEM_KEYBOARD_OK && user[0])
         result = systemKeyboardPassword(T("Password"), password, sizeof(password), sizeof(password) - 1);
     if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
-        appToast(app, T("The keyboard couldn't open."));
+        appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."));
     } else if (result == SYSTEM_KEYBOARD_OK) {
         snprintf(a.user, sizeof(a.user), "%s", user);
         if (davSetPassword(&a, password)) {
             save(app, &a);
             sayHowKept(app, &a);
         } else {
-            appToast(app, T("That password can't be used."));
+            appNotify(app, NOTICE_ERROR, T("That password can't be used."));
         }
     }
     memset(password, 0, sizeof(password));
@@ -179,9 +179,9 @@ bool appNetworkEnsurePassword(App *app)
         else
             catalogScanRefreshRemote(DAV_ROOT, false);
     } else if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
-        appToast(app, T("The keyboard couldn't open."));
+        appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."));
     } else {
-        appToast(app, T("Without the password the network folder can't be read."));
+        appNotify(app, NOTICE_ERROR, T("Without the password the network folder can't be read."));
     }
     memset(password, 0, sizeof(password));
     memset(&a, 0, sizeof(a));
@@ -257,7 +257,7 @@ static void test(App *app)
         return;
     }
     if (!g_network) {
-        appToast(app, T("The network can't be used."));
+        appNotify(app, NOTICE_ERROR, T("The network can't be used."));
         return;
     }
     if (!appNetworkEnsurePassword(app))
@@ -288,7 +288,7 @@ static void forget(App *app)
 {
     DavAccount none = {0};
     save(app, &none);
-    appToast(app, T("The network folder is forgotten."));
+    appNotify(app, NOTICE_DONE, T("The network folder is forgotten."));
 }
 
 bool appNetworkActivate(App *app, SettingRow row)

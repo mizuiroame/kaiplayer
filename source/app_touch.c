@@ -64,12 +64,17 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
 {
     // Targets are from the last frame. If an overlay opened or closed since,
     // they belong to the other layer: ignore the tap.
+    if (r->kind == HIT_NOTICE) {  // Over every layer.
+        noticeDismiss(&app->notices, armTicksToNs(armGetSystemTick()));
+        return;
+    }
     if (uiHitIsOverlayTarget(r->kind) != overlayOpen(app))
         return;
     PlayerStatus status;
     playerGetStatus(&status);
     app->focus = FOCUS_LIST;  // Touch moves away from button focus.
     switch (r->kind) {
+    case HIT_NOTICE: break;  // Sent away above.
     case HIT_TAB: appSetView(app, (View)r->arg); break;
     case HIT_MENU_BUTTON:
         if (!overlayOpen(app) && !app->playlists.moving)

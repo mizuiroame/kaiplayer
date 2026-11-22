@@ -6,6 +6,21 @@ language = Deutsch
 %d min  (%u left)
 %d min  (noch %u)
 
+%s installed: open KaiPlayer again
+%s installiert: KaiPlayer neu öffnen
+
+%s is out
+%s ist da
+
+%s is out, in Brewstore
+%s ist da, in Brewstore
+
+%s is out: A installs it
+%s ist da: A installiert sie
+
+%s is out: A looks again
+%s ist da: A sucht erneut
+
 %zu album
 %zu Album
 
@@ -156,6 +171,9 @@ Ohne Signierung erlauben (alter NAS)
 Already in "%s".
 Schon in "%s".
 
+Already on it.
+Läuft schon.
+
 ARTIST
 KÜNSTLER
 
@@ -186,6 +204,9 @@ Blau
 Cancel
 Abbrechen
 
+Check once a day
+Einmal am Tag prüfen
+
 Choose your music folder
 Wähle deinen Musikordner
 
@@ -200,6 +221,9 @@ Klassik
 
 Clock
 Uhr
+
+Close KaiPlayer and open it again to use the new version.
+Schließe KaiPlayer und öffne es erneut, um die neue Version zu nutzen.
 
 Could not add to "%s".
 Hinzufügen zu "%s" nicht möglich.
@@ -228,6 +252,9 @@ Die SD-Karte konnte nicht gelesen werden.
 Could not save the playlist.
 Die Playlist konnte nicht gespeichert werden.
 
+Couldn't look: A tries again
+Suche fehlgeschlagen: A versucht es erneut
+
 Cover colors
 Coverfarben
 
@@ -239,6 +266,9 @@ Created "%s" with %d songs.
 
 Created "%s".
 "%s" erstellt.
+
+Credits and licenses
+Mitwirkende und Lizenzen
 
 Custom
 Eigene
@@ -260,6 +290,9 @@ Anzeige
 
 Done
 Fertig
+
+Downloading %s... %d%%
+%s wird geladen... %d%%
 
 empty
 leer
@@ -288,6 +321,12 @@ Frei und quelloffen unter der MIT-Lizenz; FFmpeg und libsmb2 unter der LGPL.
 From cover
 Vom Cover
 
+GitHub couldn't be reached.
+GitHub ist nicht erreichbar.
+
+GitHub's answer about the latest version couldn't be used.
+Die Antwort von GitHub zur neuesten Version war nicht verwendbar.
+
 Green
 Grün
 
@@ -306,6 +345,21 @@ in Ordnerreihenfolge
 Jazz
 Jazz
 
+KaiPlayer %s is installed: it runs from the next start.
+KaiPlayer %s ist installiert: ab dem nächsten Start.
+
+KaiPlayer %s is out, on its GitHub page.
+KaiPlayer %s ist da, auf seiner GitHub-Seite.
+
+KaiPlayer %s is out: Settings > About installs it.
+KaiPlayer %s ist da: Einstellungen > Info installiert es.
+
+KaiPlayer %s is out: update it in Brewstore.
+KaiPlayer %s ist da: aktualisiere es in Brewstore.
+
+KaiPlayer is up to date.
+KaiPlayer ist auf dem neuesten Stand.
+
 KaiPlayer only shows this folder and the ones inside it.
 KaiPlayer zeigt nur diesen Ordner und die Ordner darin.
 
@@ -318,8 +372,14 @@ Sprache
 Library
 Bibliothek
 
+Look for an update
+Nach Update suchen
+
 Looking for music...
 Suche Musik...
+
+Looking...
+Suche...
 
 Low
 Niedrig
@@ -374,6 +434,9 @@ Nicht mit Nintendo verbunden oder von Nintendo unterstützt.
 
 Not chosen
 Nicht gewählt
+
+Not installed: A tries again
+Nicht installiert: A versucht es erneut
 
 Not signed: someone on your network could change what's read. Use it only for an old NAS.
 Nicht signiert: Jemand in deinem Netzwerk könnte ändern, was gelesen wird. Nur für einen alten NAS verwenden.
@@ -591,8 +654,17 @@ Dieses Passwort kann nicht verwendet werden.
 The connection is signed again.
 Die Verbindung wird wieder signiert.
 
+The download didn't match GitHub's checksum: nothing was changed.
+Der Download passte nicht zur Prüfsumme von GitHub: Nichts wurde geändert.
+
 The network folder's password isn't remembered: it's asked for when the folder is used.
 Das Passwort des Netzwerkordners wird nicht gespeichert: Es wird abgefragt, wenn der Ordner gebraucht wird.
+
+The new version couldn't be downloaded.
+Die neue Version konnte nicht geladen werden.
+
+The new version couldn't be written to the card: nothing was changed.
+Die neue Version konnte nicht auf die Karte geschrieben werden: Nichts wurde geändert.
 
 The password is kept on the card.
 Das Passwort wird auf der Karte gespeichert.
@@ -615,6 +687,9 @@ Es gibt keine Songs zum Abspielen.
 This folder has no subfolders or music.
 Dieser Ordner hat keine Unterordner und keine Musik.
 
+This is %s: A looks now
+Dies ist %s: A sucht jetzt
+
 Track
 Titel
 
@@ -632,6 +707,12 @@ Unbekannter Künstler
 
 Up to 48 characters, without / or \, not starting with a dot.
 Bis zu 48 Zeichen, ohne / oder \, nicht mit einem Punkt am Anfang.
+
+Up to date
+Aktuell
+
+Update it in Brewstore.
+Aktualisiere es in Brewstore.
 
 Update the library
 Bibliothek aktualisieren

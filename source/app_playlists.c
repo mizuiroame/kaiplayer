@@ -26,7 +26,7 @@ void appPlaylistsRefresh(App *app)
     PlaylistsTab *t = &app->playlists;
     playlistIndexFree(&t->index);
     if (!playlistIndexLoad(&t->index))
-        appToast(app, T("Could not read the playlists folder."));
+        appNotify(app, NOTICE_ERROR, T("Could not read the playlists folder."));
     if (t->cursor >= t->index.count)
         t->cursor = t->index.count ? t->index.count - 1 : 0;
 }
@@ -71,7 +71,7 @@ static bool loadPlaylist(App *app, const char *name, TrackList *out)
     char path[UTIL_PATH_MAX];
     if (playlistPathFor(name, path, sizeof(path)) && playlistLoad(path, out))
         return true;
-    appToast(app, T("Could not read that playlist."));
+    appNotify(app, NOTICE_ERROR, T("Could not read that playlist."));
     return false;
 }
 
@@ -119,7 +119,7 @@ static void saveOpenPlaylist(App *app)
     PlaylistsTab *t = &app->playlists;
     char path[UTIL_PATH_MAX];
     if (!playlistPathFor(t->name, path, sizeof(path)) || !playlistSave(path, &t->tracks))
-        appToast(app, T("Could not save the playlist."));
+        appNotify(app, NOTICE_ERROR, T("Could not save the playlist."));
 }
 
 static void handleMoving(App *app, uint64_t pressed)

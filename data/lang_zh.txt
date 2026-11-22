@@ -6,6 +6,21 @@ language = 简体中文
 %d min  (%u left)
 %d分钟  （剩余%u分钟）
 
+%s installed: open KaiPlayer again
+%s 已安装：请重新打开 KaiPlayer
+
+%s is out
+%s 已发布
+
+%s is out, in Brewstore
+%s 已发布，在 Brewstore 中
+
+%s is out: A installs it
+%s 已发布：按 A 安装
+
+%s is out: A looks again
+%s 已发布：按 A 重新检查
+
 %zu album
 %zu张专辑
 
@@ -156,6 +171,9 @@ Allow without signing (old NAS)
 Already in "%s".
 已在“%s”中。
 
+Already on it.
+已在进行中。
+
 ARTIST
 艺人
 
@@ -186,6 +204,9 @@ Blue
 Cancel
 取消
 
+Check once a day
+每天检查一次
+
 Choose your music folder
 选择音乐文件夹
 
@@ -200,6 +221,9 @@ Classical
 
 Clock
 时钟
+
+Close KaiPlayer and open it again to use the new version.
+关闭 KaiPlayer 后重新打开即可使用新版本。
 
 Could not add to "%s".
 无法添加到“%s”。
@@ -228,6 +252,9 @@ Could not read the SD card.
 Could not save the playlist.
 无法保存播放列表。
 
+Couldn't look: A tries again
+无法检查：按 A 重试
+
 Cover colors
 封面配色
 
@@ -239,6 +266,9 @@ Created "%s" with %d songs.
 
 Created "%s".
 已创建“%s”。
+
+Credits and licenses
+致谢和许可证
 
 Custom
 自定义
@@ -260,6 +290,9 @@ Display
 
 Done
 完成
+
+Downloading %s... %d%%
+正在下载 %s... %d%%
 
 empty
 空
@@ -288,6 +321,12 @@ Free and open source under the MIT license; FFmpeg and libsmb2 under the LGPL.
 From cover
 取自封面
 
+GitHub couldn't be reached.
+无法连接到 GitHub。
+
+GitHub's answer about the latest version couldn't be used.
+无法使用 GitHub 关于最新版本的回复。
+
 Green
 绿色
 
@@ -306,6 +345,21 @@ in folder order
 Jazz
 爵士
 
+KaiPlayer %s is installed: it runs from the next start.
+KaiPlayer %s 已安装：下次启动时生效。
+
+KaiPlayer %s is out, on its GitHub page.
+KaiPlayer %s 已发布，见其 GitHub 页面。
+
+KaiPlayer %s is out: Settings > About installs it.
+KaiPlayer %s 已发布：在“设置 > 关于”中安装。
+
+KaiPlayer %s is out: update it in Brewstore.
+KaiPlayer %s 已发布：请在 Brewstore 中更新。
+
+KaiPlayer is up to date.
+KaiPlayer 已是最新版本。
+
 KaiPlayer only shows this folder and the ones inside it.
 KaiPlayer只显示此文件夹及其子文件夹。
 
@@ -318,8 +372,14 @@ Language
 Library
 媒体库
 
+Look for an update
+检查更新
+
 Looking for music...
 正在查找音乐...
+
+Looking...
+正在检查...
 
 Low
 低
@@ -374,6 +434,9 @@ Not affiliated with or endorsed by Nintendo.
 
 Not chosen
 未选择
+
+Not installed: A tries again
+未安装：按 A 重试
 
 Not signed: someone on your network could change what's read. Use it only for an old NAS.
 未签名：你网络中的人可能篡改读取的内容。仅用于旧 NAS。
@@ -591,8 +654,17 @@ That password can't be used.
 The connection is signed again.
 连接重新启用签名。
 
+The download didn't match GitHub's checksum: nothing was changed.
+下载内容与 GitHub 的校验和不符：未做任何更改。
+
 The network folder's password isn't remembered: it's asked for when the folder is used.
 网络文件夹的密码未保存：使用该文件夹时会询问。
+
+The new version couldn't be downloaded.
+无法下载新版本。
+
+The new version couldn't be written to the card: nothing was changed.
+无法将新版本写入SD卡：未做任何更改。
 
 The password is kept on the card.
 密码会存在卡上。
@@ -615,6 +687,9 @@ There are no songs to play.
 This folder has no subfolders or music.
 此文件夹中没有子文件夹或音乐。
 
+This is %s: A looks now
+当前为 %s：按 A 立即检查
+
 Track
 按曲目
 
@@ -632,6 +707,12 @@ Unknown artist
 
 Up to 48 characters, without / or \, not starting with a dot.
 最多48个字符，不能包含/或\，不能以点开头。
+
+Up to date
+已是最新
+
+Update it in Brewstore.
+请在 Brewstore 中更新。
 
 Update the library
 更新媒体库

@@ -26,7 +26,6 @@
 #include "sysinfo.h"
 #include "ui.h"
 
-#define TOAST_NS 3000000000ull
 #define SEEK_STEP_SECONDS 10.0
 #define PAGE_ROWS UI_LIST_ROWS
 
@@ -35,10 +34,19 @@ static uint64_t nowNs(void)
     return armTicksToNs(armGetSystemTick());
 }
 
+void appNotify(App *app, NoticeKind kind, const char *message)
+{
+    noticePush(&app->notices, kind, message, nowNs());
+}
+
 void appToast(App *app, const char *message)
 {
-    snprintf(app->toast, sizeof(app->toast), "%s", message);
-    app->toast_until_ns = nowNs() + TOAST_NS;
+    appNotify(app, NOTICE_INFO, message);
+}
+
+const char *appLastNotice(const App *app)
+{
+    return app->notices.count ? app->notices.items[app->notices.count - 1].text : "";
 }
 
 static void moveQueueCursor(App *app, long delta, size_t count)
@@ -194,7 +202,7 @@ static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, 
     if (strcmp(status.error, last_error) != 0) {
         snprintf(last_error, error_size, "%s", status.error);
         if (status.error[0])
-            appToast(app, status.error);
+            appNotify(app, NOTICE_ERROR, status.error);
     }
 }
 
@@ -218,7 +226,7 @@ static void openStartFolder(App *app)
     bool inside = utilPathWithin(app->config.folder, root);
     if (!(inside && browserOpen(&app->browser, app->config.folder)) && !browserOpen(&app->browser, root) &&
         !browserOpen(&app->browser, "sdmc:/"))
-        appToast(app, T("Could not read the SD card."));
+        appNotify(app, NOTICE_ERROR, T("Could not read the SD card."));
     if (!app->config.library[0])
         appOpenFolderPicker(app, true);
 }
@@ -313,6 +321,8 @@ static void runLoop(App *app)
             app->quit = true;
         }
 
+        appUpdatesTick(app);
+        app->notice = noticeShown(&app->notices, now, &app->notice_slide);
         PlayerStatus status;
         playerGetStatus(&status);
         requestArtwork(&status);
@@ -367,6 +377,7 @@ int main(int argc, char **argv)
     appStartLanguages(&app);  // Before anything is said on screen.
     appNetworkStart(&app);    // Before the library: it may be the network folder's,
     appServerStart(&app);     // or the server's.
+    appStartUpdates(&app, argc > 0 ? argv[0] : NULL);
     appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
@@ -414,6 +425,7 @@ int main(int argc, char **argv)
     historyFree(&app.history);
     metaExit();
     artworkExit();
+    appStopUpdates();  // A download stops; its part is removed.
     appServerExit();   // After everything that read the server's files,
     appNetworkExit();  // and the network folder's.
     sysinfoExit();

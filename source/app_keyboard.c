@@ -47,7 +47,7 @@ void appOpenKeyboard(App *app, NamePurpose purpose, const char *title, const cha
             return;
         }
         snprintf(text, sizeof(text), "%s", typed);
-        snprintf(prompt, sizeof(prompt), "%s", app->toast);
+        snprintf(prompt, sizeof(prompt), "%s", appLastNotice(app));
     }
     // Fallback: KaiPlayer's own keyboard.
     keyboardInit(&app->keyboard, text);
@@ -69,7 +69,7 @@ static bool applyName(App *app, const char *name)
         if (strcmp(old, name) == 0)
             return true;  // Unchanged.
         if (!playlistRename(old, name)) {
-            appToast(app, T("A playlist with that name already exists."));
+            appNotify(app, NOTICE_ERROR, T("A playlist with that name already exists."));
             return false;
         }
         if (t->open)
@@ -77,7 +77,7 @@ static bool applyName(App *app, const char *name)
         snprintf(message, sizeof(message), T("Renamed to \"%s\"."), name);
     } else {
         if (!playlistCreate(name)) {
-            appToast(app, T("A playlist with that name already exists."));
+            appNotify(app, NOTICE_ERROR, T("A playlist with that name already exists."));
             return false;
         }
         int added = app->keyboard_for == NAME_FOR_NEW_PLAYLIST_WITH_SONGS ? playlistAddTracks(name, &app->pending) : 0;

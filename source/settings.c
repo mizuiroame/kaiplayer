@@ -9,7 +9,8 @@ static const char *const ROW_LABELS[SETTING_COUNT] = {
     N_("Language"), N_("Library"), N_("Update the library"), N_("Network folder"), N_("Address"),
     N_("User and password"), N_("Test the connection"), N_("Forget this folder"), N_("Navidrome"), N_("Server"),
     N_("User and password"), N_("Test the connection"), N_("Certificate check"), N_("Forget this server"),
-    N_("Remember the password"), N_("Allow without signing (old NAS)"),
+    N_("Remember the password"), N_("Allow without signing (old NAS)"), N_("Credits and licenses"),
+    N_("Check once a day"), N_("Look for an update"),
 };
 
 // The same pages, in the same order, as KaiVideo's and KaiRadio's Settings.
@@ -22,6 +23,7 @@ static const SettingRow SERVER_ROWS[] = {SETTING_SRV_ADDRESS, SETTING_SRV_ACCOUN
                                          SETTING_SRV_CERTIFICATE, SETTING_SRV_FORGET};
 static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_SCREEN_OFF, SETTING_EQUALIZER,
                                            SETTING_REPLAYGAIN};
+static const SettingRow ABOUT_ROWS[] = {SETTING_CREDITS, SETTING_UPDATE_AUTO, SETTING_UPDATE_NOW};
 static const SettingRow DISPLAY_ROWS[] = {SETTING_LANGUAGE,        SETTING_ACCENT, SETTING_BACKGROUND,
                                           SETTING_BACKGROUND_BLUR, SETTING_CLOCK,  SETTING_NOW_STYLE};
 
@@ -37,6 +39,7 @@ int settingsPageRows(SettingsPage page, SettingRow rows[SETTINGS_PAGE_MAX_ROWS])
     case SETTINGS_PAGE_SERVER: from = SERVER_ROWS; count = COUNT_OF(SERVER_ROWS); break;
     case SETTINGS_PAGE_PLAYBACK: from = PLAYBACK_ROWS; count = COUNT_OF(PLAYBACK_ROWS); break;
     case SETTINGS_PAGE_DISPLAY: from = DISPLAY_ROWS; count = COUNT_OF(DISPLAY_ROWS); break;
+    case SETTINGS_PAGE_ABOUT: from = ABOUT_ROWS; count = COUNT_OF(ABOUT_ROWS); break;
     default: break;
     }
     for (int i = 0; i < count; i++)
@@ -52,6 +55,7 @@ SettingsPage settingsRowPage(SettingRow row)
     case SETTING_OPEN_SERVER: return SETTINGS_PAGE_SERVER;
     case SETTING_OPEN_PLAYBACK: return SETTINGS_PAGE_PLAYBACK;
     case SETTING_OPEN_DISPLAY: return SETTINGS_PAGE_DISPLAY;
+    case SETTING_ABOUT: return SETTINGS_PAGE_ABOUT;
     default: return SETTINGS_PAGE_MAIN;
     }
 }
@@ -63,6 +67,7 @@ SettingRow settingsPageRow(SettingsPage page)
     case SETTINGS_PAGE_SERVER: return SETTING_OPEN_SERVER;
     case SETTINGS_PAGE_PLAYBACK: return SETTING_OPEN_PLAYBACK;
     case SETTINGS_PAGE_DISPLAY: return SETTING_OPEN_DISPLAY;
+    case SETTINGS_PAGE_ABOUT: return SETTING_ABOUT;
     default: return SETTING_OPEN_LIBRARY;
     }
 }
@@ -75,6 +80,7 @@ const char *settingsPageTitle(SettingsPage page)
     case SETTINGS_PAGE_SERVER: return T("Navidrome");
     case SETTINGS_PAGE_PLAYBACK: return T("Playback");
     case SETTINGS_PAGE_DISPLAY: return T("Display");
+    case SETTINGS_PAGE_ABOUT: return T("About");
     default: return T("Settings");
     }
 }
@@ -130,5 +136,6 @@ bool settingsRowEditable(SettingRow row)
     return row != SETTING_ABOUT && row != SETTING_LIBRARY && row != SETTING_RESCAN && row != SETTING_NET_ADDRESS &&
            row != SETTING_NET_ACCOUNT && row != SETTING_NET_TEST && row != SETTING_NET_FORGET &&
            row != SETTING_SRV_ADDRESS && row != SETTING_SRV_ACCOUNT && row != SETTING_SRV_TEST &&
-           row != SETTING_SRV_FORGET && settingsRowPage(row) == SETTINGS_PAGE_MAIN;
+           row != SETTING_SRV_FORGET && row != SETTING_CREDITS && row != SETTING_UPDATE_NOW &&
+           settingsRowPage(row) == SETTINGS_PAGE_MAIN;
 }

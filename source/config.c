@@ -84,6 +84,12 @@ static void applyLine(Config *c, char *line)
         c->now_style = clampInt(atoi(value), 0, NOW_STYLE_COUNT - 1);
     } else if (strcmp(key, "background") == 0 && strlen(value) < sizeof(c->background) && !strchr(value, '/')) {
         strcpy(c->background, value);
+    } else if (strcmp(key, "update_check") == 0) {
+        c->update_check = strcmp(value, "0") != 0;
+    } else if (strcmp(key, "update_checked") == 0) {
+        c->update_checked = strtoll(value, NULL, 10);
+    } else if (strcmp(key, "update_tag") == 0 && strlen(value) < sizeof(c->update_tag) && !strpbrk(value, "/\\")) {
+        strcpy(c->update_tag, value);
     } else if (strcmp(key, "language") == 0 && strlen(value) < sizeof(c->language) && !strpbrk(value, "/\\")) {
         strcpy(c->language, value);  // An id, or a name in the lang folder: never a path.
     } else if (strcmp(key, "background_blur") == 0) {
@@ -113,6 +119,9 @@ void configLoad(Config *c)
     c->background[0] = '\0';
     c->background_blur = BLUR_MEDIUM;
     c->repeat = REPEAT_ALL;
+    c->update_check = true;
+    c->update_checked = 0;
+    c->update_tag[0] = '\0';
 
     char path[UTIL_PATH_MAX];
     if (!utilJoinPath(path, sizeof(path), g_folder, CONFIG_NAME))
@@ -159,5 +168,8 @@ bool configSave(const Config *c)
         fprintf(f, "background=%s\n", c->background);
     if (c->language[0] && !strpbrk(c->language, "\r\n"))
         fprintf(f, "language=%s\n", c->language);
+    fprintf(f, "update_check=%d\nupdate_checked=%lld\n", c->update_check ? 1 : 0, c->update_checked);
+    if (c->update_tag[0] && !strpbrk(c->update_tag, "\r\n"))
+        fprintf(f, "update_tag=%s\n", c->update_tag);
     return fclose(f) == 0;
 }

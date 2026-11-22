@@ -6,6 +6,21 @@ language = Português (Brasil)
 %d min  (%u left)
 %d min  (faltam %u)
 
+%s installed: open KaiPlayer again
+%s instalada: abra o KaiPlayer de novo
+
+%s is out
+Saiu a %s
+
+%s is out, in Brewstore
+Saiu a %s, no Brewstore
+
+%s is out: A installs it
+Saiu a %s: A instala
+
+%s is out: A looks again
+Saiu a %s: A procura de novo
+
 %zu album
 %zu álbum
 
@@ -156,6 +171,9 @@ Permitir sem assinatura (NAS antigo)
 Already in "%s".
 Já está em "%s".
 
+Already on it.
+Já está em andamento.
+
 ARTIST
 ARTISTA
 
@@ -186,6 +204,9 @@ Azul
 Cancel
 Cancelar
 
+Check once a day
+Procurar uma vez por dia
+
 Choose your music folder
 Escolha sua pasta de música
 
@@ -200,6 +221,9 @@ Clássica
 
 Clock
 Relógio
+
+Close KaiPlayer and open it again to use the new version.
+Feche o KaiPlayer e abra de novo para usar a versão nova.
 
 Could not add to "%s".
 Não foi possível adicionar a "%s".
@@ -234,11 +258,50 @@ Fita cassete
 CD
 CD
 
+Couldn't look: A tries again
+Não foi possível procurar: A tenta de novo
+
 Cover
 Capa
 
 Cover colors
 Cores da capa
+
+Credits and licenses
+Créditos e licenças
+
+Downloading %s... %d%%
+Baixando a %s... %d%%
+
+GitHub couldn't be reached.
+Não foi possível acessar o GitHub.
+
+GitHub's answer about the latest version couldn't be used.
+Não foi possível usar a resposta do GitHub sobre a versão mais recente.
+
+KaiPlayer %s is installed: it runs from the next start.
+KaiPlayer %s está instalada: vale a partir da próxima abertura.
+
+KaiPlayer %s is out, on its GitHub page.
+Saiu o KaiPlayer %s, na página do GitHub.
+
+KaiPlayer %s is out: Settings > About installs it.
+Saiu o KaiPlayer %s: Configurações > Sobre instala.
+
+KaiPlayer %s is out: update it in Brewstore.
+Saiu o KaiPlayer %s: atualize no Brewstore.
+
+KaiPlayer is up to date.
+O KaiPlayer está atualizado.
+
+Look for an update
+Procurar atualização
+
+Looking...
+Procurando...
+
+Not installed: A tries again
+Não instalada: A tenta de novo
 
 Not signed: someone on your network could change what's read. Use it only for an old NAS.
 Sem assinatura: alguém na sua rede poderia alterar o que é lido. Use só com um NAS antigo.
@@ -276,8 +339,17 @@ Essa senha não pode ser usada.
 The connection is signed again.
 A conexão volta a ser assinada.
 
+The download didn't match GitHub's checksum: nothing was changed.
+O download não bateu com o checksum do GitHub: nada foi alterado.
+
 The network folder's password isn't remembered: it's asked for when the folder is used.
 A senha da pasta de rede não é lembrada: ela é pedida quando a pasta é usada.
+
+The new version couldn't be downloaded.
+Não foi possível baixar a versão nova.
+
+The new version couldn't be written to the card: nothing was changed.
+Não foi possível gravar a versão nova no cartão: nada foi alterado.
 
 The password is kept on the card.
 A senha fica guardada no cartão.
@@ -287,6 +359,15 @@ A senha não ficará no cartão: o KaiPlayer vai pedi-la quando a pasta for usad
 
 The server doesn't sign the connection (an old NAS, or a folder open to guests). If you trust your home network, turn on Allow without signing on this page.
 O servidor não assina a conexão (um NAS antigo, ou uma pasta aberta a convidados). Se você confia na sua rede de casa, ative Permitir sem assinatura nesta página.
+
+This is %s: A looks now
+Esta é a %s: A procura agora
+
+Up to date
+Atualizado
+
+Update it in Brewstore.
+Atualize no Brewstore.
 
 Vinyl record
 Disco de vinil

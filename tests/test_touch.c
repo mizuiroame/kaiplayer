@@ -111,6 +111,13 @@ static void testSettings(void)
     CHECK(strcmp(settingsRowLabel(SETTING_NET_UNSIGNED), "Allow without signing (old NAS)") == 0);
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_NETWORK), "Network folder") == 0);
     CHECK(settingsPageNote(SETTINGS_PAGE_NETWORK) && !settingsPageNote(SETTINGS_PAGE_MAIN));
+    // About opens a page: the credits, and updates (no page of their own).
+    CHECK(settingsRowPage(SETTING_ABOUT) == SETTINGS_PAGE_ABOUT && settingsPageRow(SETTINGS_PAGE_ABOUT) == SETTING_ABOUT);
+    CHECK(settingsPageRows(SETTINGS_PAGE_ABOUT, rows) == 3 && rows[0] == SETTING_CREDITS &&
+          rows[1] == SETTING_UPDATE_AUTO && rows[2] == SETTING_UPDATE_NOW);
+    CHECK(settingsRowEditable(SETTING_UPDATE_AUTO) && !settingsRowEditable(SETTING_UPDATE_NOW) &&
+          !settingsRowEditable(SETTING_CREDITS) && !settingsRowEditable(SETTING_ABOUT));
+    CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_ABOUT), "About") == 0);
     CHECK(settingsPageRows(SETTINGS_PAGE_LIBRARY, rows) == 2);
     CHECK(rows[0] == SETTING_LIBRARY && rows[1] == SETTING_RESCAN);
     CHECK(!settingsRowEditable(SETTING_RESCAN) && !settingsRowEditable(SETTING_LIBRARY));

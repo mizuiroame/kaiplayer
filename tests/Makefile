@@ -15,9 +15,9 @@ OBJDIR  := build
 TESTED  := util.c audioformat.c queue.c resampler.c decoder.c dsd.c ffaudio.c library.c browser.c \
            tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
            tracklist.c plainname.c playlist.c background.c gfx.c resume.c keyboard.c menu.c touch.c ui_hit.c settings.c eq.c theme.c metacache.c replaygain.c catalog.c history.c home.c approot.c kinetic.c lang.c \
-           kfile.c blockcache.c dav.c md4.c md5.c json.c subsonic.c
+           kfile.c blockcache.c dav.c md4.c md5.c json.c subsonic.c update.c updaterelease.c notice.c
 TESTS   := test_main.c test_tags.c test_cover.c test_playlist.c test_touch.c test_eq.c test_meta.c test_catalog.c test_home.c test_dsd.c test_style.c test_approot.c test_kinetic.c test_lang.c \
-           test_kfile.c test_dav.c test_subsonic.c test_ffaudio.c
+           test_kfile.c test_dav.c test_subsonic.c test_ffaudio.c test_update.c test_updaterelease.c test_notice.c
 PARSERS := util.c decoder.c dsd.c ffaudio.c tags_text.c tags_id3.c tags_vorbis.c tags_file.c cover.c \
            kfile.c blockcache.c dav.c codecs_impl.c image_impl.c md4.c md5.c json.c subsonic.c catalog.c
 ITER    ?= 1000

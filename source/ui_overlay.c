@@ -158,6 +158,9 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
             snprintf(out, size, "%.40s", address[0] ? address : T("Not set"));
         break;
     }
+    case SETTING_CREDITS: out[0] = '\0'; break;  // Opens the panel: just the A button when chosen.
+    case SETTING_UPDATE_AUTO:
+    case SETTING_UPDATE_NOW: appUpdatesValue(app, row, out, size); break;
     case SETTING_SRV_TEST:
     case SETTING_SRV_FORGET: out[0] = '\0'; break;
     case SETTING_OPEN_LIBRARY:
@@ -295,7 +298,7 @@ static void drawKey(int x, int y, int w, const char *label, bool selected, bool 
     uiHitAdd(x, y, w, KEY_H, HIT_KEY, hit_arg);
 }
 
-static void drawKeyboard(const App *app, uint64_t now_ns)
+static void drawKeyboard(const App *app)
 {
     const Keyboard *k = &app->keyboard;
     int w = KEYS_W + 2 * PANEL_PAD;
@@ -327,9 +330,7 @@ static void drawKeyboard(const App *app, uint64_t now_ns)
                 keyboardActionLabel((KeyboardAction)a), k->row == KEYBOARD_CHAR_ROWS && k->col == a,
                 a == KEY_ACTION_SHIFT && k->shift, KEYBOARD_CHAR_ROWS * 16 + a);
     }
-    // Messages such as an invalid name show here, above the dimmed screen.
-    if (app->toast[0] && now_ns < app->toast_until_ns)
-        fontDrawClipped(FONT_REGULAR, 18, x + PANEL_PAD, action_y + KEY_H + 14, KEYS_W, app->toast, COLOR_ERROR);
+    // A message such as an invalid name is said in the notice bubble, over the keyboard.
 }
 
 #define EQ_W 940
@@ -479,7 +480,7 @@ bool uiOverlayOpen(const App *app)
 void uiDrawOverlay(const App *app, uint64_t now_ns)
 {
     if (app->keyboard_open)
-        drawKeyboard(app, now_ns);
+        drawKeyboard(app);
     else if (app->menu.open)
         drawMenu(&app->menu);
     else if (app->picker_open)

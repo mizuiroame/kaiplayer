@@ -35,6 +35,9 @@ typedef enum {
     SETTING_SRV_FORGET,     // Removes its address and sign-in.
     SETTING_NET_REMEMBER,   // Whether the network folder's password is kept on the card.
     SETTING_NET_UNSIGNED,   // Whether an SMB server that doesn't sign is used (an old NAS).
+    SETTING_CREDITS,        // About: credits and licenses (the About panel).
+    SETTING_UPDATE_AUTO,    // About: look for a new version once a day.
+    SETTING_UPDATE_NOW,     // About: look now, or install the one found.
     SETTING_COUNT,
 } SettingRow;
 
@@ -46,6 +49,7 @@ typedef enum {
     SETTINGS_PAGE_SERVER,
     SETTINGS_PAGE_PLAYBACK,
     SETTINGS_PAGE_DISPLAY,
+    SETTINGS_PAGE_ABOUT,
     SETTINGS_PAGE_COUNT,
 } SettingsPage;
 

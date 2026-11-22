@@ -76,8 +76,10 @@ void appActivateSetting(App *app, SettingRow row)
         typeSleepMinutes(app);
     } else if (row == SETTING_EQUALIZER) {
         app->eq_open = true;  // The editor opens over Settings.
-    } else if (row == SETTING_ABOUT) {
+    } else if (row == SETTING_CREDITS) {
         app->about_open = true;
+    } else if (row == SETTING_UPDATE_NOW) {
+        appUpdatesActivate(app);
     } else if (row == SETTING_LIBRARY) {
         appOpenFolderPicker(app, false);
     } else if (appNetworkActivate(app, row) || appServerActivate(app, row)) {
@@ -199,6 +201,7 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         break;
     case SETTING_NET_REMEMBER:
     case SETTING_NET_UNSIGNED: appNetworkActivate(app, row); break;
+    case SETTING_UPDATE_AUTO: appUpdatesToggle(app); break;  // On or off, either way.
     case SETTING_LANGUAGE: {  // Through the languages found: English, those in the app, config/lang's files.
         int count = languagesCount();
         int at = (languageIndex(app->config.language) + delta % count + count) % count;

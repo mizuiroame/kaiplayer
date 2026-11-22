@@ -6,6 +6,21 @@ language = Español (Latinoamérica)
 %d min  (%u left)
 %d min  (quedan %u)
 
+%s installed: open KaiPlayer again
+%s instalada: abre KaiPlayer de nuevo
+
+%s is out
+Salió la %s
+
+%s is out, in Brewstore
+Salió la %s, en Brewstore
+
+%s is out: A installs it
+Salió la %s: A la instala
+
+%s is out: A looks again
+Salió la %s: A vuelve a buscar
+
 %zu album
 %zu álbum
 
@@ -156,6 +171,9 @@ Permitir sin firma (NAS antiguo)
 Already in "%s".
 Ya está en "%s".
 
+Already on it.
+Ya está en eso.
+
 ARTIST
 ARTISTA
 
@@ -186,6 +204,9 @@ Azul
 Cancel
 Cancelar
 
+Check once a day
+Buscar una vez al día
+
 Choose your music folder
 Elige tu carpeta de música
 
@@ -200,6 +221,9 @@ Clásica
 
 Clock
 Reloj
+
+Close KaiPlayer and open it again to use the new version.
+Cierra KaiPlayer y ábrelo de nuevo para usar la versión nueva.
 
 Could not add to "%s".
 No se pudo agregar a "%s".
@@ -228,6 +252,9 @@ No se pudo leer la tarjeta SD.
 Could not save the playlist.
 No se pudo guardar la lista.
 
+Couldn't look: A tries again
+No se pudo buscar: A lo intenta de nuevo
+
 Cover colors
 Colores de la portada
 
@@ -239,6 +266,9 @@ Se creó "%s" con %d canciones.
 
 Created "%s".
 Se creó "%s".
+
+Credits and licenses
+Créditos y licencias
 
 Custom
 Personalizado
@@ -260,6 +290,9 @@ Pantalla
 
 Done
 Listo
+
+Downloading %s... %d%%
+Descargando la %s... %d%%
 
 empty
 vacía
@@ -288,6 +321,12 @@ Libre y de código abierto con licencia MIT; FFmpeg y libsmb2 con licencia LGPL.
 From cover
 De la portada
 
+GitHub couldn't be reached.
+No se pudo conectar con GitHub.
+
+GitHub's answer about the latest version couldn't be used.
+No se pudo usar la respuesta de GitHub sobre la última versión.
+
 Green
 Verde
 
@@ -306,6 +345,21 @@ en orden de carpeta
 Jazz
 Jazz
 
+KaiPlayer %s is installed: it runs from the next start.
+KaiPlayer %s está instalada: se usa desde el próximo inicio.
+
+KaiPlayer %s is out, on its GitHub page.
+Salió KaiPlayer %s, en su página de GitHub.
+
+KaiPlayer %s is out: Settings > About installs it.
+Salió KaiPlayer %s: Configuración > Acerca de lo instala.
+
+KaiPlayer %s is out: update it in Brewstore.
+Salió KaiPlayer %s: actualízalo en Brewstore.
+
+KaiPlayer is up to date.
+KaiPlayer está al día.
+
 KaiPlayer only shows this folder and the ones inside it.
 KaiPlayer solo muestra esta carpeta y las que tiene dentro.
 
@@ -318,8 +372,14 @@ Idioma
 Library
 Biblioteca
 
+Look for an update
+Buscar una actualización
+
 Looking for music...
 Buscando música...
+
+Looking...
+Buscando...
 
 Low
 Baja
@@ -374,6 +434,9 @@ Sin relación ni respaldo de Nintendo.
 
 Not chosen
 Sin elegir
+
+Not installed: A tries again
+No se instaló: A lo intenta de nuevo
 
 Not signed: someone on your network could change what's read. Use it only for an old NAS.
 Sin firma: alguien en tu red podría cambiar lo que se lee. Úsalo solo con un NAS antiguo.
@@ -591,8 +654,17 @@ Esa contraseña no se puede usar.
 The connection is signed again.
 La conexión vuelve a ir firmada.
 
+The download didn't match GitHub's checksum: nothing was changed.
+La descarga no coincidió con la suma de verificación de GitHub: no se cambió nada.
+
 The network folder's password isn't remembered: it's asked for when the folder is used.
 La contraseña de la carpeta de red no se recuerda: se pide al usar la carpeta.
+
+The new version couldn't be downloaded.
+No se pudo descargar la versión nueva.
+
+The new version couldn't be written to the card: nothing was changed.
+No se pudo escribir la versión nueva en la tarjeta: no se cambió nada.
 
 The password is kept on the card.
 La contraseña se guarda en la tarjeta.
@@ -615,6 +687,9 @@ No hay canciones para reproducir.
 This folder has no subfolders or music.
 Esta carpeta no tiene subcarpetas ni música.
 
+This is %s: A looks now
+Esta es la %s: A busca ahora
+
 Track
 Pista
 
@@ -632,6 +707,12 @@ Artista desconocido
 
 Up to 48 characters, without / or \, not starting with a dot.
 Hasta 48 caracteres, sin / ni \, sin empezar con punto.
+
+Up to date
+Al día
+
+Update it in Brewstore.
+Actualízalo en Brewstore.
 
 Update the library
 Actualizar la biblioteca

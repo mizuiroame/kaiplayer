@@ -7,6 +7,7 @@
 #include "dav.h"
 #include "kfile.h"
 #include "ui_common.h"
+#include "ui_notice.h"
 #include "ui_hit.h"
 #include "ui_buttons.h"
 #include "ui_list.h"
@@ -369,7 +370,7 @@ static void drawBarTransport(const PlayerStatus *status, int focused)
     uiHitAdd(next_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_NEXT, 0);
 }
 
-static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
+static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track)
 {
     int focused = app->focus == FOCUS_PLAYER ? (int)app->bar_control : -1;
     gfxFillRect(0, MINI_Y, GFX_WIDTH, MINI_H, COLOR_SURFACE);
@@ -386,9 +387,9 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     fontDrawClipped(FONT_BOLD, 24, text_x, MINI_Y + 14, text_w, track->title,
                     track->has_track ? COLOR_TEXT : COLOR_DIM);
 
-    bool toast = app->toast[0] && now_ns < app->toast_until_ns;
-    const char *second = toast ? app->toast : track->artist[0] ? track->artist : track->folder;
-    fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, second, toast ? COLOR_ERROR : COLOR_DIM);
+    // Messages are said in the notice bubble, not here.
+    fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, track->artist[0] ? track->artist : track->folder,
+                    COLOR_DIM);
     drawBarTransport(status, focused);
 
     char elapsed[16], total[16], line[128];
@@ -477,6 +478,7 @@ static const char *footerHelp(const App *app)
 static void drawFooter(const App *app)
 {
     uiDrawHelp(MARGIN, FOOTER_Y + 26.0f, GFX_WIDTH - 2 * MARGIN, footerHelp(app));
+    uiDrawNotice(app->notice, app->notice_slide);  // Last: over everything, and its tap first.
 }
 
 void uiDrawScreenOff(void)
@@ -557,7 +559,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
             uiDrawPlaylists(app, status, now_ns);
         else
             drawQueue(app, status, now_ns);
-        drawMiniPlayer(app, status, &track, now_ns);
+        drawMiniPlayer(app, status, &track);
     }
     drawHeader(app, now_ns);
     g_frozen_ok = false;

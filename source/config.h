@@ -44,6 +44,9 @@ typedef struct {
     int background_blur;         // BackgroundBlur.
     char language[64];           // Its id: "en", "es", or a file in config/lang; "" is English.
     char language_name[64];      // Its name, as Settings shows it (not kept: set at start).
+    bool update_check;           // Look for a new version once a day (update.h).
+    long long update_checked;    // When it last looked, in seconds since 1970; 0 never.
+    char update_tag[32];         // The newer version it found then ("v1.4.0"), "" for none.
 } Config;
 
 // Fills defaults, then overrides them with the saved file if it exists.

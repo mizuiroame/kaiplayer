@@ -208,6 +208,4 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
     drawFormat(status);
     drawTransport(status);
     drawToggles(status, app->focus == FOCUS_ADD);
-    if (app->toast[0] && now_ns < app->toast_until_ns)
-        fontDrawClipped(FONT_REGULAR, 17, INFO_X, TOGGLES_Y + 52, INFO_W, app->toast, COLOR_ERROR);
 }

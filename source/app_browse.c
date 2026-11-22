@@ -16,7 +16,7 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
 {
     TrackList list;
     if (!libraryScan(&list, folder, recursive)) {
-        appToast(app, kfileIsRemote(folder) ? T("The network folder couldn't be read.")
+        appNotify(app, NOTICE_ERROR, kfileIsRemote(folder) ? T("The network folder couldn't be read.")
                                             : T("Out of memory for the track list."));
         return;
     }
@@ -48,7 +48,7 @@ static void openSelected(App *app)
     char path[UTIL_PATH_MAX];
     if (!utilJoinPath(path, sizeof(path), app->browser.path, e->name) ||
         !browserOpen(&app->browser, path))  // A network folder's says why.
-        appToast(app, app->browser.problem[0] ? app->browser.problem : T("Could not open the folder."));
+        appNotify(app, NOTICE_ERROR, app->browser.problem[0] ? app->browser.problem : T("Could not open the folder."));
 }
 
 bool appBrowseCanGoUp(const App *app)

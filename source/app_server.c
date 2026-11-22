@@ -77,7 +77,7 @@ static void save(App *app, const SubAccount *a, bool library)
     char path[UTIL_PATH_MAX];
     accountPath(path, sizeof(path));
     if (!subSaveAccount(path))
-        appToast(app, T("It couldn't be written to the card."));
+        appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."));
     useNetwork();
     if (library)
         appLibraryRemoteChanged(app, LIBRARY_SERVER, moved);
@@ -133,7 +133,7 @@ static void test(App *app)
         return;
     }
     if (!g_network) {
-        appToast(app, T("The network can't be used."));
+        appNotify(app, NOTICE_ERROR, T("The network can't be used."));
         return;
     }
     joinTest(false);
@@ -167,9 +167,9 @@ static void typeAddress(App *app)
     // Room for the "http://" that may be added.
     SystemKeyboardResult result = systemKeyboardText(prompt, shown, text, sizeof(text), sizeof(text) - 10);
     if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
-        appToast(app, T("The keyboard couldn't open."));
+        appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."));
     } else if (result == SYSTEM_KEYBOARD_OK && !subNormalizeAddress(text, address, sizeof(address))) {
-        appToast(app, T("That isn't a server's address."));
+        appNotify(app, NOTICE_ERROR, T("That isn't a server's address."));
     } else if (result == SYSTEM_KEYBOARD_OK) {
         if (!subSameServer(address, a.address)) {  // Another server: the old one's sign-in isn't sent there.
             a.user[0] = a.salt[0] = '\0';
@@ -177,7 +177,7 @@ static void typeAddress(App *app)
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a, true);
-        appToast(app, subSignedIn(&a) ? T("Server set: test the connection to check it.")
+        appNotify(app, NOTICE_DONE, subSignedIn(&a) ? T("Server set: test the connection to check it.")
                                       : T("Server set: now enter your user name and password."));
     }
     memset(&a, 0, sizeof(a));
@@ -207,7 +207,7 @@ static void typeAccount(App *app)
     if (result == SYSTEM_KEYBOARD_OK && user[0])
         result = systemKeyboardPassword(T("Password"), password, sizeof(password), sizeof(password) - 1);
     if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
-        appToast(app, T("The keyboard couldn't open."));
+        appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."));
     } else if (result == SYSTEM_KEYBOARD_OK) {
         char salt[SUB_SALT_MAX] = "";
         makeSalt(salt, sizeof(salt));
@@ -237,7 +237,7 @@ static void forget(App *app)
 {
     SubAccount none = {.check_certificate = true};
     save(app, &none, true);
-    appToast(app, T("The Navidrome server is forgotten."));
+    appNotify(app, NOTICE_DONE, T("The Navidrome server is forgotten."));
 }
 
 bool appServerActivate(App *app, SettingRow row)

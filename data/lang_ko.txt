@@ -6,6 +6,21 @@ language = 한국어
 %d min  (%u left)
 %d분  (%u분 남음)
 
+%s installed: open KaiPlayer again
+%s 설치됨: KaiPlayer를 다시 여세요
+
+%s is out
+%s 출시됨
+
+%s is out, in Brewstore
+%s 출시됨, Brewstore에서
+
+%s is out: A installs it
+%s 출시됨: A로 설치
+
+%s is out: A looks again
+%s 출시됨: A로 다시 확인
+
 %zu album
 앨범 %zu개
 
@@ -156,6 +171,9 @@ Allow without signing (old NAS)
 Already in "%s".
 이미 "%s" 재생목록에 있습니다.
 
+Already on it.
+이미 진행 중입니다.
+
 ARTIST
 아티스트
 
@@ -186,6 +204,9 @@ Blue
 Cancel
 취소
 
+Check once a day
+하루에 한 번 확인
+
 Choose your music folder
 음악 폴더를 선택하세요
 
@@ -200,6 +221,9 @@ Classical
 
 Clock
 시계
+
+Close KaiPlayer and open it again to use the new version.
+새 버전을 쓰려면 KaiPlayer를 닫고 다시 여세요.
 
 Could not add to "%s".
 "%s" 재생목록에 추가할 수 없었습니다.
@@ -228,6 +252,9 @@ SD 카드를 읽을 수 없었습니다.
 Could not save the playlist.
 재생목록을 저장할 수 없었습니다.
 
+Couldn't look: A tries again
+확인하지 못했습니다: A로 다시 시도
+
 Cover colors
 커버 색상
 
@@ -239,6 +266,9 @@ Created "%s" with %d songs.
 
 Created "%s".
 "%s" 재생목록을 만들었습니다.
+
+Credits and licenses
+크레딧과 라이선스
 
 Custom
 사용자 지정
@@ -260,6 +290,9 @@ Display
 
 Done
 완료
+
+Downloading %s... %d%%
+%s 내려받는 중... %d%%
 
 empty
 비어 있음
@@ -288,6 +321,12 @@ MIT 라이선스의 무료 오픈 소스입니다. FFmpeg와 libsmb2는 LGPL 라
 From cover
 커버에서
 
+GitHub couldn't be reached.
+GitHub에 연결할 수 없었습니다.
+
+GitHub's answer about the latest version couldn't be used.
+최신 버전에 대한 GitHub의 응답을 쓸 수 없었습니다.
+
 Green
 초록색
 
@@ -306,6 +345,21 @@ in folder order
 Jazz
 재즈
 
+KaiPlayer %s is installed: it runs from the next start.
+KaiPlayer %s 설치됨: 다음 실행부터 쓰입니다.
+
+KaiPlayer %s is out, on its GitHub page.
+KaiPlayer %s 출시됨, GitHub 페이지에서.
+
+KaiPlayer %s is out: Settings > About installs it.
+KaiPlayer %s 출시됨: 설정 > 정보에서 설치합니다.
+
+KaiPlayer %s is out: update it in Brewstore.
+KaiPlayer %s 출시됨: Brewstore에서 업데이트하세요.
+
+KaiPlayer is up to date.
+KaiPlayer는 최신입니다.
+
 KaiPlayer only shows this folder and the ones inside it.
 KaiPlayer는 이 폴더와 하위 폴더만 표시합니다.
 
@@ -318,8 +372,14 @@ Language
 Library
 라이브러리
 
+Look for an update
+업데이트 확인
+
 Looking for music...
 음악을 찾는 중...
+
+Looking...
+확인 중...
 
 Low
 낮음
@@ -374,6 +434,9 @@ Nintendo와 제휴하거나 Nintendo의 승인을 받은 소프트웨어가 아�
 
 Not chosen
 선택 안 함
+
+Not installed: A tries again
+설치하지 못했습니다: A로 다시 시도
 
 Not signed: someone on your network could change what's read. Use it only for an old NAS.
 서명 없음: 네트워크의 누군가가 읽는 내용을 바꿀 수 있습니다. 오래된 NAS에만 사용하세요.
@@ -591,8 +654,17 @@ That password can't be used.
 The connection is signed again.
 연결이 다시 서명됩니다.
 
+The download didn't match GitHub's checksum: nothing was changed.
+내려받은 파일이 GitHub의 체크섬과 맞지 않습니다: 아무것도 바꾸지 않았습니다.
+
 The network folder's password isn't remembered: it's asked for when the folder is used.
 네트워크 폴더의 비밀번호는 저장되지 않습니다. 폴더를 사용할 때 물어봅니다.
+
+The new version couldn't be downloaded.
+새 버전을 내려받을 수 없었습니다.
+
+The new version couldn't be written to the card: nothing was changed.
+새 버전을 SD 카드에 쓸 수 없었습니다: 아무것도 바꾸지 않았습니다.
 
 The password is kept on the card.
 비밀번호를 카드에 저장합니다.
@@ -615,6 +687,9 @@ There are no songs to play.
 This folder has no subfolders or music.
 이 폴더에는 하위 폴더나 음악이 없습니다.
 
+This is %s: A looks now
+현재 %s: A로 지금 확인
+
 Track
 트랙 기준
 
@@ -632,6 +707,12 @@ Unknown artist
 
 Up to 48 characters, without / or \, not starting with a dot.
 48자 이내로 입력하세요. / 또는 \는 사용할 수 없으며 마침표로 시작할 수 없습니다.
+
+Up to date
+최신
+
+Update it in Brewstore.
+Brewstore에서 업데이트하세요.
 
 Update the library
 라이브러리 업데이트
