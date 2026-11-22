@@ -34,7 +34,10 @@ folder**, **Navidrome**, **Playback**, **Display** and **About**.
 | Display | Background blur | Off, Low, Medium (default) or High |
 | Display | Clock | 24-hour (default) or 12-hour |
 | Display | Now Playing style | Cover (default), Vinyl record, CD or Cassette |
-| — | About | The KaiPlayer version; **A** shows more about the app and its author |
+| — | About | The KaiPlayer version; **A** opens its page |
+| About | Credits and licenses | **A** shows more about the app and its author |
+| About | Check once a day | On by default: asks GitHub once a day for a new version and says when there is one |
+| About | Look for an update | Looks now. With a new version found, run from `sdmc:/switch/`, **A** downloads it, checks its SHA-256 and puts it in place for the next start; from brewstore, update it there |
 
 ## Sleep timer
 

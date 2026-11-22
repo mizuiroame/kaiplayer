@@ -6,12 +6,20 @@ Under kaiHEN, homebrew runs with broad system access. A bug in an app that
 reads untrusted files could therefore affect the whole console. KaiPlayer
 reduces that risk in these ways:
 
-- **Small attack surface.** No network access unless you set up a
+- **Small attack surface.** Besides the update check below, no network access
+  unless you set up a
   [network folder](network-folder.md) or a [Navidrome server](navidrome.md):
   then the console's network is started and KaiPlayer only talks to that
   folder's server (SMB or WebDAV), to list and read its files, or to the
   Navidrome server, to read its library, songs and covers and tell it what
-  was played. The app only reads the files and folders you browse, and only
+  was played. Once a day (Settings > About > Check once a day turns it off)
+  and when you choose **Look for an update**, it asks GitHub, over `https://`
+  with its certificate checked, for this repository's latest release.
+  Installing one downloads `KaiPlayer.nro` only from this repository's
+  release, checks its size and SHA-256 against what GitHub lists for it, and
+  only then puts it in place, keeping the old one until the swap is done. From
+  brewstore, KaiPlayer only says a new version is out. The app only reads the
+  files and folders you browse, and only
   writes its own files (settings, history, catalogs, resume, the network
   folder's and the server's accounts) in its folder, and the playlists you
   save.
