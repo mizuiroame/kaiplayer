@@ -141,8 +141,8 @@ typedef struct {
     bool audio_ok;
     SysInfo sys;  // Clock and battery, refreshed by the main loop.
     Notices notices;            // Messages, shown one at a time in a bubble at the top.
-    const Notice *notice;       // The one to draw this frame (NULL for none),
-    float notice_slide;         // and how far it has slid in (0 to 1).
+    NoticeView notice_views[NOTICE_STACK + 1];  // The bubbles to draw this frame,
+    int notice_count;           // and how many.
     unsigned update_seen;       // The update status's serial already said on screen.
     bool update_manual;         // Settings asked: say "up to date" and failures too.
 

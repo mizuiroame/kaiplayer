@@ -322,7 +322,7 @@ static void runLoop(App *app)
         }
 
         appUpdatesTick(app);
-        app->notice = noticeShown(&app->notices, now, &app->notice_slide);
+        app->notice_count = noticeVisible(&app->notices, now, app->notice_views);
         PlayerStatus status;
         playerGetStatus(&status);
         requestArtwork(&status);

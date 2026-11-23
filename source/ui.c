@@ -478,7 +478,7 @@ static const char *footerHelp(const App *app)
 static void drawFooter(const App *app)
 {
     uiDrawHelp(MARGIN, FOOTER_Y + 26.0f, GFX_WIDTH - 2 * MARGIN, footerHelp(app));
-    uiDrawNotice(app->notice, app->notice_slide);  // Last: over everything, and its tap first.
+    uiDrawNotices(app->notice_views, app->notice_count);  // Last: over everything, and its tap first.
 }
 
 void uiDrawScreenOff(void)

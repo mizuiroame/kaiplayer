@@ -65,7 +65,7 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
     // Targets are from the last frame. If an overlay opened or closed since,
     // they belong to the other layer: ignore the tap.
     if (r->kind == HIT_NOTICE) {  // Over every layer.
-        noticeDismiss(&app->notices, armTicksToNs(armGetSystemTick()));
+        noticeDismiss(&app->notices, (uint64_t)r->arg, armTicksToNs(armGetSystemTick()));
         return;
     }
     if (uiHitIsOverlayTarget(r->kind) != overlayOpen(app))
