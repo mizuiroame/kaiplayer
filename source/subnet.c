@@ -370,7 +370,7 @@ bool subScrobble(const char *location, bool submission)
     return doc != NULL;
 }
 
-char *subFetchLyrics(const char *location)
+char *subFetchLyrics(const char *location, const volatile bool *cancel)
 {
     SubTarget t;
     if (!subParseLocation(location, &t) || t.cover)
@@ -378,7 +378,7 @@ char *subFetchLyrics(const char *location)
     char params[SUB_ID_MAX + 8], why[160];
     snprintf(params, sizeof(params), "id=%s", t.id);
     const JsonValue *body;
-    JsonDoc *doc = subCall(NULL, "getLyricsBySongId", params, &body, NULL, why, sizeof(why));
+    JsonDoc *doc = subCall(NULL, "getLyricsBySongId", params, &body, cancel, why, sizeof(why));
     char *text = doc ? malloc(LYRICS_FILE_MAX) : NULL;
     if (text && !subLyricsText(body, text, LYRICS_FILE_MAX)) {
         free(text);  // None, or a server without OpenSubsonic's lyrics.

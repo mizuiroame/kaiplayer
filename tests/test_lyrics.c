@@ -82,6 +82,13 @@ static void testPlain(void)
     CHECK(lyricsScrollAt(&l, 500, 200) == 3 && lyricsScrollAt(&l, 50, 0) == 0);
     lyricsFree(&l);
 
+    // Old Mac line breaks ('\r' alone) split lines too; a section header in brackets stays.
+    const char *mac = "[ar:Someone]\r[Chorus: x2]\rla la\r\rmore";
+    CHECK(lyricsParse(mac, strlen(mac), &l) && !l.synced && l.count == 4);
+    if (l.count == 4)
+        CHECK(!strcmp(l.lines[0].text, "[Chorus: x2]") && !strcmp(l.lines[1].text, "la la") && !l.lines[2].text[0]);
+    lyricsFree(&l);
+
     const char *synced = "[00:01.00]a\nno time here\n";
     CHECK(lyricsParse(synced, strlen(synced), &l) && l.synced && l.count == 1);
     lyricsFree(&l);

@@ -22,6 +22,7 @@ static bool g_started;
 static char g_requested[UTIL_PATH_MAX];
 static bool g_pending;
 static Artwork *g_current;
+static volatile bool g_newer;  // A newer request came: a server's lyrics being asked for stop.
 
 static void freeArtwork(Artwork *a)
 {
@@ -33,18 +34,14 @@ static void freeArtwork(Artwork *a)
     free(a);
 }
 
-// The song's lyrics: a server's song asks the server; otherwise a .lrc next to
-// it (on the card or in the network folder) comes first, then the song's own
-// (tags: USLT, LYRICS), which may be synced LRC text too.
+// The song's lyrics: a .lrc next to it (on the card or in the network folder)
+// comes first, then the song's own (tags: USLT, LYRICS), which may be synced
+// LRC text too. A server's song asks the server later (serverLyrics), so its
+// cover doesn't wait for that.
 static void loadLyrics(Artwork *a, const char *path, const TrackTags *tags)
 {
-    if (subIsLocation(path)) {
-        char *text = subFetchLyrics(path);
-        if (text)
-            a->has_lyrics = lyricsParse(text, strlen(text), &a->lyrics);
-        free(text);
+    if (subIsLocation(path))
         return;
-    }
     char lrc[UTIL_PATH_MAX];
     if (lyricsPathFor(path, lrc, sizeof(lrc))) {
         size_t size = 0;
@@ -81,6 +78,29 @@ static Artwork *loadArtwork(const char *path)
     return a;
 }
 
+// A server's song's lyrics, asked for after its cover and tags are shown,
+// and put with them if it's still the song shown. Called and returns with
+// g_lock held; a newer request stops the asking.
+static void serverLyrics(const char *path)
+{
+    g_newer = false;
+    mutexUnlock(&g_lock);
+    char *text = subFetchLyrics(path, &g_newer);
+    Lyrics lyrics;
+    bool have = text && lyricsParse(text, strlen(text), &lyrics);
+    free(text);
+    mutexLock(&g_lock);
+    if (!have)
+        return;
+    if (g_pending || !g_current || strcmp(g_current->path, path) != 0) {
+        lyricsFree(&lyrics);
+        return;
+    }
+    lyricsFree(&g_current->lyrics);
+    g_current->lyrics = lyrics;
+    g_current->has_lyrics = true;
+}
+
 static void workerMain(void *arg)
 {
     (void)arg;
@@ -101,6 +121,8 @@ static void workerMain(void *arg)
         if (loaded && !g_pending) {
             freeArtwork(g_current);
             g_current = loaded;
+            if (subIsLocation(path))
+                serverLyrics(path);  // Shown first, then its lyrics from the server.
         } else {
             freeArtwork(loaded);  // A newer request replaced this one.
             if (!loaded && !g_pending)
@@ -150,6 +172,7 @@ void artworkRequest(const char *path)
     if (!same && g_running) {
         snprintf(g_requested, sizeof(g_requested), "%s", path);
         g_pending = true;
+        g_newer = true;
         condvarWakeOne(&g_wake);
     }
     mutexUnlock(&g_lock);

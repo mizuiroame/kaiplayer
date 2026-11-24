@@ -41,8 +41,9 @@ typedef void (*SubProgress)(size_t done, size_t total, void *user);
 bool subFetchLibrary(Catalog *c, SubStop stop, SubProgress progress, void *user, char *why, size_t why_size);
 
 // A song's lyrics from the server (getLyricsBySongId, OpenSubsonic), as LRC text
-// (subLyricsText) in a new buffer to free. NULL if it has none or doesn't offer them.
-char *subFetchLyrics(const char *location);
+// (subLyricsText) in a new buffer to free. NULL if it has none, doesn't offer
+// them, or *cancel became true while asking.
+char *subFetchLyrics(const char *location, const volatile bool *cancel);
 
 // Tells the server a song is playing (submission false: "now playing"), or was played (true).
 bool subScrobble(const char *location, bool submission);

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #define STAMPS_PER_LINE 32
 #define MS_MAX (100 * 60 * 60 * 1000)  // 100 hours: anything later is a broken time.
@@ -78,15 +79,29 @@ static int compareLines(const void *a, const void *b)
     return x->text < y->text ? -1 : x->text > y->text;  // The order they had in the file.
 }
 
-// A tag line ("[ar:Someone]"): a name of letters, ':', and a closing ']' at the end.
+// An LRC tag line ("[ar:Someone]"): one of LRC's own names, ':', and a ']' at
+// the end. "[Chorus: x2]" isn't one: it's part of the lyrics.
 static bool tagLine(const char *s, size_t len)
 {
+    static const char *const NAMES[] = {"ar", "al", "ti", "au", "by", "re", "ve", "la", "id", "length", "offset", "tool"};
     if (len < 3 || s[0] != '[' || s[len - 1] != ']')
         return false;
-    size_t i = 1;
-    while (i < len && isalpha((unsigned char)s[i]))
-        i++;
-    return i > 1 && i < len && s[i] == ':';
+    const char *colon = memchr(s, ':', len);
+    if (!colon)
+        return false;
+    size_t n = (size_t)(colon - s - 1);
+    for (size_t i = 0; i < sizeof(NAMES) / sizeof(NAMES[0]); i++)
+        if (strlen(NAMES[i]) == n && strncasecmp(s + 1, NAMES[i], n) == 0)
+            return true;
+    return false;
+}
+
+// The end of the line starting at p: its '\n', a lone '\r' (old Mac files), or end.
+static const char *lineEnd(const char *p, const char *end)
+{
+    while (p < end && *p != '\n' && *p != '\r')
+        p++;
+    return p;
 }
 
 // Plain lyrics' lines into buffer (as large as text) and lines: tags left
@@ -97,11 +112,8 @@ static int plainLines(const char *text, size_t size, char *buffer, LyricLine *li
     int count = 0, text_lines = 0;
     const char *p = text, *end = text + size;
     while (p < end && count < LYRICS_LINES_MAX) {
-        const char *nl = memchr(p, '\n', (size_t)(end - p));
-        const char *line_end = nl ? nl : end;
+        const char *line_end = lineEnd(p, end);
         size_t len = (size_t)(line_end - p);
-        if (len && p[len - 1] == '\r')
-            len--;
         if (!tagLine(p, len)) {
             const char *line_text = buffer + used;
             size_t n = cleanText(p, len, buffer + used);
@@ -110,7 +122,11 @@ static int plainLines(const char *text, size_t size, char *buffer, LyricLine *li
                 lines[count++] = (LyricLine){0, line_text};
             text_lines += n > 0;
         }
-        p = nl ? nl + 1 : end;
+        p = line_end;
+        if (p < end && *p == '\r' && p + 1 < end && p[1] == '\n')
+            p++;  // "\r\n" is one break.
+        if (p < end)
+            p++;
     }
     while (count > 0 && !lines[count - 1].text[0])
         count--;  // Nor after the last.
