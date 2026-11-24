@@ -1026,3 +1026,6 @@ You can change it any time in + > Settings.
 
 Playlists are kept in %s until you choose a music folder.
 音楽フォルダーを選ぶまで、プレイリストは%sに保存されます。
+
+No other source yet: add one in Settings.
+ほかのソースはまだありません。「設定」で追加してください。

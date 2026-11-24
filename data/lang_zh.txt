@@ -1026,3 +1026,6 @@ You can change it any time in + > Settings.
 
 Playlists are kept in %s until you choose a music folder.
 在选择音乐文件夹之前，播放列表保存在%s。
+
+No other source yet: add one in Settings.
+还没有其他来源：请在“设置”中添加。

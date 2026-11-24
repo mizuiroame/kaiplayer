@@ -191,6 +191,10 @@ void appHandleLibrary(App *app, uint64_t pressed)
         play(app, page, false);
     else if ((pressed & HidNpadButton_X) && appCanSwitchSource(app))
         appSwitchLibrarySource(app);  // The card's music, the network folder's, or the server's.
+    else if (pressed & HidNpadButton_X) {  // Nothing else to go to: Settings, to add one.
+        appOpenSettings(app);
+        appToast(app, T("No other source yet: add one in Settings."));
+    }
     if ((pressed & HidNpadButton_Y) && p->level != LIB_ROOT)
         play(app, page, true);
 }

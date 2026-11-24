@@ -1026,3 +1026,6 @@ You can change it any time in + > Settings.
 
 Playlists are kept in %s until you choose a music folder.
 음악 폴더를 선택할 때까지 재생 목록은 %s에 저장됩니다.
+
+No other source yet: add one in Settings.
+아직 다른 소스가 없습니다. 설정에서 추가하세요.

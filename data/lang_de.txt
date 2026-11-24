@@ -1026,3 +1026,6 @@ Du kannst das jederzeit unter + > Einstellungen ändern.
 
 Playlists are kept in %s until you choose a music folder.
 Playlists bleiben in %s, bis du einen Musikordner wählst.
+
+No other source yet: add one in Settings.
+Noch keine andere Quelle: Füge eine in den Einstellungen hinzu.

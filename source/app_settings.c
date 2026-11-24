@@ -41,6 +41,7 @@ void appOpenSettings(App *app)
 void appOpenSettingsAt(App *app, SettingsPage page)
 {
     app->settings_open = true;
+    app->settings_from_welcome = false;
     openPage(app, page);
 }
 
@@ -245,8 +246,8 @@ void appHandleSettings(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_Plus) {
         app->settings_open = false;
     } else if (pressed & HidNpadButton_B) {
-        if (app->settings_page == SETTINGS_PAGE_MAIN) {
-            app->settings_open = false;
+        if (app->settings_page == SETTINGS_PAGE_MAIN || app->settings_from_welcome) {
+            app->settings_open = false;  // From the welcome's page: back to the welcome.
         } else {  // Back to the main page, on the row of the page left.
             app->settings_cursor = settingsPageRow(app->settings_page);
             app->settings_page = SETTINGS_PAGE_MAIN;

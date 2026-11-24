@@ -1026,3 +1026,6 @@ Você pode mudar isso quando quiser em + > Configurações.
 
 Playlists are kept in %s until you choose a music folder.
 As playlists ficam em %s até você escolher uma pasta de música.
+
+No other source yet: add one in Settings.
+Ainda não há outra fonte: adicione uma em Configurações.

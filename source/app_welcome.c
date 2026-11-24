@@ -60,6 +60,7 @@ void appWelcomeChoose(App *app, WelcomeRow row)
         app->welcome_open = false;
         app->welcome_away = true;
         appOpenSettingsAt(app, row == WELCOME_NETWORK ? SETTINGS_PAGE_NETWORK : SETTINGS_PAGE_SERVER);
+        app->settings_from_welcome = true;
         break;
     case WELCOME_LATER:
         answered(app);

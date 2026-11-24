@@ -155,6 +155,7 @@ typedef struct {
     bool settings_open;
     SettingRow settings_cursor;
     SettingsPage settings_page;
+    bool settings_from_welcome; // Opened by the welcome on a page: B there goes back to it.
     bool eq_open;               // The equalizer editor (over Settings).
     bool about_open;            // About KaiPlayer (over Settings).
     bool picker_open;           // Choosing the music folder.
