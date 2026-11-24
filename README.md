@@ -43,8 +43,9 @@ with nothing else to install.
   [More](docs/playback.md#queue-shuffle-and-repeat)
 - **Now Playing as a cover, a turning record, a CD or a cassette**, and a
   picture of yours behind every view. [More](docs/settings.md#now-playing-style)
-- **Synced lyrics**: put a `.lrc` file next to the song, with the same name, and
-  Now Playing shows the line being sung. [More](docs/library.md#synced-lyrics)
+- **Lyrics**: synced ones show the line being sung, plain ones scroll with the
+  song. From a `.lrc` file next to the song, the song's own tags, or a Navidrome
+  server. [More](docs/library.md#lyrics)
 - **10-band equalizer, ReplayGain, sleep timer** and screen off while
   playing. [More](docs/settings.md)
 - **Drawn with the GPU** at the screen's resolution: 1080p handheld, up to 4K
@@ -74,8 +75,9 @@ full steps are in [Installing](docs/install.md).
    folder and copy `KaiPlayer.nro` into it, so it is
    `sdmc:/switch/kaiplayer/KaiPlayer.nro`.
 4. Copy your music to a folder on the card, for example `Music`.
-5. Open hbmenu and select **KaiPlayer**. The first time, open your music
-   folder with **A** and press **X** to use it.
+5. Open hbmenu and select **KaiPlayer**. The first time, it asks where your
+   music is: a folder on the SD card, a network folder, a Navidrome server, or
+   later.
 
 > **Use plain letters (A–Z, no accents) in file and folder names.** On
 > Switch 2, names with accents (`á é ñ ü`), typographic quotes (`’`) or

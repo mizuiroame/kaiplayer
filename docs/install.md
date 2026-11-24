@@ -61,12 +61,16 @@ let it replace the old one.
 ## 4. Play it
 
 1. Open hbmenu (launch a game while holding **R**) and select **KaiPlayer**.
-2. The first time, KaiPlayer asks where your music is: open your music
-   folder (for example `Music`) with **A** and press **X** to use it.
-   KaiPlayer only shows that folder and the ones inside it. You can change
-   it later in **+ → Settings → Library → Music folder**. Music can also
-   come from a [network folder](network-folder.md) or a
-   [Navidrome server](navidrome.md).
+2. The first time, KaiPlayer asks where your music is:
+   - **A folder on the SD card**: open it (for example `Music`) with **A** and
+     press **X** to use it. KaiPlayer only shows that folder and the ones inside it.
+   - **A network folder** or **a Navidrome server**: Settings opens on its page
+     ([network folder](network-folder.md), [Navidrome](navidrome.md)).
+   - **Later** (or **B**): set it up any time in **+ → Settings**.
+
+   Leaving the folder picker or Settings without setting anything up brings the
+   question back. You can change the music folder later in
+   **+ → Settings → Library → Music folder**.
 3. KaiPlayer reads your songs' tags in the background and builds your
    library. Open **Library → Artists** or **Albums**, pick one and press
    **X** to play it, or **A** on a song to start from there.

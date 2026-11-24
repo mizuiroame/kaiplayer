@@ -4,8 +4,9 @@
 
 KaiPlayer builds a library of your artists, albums and songs from the tags of
 the music in your music folder. It only shows that folder and the ones inside
-it. You choose the folder the first time you open KaiPlayer, and can change it
-in **+ → Settings → Library → Music folder**.
+it. You choose the folder the first time you open KaiPlayer (or later), and can
+change it in **+ → Settings → Library → Music folder**. Without one, the SD
+card's library is the whole card, and the pill says **SD card (whole card)**.
 
 The library can also come from a [network folder](network-folder.md) or a
 [Navidrome server](navidrome.md): with one set up, the pill next to
@@ -74,13 +75,22 @@ Song rows in Library, Playlists and Queue show the song's **title**,
 - The song that is playing has moving bars next to its name (still while
   paused).
 
-## Synced lyrics
+## Lyrics
 
-Put the song's lyrics next to it in a `.lrc` file with the same name
-(`Song.flac` and `Song.lrc`), on the card or in a network folder. Now Playing
-then shows the line being sung in the place of the album, with the lines
-before and after it, and a **Lyrics** button: tap it, or press **↑**, to show
-or hide them (KaiPlayer remembers your choice).
+Now Playing shows a song's lyrics in the place of the album, with a **Lyrics**
+button: tap it, or press **↑**, to show or hide them (KaiPlayer remembers your
+choice). They come from, in this order:
+
+1. A `.lrc` file next to the song with the same name (`Song.flac` and
+   `Song.lrc`), on the card or in a network folder.
+2. The song's own tags: `USLT` in MP3, `LYRICS` or `UNSYNCEDLYRICS` in FLAC and
+   Ogg, the lyrics of an M4A.
+3. For a song from a Navidrome server, the server (its `getLyricsBySongId`, which
+   gives the lyrics it found in the song or next to it).
+
+**Synced lyrics** have the time each line starts: the line being sung shows in
+the middle, the lines before and after it sliding up. **Plain lyrics**, without
+times, scroll evenly from the start of the song to its end.
 
 The `.lrc` format is plain text with the time each line starts:
 
@@ -90,9 +100,8 @@ The `.lrc` format is plain text with the time each line starts:
 [00:40.00][01:52.10]A chorus sung twice
 ```
 
-`[offset:+500]` shows every line half a second sooner. Lyrics without times
-(and lyrics inside the song's tags) aren't shown yet. Songs from a Navidrome
-server don't have a `.lrc` next to them, so they show no lyrics.
+`[offset:+500]` shows every line half a second sooner. A file with no times in
+it is shown as plain lyrics.
 
 ## Song details and album art
 

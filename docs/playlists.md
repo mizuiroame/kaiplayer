@@ -4,7 +4,9 @@
 
 Playlists are saved as standard `.m3u8` files in the **Playlists** folder
 inside your music folder (for example `sdmc:/Music/Playlists/`), so all your
-music and playlists live in one folder.
+music and playlists live in one folder. Without a music folder chosen, they go
+in KaiPlayer's own folder (`config/Playlists`, it says where), and move into the
+music folder's when you choose one; a name already there gets " (2)".
 
 - Paths are relative to that folder (for example `../Album/01 Song.flac`).
 - Other music players can read them, and you can also copy `.m3u` or `.m3u8`
