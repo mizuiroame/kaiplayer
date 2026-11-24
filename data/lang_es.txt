@@ -993,3 +993,6 @@ Ese puerto puede pedir una conexión segura: escribe https:// antes de la direcc
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 El certificado del servidor no es de confianza. Si el servidor tiene su propio certificado, desactiva Verificar certificado.
+
+Lyrics
+Letra

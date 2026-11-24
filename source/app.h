@@ -290,6 +290,8 @@ bool appHandleOverlay(App *app, uint64_t pressed);
 
 // Switches tabs, refreshing what the new tab shows.
 void appSetView(App *app, View view);
+// Now Playing: the lyrics shown or not (kept in the settings).
+void appToggleLyrics(App *app);
 // Selects the item at index of the current tab's list and, unless
 // select_only, opens it as A would.
 void appActivateRow(App *app, size_t index, bool select_only);

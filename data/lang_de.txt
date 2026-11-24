@@ -993,3 +993,6 @@ Dieser Port will vielleicht eine sichere Verbindung: Schreibe https:// vor die A
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 Dem Zertifikat des Servers wird nicht vertraut. Hat der Server ein eigenes Zertifikat, schalte Zertifikatsprüfung aus.
+
+Lyrics
+Songtext

@@ -63,6 +63,8 @@ void uiResolveTrack(const PlayerStatus *status, const Artwork *art, UiTrack *tra
         track->cover = &art->cover;
         track->thumb = &art->thumb;
     }
+    if (art->has_lyrics)
+        track->lyrics = &art->lyrics;
 }
 
 void uiDrawNoteIcon(int x, int y, int size, Color color)
@@ -179,6 +181,12 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
     else if (icon == PILL_ICON_CHECK) {
         gfxLine((float)cx + 3, mid, (float)cx + 8, mid + 5, 2.4f, fg);
         gfxLine((float)cx + 8, mid + 5, (float)cx + 17, mid - 5, 2.4f, fg);
+    } else if (icon == PILL_ICON_LYRICS) {  // A bubble with two lines of words.
+        float x0 = (float)cx + 1, top = mid - 8;
+        gfxFillRoundRect(cx + 1, (int)top, 18, 13, 3, fg);
+        gfxTriangle(x0 + 4, top + 12, x0 + 9, top + 12, x0 + 3, top + 17, fg);
+        gfxLine(x0 + 4, top + 4.5f, x0 + 14, top + 4.5f, 1.8f, COLOR_SURFACE_HI);
+        gfxLine(x0 + 4, top + 8.5f, x0 + 11, top + 8.5f, 1.8f, COLOR_SURFACE_HI);
     } else if (icon == PILL_ICON_PLAYLIST_ADD)
         uiDrawPlaylistAddIcon((float)cx + ICON_SIZE / 2.0f, mid, 0.9f, fg);
     else

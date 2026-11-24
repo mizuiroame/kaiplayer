@@ -993,3 +993,6 @@ That port may want a secure connection: write https:// before the address.
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 サーバーの証明書は信頼されていません。サーバーが独自の証明書を使っている場合は、「証明書の確認」をオフにしてください。
+
+Lyrics
+歌詞

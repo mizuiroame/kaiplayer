@@ -993,3 +993,6 @@ Ce port demande peut-être une connexion sécurisée : saisissez https:// avant 
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 Le certificat du serveur n'est pas reconnu. Si le serveur a son propre certificat, désactivez Vérif. certificat.
+
+Lyrics
+Paroles

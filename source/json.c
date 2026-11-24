@@ -22,10 +22,15 @@ typedef struct {
     JsonDoc *doc;
     char *at, *end;
     bool failed;
+    size_t values;  // Made so far (JSON_VALUES_MAX at most).
 } Parser;
 
 static JsonValue *newValue(Parser *p, JsonType type)
 {
+    if (++p->values > JSON_VALUES_MAX) {
+        p->failed = true;
+        return NULL;
+    }
     Chunk *c = p->doc->chunks;
     if (!c || c->used == CHUNK_VALUES) {
         c = malloc(sizeof(Chunk));
@@ -328,7 +333,7 @@ JsonDoc *jsonParse(const char *text, size_t size)
     }
     memcpy(doc->text, text, size);
     doc->text[size] = '\0';
-    Parser p = {doc, doc->text, doc->text + size, false};
+    Parser p = {doc, doc->text, doc->text + size, false, 0};
     doc->root = parseValue(&p, 0);
     skipSpace(&p);
     if (!doc->root || p.failed || p.at != p.end) {

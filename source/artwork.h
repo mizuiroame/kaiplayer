@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "cover.h"
+#include "lyrics.h"
 #include "tags.h"
 #include "util.h"
 
@@ -19,6 +20,8 @@ typedef struct {
     bool has_cover;
     CoverImage cover;
     CoverImage thumb;
+    bool has_lyrics;  // A .lrc next to the song (not a server's song).
+    Lyrics lyrics;
 } Artwork;
 
 bool artworkInit(void);

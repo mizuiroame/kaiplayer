@@ -58,6 +58,25 @@ static void testJson(void)
     for (int i = 0; i < JSON_DEPTH_MAX + 2; i++)
         deep[n++] = ']';
     CHECK(jsonParse(deep, n) == NULL);
+    // Too many values: refused. Exactly the most is fine.
+    size_t many_size = (size_t)JSON_VALUES_MAX * 2 + 2;
+    char *many = malloc(many_size + 1);
+    if (many) {
+        many[0] = '[';
+        for (size_t i = 0; i < JSON_VALUES_MAX - 1; i++) {  // The array is a value too.
+            many[1 + 2 * i] = '0';
+            many[2 + 2 * i] = ',';
+        }
+        many[2 * (JSON_VALUES_MAX - 1)] = ']';
+        doc = jsonParse(many, 2 * (JSON_VALUES_MAX - 1) + 1);
+        CHECK(doc != NULL);
+        jsonFree(doc);
+        many[2 * (JSON_VALUES_MAX - 1)] = ',';
+        many[2 * (JSON_VALUES_MAX - 1) + 1] = '0';
+        many[2 * (JSON_VALUES_MAX - 1) + 2] = ']';
+        CHECK(jsonParse(many, 2 * (JSON_VALUES_MAX - 1) + 3) == NULL);
+        free(many);
+    }
     static const char LONE[] = "\"\\ud800!\"";  // Half a surrogate pair: the replacement character.
     doc = jsonParse(LONE, strlen(LONE));
     CHECK(doc && !strcmp(jsonRoot(doc)->text, "\xEF\xBF\xBD!"));

@@ -358,6 +358,7 @@ int main(void)
     testUpdate();
     testUpdateRelease();
     testNotice();
+    testLyrics();
     testKinetic();
     testLang();
     testDav();

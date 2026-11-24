@@ -29,6 +29,9 @@ struct JsonValue {
 typedef struct JsonDoc JsonDoc;
 
 #define JSON_DEPTH_MAX 64
+// Values in one answer, at most (a page of 500 songs has about 20,000): a
+// server's 16 MB answer of tiny values can't take hundreds of MB.
+#define JSON_VALUES_MAX 200000
 
 // NULL if text isn't one JSON value (or memory runs out).
 JsonDoc *jsonParse(const char *text, size_t size);

@@ -41,6 +41,7 @@ typedef struct {
     char folder[UTIL_PATH_MAX];
     const CoverImage *cover;  // NULL when there is none. Valid while artwork is locked.
     const CoverImage *thumb;
+    const Lyrics *lyrics;     // NULL when the song has none. Valid while artwork is locked.
 } UiTrack;
 
 // Splits a path into a title (file name without extension) and the name of
@@ -68,6 +69,7 @@ typedef enum {
     PILL_ICON_REPEAT_ONE,  // The same, with a 1 inside.
     PILL_ICON_PLAYLIST_ADD,
     PILL_ICON_CHECK,
+    PILL_ICON_LYRICS,      // A speech bubble with lines.
 } PillIcon;
 
 // "Add to playlist": a list with a plus, in a box of about 20 * scale.

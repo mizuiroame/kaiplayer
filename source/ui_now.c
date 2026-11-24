@@ -9,6 +9,7 @@
 #include "ui_hit.h"
 #include "nowstyle.h"
 #include "ui_nowstyle.h"
+#include "util.h"
 
 #define COVER_SIZE ARTWORK_LARGE_SIZE
 #define COVER_X 96
@@ -20,6 +21,13 @@
 #define TRANSPORT_Y 476
 #define TOGGLES_Y 564
 #define BACKDROP_STRENGTH 110
+// Lyrics: the line sung in the middle, two before and two after, sliding up as it changes.
+#define LYRICS_TOP 206
+#define LYRICS_BOTTOM 362
+#define LYRICS_LINE_H 32
+#define LYRICS_MIDDLE 276
+#define LYRICS_SLIDE_MS 260
+#define LYRICS_AROUND 3
 #define SHADOW_OFFSET 10
 #define SHADOW_ALPHA 110
 // Around the cover's box: where a record (with its tonearm), CD or cassette
@@ -109,6 +117,48 @@ static void drawInfo(const PlayerStatus *status, const UiTrack *track, const cha
     }
 }
 
+static float easeOut(float t)
+{
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
+    return 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t);
+}
+
+// The title and artist on one line, then the lyrics around the line being sung.
+static void drawLyrics(const PlayerStatus *status, const UiTrack *track)
+{
+    fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? T("PAUSED") : T("NOW PLAYING"), COLOR_DIM);
+    char head[UTIL_PATH_MAX * 2 + 8];
+    snprintf(head, sizeof(head), "%s%s%s", track->title, track->artist[0] ? "  \xC2\xB7  " : "", track->artist);
+    fontDrawClipped(FONT_BOLD, 26, INFO_X, 170, INFO_W, head, COLOR_TEXT);
+
+    const Lyrics *l = track->lyrics;
+    int at = lyricsLineAt(l, status->position);
+    // How far the slide to this line has gone: the lines move up one place as a new one starts.
+    float slide = 1.0f;
+    if (at >= 0) {
+        double since = status->position * 1000.0 - l->lines[at].ms;
+        slide = easeOut((float)(since / LYRICS_SLIDE_MS));
+    }
+    float shift = (1.0f - slide) * LYRICS_LINE_H;
+    gfxSetClip(INFO_X, LYRICS_TOP, INFO_W, LYRICS_BOTTOM - LYRICS_TOP);
+    for (int i = at - LYRICS_AROUND; i <= at + LYRICS_AROUND; i++) {
+        if (i < 0 || i >= l->count)
+            continue;
+        const char *text = l->lines[i].text[0] ? l->lines[i].text : "\xE2\x80\xA2 \xE2\x80\xA2 \xE2\x80\xA2";  // A pause: three dots.
+        float y = LYRICS_MIDDLE + (i - at) * LYRICS_LINE_H + shift;
+        bool current = i == at;
+        int px = current ? 24 : 20;
+        Color color = current ? COLOR_TEXT : gfxMix(COLOR_DIM, COLOR_BG, i < at ? 110 : 40);
+        fontDrawClipped(current ? FONT_BOLD : FONT_REGULAR, px, INFO_X, (int)(y - px * 0.7f), INFO_W, text, color);
+    }
+    if (at < 0) {  // Before the first line: the first ones, waiting.
+        for (int i = 0; i < l->count && i < LYRICS_AROUND; i++)
+            fontDrawClipped(FONT_REGULAR, 20, INFO_X, (int)(LYRICS_MIDDLE + (i + 1) * LYRICS_LINE_H - 14), INFO_W,
+                            l->lines[i].text, gfxMix(COLOR_DIM, COLOR_BG, 40));
+    }
+    gfxResetClip();
+}
+
 static void drawProgress(const App *app, const PlayerStatus *status)
 {
     // While the finger drags the bar, show where it will jump to.
@@ -170,7 +220,7 @@ static void drawTransport(const PlayerStatus *status)
     drawHint(cx + 120, cy + 26, "R");
 }
 
-static void drawToggles(const PlayerStatus *status, bool add_focused)
+static void drawToggles(const PlayerStatus *status, const UiTrack *track, bool lyrics_on, bool add_focused)
 {
     int x = INFO_X;
     const char *shuffle = status->shuffle ? T("Shuffle on") : T("Shuffle off");
@@ -188,6 +238,12 @@ static void drawToggles(const PlayerStatus *status, bool add_focused)
         x += repeat_w + 12;
         uiDrawIconPill(x, TOGGLES_Y, "B", PILL_ICON_PLAYLIST_ADD, ADD, add_focused);
         uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth("B", ADD), 46, HIT_ADD, -1);
+        x += uiIconPillWidth("B", ADD) + 12;
+    }
+    if (track->lyrics) {  // Only for a song with lyrics.
+        const char *const LYRICS = T("Lyrics");
+        uiDrawIconPill(x, TOGGLES_Y, "^", PILL_ICON_LYRICS, LYRICS, lyrics_on);
+        uiHitAdd(x, TOGGLES_Y - 8, uiIconPillWidth("^", LYRICS), 46, HIT_LYRICS, 0);
     }
 }
 
@@ -203,9 +259,12 @@ void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack 
                          COLOR_SHADOW, SHADOW_ALPHA);
         uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
     }
-    drawInfo(status, track, app->playing_playlist);
+    if (track->lyrics && app->config.show_lyrics)
+        drawLyrics(status, track);
+    else
+        drawInfo(status, track, app->playing_playlist);
     drawProgress(app, status);
     drawFormat(status);
     drawTransport(status);
-    drawToggles(status, app->focus == FOCUS_ADD);
+    drawToggles(status, track, app->config.show_lyrics, app->focus == FOCUS_ADD);
 }

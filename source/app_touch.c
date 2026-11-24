@@ -91,6 +91,7 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
     case HIT_NEXT: playerNext(); break;
     case HIT_SHUFFLE: playerToggleShuffle(); break;
     case HIT_REPEAT: playerCycleRepeat(); break;
+    case HIT_LYRICS: appToggleLyrics(app); break;
     case HIT_BACKDROP:
         // Outside a menu or Settings closes it; the keyboard keeps its text.
         if (!app->keyboard_open)

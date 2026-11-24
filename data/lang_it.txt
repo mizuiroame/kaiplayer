@@ -993,3 +993,6 @@ Quella porta potrebbe richiedere una connessione sicura: scrivi https:// prima d
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 Il certificato del server non è attendibile. Se il server ha un certificato proprio, disattiva Verifica certificato.
+
+Lyrics
+Testo

@@ -509,11 +509,10 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     app->about_open = false;
     // A notice over Settings: the bubble at the top, over everything.
     noticePush(&app->notices, NOTICE_DONE, T("Saved: the card keeps the password's hash, not the password."), 1);
-    noticeShown(&app->notices, 1000000000ull, &app->notice_slide);
-    app->notice = noticeShown(&app->notices, 2000000000ull, &app->notice_slide);
+    app->notice_count = noticeVisible(&app->notices, 1 + NOTICE_SLIDE_NS, app->notice_views);
     render(dir, "notice_settings", app, status);
     app->notices = (Notices){0};
-    app->notice = NULL;
+    app->notice_count = 0;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->eq_open = true;
     app->config.eq_on = true;
@@ -732,6 +731,21 @@ int main(int argc, char **argv)
     app.view = VIEW_NOW_PLAYING;
     snprintf(app.playing_playlist, sizeof(app.playing_playlist), "%s", "Road Trip 2026");
     render(argv[1], "now_playing", &app, &status);
+    {  // Made-up synced lyrics, the line at 83 s just begun (it slides in).
+        static const char LRC[] = "[01:10.00]Under the harbor lights\n[01:16.00]we counted every boat\n"
+                                  "[01:22.80]and the night was long\n[01:29.00]\n[01:31.00]so we sang along\n"
+                                  "[01:37.00]to a song nobody wrote\n";
+        if (lyricsParse(LRC, sizeof(LRC) - 1, &g_art.lyrics)) {
+            g_art.has_lyrics = true;
+            app.config.show_lyrics = true;
+            render(argv[1], "now_playing_lyrics", &app, &status);
+            app.config.show_lyrics = false;
+            render(argv[1], "now_playing_lyrics_off", &app, &status);
+            app.config.show_lyrics = true;
+            lyricsFree(&g_art.lyrics);
+            g_art.has_lyrics = false;
+        }
+    }
     for (int i = 0; i < 6; i++)  // Turn the discs a little, so the previews show them turned.
         uiNowStyleSpin(true, 1000000000ull + i * 200000000ull);
     if (getenv("KAIPLAYER_BENCH")) {  // Milliseconds to draw a Now Playing frame, per style.

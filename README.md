@@ -43,6 +43,8 @@ with nothing else to install.
   [More](docs/playback.md#queue-shuffle-and-repeat)
 - **Now Playing as a cover, a turning record, a CD or a cassette**, and a
   picture of yours behind every view. [More](docs/settings.md#now-playing-style)
+- **Synced lyrics**: put a `.lrc` file next to the song, with the same name, and
+  Now Playing shows the line being sung. [More](docs/library.md#synced-lyrics)
 - **10-band equalizer, ReplayGain, sleep timer** and screen off while
   playing. [More](docs/settings.md)
 - **Drawn with the GPU** at the screen's resolution: 1080p handheld, up to 4K

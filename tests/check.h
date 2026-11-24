@@ -30,6 +30,7 @@ void testHome(void);
 void testUpdate(void);
 void testUpdateRelease(void);
 void testNotice(void);
+void testLyrics(void);
 void testDsd(void);
 void testStyles(void);
 void testAppRoot(void);

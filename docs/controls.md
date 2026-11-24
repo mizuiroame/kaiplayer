@@ -11,7 +11,7 @@ player bar.
 
 | Button    | Library                      | Playlists                    | Queue                      | Now Playing                |
 |-----------|------------------------------|------------------------------|----------------------------|----------------------------|
-| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | — |
+| ↑ ↓ / LS  | Move (↑ from the first row selects **‹ Back**) | Move (same)     | Move                       | ↑ shows or hides the lyrics (when the song has them) |
 | →  / ←    | → adds the row to a playlist | → removes the song (inside a playlist, after you confirm) | → adds the song to a playlist | Rewind / fast-forward 10 s |
 | A         | Open an artist, album or folder / play from song (or press the selected **‹ Back**) | Open playlist / play from song | Play this track | Pause / resume |
 | B         | Back (up a page or a folder) | Back to the playlist list    | Back to Library            | Add the song to a playlist |
@@ -27,6 +27,7 @@ In every tab:
 | −       | Pause / resume |
 | RS ← →  | Rewind / fast-forward 10 s |
 | RS ↑ ↓  | Previous / next page of a list |
+| RS      | In the menu, Settings and the keyboard, moves like the D-pad |
 | +       | Open the menu. Press **+** again to exit KaiPlayer: it asks you to confirm. |
 
 If a song has played for more than 3 seconds, **L** restarts it. Otherwise

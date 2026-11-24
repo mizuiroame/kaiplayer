@@ -84,6 +84,8 @@ static void applyLine(Config *c, char *line)
         c->now_style = clampInt(atoi(value), 0, NOW_STYLE_COUNT - 1);
     } else if (strcmp(key, "background") == 0 && strlen(value) < sizeof(c->background) && !strchr(value, '/')) {
         strcpy(c->background, value);
+    } else if (strcmp(key, "show_lyrics") == 0) {
+        c->show_lyrics = strcmp(value, "0") != 0;
     } else if (strcmp(key, "update_check") == 0) {
         c->update_check = strcmp(value, "0") != 0;
     } else if (strcmp(key, "update_checked") == 0) {
@@ -116,6 +118,7 @@ void configLoad(Config *c)
     c->accent = 0;
     c->screen_off_minutes = 0;
     c->now_style = NOW_STYLE_COVER;
+    c->show_lyrics = true;
     c->background[0] = '\0';
     c->background_blur = BLUR_MEDIUM;
     c->repeat = REPEAT_ALL;
@@ -168,6 +171,7 @@ bool configSave(const Config *c)
         fprintf(f, "background=%s\n", c->background);
     if (c->language[0] && !strpbrk(c->language, "\r\n"))
         fprintf(f, "language=%s\n", c->language);
+    fprintf(f, "show_lyrics=%d\n", c->show_lyrics ? 1 : 0);
     fprintf(f, "update_check=%d\nupdate_checked=%lld\n", c->update_check ? 1 : 0, c->update_checked);
     if (c->update_tag[0] && !strpbrk(c->update_tag, "\r\n"))
         fprintf(f, "update_tag=%s\n", c->update_tag);

@@ -993,3 +993,6 @@ That port may want a secure connection: write https:// before the address.
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 服务器证书不受信任。如果服务器使用自签名证书，请关闭“证书验证”。
+
+Lyrics
+歌词

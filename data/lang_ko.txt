@@ -993,3 +993,6 @@ That port may want a secure connection: write https:// before the address.
 
 The server's certificate isn't trusted. If the server has its own certificate, turn Certificate check off.
 서버의 인증서를 신뢰할 수 없습니다. 서버가 자체 인증서를 사용한다면 인증서 확인을 끄세요.
+
+Lyrics
+가사

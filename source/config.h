@@ -40,6 +40,7 @@ typedef struct {
     int accent;                  // Theme accent, see theme.h.
     int screen_off_minutes;      // Turn the screen off after this long idle while playing; 0 never.
     int now_style;               // NowStyle: cover, vinyl, CD or cassette.
+    bool show_lyrics;            // Now Playing shows a song's synced lyrics when it has them.
     char background[BACKGROUND_NAME_MAX];  // An image in <library>/Backgrounds; empty for the cover colors.
     int background_blur;         // BackgroundBlur.
     char language[64];           // Its id: "en", "es", or a file in config/lang; "" is English.

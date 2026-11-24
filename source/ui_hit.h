@@ -19,6 +19,7 @@ typedef enum {
     HIT_NEXT,
     HIT_SHUFFLE,
     HIT_REPEAT,
+    HIT_LYRICS,       // Now Playing: shows or hides the lyrics.
     HIT_BACKDROP,      // Outside an overlay.
     HIT_MENU_ITEM,     // arg: item index.
     HIT_KEY,           // arg: row * 16 + col on the keyboard.

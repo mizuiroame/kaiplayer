@@ -91,6 +91,13 @@ static void handleNowPlaying(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_Right) playerSeek(SEEK_STEP_SECONDS);
     if (pressed & HidNpadButton_X) playerToggleShuffle();
     if (pressed & HidNpadButton_Y) playerCycleRepeat();
+    if (pressed & HidNpadButton_Up) appToggleLyrics(app);  // When the song has lyrics: shown or not.
+}
+
+void appToggleLyrics(App *app)
+{
+    app->config.show_lyrics = !app->config.show_lyrics;
+    configSave(&app->config);
 }
 
 // Opening the queue shows the current track; Playlists reloads its list.

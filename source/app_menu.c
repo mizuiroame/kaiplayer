@@ -359,8 +359,31 @@ static void handleMenu(App *app, uint64_t pressed)
     }
 }
 
+// In a menu or panel the right stick moves like the d-pad: there it has
+// nothing else to do (seeking and paging lists are for the screens under them).
+static uint64_t rightStickAsDpad(uint64_t pressed)
+{
+    static const struct {
+        uint64_t stick, dpad;
+    } MAP[] = {
+        {HidNpadButton_StickRUp, HidNpadButton_Up},
+        {HidNpadButton_StickRDown, HidNpadButton_Down},
+        {HidNpadButton_StickRLeft, HidNpadButton_Left},
+        {HidNpadButton_StickRRight, HidNpadButton_Right},
+    };
+    for (size_t i = 0; i < sizeof(MAP) / sizeof(MAP[0]); i++) {
+        if (pressed & MAP[i].stick)
+            pressed = (pressed & ~MAP[i].stick) | MAP[i].dpad;
+    }
+    return pressed;
+}
+
 bool appHandleOverlay(App *app, uint64_t pressed)
 {
+    bool overlay = app->keyboard_open || app->menu.open || app->picker_open || app->eq_open || app->about_open ||
+                   app->settings_open;
+    if (overlay)
+        pressed = rightStickAsDpad(pressed);
     if (app->keyboard_open) {
         appHandleKeyboard(app, pressed);
         return true;

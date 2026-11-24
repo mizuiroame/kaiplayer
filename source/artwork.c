@@ -7,6 +7,7 @@
 #include <switch.h>
 
 #include "gfx.h"
+#include "kfile.h"
 #include "subsonic.h"
 
 #define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
@@ -27,7 +28,21 @@ static void freeArtwork(Artwork *a)
         return;
     coverFree(&a->cover);
     coverFree(&a->thumb);
+    lyricsFree(&a->lyrics);
     free(a);
+}
+
+// The song's .lrc, on the card or in the network folder (a server's songs have none).
+static void loadLyrics(Artwork *a, const char *path)
+{
+    char lrc[UTIL_PATH_MAX];
+    if (subIsLocation(path) || !lyricsPathFor(path, lrc, sizeof(lrc)))
+        return;
+    size_t size = 0;
+    uint8_t *text = kfileReadAll(lrc, LYRICS_FILE_MAX, &size, NULL);
+    if (text)
+        a->has_lyrics = lyricsParse((const char *)text, size, &a->lyrics);
+    free(text);
 }
 
 static Artwork *loadArtwork(const char *path)
@@ -49,6 +64,7 @@ static Artwork *loadArtwork(const char *path)
     a->has_cover = coverDecode(tags.picture, tags.picture_size, &a->cover, large, &a->thumb, small) ||
                    coverLoadFromFolder(path, &a->cover, large, &a->thumb, small);
     tagsFree(&tags);
+    loadLyrics(a, path);
     return a;
 }
 
