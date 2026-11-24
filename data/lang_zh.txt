@@ -1029,3 +1029,12 @@ Playlists are kept in %s until you choose a music folder.
 
 No other source yet: add one in Settings.
 还没有其他来源：请在“设置”中添加。
+
+SD card (whole card)
+SD卡（整张）
+
+Library: the whole SD card (no music folder chosen)
+媒体库：整张SD卡（未选择音乐文件夹）
+
+Go to the whole SD card
+前往整张SD卡

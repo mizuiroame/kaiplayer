@@ -1029,3 +1029,12 @@ Playlists are kept in %s until you choose a music folder.
 
 No other source yet: add one in Settings.
 아직 다른 소스가 없습니다. 설정에서 추가하세요.
+
+SD card (whole card)
+SD 카드 (전체)
+
+Library: the whole SD card (no music folder chosen)
+라이브러리: SD 카드 전체 (음악 폴더 선택 안 함)
+
+Go to the whole SD card
+SD 카드 전체로 이동

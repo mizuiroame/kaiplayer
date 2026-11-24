@@ -256,9 +256,11 @@ static int drawSourcePill(const App *app, int x)
 {
     LibrarySource source = appLibrarySource(app);
     bool key = xSwitchesSource(app);
+    // Without a music folder chosen, the card's library is all of it: said so, apart from a chosen one.
     const char *label = source == LIBRARY_NETWORK  ? T("Network folder")
                         : source == LIBRARY_SERVER ? T("Navidrome")
-                                                   : T("SD card");
+                        : app->config.library[0]   ? T("SD card")
+                                                   : T("SD card (whole card)");
     Color dot = source == LIBRARY_NETWORK ? COLOR_NETWORK : source == LIBRARY_SERVER ? COLOR_SERVER : COLOR_ACCENT;
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
     int w = 12 + key_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;

@@ -1029,3 +1029,12 @@ Le playlist restano in %s finché non scegli una cartella musica.
 
 No other source yet: add one in Settings.
 Nessun'altra fonte per ora: aggiungine una in Impostazioni.
+
+SD card (whole card)
+Scheda SD (intera)
+
+Library: the whole SD card (no music folder chosen)
+Libreria: tutta la scheda SD (nessuna cartella musica scelta)
+
+Go to the whole SD card
+Vai a tutta la scheda SD

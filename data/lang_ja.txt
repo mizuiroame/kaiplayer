@@ -1029,3 +1029,12 @@ Playlists are kept in %s until you choose a music folder.
 
 No other source yet: add one in Settings.
 ほかのソースはまだありません。「設定」で追加してください。
+
+SD card (whole card)
+SDカード（全体）
+
+Library: the whole SD card (no music folder chosen)
+ライブラリー: SDカード全体（音楽フォルダー未選択）
+
+Go to the whole SD card
+SDカード全体へ

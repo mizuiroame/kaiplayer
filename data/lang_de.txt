@@ -1029,3 +1029,12 @@ Playlists bleiben in %s, bis du einen Musikordner wählst.
 
 No other source yet: add one in Settings.
 Noch keine andere Quelle: Füge eine in den Einstellungen hinzu.
+
+SD card (whole card)
+SD-Karte (ganz)
+
+Library: the whole SD card (no music folder chosen)
+Bibliothek: die ganze SD-Karte (kein Musikordner gewählt)
+
+Go to the whole SD card
+Zur ganzen SD-Karte

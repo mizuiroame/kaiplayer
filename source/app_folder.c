@@ -110,7 +110,8 @@ void appSetLibrarySource(App *app, LibrarySource source)
         catalogScanStart(appMusicRoot(app));
     appToast(app, source == LIBRARY_NETWORK  ? T("Library: the network folder")
                   : source == LIBRARY_SERVER ? T("Library: Navidrome")
-                                             : T("Library: the SD card"));
+                  : app->config.library[0]   ? T("Library: the SD card")
+                                             : T("Library: the whole SD card (no music folder chosen)"));
 }
 
 void appLibraryRemoteChanged(App *app, LibrarySource source, bool moved)
