@@ -60,6 +60,8 @@ static void applyLine(Config *c, char *line)
         c->source = !strcmp(value, "network") ? LIBRARY_NETWORK : !strcmp(value, "server") ? LIBRARY_SERVER : LIBRARY_CARD;
     } else if (strcmp(key, "playlists_moved") == 0) {
         c->playlists_moved = strcmp(value, "1") == 0;
+    } else if (strcmp(key, "welcomed") == 0) {
+        c->welcomed = strcmp(value, "1") == 0;
     } else if (strcmp(key, "shuffle") == 0) {
         c->shuffle = strcmp(value, "1") == 0;
     } else if (strcmp(key, "resume_mode") == 0) {
@@ -108,6 +110,7 @@ void configLoad(Config *c)
     strcpy(c->folder, DEFAULT_FOLDER);
     c->library[0] = '\0';
     c->source = LIBRARY_CARD;
+    c->welcomed = false;
     c->shuffle = false;
     c->resume = RESUME_PLAYING;
     c->clock_24h = true;
@@ -171,7 +174,7 @@ bool configSave(const Config *c)
         fprintf(f, "background=%s\n", c->background);
     if (c->language[0] && !strpbrk(c->language, "\r\n"))
         fprintf(f, "language=%s\n", c->language);
-    fprintf(f, "show_lyrics=%d\n", c->show_lyrics ? 1 : 0);
+    fprintf(f, "show_lyrics=%d\nwelcomed=%d\n", c->show_lyrics ? 1 : 0, c->welcomed ? 1 : 0);
     fprintf(f, "update_check=%d\nupdate_checked=%lld\n", c->update_check ? 1 : 0, c->update_checked);
     if (c->update_tag[0] && !strpbrk(c->update_tag, "\r\n"))
         fprintf(f, "update_tag=%s\n", c->update_tag);

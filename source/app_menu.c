@@ -381,7 +381,7 @@ static uint64_t rightStickAsDpad(uint64_t pressed)
 bool appHandleOverlay(App *app, uint64_t pressed)
 {
     bool overlay = app->keyboard_open || app->menu.open || app->picker_open || app->eq_open || app->about_open ||
-                   app->settings_open;
+                   app->settings_open || app->welcome_open;
     if (overlay)
         pressed = rightStickAsDpad(pressed);
     if (app->keyboard_open) {
@@ -394,6 +394,10 @@ bool appHandleOverlay(App *app, uint64_t pressed)
     }
     if (app->picker_open) {
         appHandleFolderPicker(app, pressed);
+        return true;
+    }
+    if (app->welcome_open) {
+        appHandleWelcome(app, pressed);
         return true;
     }
     if (app->eq_open) {

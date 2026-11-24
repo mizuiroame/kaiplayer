@@ -6,6 +6,7 @@
 #include "app.h"
 #include "app_buttons.h"
 #include "catalog_scan.h"
+#include "config.h"
 #include "dav.h"
 #include "lang.h"
 #include "playlist.h"
@@ -155,7 +156,7 @@ size_t appPickerFolderCount(const App *app)
     return n;
 }
 
-void appOpenFolderPicker(App *app, bool first_run)
+void appOpenFolderPicker(App *app)
 {
     const char *start = app->config.library[0] ? app->config.library : DEVICE_ROOT;
     if (!browserOpen(&app->picker, start) && !browserOpen(&app->picker, DEVICE_ROOT)) {
@@ -163,53 +164,32 @@ void appOpenFolderPicker(App *app, bool first_run)
         return;
     }
     app->picker_open = true;
-    app->picker_first_run = first_run;
 }
 
-// Copies the playlists of sdmc:/playlists into the current folder,
-// rewriting their relative paths for the new place. The old files stay.
-static void copyOldPlaylists(void)
+void appAppPlaylistFolder(char *out, size_t size)
 {
-    char target[UTIL_PATH_MAX];
-    snprintf(target, sizeof(target), "%s", playlistRoot());
-    playlistSetRoot(PLAYLIST_ROOT);
-    PlaylistIndex old;
-    bool have = playlistIndexLoad(&old);
-    TrackList *lists = have && old.count ? calloc(old.count, sizeof(TrackList)) : NULL;
-    for (size_t i = 0; lists && i < old.count; i++) {
-        char path[UTIL_PATH_MAX];
-        if (playlistPathFor(old.names[i], path, sizeof(path)))
-            playlistLoad(path, &lists[i]);
-    }
-    playlistSetRoot(target);
-    for (size_t i = 0; lists && i < old.count; i++) {
-        char path[UTIL_PATH_MAX];
-        if (!playlistExists(old.names[i]) && playlistCreate(old.names[i]) &&
-            playlistPathFor(old.names[i], path, sizeof(path)))
-            playlistSave(path, &lists[i]);
-        trackListFree(&lists[i]);
-    }
-    free(lists);
-    if (have)
-        playlistIndexFree(&old);
+    if (!utilJoinPath(out, size, configFolder(), PLAYLIST_FOLDER_NAME))
+        snprintf(out, size, "%s", PLAYLIST_ROOT);
 }
 
 void appUsePlaylistFolder(App *app)
 {
     backgroundLoad(app->config.library, app->config.background, app->config.background_blur);  // Its folder is in the music folder.
-    if (!app->config.library[0]) {
-        playlistSetRoot(PLAYLIST_ROOT);
-        return;
-    }
+    char own[UTIL_PATH_MAX];
+    appAppPlaylistFolder(own, sizeof(own));
     char folder[UTIL_PATH_MAX];
-    if (!utilJoinPath(folder, sizeof(folder), app->config.library, PLAYLIST_FOLDER_NAME))
+    if (!app->config.library[0])
+        snprintf(folder, sizeof(folder), "%s", own);  // No music folder: KaiPlayer's own, until one is chosen.
+    else if (!utilJoinPath(folder, sizeof(folder), app->config.library, PLAYLIST_FOLDER_NAME))
         return;
     playlistSetRoot(folder);
-    if (!app->config.playlists_moved) {
-        copyOldPlaylists();
+    if (!app->config.playlists_moved) {  // Once, wherever they go now: the oldest place, sdmc:/playlists.
+        playlistCopyAll(PLAYLIST_ROOT, false);
         app->config.playlists_moved = true;
         configSave(&app->config);
     }
+    if (app->config.library[0])
+        playlistCopyAll(own, true);  // Those made before a music folder was chosen move into it.
     appPlaylistsRefresh(app);
 }
 
@@ -257,8 +237,8 @@ void appHandleFolderPicker(App *app, uint64_t pressed)
             appNotify(app, NOTICE_ERROR, T("Could not open the folder."));
     }
     if (pressed & HidNpadButton_B) {
-        if (!browserGoUp(b) && !app->picker_first_run)
-            app->picker_open = false;  // At the top: close (the first time, a folder is needed).
+        if (!browserGoUp(b))
+            app->picker_open = false;  // At the top: close (from the welcome, back to it).
     }
     if (pressed & HidNpadButton_X)
         appPickerChoose(app);

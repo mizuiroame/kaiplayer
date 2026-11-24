@@ -78,9 +78,6 @@ language = Deutsch
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] Öffnen  [B] Zurück  [>] Hinzu  [X] Abspielen  [Y] Zufall  [RS] Seite/Spulen  [L][R] Titel  [+] Menü
 
-[A] open  [B] up  [X] use this folder
-[A] Öffnen  [B] Nach oben  [X] Ordner wählen
-
 [A] open  [B] up or close  [X] use this folder
 [A] Öffnen  [B] Nach oben/Schließen  [X] Ordner wählen
 
@@ -996,3 +993,36 @@ Dem Zertifikat des Servers wird nicht vertraut. Hat der Server ein eigenes Zerti
 
 Lyrics
 Songtext
+
+[^v] choose  [A] open  [B] later
+[^v] Wählen  [A] Öffnen  [B] Später
+
+A folder on the SD card
+Ein Ordner auf der SD-Karte
+
+A network folder
+Ein Netzwerkordner
+
+A Navidrome server
+Ein Navidrome-Server
+
+Later
+Später
+
+Choose the folder that has your music.
+Wähle den Ordner mit deiner Musik.
+
+SMB or WebDAV, on a PC or a NAS.
+SMB oder WebDAV, auf einem PC oder NAS.
+
+Sign in with its address, user and password.
+Melde dich mit Adresse, Benutzer und Passwort an.
+
+Start without music; set it up in + > Settings.
+Ohne Musik starten; richte sie unter + > Einstellungen ein.
+
+You can change it any time in + > Settings.
+Du kannst das jederzeit unter + > Einstellungen ändern.
+
+Playlists are kept in %s until you choose a music folder.
+Playlists bleiben in %s, bis du einen Musikordner wählst.

@@ -78,9 +78,6 @@ Salió la %s: A vuelve a buscar
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] abrir  [B] atrás  [>] agregar  [X] reproducir  [Y] mezclar  [RS] página / avanzar  [L][R] pista  [+] menú
 
-[A] open  [B] up  [X] use this folder
-[A] abrir  [B] subir  [X] usar esta carpeta
-
 [A] open  [B] up or close  [X] use this folder
 [A] abrir  [B] subir o cerrar  [X] usar esta carpeta
 
@@ -996,3 +993,36 @@ El certificado del servidor no es de confianza. Si el servidor tiene su propio c
 
 Lyrics
 Letra
+
+[^v] choose  [A] open  [B] later
+[^v] elegir  [A] abrir  [B] luego
+
+A folder on the SD card
+Una carpeta de la tarjeta SD
+
+A network folder
+Una carpeta de red
+
+A Navidrome server
+Un servidor Navidrome
+
+Later
+Luego
+
+Choose the folder that has your music.
+Elige la carpeta que tiene tu música.
+
+SMB or WebDAV, on a PC or a NAS.
+SMB o WebDAV, en una PC o un NAS.
+
+Sign in with its address, user and password.
+Inicia sesión con su dirección, usuario y contraseña.
+
+Start without music; set it up in + > Settings.
+Empieza sin música; configúrala en + > Configuración.
+
+You can change it any time in + > Settings.
+Puedes cambiarlo cuando quieras en + > Configuración.
+
+Playlists are kept in %s until you choose a music folder.
+Las playlists se guardan en %s hasta que elijas una carpeta de música.

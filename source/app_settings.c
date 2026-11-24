@@ -35,8 +35,13 @@ static void openPage(App *app, SettingsPage page)
 
 void appOpenSettings(App *app)
 {
+    appOpenSettingsAt(app, SETTINGS_PAGE_MAIN);
+}
+
+void appOpenSettingsAt(App *app, SettingsPage page)
+{
     app->settings_open = true;
-    openPage(app, SETTINGS_PAGE_MAIN);
+    openPage(app, page);
 }
 
 static void setSleep(App *app, int minutes)
@@ -81,7 +86,7 @@ void appActivateSetting(App *app, SettingRow row)
     } else if (row == SETTING_UPDATE_NOW) {
         appUpdatesActivate(app);
     } else if (row == SETTING_LIBRARY) {
-        appOpenFolderPicker(app, false);
+        appOpenFolderPicker(app);
     } else if (appNetworkActivate(app, row) || appServerActivate(app, row)) {
         return;  // The network folder's page, or the server's.
     } else if (row == SETTING_RESCAN) {

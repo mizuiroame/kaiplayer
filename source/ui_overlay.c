@@ -400,7 +400,7 @@ static void drawFolderPicker(const App *app)
     dimScreen();
     panel(x, y, PICKER_W, h);
     fontDraw(FONT_BOLD, 24, x + PANEL_PAD, y + 22,
-             app->picker_first_run ? T("Welcome! Where is your music?") : T("Choose your music folder"), COLOR_TEXT);
+             T("Choose your music folder"), COLOR_TEXT);
     fontDrawClipped(FONT_REGULAR, 17, x + PANEL_PAD, y + 62, PICKER_W - 2 * PANEL_PAD,
                     T("KaiPlayer only shows this folder and the ones inside it."), COLOR_DIM);
     fontDrawClipped(FONT_BOLD, 18, x + PANEL_PAD, y + 100, PICKER_W - 2 * PANEL_PAD, b->path, COLOR_ACCENT);
@@ -424,6 +424,45 @@ static void drawFolderPicker(const App *app)
     int use_w = uiIconPillWidth("X", USE), use_x = x + PICKER_W - PANEL_PAD - use_w, use_y = y + h - 54;
     uiDrawIconPill(use_x, use_y, "X", PILL_ICON_CHECK, USE, true);
     uiHitAdd(use_x, use_y - 8, use_w, 46, HIT_PICKER_USE, 0);
+}
+
+#define WELCOME_W 760
+#define WELCOME_ROW_H 76
+
+// The first run's question. A tap beside it does nothing (app_touch.c): a stray touch shouldn't answer it.
+static void drawWelcome(const App *app)
+{
+    static const char *const TITLES[WELCOME_ROW_COUNT] = {
+        N_("A folder on the SD card"),
+        N_("A network folder"),
+        N_("A Navidrome server"),
+        N_("Later"),
+    };
+    static const char *const NOTES[WELCOME_ROW_COUNT] = {
+        N_("Choose the folder that has your music."),
+        N_("SMB or WebDAV, on a PC or a NAS."),
+        N_("Sign in with its address, user and password."),
+        N_("Start without music; set it up in + > Settings."),
+    };
+    int h = 116 + WELCOME_ROW_COUNT * WELCOME_ROW_H + 18;
+    int x = (GFX_WIDTH - WELCOME_W) / 2, y = (GFX_HEIGHT - h) / 2;
+    dimScreen();
+    panel(x, y, WELCOME_W, h);
+    fontDraw(FONT_BOLD, 26, x + PANEL_PAD, y + 24, T("Welcome! Where is your music?"), COLOR_TEXT);
+    fontDrawClipped(FONT_REGULAR, 17, x + PANEL_PAD, y + 66, WELCOME_W - 2 * PANEL_PAD,
+                    T("You can change it any time in + > Settings."), COLOR_DIM);
+    int list_y = y + 116;
+    for (int i = 0; i < WELCOME_ROW_COUNT; i++) {
+        int row_y = list_y + i * WELCOME_ROW_H;
+        bool on = i == app->welcome_cursor;
+        if (on)
+            drawRowHighlight(x + 16, row_y, WELCOME_W - 32, WELCOME_ROW_H - 6);
+        fontDrawClipped(on ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD + 8, row_y + 10,
+                        WELCOME_W - 2 * PANEL_PAD - 8, T(TITLES[i]), i == WELCOME_LATER ? COLOR_DIM : COLOR_TEXT);
+        fontDrawClipped(FONT_REGULAR, 16, x + PANEL_PAD + 8, row_y + 40, WELCOME_W - 2 * PANEL_PAD - 8, T(NOTES[i]),
+                        COLOR_DIM);
+        uiHitAdd(x + 16, row_y, WELCOME_W - 32, WELCOME_ROW_H - 6, HIT_WELCOME_ROW, i);
+    }
 }
 
 #define ABOUT_W 700
@@ -474,7 +513,7 @@ static void drawAbout(void)
 bool uiOverlayOpen(const App *app)
 {
     return app->keyboard_open || app->menu.open || app->picker_open || app->eq_open || app->about_open ||
-           app->settings_open;
+           app->settings_open || app->welcome_open;
 }
 
 void uiDrawOverlay(const App *app, uint64_t now_ns)
@@ -485,6 +524,8 @@ void uiDrawOverlay(const App *app, uint64_t now_ns)
         drawMenu(&app->menu);
     else if (app->picker_open)
         drawFolderPicker(app);
+    else if (app->welcome_open)
+        drawWelcome(app);
     else if (app->eq_open)
         drawEqualizer(app);
     else if (app->about_open)

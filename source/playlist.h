@@ -62,3 +62,11 @@ bool playlistDelete(const char *name);
 // Appends tracks to a playlist. Returns how many were added; tracks already
 // in the playlist are skipped. -1 on error.
 int playlistAddTracks(const char *name, const TrackList *tracks);
+
+// Copies the playlists of from into the current folder, rewriting their
+// relative paths for the new place. With move, one whose name is already here
+// comes as "Name (2)", those copied are removed from from, and from too if
+// that leaves it empty; one that can't be read or saved stays where it is, so
+// nothing is lost. Without move a name already here is skipped and the old
+// files stay. Returns how many were copied.
+int playlistCopyAll(const char *from, bool move);

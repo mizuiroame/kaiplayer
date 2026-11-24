@@ -78,9 +78,6 @@ language = 한국어
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] 열기  [B] 뒤로  [>] 추가  [X] 재생  [Y] 셔플  [RS] 페이지 / 탐색  [L][R] 트랙  [+] 메뉴
 
-[A] open  [B] up  [X] use this folder
-[A] 열기  [B] 상위 폴더  [X] 이 폴더 사용
-
 [A] open  [B] up or close  [X] use this folder
 [A] 열기  [B] 상위 폴더 / 닫기  [X] 이 폴더 사용
 
@@ -996,3 +993,36 @@ The server's certificate isn't trusted. If the server has its own certificate, t
 
 Lyrics
 가사
+
+[^v] choose  [A] open  [B] later
+[^v] 선택  [A] 열기  [B] 나중에
+
+A folder on the SD card
+SD 카드의 폴더
+
+A network folder
+네트워크 폴더
+
+A Navidrome server
+Navidrome 서버
+
+Later
+나중에
+
+Choose the folder that has your music.
+음악이 있는 폴더를 선택하세요.
+
+SMB or WebDAV, on a PC or a NAS.
+PC나 NAS의 SMB 또는 WebDAV.
+
+Sign in with its address, user and password.
+주소, 사용자 이름, 비밀번호로 로그인하세요.
+
+Start without music; set it up in + > Settings.
+음악 없이 시작합니다. + > 설정에서 나중에 설정하세요.
+
+You can change it any time in + > Settings.
++ > 설정에서 언제든지 바꿀 수 있습니다.
+
+Playlists are kept in %s until you choose a music folder.
+음악 폴더를 선택할 때까지 재생 목록은 %s에 저장됩니다.

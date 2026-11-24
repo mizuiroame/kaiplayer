@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <strings.h>
 #include <sys/stat.h>
 
@@ -375,4 +376,73 @@ int playlistAddTracks(const char *name, const TrackList *tracks)
     ok = ok && playlistSave(path, &list);
     trackListFree(&list);
     return ok ? added : -1;
+}
+
+// The name a playlist copied here takes: its own, or when moving and that is
+// taken, "Name (2)" and so on, so the moved one doesn't stay behind unseen.
+static bool freeName(const char *name, bool move, char *out, size_t size)
+{
+    snprintf(out, size, "%s", name);
+    if (!playlistExists(out))
+        return true;
+    for (int n = 2; move && n < 100; n++) {
+        snprintf(out, size, "%s (%d)", name, n);
+        if (playlistNameValid(out) && !playlistExists(out))
+            return true;
+    }
+    return false;
+}
+
+// A new playlist with list's songs; on a failed save the empty file made goes too.
+static bool copyInto(const char *name, const TrackList *list)
+{
+    char path[UTIL_PATH_MAX];
+    if (!playlistCreate(name))
+        return false;
+    if (playlistPathFor(name, path, sizeof(path)) && playlistSave(path, list))
+        return true;
+    playlistDelete(name);
+    return false;
+}
+
+int playlistCopyAll(const char *from, bool move)
+{
+    char target[UTIL_PATH_MAX];
+    snprintf(target, sizeof(target), "%s", playlistRoot());
+    if (strcmp(from, target) == 0)
+        return 0;  // Already here.
+    playlistSetRoot(from);
+    PlaylistIndex old;
+    bool have = playlistIndexLoad(&old);
+    int count = 0;
+    TrackList *lists = have && old.count ? calloc(old.count, sizeof(TrackList)) : NULL;
+    bool *loaded = lists ? calloc(old.count, sizeof(bool)) : NULL;
+    bool *copied = lists ? calloc(old.count, sizeof(bool)) : NULL;
+    for (size_t i = 0; lists && loaded && copied && i < old.count; i++) {
+        char path[UTIL_PATH_MAX];
+        loaded[i] = playlistPathFor(old.names[i], path, sizeof(path)) && playlistLoad(path, &lists[i]);
+    }
+    playlistSetRoot(target);
+    for (size_t i = 0; lists && loaded && copied && i < old.count; i++) {
+        char name[PLAYLIST_NAME_MAX + 8];
+        if (loaded[i] && freeName(old.names[i], move, name, sizeof(name)))
+            copied[i] = copyInto(name, &lists[i]);
+        count += copied[i];
+    }
+    if (move) {
+        playlistSetRoot(from);
+        for (size_t i = 0; lists && loaded && copied && i < old.count; i++)
+            if (copied[i])
+                playlistDelete(old.names[i]);
+        rmdir(from);  // Only goes when nothing is left in it.
+        playlistSetRoot(target);
+    }
+    for (size_t i = 0; lists && i < old.count; i++)
+        trackListFree(&lists[i]);
+    free(lists);
+    free(loaded);
+    free(copied);
+    if (have)
+        playlistIndexFree(&old);
+    return count;
 }

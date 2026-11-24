@@ -158,7 +158,9 @@ typedef struct {
     bool eq_open;               // The equalizer editor (over Settings).
     bool about_open;            // About KaiPlayer (over Settings).
     bool picker_open;           // Choosing the music folder.
-    bool picker_first_run;      // The welcome version: no folder chosen yet.
+    bool welcome_open;          // The first run's "Where is your music?".
+    int welcome_cursor;         // Its row (WelcomeRow).
+    bool welcome_away;          // A row of it opened the picker or Settings: back to it if nothing was set.
     Browser picker;             // The folders shown in the picker.
     int eq_band;                // Selected band in the editor.
     bool screen_off;            // Screen off while music plays.
@@ -202,7 +204,27 @@ uint64_t appFocusFilter(App *app, uint64_t pressed, size_t cursor, size_t count,
 // The music folder (app_folder.c): Browse stays inside it ("sdmc:/" until
 // one is chosen).
 const char *appMusicRoot(const App *app);
-void appOpenFolderPicker(App *app, bool first_run);
+void appOpenFolderPicker(App *app);
+
+// app_welcome.c: the first run's welcome, which asks where the music is: a
+// folder of the SD card, the network folder, the Navidrome server, or later.
+typedef enum {
+    WELCOME_CARD,
+    WELCOME_NETWORK,
+    WELCOME_SERVER,
+    WELCOME_LATER,
+    WELCOME_ROW_COUNT,
+} WelcomeRow;
+// True when nothing says where the music is yet and the welcome wasn't answered.
+bool appWelcomeNeeded(const App *app);
+void appOpenWelcome(App *app);
+void appHandleWelcome(App *app, uint64_t pressed);
+void appWelcomeChoose(App *app, WelcomeRow row);
+// Once per frame: back to the welcome when what a row opened was left
+// without a source set (a server that failed to sign in, a picker closed).
+void appWelcomeTick(App *app);
+// Where playlists go without a music folder: KaiPlayer's own folder.
+void appAppPlaylistFolder(char *out, size_t size);
 void appHandleFolderPicker(App *app, uint64_t pressed);
 // Picker rows are folders only: how many of the listing's entries those are.
 size_t appPickerFolderCount(const App *app);
@@ -298,6 +320,8 @@ void appActivateRow(App *app, size_t index, bool select_only);
 
 // Settings page and sleep timer (app_settings.c).
 void appOpenSettings(App *app);
+// Settings, on one of its pages (B goes back to the main page from it).
+void appOpenSettingsAt(App *app, SettingsPage page);
 void appHandleSettings(App *app, uint64_t pressed);
 // Finds the languages (English, those in the app, config/lang's files) and uses the one chosen.
 void appStartLanguages(App *app);

@@ -31,6 +31,7 @@ typedef enum {
     HIT_EQ_TOGGLE,     // Equalizer on/off.
     HIT_PICKER_ROW,    // A folder in the music folder picker. arg: index.
     HIT_PICKER_USE,    // "Use this folder".
+    HIT_WELCOME_ROW,   // A choice of the first run's welcome. arg: WelcomeRow.
     HIT_CARD,          // A Home card. arg: row * HOME_ROW_MAX + card.
     HIT_OVERLAY_BACK,  // Like B in an overlay: a Settings page's Back.
     HIT_PANEL,         // An overlay's panel: a tap on it does nothing (not the backdrop's close).

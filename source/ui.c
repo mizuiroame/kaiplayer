@@ -439,8 +439,9 @@ static const char *footerHelp(const App *app)
     if (app->about_open)
         return T("[A][B] back");
     if (app->picker_open)
-        return app->picker_first_run ? T("[A] open  [B] up  [X] use this folder")
-                                     : T("[A] open  [B] up or close  [X] use this folder");
+        return T("[A] open  [B] up or close  [X] use this folder");
+    if (app->welcome_open)
+        return T("[^v] choose  [A] open  [B] later");
     if (app->eq_open)
         return T("[<>] band  [^v] gain  [X] preset  [Y] on/off  [B] back");
     if (app->settings_open)

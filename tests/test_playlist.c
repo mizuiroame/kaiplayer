@@ -281,6 +281,43 @@ static void testMenu(void)
     CHECK(menuSelected(&m) == NULL);
 }
 
+// Playlists made before a music folder was chosen (in KaiPlayer's folder)
+// move into the music folder's; a name already there keeps both files.
+static void testPlaylistMove(void)
+{
+    const char *own = TMP_ROOT "/own_playlists", *music = TMP_ROOT "/music_lib/Playlists";
+    mkdir(TMP_ROOT "/music_lib", 0777);
+    playlistSetRoot(own);
+    CHECK(playlistCreate("Road") && playlistCreate("Español") && playlistCreate("Kept"));
+    TrackList add = {0};
+    trackListAdd(&add, TMP_ROOT "/music_lib/a/b.flac");
+    CHECK(playlistAddTracks("Road", &add) == 1);
+    trackListFree(&add);
+
+    playlistSetRoot(music);
+    CHECK(playlistCreate("Kept"));  // Already in the music folder: the moved one comes as "Kept (2)".
+    CHECK(playlistCopyAll(music, true) == 0);  // The same folder: nothing to do.
+    CHECK(playlistCopyAll(own, true) == 3);
+    CHECK(strcmp(playlistRoot(), music) == 0);
+    CHECK(playlistExists("Road") && playlistExists("Español") && playlistExists("Kept") && playlistExists("Kept (2)"));
+    char path[UTIL_PATH_MAX];
+    TrackList loaded = {0};
+    CHECK(playlistPathFor("Road", path, sizeof(path)) && playlistLoad(path, &loaded));
+    CHECK(loaded.count == 1 && strcmp(loaded.paths[0], TMP_ROOT "/music_lib/a/b.flac") == 0);
+    trackListFree(&loaded);
+
+    struct stat st;
+    CHECK(stat(own, &st) != 0);  // Emptied: the folder went too.
+    playlistSetRoot(own);
+    CHECK(playlistCreate("Road"));  // Copying without moving skips a name already there.
+    playlistSetRoot(music);
+    CHECK(playlistCopyAll(own, false) == 0 && !playlistExists("Road (2)"));
+    playlistSetRoot(own);
+    CHECK(playlistDelete("Road"));
+    playlistSetRoot(music);
+    CHECK(playlistCopyAll(TMP_ROOT "/never_made", false) == 0);
+}
+
 void testPlaylists(void)
 {
     mkdir(TMP_ROOT "/config", 0777);
@@ -288,6 +325,7 @@ void testPlaylists(void)
     testTrackList();
     testParseFormat();
     testPlaylistFiles();
+    testPlaylistMove();
     testPlainNames();
     testPlaylistTitles();
     testResume();

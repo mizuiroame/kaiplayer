@@ -78,9 +78,6 @@ language = 简体中文
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] 打开  [B] 返回  [>] 添加  [X] 播放  [Y] 随机播放  [RS] 翻页/调整进度  [L][R] 切歌  [+] 菜单
 
-[A] open  [B] up  [X] use this folder
-[A] 打开  [B] 上一级  [X] 使用此文件夹
-
 [A] open  [B] up or close  [X] use this folder
 [A] 打开  [B] 上一级/关闭  [X] 使用此文件夹
 
@@ -996,3 +993,36 @@ The server's certificate isn't trusted. If the server has its own certificate, t
 
 Lyrics
 歌词
+
+[^v] choose  [A] open  [B] later
+[^v] 选择  [A] 打开  [B] 稍后
+
+A folder on the SD card
+SD卡上的文件夹
+
+A network folder
+网络文件夹
+
+A Navidrome server
+Navidrome服务器
+
+Later
+稍后
+
+Choose the folder that has your music.
+选择存放音乐的文件夹。
+
+SMB or WebDAV, on a PC or a NAS.
+电脑或NAS上的SMB或WebDAV。
+
+Sign in with its address, user and password.
+使用地址、用户名和密码登录。
+
+Start without music; set it up in + > Settings.
+先不添加音乐；之后可在+ > 设置中设置。
+
+You can change it any time in + > Settings.
+随时可在+ > 设置中更改。
+
+Playlists are kept in %s until you choose a music folder.
+在选择音乐文件夹之前，播放列表保存在%s。

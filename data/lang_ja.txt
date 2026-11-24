@@ -78,9 +78,6 @@ language = 日本語
 [A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu
 [A] 開く  [B] 戻る  [>] 追加  [X] 再生  [Y] シャッフル  [RS] ページ / シーク  [L][R] 曲送り  [+] メニュー
 
-[A] open  [B] up  [X] use this folder
-[A] 開く  [B] 上のフォルダー  [X] このフォルダーを使う
-
 [A] open  [B] up or close  [X] use this folder
 [A] 開く  [B] 上へ / 閉じる  [X] このフォルダーを使う
 
@@ -996,3 +993,36 @@ The server's certificate isn't trusted. If the server has its own certificate, t
 
 Lyrics
 歌詞
+
+[^v] choose  [A] open  [B] later
+[^v] 選ぶ  [A] 開く  [B] あとで
+
+A folder on the SD card
+SDカードのフォルダー
+
+A network folder
+ネットワークフォルダー
+
+A Navidrome server
+Navidromeサーバー
+
+Later
+あとで
+
+Choose the folder that has your music.
+音楽が入っているフォルダーを選びます。
+
+SMB or WebDAV, on a PC or a NAS.
+PCやNASのSMBまたはWebDAV。
+
+Sign in with its address, user and password.
+アドレス、ユーザー名、パスワードでログインします。
+
+Start without music; set it up in + > Settings.
+音楽なしで始めます。「+ > 設定」であとから設定できます。
+
+You can change it any time in + > Settings.
+「+ > 設定」でいつでも変更できます。
+
+Playlists are kept in %s until you choose a music folder.
+音楽フォルダーを選ぶまで、プレイリストは%sに保存されます。

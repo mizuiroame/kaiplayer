@@ -705,14 +705,20 @@ int main(int argc, char **argv)
     app.library.stack[0].level = LIB_FOLDERS;  // The rest of the scenes show Folders.
     app.library.depth = 1;
 
-    // The welcome screen: choosing the music folder.
+    // The first run's welcome, then its SD card row: choosing the music folder.
+    app.welcome_open = true;
+    app.welcome_cursor = WELCOME_CARD;
+    render(argv[1], "welcome", &app, &status);
+    app.welcome_cursor = WELCOME_SERVER;
+    render(argv[1], "welcome_server", &app, &status);
+    app.welcome_open = false;
     snprintf(app.picker.path, sizeof(app.picker.path), "%s", "sdmc:/");
     addEntry(&app.picker, "Music", true);
     addEntry(&app.picker, "Podcasts", true);
     addEntry(&app.picker, "Nintendo", true);
     addEntry(&app.picker, "switch", true);
     addEntry(&app.picker, "notes.txt", false);
-    app.picker_open = app.picker_first_run = true;
+    app.picker_open = true;
     render(argv[1], "folder_picker", &app, &status);
     app.picker_open = false;
     app.focus = FOCUS_ADD;

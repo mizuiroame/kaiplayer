@@ -20,7 +20,8 @@ static bool g_full_hd;  // Seen coordinates beyond 1280x720: scale them down.
 
 static bool overlayOpen(const App *app)
 {
-    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open || app->picker_open;
+    return app->keyboard_open || app->menu.open || app->settings_open || app->eq_open || app->about_open || app->picker_open ||
+           app->welcome_open;
 }
 
 // The gain at height y on a slider: the top is +12 dB, the bottom -12 dB.
@@ -93,8 +94,8 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
     case HIT_REPEAT: playerCycleRepeat(); break;
     case HIT_LYRICS: appToggleLyrics(app); break;
     case HIT_BACKDROP:
-        // Outside a menu or Settings closes it; the keyboard keeps its text.
-        if (!app->keyboard_open)
+        // Outside a menu or Settings closes it; the keyboard keeps its text, and the welcome waits for an answer.
+        if (!app->keyboard_open && !app->welcome_open)
             appDispatchButtons(app, HidNpadButton_B);
         break;
     case HIT_MENU_ITEM:
@@ -124,6 +125,10 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
         }
         break;
     case HIT_PICKER_USE: appPickerChoose(app); break;
+    case HIT_WELCOME_ROW:
+        if (app->welcome_open && r->arg >= 0 && r->arg < WELCOME_ROW_COUNT)
+            appWelcomeChoose(app, (WelcomeRow)r->arg);
+        break;
     case HIT_CARD:
         app->home_row = r->arg / HOME_ROW_MAX;
         app->home_col[app->home_row] = (size_t)(r->arg % HOME_ROW_MAX);

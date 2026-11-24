@@ -29,6 +29,7 @@ typedef struct {
     char library[UTIL_PATH_MAX]; // The music folder; empty until chosen.
     LibrarySource source;        // Where the library shown comes from.
     bool playlists_moved;        // The old sdmc:/playlists were copied into it.
+    bool welcomed;               // The first run's welcome was answered ("Later" or a source set).
     bool shuffle;
     RepeatMode repeat;
     ResumeMode resume;           // What to do with the last queue at startup.
