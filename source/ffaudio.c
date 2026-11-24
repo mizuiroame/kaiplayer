@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -436,6 +437,10 @@ static void applyEntry(const char *key, const char *value, TrackTags *t)
         char db[32];
         snprintf(db, sizeof(db), "%.2f", units / R128_UNITS_PER_DB + R128_TO_REPLAYGAIN_DB);
         tagsApplyReplayGain(track ? "REPLAYGAIN_TRACK_GAIN" : "REPLAYGAIN_ALBUM_GAIN", db, t);
+        return;
+    }
+    if (strncasecmp(key, "lyrics", 6) == 0 && (key[6] == '\0' || key[6] == '-')) {
+        textOfferLyrics(t, value, strlen(value));  // Longer than a tag field: not through a comment.
         return;
     }
     for (size_t i = 0; i < sizeof(NAMES) / sizeof(NAMES[0]); i++)

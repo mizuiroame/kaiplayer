@@ -264,8 +264,43 @@ static void testSongs(void)
     CHECK(subScanCount(NULL) == -1);
 }
 
+// getLyricsBySongId (OpenSubsonic): synced lyrics first, as LRC; plain ones when there are no others.
+static void testServerLyrics(void)
+{
+    static const char BOTH[] =
+        "{\"subsonic-response\":{\"status\":\"ok\",\"lyricsList\":{\"structuredLyrics\":["
+        "{\"lang\":\"eng\",\"synced\":false,\"line\":[{\"value\":\"plain one\"},{\"value\":\"plain two\"}]},"
+        "{\"lang\":\"eng\",\"synced\":true,\"offset\":-100,\"line\":[{\"start\":1500,\"value\":\"first\"},"
+        "{\"start\":61230,\"value\":\"second\"},{\"start\":50,\"value\":\"\"}]}]}}}";
+    const JsonValue *body;
+    int code;
+    char message[64], out[256];
+    JsonDoc *doc = jsonParse(BOTH, strlen(BOTH));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(subLyricsText(body, out, sizeof(out)));
+    CHECK_STR(out, "[00:01.40]first\n[01:01.13]second\n[00:00.00]\n");
+    CHECK(!subLyricsText(body, out, 20));  // Doesn't fit.
+    jsonFree(doc);
+
+    static const char PLAIN[] = "{\"subsonic-response\":{\"status\":\"ok\",\"lyricsList\":{\"structuredLyrics\":"
+                                "{\"synced\":false,\"line\":{\"value\":\"only line\"}}}}}";
+    doc = jsonParse(PLAIN, strlen(PLAIN));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(subLyricsText(body, out, sizeof(out)));
+    CHECK_STR(out, "only line\n");
+    jsonFree(doc);
+
+    static const char NONE[] = "{\"subsonic-response\":{\"status\":\"ok\",\"lyricsList\":{}}}";
+    doc = jsonParse(NONE, strlen(NONE));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(!subLyricsText(body, out, sizeof(out)) && !out[0]);
+    jsonFree(doc);
+    CHECK(!subLyricsText(NULL, out, sizeof(out)));
+}
+
 void testSubsonic(void)
 {
+    testServerLyrics();
     testMd5();
     testJson();
     testAddresses();

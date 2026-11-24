@@ -35,7 +35,10 @@ void tagsInit(TrackTags *t)
 void tagsFree(TrackTags *t)
 {
     free(t->picture);
+    free(t->lyrics);
+    bool want_lyrics = t->want_lyrics;
     tagsInit(t);
+    t->want_lyrics = want_lyrics;
 }
 
 // Reads size bytes into a new buffer. NULL on a short read.

@@ -92,6 +92,45 @@ static void testId3v23(void)
     CHECK(strcmp(t.artist, "\xC3\x91u") == 0);
     CHECK(t.picture && t.picture_size == 5 && memcmp(t.picture, "FRONT", 5) == 0);
     CHECK(t.picture_type == 3);
+    CHECK(!t.lyrics);  // Not asked for.
+    tagsFree(&t);
+}
+
+// USLT: encoding, language, description, then the lyrics; kept only when asked for.
+static void testId3Lyrics(void)
+{
+    Buf frames = {0}, body = {0}, tag;
+    put(&body, "\x03" "eng" "desc\0" "Line one\nL\xC3\xADnea dos\n", 29);  // UTF-8.
+    frame(&frames, "USLT", 3, 0, &body);
+    body.len = 0;
+    put(&body, "\x00" "eng" "\0" "Second frame", 17);
+    frame(&frames, "USLT", 3, 0, &body);
+    wrapId3(&tag, 3, 0, &frames);
+
+    TrackTags t;
+    tagsInit(&t);
+    tagsParseId3v2(tag.data, tag.len, &t);
+    CHECK(!t.lyrics);
+    tagsFree(&t);
+    t.want_lyrics = true;
+    tagsParseId3v2(tag.data, tag.len, &t);
+    CHECK(t.lyrics && !strcmp(t.lyrics, "Line one\nL\xC3\xADnea dos\n") && t.lyrics_size == 20);  // The first.
+    tagsFree(&t);
+    CHECK(t.want_lyrics && !t.lyrics);  // Freed, still wanted.
+
+    body.len = frames.len = 0;
+    put(&body, "\x01" "eng" "\xFF\xFE\0\0" "\xFF\xFE" "h\0i\0", 14);  // UTF-16: empty description, "hi".
+    frame(&frames, "USLT", 4, 0, &body);
+    wrapId3(&tag, 4, 0, &frames);
+    tagsParseId3v2(tag.data, tag.len, &t);
+    CHECK(t.lyrics && !strcmp(t.lyrics, "hi"));
+    tagsFree(&t);
+    body.len = frames.len = 0;
+    put(&body, "\x00" "en", 3);  // Too short.
+    frame(&frames, "USLT", 3, 0, &body);
+    wrapId3(&tag, 3, 0, &frames);
+    tagsParseId3v2(tag.data, tag.len, &t);
+    CHECK(!t.lyrics);
     tagsFree(&t);
 }
 
@@ -213,16 +252,19 @@ static void testVorbisComments(void)
 
     putLe32(&block, 6);
     putStr(&block, "vendor");
-    putLe32(&block, 5);
+    putLe32(&block, 6);
     comment(&block, "title=Hello");
     comment(&block, "ARTIST=Me");
     comment(&block, "Album=Al");
     comment(&block, "no equals sign");
     comment(&block, encoded);
+    comment(&block, "UNSYNCEDLYRICS=Some words\nmore");
 
     TrackTags t;
     tagsInit(&t);
+    t.want_lyrics = true;
     tagsParseVorbisComments(block.data, block.len, &t);
+    CHECK(t.lyrics && !strcmp(t.lyrics, "Some words\nmore"));
     CHECK(strcmp(t.title, "Hello") == 0);
     CHECK(strcmp(t.artist, "Me") == 0);
     CHECK(strcmp(t.album, "Al") == 0);
@@ -267,6 +309,7 @@ static void testText(void)
 void testTags(void)
 {
     testId3v23();
+    testId3Lyrics();
     testId3v24();
     testId3v22AndUnsync();
     testId3Malformed();

@@ -78,6 +78,45 @@ static int compareLines(const void *a, const void *b)
     return x->text < y->text ? -1 : x->text > y->text;  // The order they had in the file.
 }
 
+// A tag line ("[ar:Someone]"): a name of letters, ':', and a closing ']' at the end.
+static bool tagLine(const char *s, size_t len)
+{
+    if (len < 3 || s[0] != '[' || s[len - 1] != ']')
+        return false;
+    size_t i = 1;
+    while (i < len && isalpha((unsigned char)s[i]))
+        i++;
+    return i > 1 && i < len && s[i] == ':';
+}
+
+// Plain lyrics' lines into buffer (as large as text) and lines: tags left
+// out, blank lines kept only between text. Returns how many.
+static int plainLines(const char *text, size_t size, char *buffer, LyricLine *lines)
+{
+    size_t used = 0;
+    int count = 0, text_lines = 0;
+    const char *p = text, *end = text + size;
+    while (p < end && count < LYRICS_LINES_MAX) {
+        const char *nl = memchr(p, '\n', (size_t)(end - p));
+        const char *line_end = nl ? nl : end;
+        size_t len = (size_t)(line_end - p);
+        if (len && p[len - 1] == '\r')
+            len--;
+        if (!tagLine(p, len)) {
+            const char *line_text = buffer + used;
+            size_t n = cleanText(p, len, buffer + used);
+            used += n + 1;
+            if (n || text_lines)  // Not blank lines before the first words.
+                lines[count++] = (LyricLine){0, line_text};
+            text_lines += n > 0;
+        }
+        p = nl ? nl + 1 : end;
+    }
+    while (count > 0 && !lines[count - 1].text[0])
+        count--;  // Nor after the last.
+    return text_lines ? count : 0;
+}
+
 bool lyricsParse(const char *text, size_t size, Lyrics *out)
 {
     memset(out, 0, sizeof(*out));
@@ -131,11 +170,19 @@ bool lyricsParse(const char *text, size_t size, Lyrics *out)
         }
         p = nl ? nl + 1 : end;
     }
-    if (count == 0) {
-        free(buffer);
-        free(lines);
-        return false;
+    if (count == 0) {  // No times: plain lyrics, if there's any text.
+        count = plainLines(text, size, buffer, lines);
+        if (count == 0) {
+            free(buffer);
+            free(lines);
+            return false;
+        }
+        out->lines = lines;
+        out->count = count;
+        out->buffer = buffer;
+        return true;
     }
+    out->synced = true;
     // A positive offset shows the lines sooner (as the LRC format says).
     for (int i = 0; i < count; i++) {
         long ms = (long)lines[i].ms - offset;
@@ -155,9 +202,17 @@ void lyricsFree(Lyrics *l)
     memset(l, 0, sizeof(*l));
 }
 
+double lyricsScrollAt(const Lyrics *l, double seconds, double duration)
+{
+    if (!l || l->count <= 1 || !(duration > 0) || !(seconds > 0))
+        return 0;
+    double f = seconds / duration;
+    return (f > 1 ? 1 : f) * (l->count - 1);
+}
+
 int lyricsLineAt(const Lyrics *l, double seconds)
 {
-    if (!l || l->count == 0 || !(seconds >= 0))
+    if (!l || !l->synced || l->count == 0 || !(seconds >= 0))
         return -1;
     double ms = seconds * 1000.0;
     int lo = 0, hi = l->count - 1, found = -1;

@@ -420,3 +420,55 @@ long subScanCount(const JsonValue *body)
     const JsonValue *status = jsonGet(body, "scanStatus");
     return jsonHasNumber(status, "count") ? (long)jsonInt(status, "count") : -1;
 }
+
+// Appends text to out at *used; false when it doesn't fit.
+static bool appendText(char *out, size_t size, size_t *used, const char *text)
+{
+    size_t n = strlen(text);
+    if (*used + n + 1 > size)
+        return false;
+    memcpy(out + *used, text, n + 1);
+    *used += n;
+    return true;
+}
+
+// One structuredLyrics' lines into out: "[mm:ss.xx]words" when synced, else the words.
+static bool lyricsLines(const JsonValue *lyrics, bool synced, char *out, size_t size)
+{
+    size_t used = 0;
+    out[0] = '\0';
+    long long offset = jsonInt(lyrics, "offset");
+    bool any = false;
+    for (const JsonValue *line = subFirst(lyrics, "line"); line; line = subNext(lyrics, "line", line)) {
+        char stamp[24] = "";
+        if (synced) {
+            long long ms = jsonInt(line, "start") + offset;
+            if (ms < 0)
+                ms = 0;
+            snprintf(stamp, sizeof(stamp), "[%02lld:%02lld.%02lld]", ms / 60000, ms / 1000 % 60, ms / 10 % 100);
+        }
+        const char *words = jsonText(line, "value");
+        if (!appendText(out, size, &used, stamp) || !appendText(out, size, &used, words) ||
+            !appendText(out, size, &used, "\n"))
+            return false;
+        any = any || words[0];
+    }
+    return any;
+}
+
+bool subLyricsText(const JsonValue *body, char *out, size_t size)
+{
+    const JsonValue *list = jsonGet(body, "lyricsList");
+    if (!list || size == 0)
+        return false;
+    for (int pass = 0; pass < 2; pass++) {  // Synced lyrics first, then plain ones.
+        bool want_synced = pass == 0;
+        for (const JsonValue *l = subFirst(list, "structuredLyrics"); l; l = subNext(list, "structuredLyrics", l)) {
+            const JsonValue *synced = jsonGet(l, "synced");
+            if ((synced && synced->type == JSON_TRUE) == want_synced && lyricsLines(l, want_synced, out, size))
+                return true;
+        }
+    }
+    out[0] = '\0';
+    return false;
+}

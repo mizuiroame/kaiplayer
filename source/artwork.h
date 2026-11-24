@@ -20,7 +20,7 @@ typedef struct {
     bool has_cover;
     CoverImage cover;
     CoverImage thumb;
-    bool has_lyrics;  // A .lrc next to the song (not a server's song).
+    bool has_lyrics;  // A .lrc next to the song, the song's own, or the server's.
     Lyrics lyrics;
 } Artwork;
 

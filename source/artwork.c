@@ -8,6 +8,7 @@
 
 #include "gfx.h"
 #include "kfile.h"
+#include "subnet.h"
 #include "subsonic.h"
 
 #define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
@@ -32,17 +33,28 @@ static void freeArtwork(Artwork *a)
     free(a);
 }
 
-// The song's .lrc, on the card or in the network folder (a server's songs have none).
-static void loadLyrics(Artwork *a, const char *path)
+// The song's lyrics: a server's song asks the server; otherwise a .lrc next to
+// it (on the card or in the network folder) comes first, then the song's own
+// (tags: USLT, LYRICS), which may be synced LRC text too.
+static void loadLyrics(Artwork *a, const char *path, const TrackTags *tags)
 {
-    char lrc[UTIL_PATH_MAX];
-    if (subIsLocation(path) || !lyricsPathFor(path, lrc, sizeof(lrc)))
+    if (subIsLocation(path)) {
+        char *text = subFetchLyrics(path);
+        if (text)
+            a->has_lyrics = lyricsParse(text, strlen(text), &a->lyrics);
+        free(text);
         return;
-    size_t size = 0;
-    uint8_t *text = kfileReadAll(lrc, LYRICS_FILE_MAX, &size, NULL);
-    if (text)
-        a->has_lyrics = lyricsParse((const char *)text, size, &a->lyrics);
-    free(text);
+    }
+    char lrc[UTIL_PATH_MAX];
+    if (lyricsPathFor(path, lrc, sizeof(lrc))) {
+        size_t size = 0;
+        uint8_t *text = kfileReadAll(lrc, LYRICS_FILE_MAX, &size, NULL);
+        if (text)
+            a->has_lyrics = lyricsParse((const char *)text, size, &a->lyrics);
+        free(text);
+    }
+    if (!a->has_lyrics && tags->lyrics)
+        a->has_lyrics = lyricsParse(tags->lyrics, tags->lyrics_size, &a->lyrics);
 }
 
 static Artwork *loadArtwork(const char *path)
@@ -55,6 +67,7 @@ static Artwork *loadArtwork(const char *path)
     TrackTags tags;
     tagsInit(&tags);
     tags.skip_picture = subIsLocation(path);  // A server's song: its cover comes from the server.
+    tags.want_lyrics = !tags.skip_picture;
     tagsRead(path, &tags);
     snprintf(a->title, sizeof(a->title), "%s", tags.title);
     snprintf(a->artist, sizeof(a->artist), "%s", tags.artist[0] ? tags.artist : tags.album_artist);
@@ -63,8 +76,8 @@ static Artwork *loadArtwork(const char *path)
     int large = gfxToFb(ARTWORK_LARGE_SIZE), small = gfxToFb(ARTWORK_SMALL_SIZE);  // Drawn 1:1.
     a->has_cover = coverDecode(tags.picture, tags.picture_size, &a->cover, large, &a->thumb, small) ||
                    coverLoadFromFolder(path, &a->cover, large, &a->thumb, small);
+    loadLyrics(a, path, &tags);
     tagsFree(&tags);
-    loadLyrics(a, path);
     return a;
 }
 

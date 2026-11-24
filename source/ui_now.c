@@ -1,4 +1,5 @@
 // The Now Playing view: large cover, tags, progress and transport controls.
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -123,6 +124,24 @@ static float easeOut(float t)
     return 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t);
 }
 
+// Plain lyrics (no times): the text moves up evenly through the song, all
+// lines alike (none is "being sung"), brighter near the middle.
+static void drawPlainLyrics(const PlayerStatus *status, const Lyrics *l)
+{
+    double at = lyricsScrollAt(l, status->position, status->duration);
+    int first = (int)at - LYRICS_AROUND, last = (int)at + LYRICS_AROUND + 1;
+    gfxSetClip(INFO_X, LYRICS_TOP, INFO_W, LYRICS_BOTTOM - LYRICS_TOP);
+    for (int i = first; i <= last; i++) {
+        if (i < 0 || i >= l->count || !l->lines[i].text[0])
+            continue;
+        double y = LYRICS_MIDDLE + (i - at) * LYRICS_LINE_H;
+        double away = fabs(i - at);
+        Color color = away < 1.5 ? COLOR_TEXT : gfxMix(COLOR_DIM, COLOR_BG, away < 2.5 ? 110 : 40);
+        fontDrawClipped(FONT_REGULAR, 20, INFO_X, (int)(y - 14), INFO_W, l->lines[i].text, color);
+    }
+    gfxResetClip();
+}
+
 // The title and artist on one line, then the lyrics around the line being sung.
 static void drawLyrics(const PlayerStatus *status, const UiTrack *track)
 {
@@ -132,6 +151,10 @@ static void drawLyrics(const PlayerStatus *status, const UiTrack *track)
     fontDrawClipped(FONT_BOLD, 26, INFO_X, 170, INFO_W, head, COLOR_TEXT);
 
     const Lyrics *l = track->lyrics;
+    if (!l->synced) {
+        drawPlainLyrics(status, l);
+        return;
+    }
     int at = lyricsLineAt(l, status->position);
     // How far the slide to this line has gone: the lines move up one place as a new one starts.
     float slide = 1.0f;

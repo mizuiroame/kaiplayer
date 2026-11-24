@@ -50,11 +50,11 @@ static void testOffsetAndBad(void)
     CHECK(lyricsParse(later, strlen(later), &l) && l.lines[0].ms == 1250);
     lyricsFree(&l);
 
-    const char *plain = "Just words\nwithout times\n";
-    CHECK(!lyricsParse(plain, strlen(plain), &l) && !l.lines && !l.count);
     CHECK(!lyricsParse("", 0, &l) && !lyricsParse(NULL, 5, &l));
+    CHECK(!lyricsParse("\n\n  \n[ar:Only tags]\n", 20, &l) && !l.lines && !l.count);
     const char *unclosed = "[00:01.00 never closed\n[00:99.00]bad seconds\n[1:02.3456]too fine\n";
-    CHECK(!lyricsParse(unclosed, strlen(unclosed), &l));
+    CHECK(lyricsParse(unclosed, strlen(unclosed), &l) && !l.synced && l.count == 3);  // Broken times: plain text.
+    lyricsFree(&l);
     // A line with more times than kept, and no text after its times.
     char many[600] = "";
     for (int i = 0; i < 40; i++) {
@@ -63,6 +63,27 @@ static void testOffsetAndBad(void)
         strcat(many, stamp);
     }
     CHECK(lyricsParse(many, strlen(many), &l) && l.count == 32 && !l.lines[0].text[0]);
+    lyricsFree(&l);
+}
+
+// Lyrics without times: every line in order, tags out, blank lines only
+// between verses; the text moves evenly through the song.
+static void testPlain(void)
+{
+    Lyrics l;
+    const char *plain = "[ti:Song]\r\n\r\nFirst line\r\n  second  \r\n\r\nNew verse\r\n\r\n\r\n";
+    CHECK(lyricsParse(plain, strlen(plain), &l) && !l.synced && l.count == 4);
+    if (l.count == 4) {
+        CHECK(!strcmp(l.lines[0].text, "First line") && !strcmp(l.lines[1].text, "second"));
+        CHECK(!l.lines[2].text[0] && !strcmp(l.lines[3].text, "New verse"));
+    }
+    CHECK(lyricsLineAt(&l, 30) == -1);  // No line is "being sung".
+    CHECK(lyricsScrollAt(&l, 0, 200) == 0 && lyricsScrollAt(&l, 100, 200) == 1.5);
+    CHECK(lyricsScrollAt(&l, 500, 200) == 3 && lyricsScrollAt(&l, 50, 0) == 0);
+    lyricsFree(&l);
+
+    const char *synced = "[00:01.00]a\nno time here\n";
+    CHECK(lyricsParse(synced, strlen(synced), &l) && l.synced && l.count == 1);
     lyricsFree(&l);
 }
 
@@ -80,5 +101,6 @@ void testLyrics(void)
 {
     testParse();
     testOffsetAndBad();
+    testPlain();
     testPaths();
 }

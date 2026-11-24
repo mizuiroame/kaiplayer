@@ -26,6 +26,9 @@ void textSetField(char *field, const char *value);
 // a front cover replacing another type. Copies the bytes.
 void textOfferPicture(TrackTags *t, const uint8_t *data, size_t size, int type);
 
+// Keeps the first lyrics offered (UTF-8, len bytes) when t wants them.
+void textOfferLyrics(TrackTags *t, const char *text, size_t len);
+
 uint32_t readBe32(const uint8_t *p);
 uint32_t readBe24(const uint8_t *p);
 uint32_t readLe32(const uint8_t *p);

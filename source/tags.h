@@ -12,6 +12,7 @@
 #define TAGS_PICTURE_MAX (8u << 20)
 #define TAGS_ID3_MAX (16u << 20)
 #define TAGS_COMMENT_BLOCK_MAX (1u << 20)
+#define TAGS_LYRICS_MAX (256u * 1024)  // As LYRICS_FILE_MAX: more isn't lyrics.
 
 typedef struct {
     char title[TAGS_TEXT_MAX];
@@ -25,6 +26,9 @@ typedef struct {
     size_t picture_size;
     int picture_type;  // ID3/FLAC picture type; 3 is the front cover.
     bool skip_picture; // Set before reading to leave pictures out.
+    bool want_lyrics;  // Set before reading to keep the song's lyrics (USLT, LYRICS).
+    char *lyrics;      // Their UTF-8 text, or NULL.
+    size_t lyrics_size;
     bool has_track_gain, has_album_gain;
     float track_gain_db;  // ReplayGain, from REPLAYGAIN_TRACK_GAIN.
     float album_gain_db;  // ReplayGain, from REPLAYGAIN_ALBUM_GAIN.

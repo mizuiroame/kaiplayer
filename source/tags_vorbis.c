@@ -135,6 +135,8 @@ void tagsApplyComment(const char *comment, size_t length, TrackTags *t)
         setTextField(t->album, value, value_len);
     else if (keyIs(comment, key_len, "ALBUMARTIST"))
         setTextField(t->album_artist, value, value_len);
+    else if (keyIs(comment, key_len, "LYRICS") || keyIs(comment, key_len, "UNSYNCEDLYRICS"))
+        textOfferLyrics(t, value, value_len);
     else if (keyIs(comment, key_len, "TRACKNUMBER") || keyIs(comment, key_len, "DISCNUMBER") ||
              keyIs(comment, key_len, "DATE")) {
         char number[32];

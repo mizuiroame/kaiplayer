@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "lang.h"
+#include "lyrics.h"
 #include "util.h"
 
 #define URL_MAX 2048
@@ -367,6 +368,24 @@ bool subScrobble(const char *location, bool submission)
     JsonDoc *doc = subCall(NULL, "scrobble", params, &body, NULL, why, sizeof(why));
     jsonFree(doc);
     return doc != NULL;
+}
+
+char *subFetchLyrics(const char *location)
+{
+    SubTarget t;
+    if (!subParseLocation(location, &t) || t.cover)
+        return NULL;
+    char params[SUB_ID_MAX + 8], why[160];
+    snprintf(params, sizeof(params), "id=%s", t.id);
+    const JsonValue *body;
+    JsonDoc *doc = subCall(NULL, "getLyricsBySongId", params, &body, NULL, why, sizeof(why));
+    char *text = doc ? malloc(LYRICS_FILE_MAX) : NULL;
+    if (text && !subLyricsText(body, text, LYRICS_FILE_MAX)) {
+        free(text);  // None, or a server without OpenSubsonic's lyrics.
+        text = NULL;
+    }
+    jsonFree(doc);
+    return text;
 }
 
 bool subSongUrl(const char *location, bool raw_stream, char *url, size_t size, bool *any_certificate)

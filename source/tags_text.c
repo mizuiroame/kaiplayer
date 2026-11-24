@@ -112,6 +112,19 @@ void textSetField(char *field, const char *value)
     }
 }
 
+void textOfferLyrics(TrackTags *t, const char *text, size_t len)
+{
+    if (!t->want_lyrics || t->lyrics || len == 0 || len > TAGS_LYRICS_MAX)
+        return;
+    char *copy = malloc(len + 1);
+    if (!copy)
+        return;
+    memcpy(copy, text, len);
+    copy[len] = '\0';
+    t->lyrics = copy;
+    t->lyrics_size = len;
+}
+
 void textOfferPicture(TrackTags *t, const uint8_t *data, size_t size, int type)
 {
     if (t->skip_picture || size == 0 || size > TAGS_PICTURE_MAX)

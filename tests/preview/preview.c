@@ -751,6 +751,15 @@ int main(int argc, char **argv)
             lyricsFree(&g_art.lyrics);
             g_art.has_lyrics = false;
         }
+        // Made-up plain lyrics (no times): the text moves along with the song.
+        static const char PLAIN[] = "Under the paper moon\nwe counted every light\nthe river kept our names\n\n"
+                                    "and carried them all night\nsing it slow, sing it low\nlet the morning find us\n";
+        if (lyricsParse(PLAIN, sizeof(PLAIN) - 1, &g_art.lyrics)) {
+            g_art.has_lyrics = true;
+            render(argv[1], "now_playing_lyrics_plain", &app, &status);
+            lyricsFree(&g_art.lyrics);
+            g_art.has_lyrics = false;
+        }
     }
     for (int i = 0; i < 6; i++)  // Turn the discs a little, so the previews show them turned.
         uiNowStyleSpin(true, 1000000000ull + i * 200000000ull);

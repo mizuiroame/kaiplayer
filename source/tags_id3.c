@@ -12,11 +12,12 @@
 #define ID3V1_FIELD 30
 
 typedef struct {
-    const char *title, *artist, *album, *album_artist, *picture, *user_text, *track, *disc, *year, *date;
+    const char *title, *artist, *album, *album_artist, *picture, *user_text, *track, *disc, *year, *date, *lyrics;
 } FrameIds;
 
-static const FrameIds IDS_V22 = {"TT2", "TP1", "TAL", "TP2", "PIC", "TXX", "TRK", "TPA", "TYE", "TYE"};
-static const FrameIds IDS_V23 = {"TIT2", "TPE1", "TALB", "TPE2", "APIC", "TXXX", "TRCK", "TPOS", "TYER", "TDRC"};
+static const FrameIds IDS_V22 = {"TT2", "TP1", "TAL", "TP2", "PIC", "TXX", "TRK", "TPA", "TYE", "TYE", "ULT"};
+static const FrameIds IDS_V23 = {"TIT2", "TPE1", "TALB", "TPE2", "APIC", "TXXX", "TRCK", "TPOS", "TYER", "TDRC",
+                                 "USLT"};
 
 // Undoes ID3 unsynchronization in place: drops each 0x00 that follows 0xFF.
 static size_t resynchronize(uint8_t *data, size_t size)
@@ -89,6 +90,25 @@ static void parseUserTextFrame(const uint8_t *body, size_t size, TrackTags *t)
     tagsApplyReplayGain(name, value, t);
 }
 
+// USLT (ULT in v2.2): encoding, 3-letter language, description, the lyrics.
+static void parseLyricsFrame(const uint8_t *body, size_t size, TrackTags *t)
+{
+    if (!t->want_lyrics || t->lyrics || size < 5 || size > TAGS_LYRICS_MAX)
+        return;
+    int encoding = body[0];
+    size_t pos = 4;
+    pos += terminatedLength(body + pos, size - pos, encoding);
+    if (pos >= size)
+        return;
+    size_t out_size = (size - pos) * 2 + 4;  // UTF-16 and Latin-1 grow at most twice in UTF-8.
+    char *text = malloc(out_size);
+    if (!text)
+        return;
+    textToUtf8(body + pos, size - pos, encoding, text, out_size);
+    textOfferLyrics(t, text, strlen(text));
+    free(text);
+}
+
 // A numeric text frame ("3/12", "2019"): its leading number.
 static int numberFrame(const uint8_t *body, size_t size)
 {
@@ -121,6 +141,8 @@ static void parseFrame(const uint8_t *id, const uint8_t *body, size_t size, bool
         t->disc_number = numberFrame(body, size);
     else if (memcmp(id, ids->year, n) == 0 || memcmp(id, ids->date, n) == 0)
         t->year = numberFrame(body, size);
+    else if (memcmp(id, ids->lyrics, n) == 0)
+        parseLyricsFrame(body, size, t);
 }
 
 // Strips the per-frame extras of v2.3/v2.4. Returns false for frames we skip

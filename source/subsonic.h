@@ -95,5 +95,10 @@ const JsonValue *subNext(const JsonValue *parent, const char *name, const JsonVa
 // Past SUB_SONGS_MAX songs in c, the rest are left out. False if memory runs out.
 bool subAddSongs(Catalog *c, const JsonValue *parent, const char *name, const char *album_artist, size_t *added);
 
+// getLyricsBySongId's answer (OpenSubsonic) as LRC text in out: the first
+// synced lyrics as "[mm:ss.xx]line" lines, or else the first plain ones as
+// lines. False if it has none, or they don't fit in size.
+bool subLyricsText(const JsonValue *body, char *out, size_t size);
+
 // scanStatus's count of songs; -1 if it doesn't say.
 long subScanCount(const JsonValue *body);
