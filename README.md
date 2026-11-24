@@ -1,5 +1,7 @@
 # KaiPlayer
 
+<p align="center"><img src="docs/cover.png" alt="KaiPlayer" width="100%"></p>
+
 An **open-source homebrew music player** for **Switch 2** running
 [kaiHEN](https://github.com/ouncebrew/kaihen). Pick a folder on your microSD
 card and KaiPlayer builds a library of your artists, albums and songs from
