@@ -943,8 +943,8 @@ Prima accedi al server Navidrome in Impostazioni.
 That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533).
 Quell'indirizzo risponde, ma non come un server Navidrome o Subsonic. Controlla la porta (di solito 4533).
 
-That address answers, but there's no Navidrome or Subsonic server at that path. If it's under one (like /navidrome), add it to the address.
-Quell'indirizzo risponde, ma non c'è un server Navidrome o Subsonic in quel percorso. Se è sotto un percorso (come /navidrome), aggiungilo all'indirizzo.
+No Navidrome or Subsonic server at that path. If it's under one (like /navidrome), add it to the address.
+Nessun server Navidrome o Subsonic in quel percorso. Se è sotto un percorso (come /navidrome), aggiungilo all'indirizzo.
 
 The Navidrome server is forgotten.
 Server Navidrome dimenticato.

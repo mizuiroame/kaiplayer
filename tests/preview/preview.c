@@ -677,6 +677,8 @@ int main(int argc, char **argv)
     render(argv[1], "library_server", &app, &status);
     g_scan_problem = "Wrong user name or password.";
     render(argv[1], "library_server_problem", &app, &status);
+    g_scan_problem = T("No Navidrome or Subsonic server at that path. If it's under one (like /navidrome), add it to the address.");
+    render(argv[1], "library_server_path", &app, &status);
     g_scan_problem = "";
     card = app.browser;
     app.browser = (Browser){0};
