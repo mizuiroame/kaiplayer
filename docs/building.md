@@ -107,6 +107,12 @@ The tests and the fuzzer run with ASLR turned off (`setarch -R`), because
 GCC 12's AddressSanitizer can hang on recent kernels. In Docker, turning ASLR
 off needs `--security-opt seccomp=unconfined`.
 
+On every push and pull request, GitHub Actions runs the tests and the fuzzer
+(`make coverage`, then `make fuzz ITER=1000`) in an image built from
+`tests/Dockerfile.host`: gcc and the same host FFmpeg 7.1, without the
+devkit (`.github/workflows/tests.yml`). The live tests and the previews
+stay on the PC.
+
 ## Without Docker
 
 Install [devkitPro pacman](https://devkitpro.org/wiki/devkitPro_pacman), then
