@@ -213,8 +213,19 @@ static void setOptions(CURL *curl, const NetRequest *r, struct curl_slist *heade
     }
 }
 
+// Where the redirects of the last request ended, without its query; "" without one.
+static void redirectedTo(CURL *curl, char *out, size_t size)
+{
+    long redirects = 0;
+    char *effective = NULL;
+    out[0] = '\0';
+    if (curl_easy_getinfo(curl, CURLINFO_REDIRECT_COUNT, &redirects) == CURLE_OK && redirects > 0 &&
+        curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective) == CURLE_OK && effective)
+        snprintf(out, size, "%.*s", (int)strcspn(effective, "?#"), effective);
+}
+
 static bool fetch(NetClient *c, const NetRequest *request, NetSink sink, void *user, long *status, NetProblem *problem,
-                  char *error, size_t error_size)
+                  char *redirected, size_t redirected_size, char *error, size_t error_size)
 {
     char curl_error[CURL_ERROR_SIZE] = "";
     Transfer t = {sink, user, false};
@@ -223,6 +234,8 @@ static bool fetch(NetClient *c, const NetRequest *request, NetSink sink, void *u
     CURLcode rc = curl_easy_perform(c->curl);
     long code = 0;
     curl_easy_getinfo(c->curl, CURLINFO_RESPONSE_CODE, &code);
+    if (redirected)
+        redirectedTo(c->curl, redirected, redirected_size);
     curl_slist_free_all(headers);
     if (status)
         *status = code;
@@ -241,7 +254,7 @@ static bool fetch(NetClient *c, const NetRequest *request, NetSink sink, void *u
 bool netFetch(NetClient *c, const NetRequest *request, NetSink sink, void *user, long *status, char *error,
               size_t error_size)
 {
-    return fetch(c, request, sink, user, status, NULL, error, error_size);
+    return fetch(c, request, sink, user, status, NULL, NULL, 0, error, error_size);
 }
 
 typedef struct {
@@ -271,7 +284,8 @@ bool netFetchText(NetClient *c, const NetRequest *request, size_t max_bytes, Net
 {
     memset(out, 0, sizeof(*out));
     TextSink sink = {out, max_bytes, false};
-    bool ok = fetch(c, request, addText, &sink, &out->status, &out->problem, out->error, sizeof(out->error));
+    bool ok = fetch(c, request, addText, &sink, &out->status, &out->problem, out->redirected, sizeof(out->redirected),
+                    out->error, sizeof(out->error));
     if (ok && sink.too_big) {
         snprintf(out->error, sizeof(out->error), "The answer is too large");
         ok = false;

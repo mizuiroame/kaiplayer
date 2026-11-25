@@ -89,6 +89,24 @@ bool subSameServer(const char *a, const char *b)
     return n == serverLength(b) && !strncasecmp(a, b, n);
 }
 
+bool subPointedAddress(const char *address, const char *redirected, char *out, size_t size)
+{
+    size_t scheme = schemeLength(redirected);
+    if (!scheme)
+        return false;
+    size_t length = scheme + strcspn(redirected + scheme, "?#");
+    while (length > scheme && redirected[length - 1] == '/')
+        length--;
+    size_t page = without(redirected, length, "/app");
+    if (page == length || page <= scheme + strcspn(redirected + scheme, "/?#"))
+        return false;  // Not Navidrome's page, or it's at the server's top.
+    char pointed[SUB_ADDRESS_MAX];
+    if (!subNormalizeAddress(redirected, pointed, sizeof(pointed)) || !strcasecmp(pointed, address))
+        return false;
+    int n = snprintf(out, size, "%s", pointed);
+    return n > 0 && (size_t)n < size;
+}
+
 // --- The sign-in and the account's file ---
 
 bool subSetPassword(SubAccount *a, const char *password, const char *salt)

@@ -49,6 +49,11 @@ bool subNormalizeAddress(const char *typed, char *out, size_t size);
 void subShownAddress(const char *address, char *out, size_t size);
 // Same scheme, host and port: the sign-in typed for one isn't sent to the other.
 bool subSameServer(const char *a, const char *b);
+// Where a server sent the request to address on its way: Navidrome's own page
+// under a path ("http://pc:4533/navidrome/app/", its BaseUrl when the address
+// was typed without it) -> that address ("http://pc:4533/navidrome"). False
+// for anything else, or when it is the address itself.
+bool subPointedAddress(const char *address, const char *redirected, char *out, size_t size);
 
 // The sign-in for password with this salt (some random letters): a->salt and a->token.
 // False if the salt is unusable (empty, too long, or with characters a URL would change).

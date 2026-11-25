@@ -15,7 +15,7 @@ LDFLAGS := $(SAN) -L$(FFMPEG)/lib -lavformat -lavcodec -lswresample -lavutil -ls
 OBJDIR  := build
 NOASLR  := setarch $$(uname -m) -R
 
-NETWORK := dav.c davnet.c smbnet.c net.c davfile.c kfile.c blockcache.c util.c lang.c tracklist.c library.c \
+NETWORK := dav.c md4.c davnet.c smbnet.c net.c davfile.c kfile.c blockcache.c util.c lang.c tracklist.c library.c \
            decoder.c dsd.c ffaudio.c audioformat.c tags_file.c tags_id3.c tags_vorbis.c tags_text.c cover.c \
            catalog.c md5.c json.c subsonic.c subnet.c subfile.c
 
@@ -32,6 +32,7 @@ $(OBJDIR)/host_smb: host_smb.c $(addprefix $(SRC)/,$(NETWORK)) $(OBJDIR)/codecs_
 # The Navidrome server, the same way:
 #   ... -e NAVIDROME=http://host.docker.internal:4533 -e NAVIDROME_USER=... -e NAVIDROME_PASS=... -e MUSIC=/music
 #   ... kaiplayer-host-live make navidrome
+# NAVIDROME_UNDER_PATH (optional): another Navidrome with ND_BASEURL=/navidrome, its address without the path.
 navidrome: $(OBJDIR)/host_navidrome
 	$(NOASLR) ./$(OBJDIR)/host_navidrome
 

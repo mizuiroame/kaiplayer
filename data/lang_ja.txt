@@ -943,6 +943,9 @@ That address answers, but not as a Navidrome or Subsonic server. Check the port 
 No Navidrome or Subsonic server there. If it's under a path (like /navidrome), add it to the address.
 そこにNavidromeまたはSubsonicサーバーはありません。パス（/navidrome など）があれば、アドレスに追加してください。
 
+No Navidrome or Subsonic server there: it points to %.200s. Use that address.
+そこにNavidromeまたはSubsonicサーバーはありません。%.200s を指しています。そのアドレスを使ってください。
+
 The Navidrome server is forgotten.
 Navidromeサーバーの登録を解除しました。
 

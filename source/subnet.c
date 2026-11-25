@@ -146,6 +146,22 @@ static void statusText(bool plain_http, long status, char *why, size_t why_size)
         snprintf(why, why_size, "%s", T("That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533)."));
 }
 
+// An answer that isn't a Subsonic server's: where the server pointed, when it
+// sent the request to Navidrome's page under a path (its BaseUrl, left out of
+// the address); otherwise what its HTTP side says.
+static void notSubsonic(const NetResponse *r, const char *address, bool plain_http, long status, char *why,
+                        size_t why_size)
+{
+    char pointed[SUB_ADDRESS_MAX], shown[SUB_ADDRESS_MAX];
+    if (subPointedAddress(address, r->redirected, pointed, sizeof(pointed))) {
+        subShownAddress(pointed, shown, sizeof(shown));
+        snprintf(why, why_size, T("No Navidrome or Subsonic server there: it points to %.200s. Use that address."),
+                 shown);
+    } else {
+        statusText(plain_http, status, why, why_size);
+    }
+}
+
 // subCall, with *error the Subsonic error's code when the server answered with one (0 otherwise).
 static JsonDoc *call(NetClient *client, const char *method, const char *params, const JsonValue **body,
                      const volatile bool *cancel, char *why, size_t why_size, int *error)
@@ -162,6 +178,8 @@ static JsonDoc *call(NetClient *client, const char *method, const char *params, 
         return NULL;
     }
     bool plain_http = !strncmp(a.address, "http://", 7);
+    char address[SUB_ADDRESS_MAX];
+    snprintf(address, sizeof(address), "%s", a.address);
     NetClient *own = client ? NULL : netClientOpen();
     NetRequest request = {.url = url, .cancel = cancel, .stall_s = CALL_STALL_S, .timeout_s = CALL_TIMEOUT_S,
                           .accept_json = true, .any_certificate = !a.check_certificate};
@@ -177,11 +195,11 @@ static JsonDoc *call(NetClient *client, const char *method, const char *params, 
     else if (!fetched && cancel && *cancel)
         ;  // Called off: nothing to say.
     else if (!fetched && response.problem == NET_STATUS)
-        statusText(plain_http, response.status, why, why_size);
+        notSubsonic(&response, address, plain_http, response.status, why, why_size);
     else if (!fetched)
         snprintf(why, why_size, "%s", problemText(response.problem, request.any_certificate));
     else if (!(doc = jsonParse(response.data, response.size)))
-        statusText(plain_http, 0, why, why_size);
+        notSubsonic(&response, address, plain_http, 0, why, why_size);
     netResponseFree(&response);
     if (!doc)
         return NULL;

@@ -231,6 +231,15 @@ int main(void)
     use(other, user, pass);
     EXPECT(!subTest(text, sizeof(text)), "a wrong path answered");
     printf("wrong path: %s\n", text);
+    // NAVIDROME_UNDER_PATH: a Navidrome with a BaseUrl, its address without the path ("http://host:4534"). It
+    // sends the request to its page there: the test says that address, not just "not a Navidrome".
+    const char *under = getenv("NAVIDROME_UNDER_PATH");
+    if (under) {
+        use(under, user, pass);
+        EXPECT(!subTest(text, sizeof(text)) && strstr(text, "points to") && strstr(text, "/navidrome"),
+               "under a path: %s", text);
+        printf("under a path: %s\n", text);
+    }
     kfileSetRemote(KFILE_REMOTE_SERVER, NULL);
     subFileForget();
     netExit();

@@ -943,6 +943,9 @@ That address answers, but not as a Navidrome or Subsonic server. Check the port 
 No Navidrome or Subsonic server there. If it's under a path (like /navidrome), add it to the address.
 그곳에 Navidrome 또는 Subsonic 서버가 없습니다. 경로(예: /navidrome)가 있다면 주소에 추가하세요.
 
+No Navidrome or Subsonic server there: it points to %.200s. Use that address.
+그곳에 Navidrome 또는 Subsonic 서버가 없습니다. %.200s 을(를) 가리킵니다. 그 주소를 사용하세요.
+
 The Navidrome server is forgotten.
 Navidrome 서버 설정을 삭제했습니다.
 

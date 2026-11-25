@@ -110,6 +110,22 @@ static void testAddresses(void)
     CHECK(subSameServer("http://pc:4533/a", "HTTP://PC:4533"));
     CHECK(!subSameServer("http://pc:4533", "https://pc:4533"));
     CHECK(!subSameServer("http://pc:4533", "http://pc:4534"));
+
+    // Navidrome under a path (its BaseUrl), typed without it, sends the API's request to its page there.
+    CHECK(subPointedAddress("http://pc:4534", "http://pc:4534/navidrome/app/", out, sizeof(out)));
+    CHECK_STR(out, "http://pc:4534/navidrome");
+    CHECK(subPointedAddress("http://pc:4534", "https://pc:4534/a/navidrome/app?x=1#/album", out, sizeof(out)));
+    CHECK_STR(out, "https://pc:4534/a/navidrome");
+    CHECK(subPointedAddress("http://pc:4534/old", "http://pc:4534/music/APP", out, sizeof(out)));
+    CHECK_STR(out, "http://pc:4534/music");
+    CHECK(!subPointedAddress("http://pc:4533", "http://pc:4533/app/", out, sizeof(out)));  // At the top: no path.
+    CHECK(!subPointedAddress("http://pc:4534/navidrome", "http://pc:4534/navidrome/app/", out, sizeof(out)));
+    CHECK(!subPointedAddress("http://pc:4534", "http://pc:4534/login", out, sizeof(out)));  // Not Navidrome's page.
+    CHECK(!subPointedAddress("http://pc:4534", "http://pc:4534/myapp/", out, sizeof(out)));
+    CHECK(!subPointedAddress("http://pc:4534", "", out, sizeof(out)));  // No redirect.
+    CHECK(!subPointedAddress("http://pc:4534", "/navidrome/app/", out, sizeof(out)));
+    char small[8];
+    CHECK(!subPointedAddress("http://pc:4534", "http://pc:4534/navidrome/app/", small, sizeof(small)));
 }
 
 static void testAccount(void)

@@ -8,6 +8,7 @@
 
 #define NET_USER_AGENT "KaiPlayer/" KAIPLAYER_VERSION " (+https://github.com/mizuiroame/kaiplayer)"
 #define NET_ERROR_MAX 128
+#define NET_URL_MAX 512
 
 // Starts sockets and curl. False if the network can't be used. Each user
 // (the network folder) starts it; it stops after the last one's netExit.
@@ -60,6 +61,8 @@ typedef struct {
     long status;
     NetProblem problem;
     char error[NET_ERROR_MAX];
+    // Where redirects ended, without its query (it may hold a sign-in); "" without one.
+    char redirected[NET_URL_MAX];
 } NetResponse;
 
 // The whole answer, up to max_bytes (more fails).

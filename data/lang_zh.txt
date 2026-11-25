@@ -943,6 +943,9 @@ That address answers, but not as a Navidrome or Subsonic server. Check the port 
 No Navidrome or Subsonic server there. If it's under a path (like /navidrome), add it to the address.
 这里没有Navidrome或Subsonic服务器。如果它在某个路径下（如 /navidrome），请加到地址中。
 
+No Navidrome or Subsonic server there: it points to %.200s. Use that address.
+这里没有Navidrome或Subsonic服务器：它指向 %.200s。请使用该地址。
+
 The Navidrome server is forgotten.
 已忘记Navidrome服务器。
 

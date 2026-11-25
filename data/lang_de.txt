@@ -943,6 +943,9 @@ Diese Adresse antwortet, aber nicht als Navidrome- oder Subsonic-Server. Prüfe 
 No Navidrome or Subsonic server there. If it's under a path (like /navidrome), add it to the address.
 Hier ist kein Navidrome- oder Subsonic-Server. Hat er einen Pfad (wie /navidrome), füge ihn hinzu.
 
+No Navidrome or Subsonic server there: it points to %.200s. Use that address.
+Hier ist kein Navidrome- oder Subsonic-Server: Er verweist auf %.200s. Verwende diese Adresse.
+
 The Navidrome server is forgotten.
 Der Navidrome-Server wurde vergessen.
 
