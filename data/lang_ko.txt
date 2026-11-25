@@ -1041,3 +1041,9 @@ SD 카드 전체로 이동
 
 Source:
 소스:
+
+Color
+색상
+
+Its own
+고유 색

@@ -1041,3 +1041,9 @@ Aller à toute la carte SD
 
 Source:
 Source :
+
+Color
+Couleur
+
+Its own
+La sienne

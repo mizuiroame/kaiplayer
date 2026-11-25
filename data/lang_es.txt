@@ -1041,3 +1041,9 @@ Ir a toda la tarjeta SD
 
 Source:
 Fuente:
+
+Color
+Color
+
+Its own
+El suyo

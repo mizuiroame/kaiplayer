@@ -1041,3 +1041,9 @@ Zur ganzen SD-Karte
 
 Source:
 Quelle:
+
+Color
+Farbe
+
+Its own
+Eigene

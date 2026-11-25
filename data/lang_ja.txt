@@ -1041,3 +1041,9 @@ SDカード全体へ
 
 Source:
 ソース：
+
+Color
+色
+
+Its own
+固有の色

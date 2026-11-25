@@ -530,6 +530,9 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     g_ui_list_focused = app->focus != FOCUS_PLAYER;
     uiResolveTrack(status, art, &track);
     g_ui_accent = themeAccentColor(app->config.accent, track.cover ? track.cover->vibrant : 0, track.cover != NULL);
+    g_ui_network = app->config.network_color ? themeAccentColor(app->config.network_color - 1, 0, false)
+                                             : COLOR_NETWORK_OWN;
+    g_ui_server = app->config.server_color ? themeAccentColor(app->config.server_color - 1, 0, false) : COLOR_SERVER_OWN;
 
     // Only the CPU keeps the view behind an overlay: the GPU draws it all again quickly.
     bool overlay = uiOverlayOpen(app), keep = overlay && gfxCanReadBack();

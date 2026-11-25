@@ -7,6 +7,8 @@
 
 #define THEME_ACCENT_COUNT 7
 #define THEME_ACCENT_FROM_COVER (THEME_ACCENT_COUNT - 1)
+// A source's color (the network folder's, Navidrome's): its own, or one of the presets (not From cover).
+#define SOURCE_COLOR_CHOICES THEME_ACCENT_COUNT
 
 const char *themeAccentName(int accent);
 // The accent color (0xAABBGGRR). For "From cover" it uses the cover's

@@ -1041,3 +1041,9 @@ Vai a tutta la scheda SD
 
 Source:
 Origine:
+
+Color
+Colore
+
+Its own
+Il suo

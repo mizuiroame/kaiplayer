@@ -1041,3 +1041,9 @@ Go to the whole SD card
 
 Source:
 来源：
+
+Color
+颜色
+
+Its own
+自带颜色

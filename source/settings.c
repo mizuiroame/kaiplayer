@@ -10,17 +10,17 @@ static const char *const ROW_LABELS[SETTING_COUNT] = {
     N_("User and password"), N_("Test the connection"), N_("Forget this folder"), N_("Navidrome"), N_("Server"),
     N_("User and password"), N_("Test the connection"), N_("Certificate check"), N_("Forget this server"),
     N_("Remember the password"), N_("Allow without signing (old NAS)"), N_("Credits and licenses"),
-    N_("Check once a day"), N_("Look for an update"),
+    N_("Check once a day"), N_("Look for an update"), N_("Color"), N_("Color"),
 };
 
 // The same pages, in the same order, as KaiVideo's and KaiRadio's Settings.
 static const SettingRow MAIN_ROWS[] = {SETTING_OPEN_LIBRARY, SETTING_OPEN_NETWORK, SETTING_OPEN_SERVER,
                                        SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY, SETTING_ABOUT};
 static const SettingRow LIBRARY_ROWS[] = {SETTING_LIBRARY, SETTING_RESCAN};
-static const SettingRow NETWORK_ROWS[] = {SETTING_NET_ADDRESS,  SETTING_NET_ACCOUNT, SETTING_NET_REMEMBER,
-                                          SETTING_NET_UNSIGNED, SETTING_NET_TEST,    SETTING_NET_FORGET};
-static const SettingRow SERVER_ROWS[] = {SETTING_SRV_ADDRESS, SETTING_SRV_ACCOUNT, SETTING_SRV_TEST,
-                                         SETTING_SRV_CERTIFICATE, SETTING_SRV_FORGET};
+static const SettingRow NETWORK_ROWS[] = {SETTING_NET_ADDRESS, SETTING_NET_ACCOUNT, SETTING_NET_REMEMBER,
+                                          SETTING_NET_UNSIGNED, SETTING_NET_COLOR, SETTING_NET_TEST, SETTING_NET_FORGET};
+static const SettingRow SERVER_ROWS[] = {SETTING_SRV_ADDRESS, SETTING_SRV_ACCOUNT, SETTING_SRV_CERTIFICATE,
+                                         SETTING_SRV_COLOR, SETTING_SRV_TEST, SETTING_SRV_FORGET};
 static const SettingRow PLAYBACK_ROWS[] = {SETTING_SLEEP, SETTING_RESUME, SETTING_SCREEN_OFF, SETTING_EQUALIZER,
                                            SETTING_REPLAYGAIN};
 static const SettingRow ABOUT_ROWS[] = {SETTING_CREDITS, SETTING_UPDATE_AUTO, SETTING_UPDATE_NOW};

@@ -18,8 +18,11 @@
 extern Color g_ui_accent;
 #define COLOR_ACCENT g_ui_accent
 #define COLOR_FOLDER GFX_RGB(0x7C, 0xC4, 0xFF)
-#define COLOR_NETWORK GFX_RGB(0x2E, 0xC4, 0xB6)  // The network folder's, as in KaiVideo.
-#define COLOR_SERVER GFX_RGB(0x3D, 0x6B, 0xFF)   // The Navidrome server's: a deep blue, not an accent's.
+#define COLOR_NETWORK_OWN GFX_RGB(0x2E, 0xC4, 0xB6)  // The network folder's, as in KaiVideo.
+#define COLOR_SERVER_OWN GFX_RGB(0x3D, 0x6B, 0xFF)   // The Navidrome server's: a deep blue, not an accent's.
+extern Color g_ui_network, g_ui_server;  // Their own, or the accent chosen for them in Settings.
+#define COLOR_NETWORK g_ui_network
+#define COLOR_SERVER g_ui_server
 #define COLOR_TEXT GFX_RGB(0xF2, 0xF2, 0xF5)
 #define COLOR_DIM GFX_RGB(0xA4, 0xA4, 0xB0)
 #define COLOR_FAINT GFX_RGB(0x5E, 0x5E, 0x6A)

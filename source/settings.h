@@ -38,6 +38,8 @@ typedef enum {
     SETTING_CREDITS,        // About: credits and licenses (the About panel).
     SETTING_UPDATE_AUTO,    // About: look for a new version once a day.
     SETTING_UPDATE_NOW,     // About: look now, or install the one found.
+    SETTING_NET_COLOR,      // The color the network folder wears: its own, or an accent.
+    SETTING_SRV_COLOR,      // Navidrome's.
     SETTING_COUNT,
 } SettingRow;
 

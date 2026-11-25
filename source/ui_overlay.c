@@ -139,6 +139,12 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
         break;
     }
     case SETTING_ACCENT: snprintf(out, size, "%s", themeAccentName(app->config.accent)); break;
+    case SETTING_NET_COLOR:
+    case SETTING_SRV_COLOR: {
+        int choice = row == SETTING_NET_COLOR ? app->config.network_color : app->config.server_color;
+        snprintf(out, size, "%s", choice ? themeAccentName(choice - 1) : T("Its own"));
+        break;
+    }
     case SETTING_NOW_STYLE: snprintf(out, size, "%s", nowStyleName(app->config.now_style)); break;
     case SETTING_BACKGROUND:
         snprintf(out, size, "%.40s", app->config.background[0] ? app->config.background : T("Cover colors"));
@@ -241,7 +247,22 @@ static int drawNote(int x, int y, int width, const char *text, bool draw)
     return lines;
 }
 
-static void drawSettings(const App *app, uint64_t now_ns)
+#define SOURCE_DOT_SIZE 12
+#define SOURCE_DOT_ROOM 20  // The dot and the gap after it.
+
+static void sourceDot(int x, int middle, Color color)
+{
+    gfxFillRoundRect(x, middle - SOURCE_DOT_SIZE / 2, SOURCE_DOT_SIZE, SOURCE_DOT_SIZE, SOURCE_DOT_SIZE / 2, color);
+}
+
+#define SOURCE_BAND_H 5  // A source's page: its color along the top, as KaiVideo's.
+
+static bool isSourcePage(int page)
+{
+    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER;
+}
+
+static void drawSettingsPanel(const App *app, uint64_t now_ns)
 {
     SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
     int count = settingsPageRows(app->settings_page, rows);
@@ -251,9 +272,15 @@ static void drawSettings(const App *app, uint64_t now_ns)
     int x = (GFX_WIDTH - SETTINGS_W) / 2, y = (GFX_HEIGHT - h) / 2;
     dimScreen();
     panel(x, y, SETTINGS_W, h);
+    if (isSourcePage(app->settings_page))
+        gfxFillRoundRect(x + 16, y, SETTINGS_W - 32, SOURCE_BAND_H, SOURCE_BAND_H / 2, COLOR_ACCENT);
     int title_x = x + PANEL_PAD;
     if (app->settings_page != SETTINGS_PAGE_MAIN) {  // A page: back to the main one.
         title_x += uiDrawBackButtonHit(x + PANEL_PAD - 4, y + 18, false, HIT_OVERLAY_BACK) + 12;
+    }
+    if (app->settings_page == SETTINGS_PAGE_NETWORK || app->settings_page == SETTINGS_PAGE_SERVER) {  // Its color.
+        sourceDot(title_x, y + 37, app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+        title_x += SOURCE_DOT_ROOM;
     }
     fontDraw(FONT_BOLD, 24, title_x, y + 22, settingsPageTitle(app->settings_page), COLOR_TEXT);
 
@@ -266,8 +293,12 @@ static void drawSettings(const App *app, uint64_t now_ns)
         bool opens = settingsRowPage((SettingRow)i) != SETTINGS_PAGE_MAIN;
         if (selected)
             drawRowHighlight(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6);
-        fontDraw(selected ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD, row_y + 8,
-                 settingsRowLabel((SettingRow)i), COLOR_TEXT);
+        int label_x = x + PANEL_PAD;
+        if (i == SETTING_OPEN_NETWORK || i == SETTING_OPEN_SERVER) {  // A source: its color, as KaiVideo's.
+            sourceDot(label_x, row_y + 22, i == SETTING_OPEN_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+            label_x += SOURCE_DOT_ROOM;
+        }
+        fontDraw(selected ? FONT_BOLD : FONT_REGULAR, 21, label_x, row_y + 8, settingsRowLabel((SettingRow)i), COLOR_TEXT);
         settingValue(app, (SettingRow)i, now_ns, value, sizeof(value));
         int value_w = fontTextWidth(FONT_BOLD, 20, value);
         int value_x = x + SETTINGS_W - PANEL_PAD - value_w - (editable || opens ? 24 : 0);
@@ -288,6 +319,16 @@ static void drawSettings(const App *app, uint64_t now_ns)
     else
         fontDrawClipped(FONT_REGULAR, 16, x + PANEL_PAD, y + h - 40, SETTINGS_W - 2 * PANEL_PAD,
                         T("Open source (MIT)  ·  github.com/mizuiroame/kaiplayer"), COLOR_FAINT);
+}
+
+// A source's page in its color (the accent's, for as long as it's drawn).
+static void drawSettings(const App *app, uint64_t now_ns)
+{
+    Color accent = g_ui_accent;
+    if (isSourcePage(app->settings_page))
+        g_ui_accent = app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER;
+    drawSettingsPanel(app, now_ns);
+    g_ui_accent = accent;
 }
 
 static void drawKey(int x, int y, int w, const char *label, bool selected, bool lit, int hit_arg)

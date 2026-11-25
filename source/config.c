@@ -80,6 +80,10 @@ static void applyLine(Config *c, char *line)
         c->replaygain = clampInt(atoi(value), 0, REPLAYGAIN_MODE_COUNT - 1);
     } else if (strcmp(key, "accent") == 0) {
         c->accent = clampInt(atoi(value), 0, THEME_ACCENT_COUNT - 1);
+    } else if (strcmp(key, "network_color") == 0) {
+        c->network_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
+    } else if (strcmp(key, "server_color") == 0) {
+        c->server_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
     } else if (strcmp(key, "screen_off") == 0) {
         c->screen_off_minutes = clampInt(atoi(value), 0, 60);
     } else if (strcmp(key, "now_style") == 0) {
@@ -170,6 +174,7 @@ bool configSave(const Config *c)
         fprintf(f, b ? ",%d" : "%d", c->eq_gains[b]);
     fprintf(f, "\nreplaygain=%d\naccent=%d\nscreen_off=%d\nnow_style=%d\nbackground_blur=%d\n", c->replaygain,
             c->accent, c->screen_off_minutes, c->now_style, c->background_blur);
+    fprintf(f, "network_color=%d\nserver_color=%d\n", c->network_color, c->server_color);
     if (c->background[0] && !strpbrk(c->background, "\r\n/"))
         fprintf(f, "background=%s\n", c->background);
     if (c->language[0] && !strpbrk(c->language, "\r\n"))
