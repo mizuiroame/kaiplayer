@@ -174,6 +174,7 @@ static void typeAddress(App *app)
         if (!subSameServer(address, a.address)) {  // Another server: the old one's sign-in isn't sent there.
             a.user[0] = a.salt[0] = '\0';
             memset(a.token, 0, sizeof(a.token));
+            memset(a.api_key, 0, sizeof(a.api_key));
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a, true);
@@ -214,6 +215,7 @@ static void typeAccount(App *app)
         snprintf(a.user, sizeof(a.user), "%s", user);
         a.salt[0] = '\0';
         memset(a.token, 0, sizeof(a.token));
+        memset(a.api_key, 0, sizeof(a.api_key));  // A user and password instead of the API key.
         if (user[0] && !subSetPassword(&a, password, salt))
             a.user[0] = '\0';  // Too long to use.
         save(app, &a, true);
@@ -222,6 +224,42 @@ static void typeAccount(App *app)
     }
     memset(password, 0, sizeof(password));
     memset(&a, 0, sizeof(a));
+}
+
+// An API key made in the server's web page (OpenSubsonic's apiKeyAuthentication), instead of a user and
+// password. It is typed where it can be seen: it's long and random. Empty: signed out.
+static void typeApiKey(App *app)
+{
+    SubAccount a;
+    subGetAccount(&a);
+    if (!a.address[0]) {
+        appToast(app, T("Enter the server's address first."));
+        memset(&a, 0, sizeof(a));
+        return;
+    }
+    char key[SUB_KEY_MAX] = "", prompt[128];
+    snprintf(prompt, sizeof(prompt), T("%s API key, from its web page"), "Navidrome");
+    SystemKeyboardResult result = systemKeyboardText(prompt, "", key, sizeof(key), sizeof(key) - 1);
+    if (result == SYSTEM_KEYBOARD_UNAVAILABLE) {
+        appNotify(app, NOTICE_ERROR, T("The keyboard couldn't open."));
+    } else if (result == SYSTEM_KEYBOARD_OK && !subSetApiKey(&a, key)) {
+        appNotify(app, NOTICE_ERROR, T("That isn't an API key: it has spaces, or it's too long."));
+    } else if (result == SYSTEM_KEYBOARD_OK) {
+        save(app, &a, true);
+        if (subSignedIn(&a))
+            test(app);  // Says at once whether the server takes it, and whose it is.
+    }
+    memset(key, 0, sizeof(key));
+    memset(&a, 0, sizeof(a));
+}
+
+bool appServerUsesKey(void)
+{
+    SubAccount a;
+    subGetAccount(&a);
+    bool uses = subUsesApiKey(&a);
+    memset(&a, 0, sizeof(a));
+    return uses;
 }
 
 static void toggleCertificate(App *app)
@@ -245,6 +283,7 @@ bool appServerActivate(App *app, SettingRow row)
     switch (row) {
     case SETTING_SRV_ADDRESS: typeAddress(app); return true;
     case SETTING_SRV_ACCOUNT: typeAccount(app); return true;
+    case SETTING_SRV_API_KEY: typeApiKey(app); return true;
     case SETTING_SRV_TEST: test(app); return true;
     case SETTING_SRV_CERTIFICATE: toggleCertificate(app); return true;
     case SETTING_SRV_FORGET: forget(app); return true;
@@ -351,6 +390,12 @@ void appServerUpdate(App *app, const PlayerStatus *status)
     if (text[0]) {
         joinTest(false);
         appToast(app, text);
+        if (appServerUsesKey()) {  // The test may have learned whose the key is: kept for showing it.
+            char path[UTIL_PATH_MAX];
+            accountPath(path, sizeof(path));
+            if (!subSaveAccount(path))
+                appNotify(app, NOTICE_ERROR, T("It couldn't be written to the card."));
+        }
     }
     trackPlays(status);
 }

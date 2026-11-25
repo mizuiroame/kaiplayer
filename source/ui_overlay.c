@@ -153,14 +153,21 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_OPEN_SERVER:
     case SETTING_SRV_ADDRESS:
     case SETTING_SRV_ACCOUNT:
+    case SETTING_SRV_API_KEY:
     case SETTING_SRV_CERTIFICATE: {
         char address[128], user[128];
         bool check;
         appServerShown(address, sizeof(address), user, sizeof(user), &check);
         if (row == SETTING_SRV_CERTIFICATE)
             snprintf(out, size, "%s", check ? T("On") : T("Off: any certificate"));
+        else if (row == SETTING_SRV_ACCOUNT && appServerUsesKey())
+            snprintf(out, size, "%s", T("The API key is used"));
         else if (row == SETTING_SRV_ACCOUNT)
             snprintf(out, size, "%.40s", user[0] ? user : T("Not signed in"));
+        else if (row == SETTING_SRV_API_KEY && appServerUsesKey())
+            snprintf(out, size, "%.40s", user[0] ? user : T("Set"));
+        else if (row == SETTING_SRV_API_KEY)
+            snprintf(out, size, "%s", T("Not set"));
         else
             snprintf(out, size, "%.40s", address[0] ? address : T("Not set"));
         break;

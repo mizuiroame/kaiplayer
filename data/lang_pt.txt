@@ -1050,3 +1050,30 @@ Cor
 
 Its own
 A própria
+
+API key
+Chave de API
+
+%s API key, from its web page
+Chave de API do %s, da página web dele
+
+That isn't an API key: it has spaces, or it's too long.
+Isso não é uma chave de API: tem espaços ou é longa demais.
+
+The API key is used
+A chave de API está em uso
+
+Set
+Configurada
+
+the API key's user
+o usuário da chave de API
+
+The server doesn't know this API key: it may have been revoked. Make a new one in its web page.
+O servidor não conhece esta chave de API: ela pode ter sido revogada. Crie uma nova na página web dele.
+
+This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key.
+Este servidor não aceita uma senha do KaiPlayer: crie uma chave de API na página web dele e digite-a em Chave de API.
+
+This server doesn't take API keys. Sign in with your user name and password.
+Este servidor não aceita chaves de API. Entre com seu usuário e senha.

@@ -1050,3 +1050,30 @@ Farbe
 
 Its own
 Eigene
+
+API key
+API-Schlüssel
+
+%s API key, from its web page
+%s-API-Schlüssel, von seiner Webseite
+
+That isn't an API key: it has spaces, or it's too long.
+Das ist kein API-Schlüssel: Er enthält Leerzeichen oder ist zu lang.
+
+The API key is used
+Der API-Schlüssel wird verwendet
+
+Set
+Festgelegt
+
+the API key's user
+der Benutzer des API-Schlüssels
+
+The server doesn't know this API key: it may have been revoked. Make a new one in its web page.
+Der Server kennt diesen API-Schlüssel nicht: Er wurde vielleicht widerrufen. Erstelle auf seiner Webseite einen neuen.
+
+This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key.
+Dieser Server nimmt von KaiPlayer kein Passwort an: Erstelle auf seiner Webseite einen API-Schlüssel und gib ihn unter API-Schlüssel ein.
+
+This server doesn't take API keys. Sign in with your user name and password.
+Dieser Server nimmt keine API-Schlüssel an. Melde dich mit Benutzername und Passwort an.

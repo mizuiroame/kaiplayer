@@ -123,14 +123,49 @@ bool subSetPassword(SubAccount *a, const char *password, const char *salt)
     if (ok) {
         md5Hex(joined, (size_t)n, a->token);
         snprintf(a->salt, sizeof(a->salt), "%s", salt);
+        memset(a->api_key, 0, sizeof(a->api_key));  // One way of signing in at a time.
     }
     memset(joined, 0, sizeof(joined));
     return ok;
 }
 
+// An API key as the account's file and a URL can carry it: printable, no spaces.
+static bool keyUsable(const char *key, size_t length)
+{
+    if (length >= SUB_KEY_MAX)
+        return false;
+    for (size_t i = 0; i < length; i++)
+        if ((unsigned char)key[i] <= ' ' || key[i] == 0x7f)
+            return false;
+    return true;
+}
+
+bool subSetApiKey(SubAccount *a, const char *typed)
+{
+    while (*typed == ' ')
+        typed++;
+    size_t length = strlen(typed);
+    while (length && typed[length - 1] == ' ')
+        length--;
+    if (!keyUsable(typed, length))
+        return false;
+    memset(a->api_key, 0, sizeof(a->api_key));
+    memcpy(a->api_key, typed, length);
+    a->user[0] = a->salt[0] = '\0';
+    memset(a->token, 0, sizeof(a->token));
+    return true;
+}
+
+bool subUsesApiKey(const SubAccount *a)
+{
+    return a->api_key[0] != '\0';
+}
+
 bool subSignedIn(const SubAccount *a)
 {
-    return a->address[0] && a->user[0] && a->salt[0] && strlen(a->token) == MD5_HEX_SIZE - 1;
+    if (!a->address[0])
+        return false;
+    return subUsesApiKey(a) || (a->user[0] && a->salt[0] && strlen(a->token) == MD5_HEX_SIZE - 1);
 }
 
 static void readValue(char *out, size_t size, const char *value, size_t length)
@@ -160,6 +195,8 @@ void subAccountRead(SubAccount *a, const char *text)
                 readValue(a->salt, sizeof(a->salt), eq + 1, value);
             else if (keyIs(line, key, "token"))
                 readValue(a->token, sizeof(a->token), eq + 1, value);
+            else if (keyIs(line, key, "api_key"))
+                readValue(a->api_key, sizeof(a->api_key), eq + 1, value);
             else if (keyIs(line, key, "check_certificate"))
                 a->check_certificate = !(value == 1 && eq[1] == '0');
         }
@@ -177,15 +214,17 @@ void subAccountRead(SubAccount *a, const char *text)
     for (const char *p = a->token; *p; p++)
         if (!isxdigit((unsigned char)*p))
             a->salt[0] = a->token[0] = '\0';
+    if (!keyUsable(a->api_key, strlen(a->api_key)))
+        memset(a->api_key, 0, sizeof(a->api_key));  // Damaged: signed out.
 }
 
 bool subAccountWrite(const SubAccount *a, char *out, size_t size)
 {
     if (strpbrk(a->address, "\r\n") || strpbrk(a->user, "\r\n") || strpbrk(a->salt, "\r\n") ||
-        strpbrk(a->token, "\r\n"))
+        strpbrk(a->token, "\r\n") || strpbrk(a->api_key, "\r\n"))
         return false;
-    int n = snprintf(out, size, "address=%s\nuser=%s\nsalt=%s\ntoken=%s\ncheck_certificate=%d\n", a->address,
-                     a->user, a->salt, a->token, a->check_certificate ? 1 : 0);
+    int n = snprintf(out, size, "address=%s\nuser=%s\nsalt=%s\ntoken=%s\napi_key=%s\ncheck_certificate=%d\n",
+                     a->address, a->user, a->salt, a->token, a->api_key, a->check_certificate ? 1 : 0);
     return n > 0 && (size_t)n < size;
 }
 
@@ -213,14 +252,32 @@ bool subEncode(const char *text, char *out, size_t size)
     return true;
 }
 
+#define COMMON_PARAMS "v=" SUB_API_VERSION "&c=" SUB_CLIENT "&f=json"
+
 bool subRequestUrl(const SubAccount *a, const char *method, const char *params, char *out, size_t size)
 {
-    char user[SUB_TEXT_MAX * 3];
-    if (!a->address[0] || !subEncode(a->user, user, sizeof(user)))
-        return false;
-    int n = snprintf(out, size, "%s/rest/%s?u=%s&t=%s&s=%s&v=" SUB_API_VERSION "&c=" SUB_CLIENT "&f=json%s%s",
-                     a->address, method, user, a->token, a->salt, params && params[0] ? "&" : "",
-                     params ? params : "");
+    char sign_in[SUB_KEY_MAX * 3 + 16], user[SUB_TEXT_MAX * 3], key[SUB_KEY_MAX * 3];
+    bool ok = a->address[0] != '\0';
+    if (ok && subUsesApiKey(a)) {
+        ok = subEncode(a->api_key, key, sizeof(key));
+        if (ok)
+            snprintf(sign_in, sizeof(sign_in), "apiKey=%s", key);
+        memset(key, 0, sizeof(key));
+    } else if (ok) {
+        ok = subEncode(a->user, user, sizeof(user));
+        if (ok)
+            snprintf(sign_in, sizeof(sign_in), "u=%s&t=%s&s=%s", user, a->token, a->salt);
+    }
+    int n = ok ? snprintf(out, size, "%s/rest/%s?%s&" COMMON_PARAMS "%s%s", a->address, method, sign_in,
+                          params && params[0] ? "&" : "", params ? params : "")
+               : -1;
+    memset(sign_in, 0, sizeof(sign_in));
+    return n > 0 && (size_t)n < size;
+}
+
+bool subPublicUrl(const char *address, const char *method, char *out, size_t size)
+{
+    int n = address[0] ? snprintf(out, size, "%s/rest/%s?" COMMON_PARAMS, address, method) : -1;
     return n > 0 && (size_t)n < size;
 }
 
@@ -431,6 +488,22 @@ bool subAddSongs(Catalog *c, const JsonValue *parent, const char *name, const ch
     }
     free(tags);
     return ok;
+}
+
+bool subHasExtension(const JsonValue *body, const char *name)
+{
+    for (const JsonValue *e = subFirst(body, "openSubsonicExtensions"); e;
+         e = subNext(body, "openSubsonicExtensions", e))
+        if (!strcmp(jsonText(e, "name"), name))
+            return true;
+    return false;
+}
+
+bool subTokenUser(const JsonValue *body, char *out, size_t size)
+{
+    const char *user = jsonText(jsonGet(body, "tokenInfo"), "username");
+    int n = snprintf(out, size, "%s", user);
+    return user[0] && n > 0 && (size_t)n < size;
 }
 
 long subScanCount(const JsonValue *body)

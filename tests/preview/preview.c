@@ -120,6 +120,7 @@ bool catalogScanProgress(size_t *done, size_t *total)
 
 // The network folder (app_network.c, kfile.c) and the server (app_server.c): set up in the scenes that show them.
 static bool g_network, g_server;
+static bool g_server_key;  // The server's sign-in is an API key.
 static bool g_network_https;  // The network folder is a WebDAV one over https, its certificate check off.
 static const char *g_scan_problem = "";
 static bool g_net_scan;          // A library on the network being read,
@@ -173,6 +174,11 @@ void appServerShown(char *address, size_t address_size, char *user, size_t user_
     snprintf(address, address_size, "%s", g_server ? PREVIEW_SERVER : "");
     snprintf(user, user_size, "%s", g_server ? "kaiplayer" : "");
     *check_certificate = true;
+}
+
+bool appServerUsesKey(void)
+{
+    return g_server && g_server_key;
 }
 
 void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size)
@@ -503,6 +509,10 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     g_server = true;
     app->settings_cursor = SETTING_SRV_CERTIFICATE;
     render(dir, "settings_server", app, status);
+    g_server_key = true;  // Signed in with an API key instead.
+    app->settings_cursor = SETTING_SRV_API_KEY;
+    render(dir, "settings_server_key", app, status);
+    g_server_key = false;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->settings_cursor = SETTING_OPEN_SERVER;
     render(dir, "settings_main_server", app, status);

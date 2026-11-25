@@ -1050,3 +1050,30 @@ Color
 
 Its own
 自带颜色
+
+API key
+API密钥
+
+%s API key, from its web page
+%s的API密钥（在其网页中创建）
+
+That isn't an API key: it has spaces, or it's too long.
+这不是API密钥：其中有空格，或者太长。
+
+The API key is used
+正在使用API密钥
+
+Set
+已设置
+
+the API key's user
+API密钥的用户
+
+The server doesn't know this API key: it may have been revoked. Make a new one in its web page.
+服务器不认识此API密钥：它可能已被撤销。请在其网页中创建一个新的。
+
+This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key.
+此服务器不接受KaiPlayer的密码：请在其网页中创建API密钥，并在“API密钥”中输入。
+
+This server doesn't take API keys. Sign in with your user name and password.
+此服务器不支持API密钥。请使用用户名和密码登录。

@@ -386,6 +386,8 @@ void appServerUpdate(App *app, const PlayerStatus *status);
 void appServerExit(void);
 // What its rows show: the address ("" for none), the user ("" if not signed in), the certificate check.
 void appServerShown(char *address, size_t address_size, char *user, size_t user_size, bool *check_certificate);
+// The sign-in is an API key (user is then the name the server gave for it, "" until a test asks).
+bool appServerUsesKey(void);
 
 // Resume: restore the last queue at startup and save it while playing.
 // play: keep playing; otherwise the restored queue waits paused.

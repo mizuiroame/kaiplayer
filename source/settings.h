@@ -41,6 +41,7 @@ typedef enum {
     SETTING_NET_COLOR,      // The color the network folder wears: its own, or an accent.
     SETTING_SRV_COLOR,      // Navidrome's.
     SETTING_NET_CERTIFICATE,// Whether an https network folder's certificate must be trusted.
+    SETTING_SRV_API_KEY,    // Types an API key instead of a user and password, and signs in.
     SETTING_COUNT,
 } SettingRow;
 

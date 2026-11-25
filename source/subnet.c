@@ -26,6 +26,9 @@
 #define SUB_ERROR_SERVER_OLD 30
 #define SUB_ERROR_LOGIN 40
 #define SUB_ERROR_NO_TOKEN 41
+#define SUB_ERROR_MISSING 10       // A required parameter: "u", from a server that doesn't take API keys.
+#define SUB_ERROR_NOT_SUPPORTED 42 // OpenSubsonic: this way of signing in isn't taken.
+#define SUB_ERROR_BAD_KEY 44       // OpenSubsonic: an API key the server doesn't know.
 #define SUB_ERROR_NOT_ALLOWED 50
 #define SUB_ERROR_NOT_FOUND 70
 
@@ -115,10 +118,22 @@ static const char *problemText(NetProblem problem, bool any_certificate)
     }
 }
 
-// A Subsonic error, for the person.
-static void errorText(int code, const char *message, char *why, size_t why_size)
+// A Subsonic error, for the person. with_key: the sign-in was an API key.
+static void errorText(int code, const char *message, bool with_key, char *why, size_t why_size)
 {
+    if (with_key && (code == SUB_ERROR_MISSING || code == SUB_ERROR_NOT_SUPPORTED)) {
+        snprintf(why, why_size, "%s", T("This server doesn't take API keys. Sign in with your user name and password."));
+        return;
+    }
     switch (code) {
+    case SUB_ERROR_BAD_KEY:
+        snprintf(why, why_size, "%s",
+                 T("The server doesn't know this API key: it may have been revoked. Make a new one in its web page."));
+        return;
+    case SUB_ERROR_NOT_SUPPORTED:
+        snprintf(why, why_size, "%s",
+                 T("This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key."));
+        return;
     case SUB_ERROR_LOGIN: snprintf(why, why_size, "%s", T("Wrong user name or password.")); return;
     case SUB_ERROR_NO_TOKEN:
         snprintf(why, why_size, "%s", T("This server doesn't take KaiPlayer's way of signing in (a token)."));
@@ -178,6 +193,7 @@ static JsonDoc *call(NetClient *client, const char *method, const char *params, 
         return NULL;
     }
     bool plain_http = !strncmp(a.address, "http://", 7);
+    bool with_key = subUsesApiKey(&a);
     char address[SUB_ADDRESS_MAX];
     snprintf(address, sizeof(address), "%s", a.address);
     NetClient *own = client ? NULL : netClientOpen();
@@ -207,7 +223,7 @@ static JsonDoc *call(NetClient *client, const char *method, const char *params, 
     char message[160];
     if (!subAnswer(jsonRoot(doc), body, &code, message, sizeof(message))) {
         if (*body) {
-            errorText(code, message, why, why_size);
+            errorText(code, message, with_key, why, why_size);
             *error = code;
         }
         else
@@ -226,10 +242,68 @@ JsonDoc *subCall(NetClient *client, const char *method, const char *params, cons
     return call(client, method, params, body, cancel, why, why_size, &error);
 }
 
+// Whether the server lists API keys among its OpenSubsonic extensions (asked without signing in, as
+// getOpenSubsonicExtensions is): 1 yes, 0 no, -1 it couldn't be asked.
+static int offersApiKeys(void)
+{
+    SubAccount a;
+    subGetAccount(&a);
+    char url[URL_MAX];
+    bool ok = subPublicUrl(a.address, "getOpenSubsonicExtensions", url, sizeof(url));
+    NetRequest request = {.url = url, .stall_s = CALL_STALL_S, .timeout_s = CALL_TIMEOUT_S, .accept_json = true,
+                          .any_certificate = !a.check_certificate};
+    memset(&a, 0, sizeof(a));
+    NetClient *client = ok ? netClientOpen() : NULL;
+    NetResponse response;
+    memset(&response, 0, sizeof(response));
+    bool fetched = client && netFetchText(client, &request, ANSWER_MAX_BYTES, &response);
+    netClientClose(client);
+    JsonDoc *doc = fetched ? jsonParse(response.data, response.size) : NULL;
+    netResponseFree(&response);
+    const JsonValue *body;
+    int code, offers = -1;
+    char message[160];
+    if (doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)))
+        offers = subHasExtension(body, SUB_API_KEY_EXTENSION) ? 1 : 0;
+    else if (doc && body)
+        offers = 0;  // A Subsonic server without OpenSubsonic's extensions.
+    jsonFree(doc);
+    return offers;
+}
+
+// The user an API key belongs to (tokenInfo), kept in the account in use for showing it, if that is
+// still the same key. False if the server doesn't say.
+static bool learnKeyUser(char *who, size_t who_size)
+{
+    SubAccount a;
+    subGetAccount(&a);  // The key asked about.
+    const JsonValue *body;
+    char why[160];
+    JsonDoc *info = subCall(NULL, "tokenInfo", NULL, &body, NULL, why, sizeof(why));
+    bool known = info && subTokenUser(body, who, who_size);
+    jsonFree(info);
+    if (!known) {
+        memset(&a, 0, sizeof(a));
+        return false;
+    }
+    pthread_mutex_lock(&g_lock);
+    if (subUsesApiKey(&g_account) && !strcmp(g_account.api_key, a.api_key))
+        snprintf(g_account.user, sizeof(g_account.user), "%s", who);
+    pthread_mutex_unlock(&g_lock);
+    memset(&a, 0, sizeof(a));
+    return true;
+}
+
 bool subTest(char *out, size_t size)
 {
     const JsonValue *body;
-    JsonDoc *ping = subCall(NULL, "ping", NULL, &body, NULL, out, size);
+    pthread_mutex_lock(&g_lock);
+    bool with_key = subUsesApiKey(&g_account);
+    pthread_mutex_unlock(&g_lock);
+    int error;
+    JsonDoc *ping = call(NULL, "ping", NULL, &body, NULL, out, size, &error);
+    if (!ping && with_key && error && error != SUB_ERROR_BAD_KEY && offersApiKeys() == 0)
+        snprintf(out, size, "%s", T("This server doesn't take API keys. Sign in with your user name and password."));
     if (!ping)
         return false;
     char name[64], version[64];
@@ -250,6 +324,8 @@ bool subTest(char *out, size_t size)
     char who[SUB_TEXT_MAX];
     snprintf(who, sizeof(who), "%s", a.user);
     memset(&a, 0, sizeof(a));
+    if (with_key && !learnKeyUser(who, sizeof(who)))
+        snprintf(who, sizeof(who), "%s", T("the API key's user"));
     if (songs >= 0)
         snprintf(out, size, T("%s %s answers. Signed in as %s: %ld songs.%s"), name, version, who, songs, plain);
     else

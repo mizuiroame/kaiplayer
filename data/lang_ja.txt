@@ -1050,3 +1050,30 @@ Color
 
 Its own
 固有の色
+
+API key
+APIキー
+
+%s API key, from its web page
+%sのAPIキー（Webページで作成）
+
+That isn't an API key: it has spaces, or it's too long.
+APIキーではありません：スペースが含まれているか、長すぎます。
+
+The API key is used
+APIキーを使用中
+
+Set
+設定済み
+
+the API key's user
+APIキーのユーザー
+
+The server doesn't know this API key: it may have been revoked. Make a new one in its web page.
+サーバーがこのAPIキーを認識しません。無効化された可能性があります。サーバーのWebページで新しいキーを作成してください。
+
+This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key.
+このサーバーはKaiPlayerからのパスワードを受け付けません。サーバーのWebページでAPIキーを作成し、「APIキー」に入力してください。
+
+This server doesn't take API keys. Sign in with your user name and password.
+このサーバーはAPIキーに対応していません。ユーザー名とパスワードでログインしてください。

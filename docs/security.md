@@ -58,6 +58,10 @@ reduces that risk in these ways:
   page, which asks for the password. Plain `http://` sends the token
   unencrypted. A new address forgets the old sign-in. URLs with the token are
   never written anywhere. Use an account that only plays music.
+- **A Navidrome API key, if used instead, is kept as typed** in the same file
+  (the server needs it as it is), and every request carries it alone, with no
+  user. It is as good as the token for the Subsonic API, but it can be revoked
+  on the server without changing the password.
 - **What the server sends is untrusted.** Folder listings (WebDAV's XML, SMB
   entries) are parsed with length checks; names with control characters or
   slashes, `.` and `..`, and listings past 5000 entries are left out; songs

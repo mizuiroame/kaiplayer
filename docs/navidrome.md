@@ -22,6 +22,10 @@ In **+ → Settings → Navidrome**:
    Navidrome's own page, copied from a browser, works too.
 2. **User and password**: your account on the server. KaiPlayer signs in at
    once and says whether it worked.
+   Or **API key**, instead: a key made in the server's web page (in Navidrome
+   after 0.64.2: **Settings → Players**, a player's **API key**). Type it as it
+   is shown; KaiPlayer signs in with it alone, tests it, and shows whose it is.
+   A user and password typed later replace the key, and a key replaces them.
 3. **Test the connection**: it says which server answered, its version, and
    how many songs it has, or what went wrong.
 4. **Certificate check**: for an `https://` server with its own certificate
@@ -67,7 +71,13 @@ library goes back to the card.
   use the account through the Subsonic API (play, download, change its
   playlists) until you change the password on the server, so use an account
   that only plays music.
-- **Over plain `http://`** the token travels unencrypted. Use it on your home
+- **An API key is kept as it is**, in the same file: the server needs the key
+  itself. It isn't made from your password, so it can be revoked on the server
+  (Navidrome: the player's **Revoke**) without changing the password, and in
+  Navidrome its plays and settings are those of its own player. A key the
+  server no longer knows, or a server that doesn't take keys (OpenSubsonic's
+  `apiKeyAuthentication`), says so when you test it.
+- **Over plain `http://`** the token (or the key) travels unencrypted. Use it on your home
   network, or use `https://`.
 - **A server that doesn't take tokens** (some that sign in with LDAP, for
   example) says so when you test it: KaiPlayer doesn't send passwords.
