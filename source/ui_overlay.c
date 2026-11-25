@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "lang.h"
+#include "ui_brand.h"
 #include "nowstyle.h"
 #include "settings.h"
 #include "theme.h"
@@ -483,9 +484,7 @@ static void drawAbout(void)
     int x = (GFX_WIDTH - ABOUT_W) / 2, y = (GFX_HEIGHT - ABOUT_H) / 2;
     dimScreen();
     panel(x, y, ABOUT_W, ABOUT_H);
-    // A big note in the accent color, beside the name and version.
-    gfxFillRoundRect(x + PANEL_PAD, y + 32, 84, 84, 20, COLOR_SURFACE_HI);
-    uiDrawNoteIcon(x + PANEL_PAD + 18, y + 50, 48, COLOR_ACCENT);
+    uiDrawAppIcon(x + PANEL_PAD, y + 32);  // KaiPlayer's icon, beside the name and version.
     int text_x = x + PANEL_PAD + 108;
     fontDraw(FONT_BOLD, 34, text_x, y + 36, "KaiPlayer", COLOR_TEXT);
     char version[64];
@@ -493,9 +492,7 @@ static void drawAbout(void)
     fontDraw(FONT_REGULAR, 20, text_x, y + 84, version, COLOR_DIM);
 
     int line_y = y + 150;
-    fontDraw(FONT_REGULAR, 18, x + PANEL_PAD, line_y, T("Made by"), COLOR_DIM);
-    fontDraw(FONT_BOLD, 26, x + PANEL_PAD, line_y + 24, "Mizuiro", COLOR_ACCENT);
-    line_y += 82;
+    uiDrawBrandAt(x + ABOUT_W - PANEL_PAD, y + ABOUT_H - 24);  // Mizuiro's mark, at the bottom right.
     for (size_t i = 0; i < sizeof(LINES) / sizeof(LINES[0]); i++) {
         const char *text = LINES[i][0] ? T(LINES[i]) : "";
         do {  // Each of its lines.
