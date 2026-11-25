@@ -162,19 +162,22 @@ static void saveCache(const char *root, const Catalog *c)
     }
 }
 
-// Adds one file to fresh: from the previous catalog if it hasn't changed,
-// else from its tags.
-static bool addFile(Catalog *fresh, const Catalog *previous, const char *path, const char *root, TrackTags *tags)
+// Adds one file of the card to fresh: from the previous catalog if it hasn't
+// changed (size, and time when the card's times can be trusted), else from its tags.
+static bool addFile(Catalog *fresh, const Catalog *previous, const char *path, long size, int64_t modified,
+                    const char *root, TrackTags *tags)
 {
-    struct stat st;
-    long size = stat(path, &st) == 0 ? (long)st.st_size : -1;
     long known = previous ? catalogFind(previous, path) : -1;
-    if (known >= 0 && previous->songs[known].size == size)
-        return catalogAddFields(fresh, &previous->songs[known]);
+    if (known >= 0 && catalogSongUnchanged(&previous->songs[known], size, modified)) {
+        CatalogSong same = previous->songs[known];
+        if (modified)
+            same.modified = modified;
+        return catalogAddFields(fresh, &same);
+    }
     tagsInit(tags);
     tags->skip_picture = true;
     tagsRead(path, tags);
-    bool ok = catalogAdd(fresh, path, size, tags, root);
+    bool ok = catalogAddFile(fresh, path, size, modified, tags, root);
     tagsFree(tags);
     return ok;
 }
@@ -328,21 +331,33 @@ static Catalog *scan(const char *root, const Catalog *previous, bool *partial)
 
     Catalog *fresh = malloc(sizeof(Catalog));
     TrackTags *tags = malloc(sizeof(TrackTags));
-    bool ok = fresh && tags;
+    long *sizes = malloc((files.count ? files.count : 1) * sizeof(long));
+    int64_t *times = malloc((files.count ? files.count : 1) * sizeof(int64_t));
+    bool ok = fresh && tags && sizes && times;
     if (fresh)
         catalogInit(fresh);
+    for (size_t i = 0; i < files.count && ok; i++) {
+        struct stat st;
+        bool found = stat(files.paths[i], &st) == 0;
+        sizes[i] = found ? (long)st.st_size : -1;
+        times[i] = found ? (int64_t)st.st_mtime : 0;
+    }
+    if (ok && !catalogTimesUsable(times, files.count))
+        memset(times, 0, files.count * sizeof(int64_t));  // Not to be trusted: sizes alone, as before.
     for (size_t i = 0; i < files.count && ok; i++) {
         if (restartRequested()) {
             ok = false;
             break;
         }
-        ok = addFile(fresh, previous, files.paths[i], root, tags);
+        ok = addFile(fresh, previous, files.paths[i], sizes[i], times[i], root, tags);
         mutexLock(&g_progress_lock);
         g_done = i + 1;
         mutexUnlock(&g_progress_lock);
     }
     trackListFree(&files);
     free(tags);
+    free(sizes);
+    free(times);
     ok = ok && catalogBuild(fresh);
     if (!ok && fresh) {
         catalogFree(fresh);

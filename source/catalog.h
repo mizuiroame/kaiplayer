@@ -20,7 +20,7 @@ typedef struct {
     char *album;          // Album title, else the folder name.
     int track, disc, year;
     long size;            // File size, to notice changed files on rescans.
-    int64_t modified;     // And a network file's time (seconds since 1970); 0 on the card.
+    int64_t modified;     // And the file's time (seconds since 1970); 0 if unknown.
     size_t album_index;   // Set by catalogBuild.
 } CatalogSong;
 
@@ -61,6 +61,15 @@ bool catalogAddFile(Catalog *c, const char *path, long size, int64_t modified, c
                     const char *root);
 // Adds a song with its fields already worked out (from the cache file).
 bool catalogAddFields(Catalog *c, const CatalogSong *fields);
+
+// Whether a library's file times can be trusted to notice changes: some are
+// set (not 0) and they aren't all the same (a card whose times all read the
+// same tells nothing). Without them, files are compared by size alone.
+bool catalogTimesUsable(const int64_t *times, size_t count);
+// Whether a file found again is the song known before, with no need to read
+// its tags: the same size and, when modified is known (not 0), the same time.
+// A song kept without a time (before times could be trusted) is read once more.
+bool catalogSongUnchanged(const CatalogSong *known, long size, int64_t modified);
 
 // Sorts the songs and groups them into albums and artists. Call after the
 // last catalogAdd; the catalog can be read once this returns true.

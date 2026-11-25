@@ -54,7 +54,10 @@ KaiPlayer keeps the library in `catalog.txt` in its folder so it shows at
 once next time, and updates it in the background, reading only new or changed
 files; the progress shows at the top right. **+ → Update the library** (or
 **+ → Settings → Library → Update the library**) checks the folder again after
-you add music.
+you add music or edit tags. A file counts as changed when its size or its
+modified time is different; if the console doesn't give the card's files
+real times, only the size counts, so a tag edit that keeps the file's size
+isn't noticed.
 
 ## Playing folders
 

@@ -100,6 +100,25 @@ static void folderName(const char *path, const char *root, int levels, char *out
     snprintf(out, size, "%s", utilFileName(folder));
 }
 
+bool catalogTimesUsable(const int64_t *times, size_t count)
+{
+    bool set = false, different = count == 1;
+    for (size_t i = 0; i < count; i++) {
+        set = set || times[i] != 0;
+        different = different || times[i] != times[0];
+    }
+    return set && different;
+}
+
+bool catalogSongUnchanged(const CatalogSong *known, long size, int64_t modified)
+{
+    if (known->size != size)
+        return false;
+    if (modified == 0)
+        return true;  // No time to go by: the size alone, as before.
+    return known->modified == modified;  // 0 kept: read once, to have its time from now on.
+}
+
 bool catalogAdd(Catalog *c, const char *path, long size, const TrackTags *t, const char *root)
 {
     return catalogAddFile(c, path, size, 0, t, root);

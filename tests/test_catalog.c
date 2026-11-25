@@ -147,6 +147,30 @@ static void testCacheTimes(void)
     tagsFree(&t);
 }
 
+// The card's file times: trusted only when some are set and they differ; a song is read
+// again when its size changed, its time changed, or it was kept before times could be trusted.
+static void testCardTimes(void)
+{
+    const int64_t none[] = {0, 0, 0}, same[] = {1700000000, 1700000000, 1700000000};
+    const int64_t real[] = {1700000000, 1700000500, 0}, one[] = {1700000000};
+    CHECK(!catalogTimesUsable(none, 3));  // All 0: the console gives none.
+    CHECK(!catalogTimesUsable(same, 3));  // All the same: they tell nothing.
+    CHECK(catalogTimesUsable(real, 3) && catalogTimesUsable(one, 1));
+    CHECK(!catalogTimesUsable(none, 0) && !catalogTimesUsable(none, 1));
+
+    CatalogSong old_style = {.size = 100, .modified = 0};  // Kept by an older KaiPlayer, or without times.
+    CatalogSong timed = {.size = 100, .modified = 1700000000};
+    // Without times (0): the size alone, as before.
+    CHECK(catalogSongUnchanged(&old_style, 100, 0) && catalogSongUnchanged(&timed, 100, 0));
+    CHECK(!catalogSongUnchanged(&old_style, 101, 0));
+    // Times there for the first time: read once more, to have the time.
+    CHECK(!catalogSongUnchanged(&old_style, 100, 1700000000));
+    // Then: the same size and time are the same song; a tag edit that keeps the size is noticed.
+    CHECK(catalogSongUnchanged(&timed, 100, 1700000000));
+    CHECK(!catalogSongUnchanged(&timed, 100, 1700000900));
+    CHECK(!catalogSongUnchanged(&timed, 99, 1700000000));
+}
+
 static void testNumbers(void)
 {
     CHECK(tagsNumber("3/12") == 3 && tagsNumber(" 2019-05-01") == 2019 && tagsNumber("abc") == 0);
@@ -158,5 +182,6 @@ void testCatalog(void)
     testGrouping();
     testCache();
     testCacheTimes();
+    testCardTimes();
     testNumbers();
 }
