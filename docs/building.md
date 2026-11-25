@@ -192,7 +192,8 @@ third_party/    dr_libs, stb_vorbis, stb_image, stb_truetype (public domain);
 tests/          host tests, fuzzer, fixtures and the UI preview; host_live/: a real network folder
 tools/          kaiupload.py (FTP upload with plain names), lang_check.py (a
                 language file against the texts in the code), make_icon.py
-                (icon.jpg), gltest (the GPU backend checked against the CPU
-                one), gpu-spike (a GPU test .nro)
+                (copies icon.jpg from switch2homebrew-submit/icons), gltest
+                (the GPU backend checked against the CPU one), gpu-spike (a
+                GPU test .nro)
 icon.jpg        256×256 icon for hbmenu
 ```

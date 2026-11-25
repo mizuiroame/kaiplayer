@@ -1,28 +1,27 @@
-"""Draws KaiPlayer's icon (icon.jpg, 256x256): a flat pair of beamed notes.
+"""KaiPlayer's icon (icon.jpg, 256x256) is no longer drawn here: all the Kai apps' icons
+come from one script, switch2homebrew-submit/tools/make_app_icons.py, which writes
+switch2homebrew-submit/icons/kaiplayer.jpg. This copies that file to icon.jpg.
 
 Usage: python tools/make_icon.py [OUT]
+       (run make_app_icons.py first after changing the symbol or its colors)
 """
+import shutil
 import sys
+from pathlib import Path
 
-from icon_render import Canvas, ellipse, polygon, round_rect, save_icon, union
-
-PINK = (255, 107, 154)
-
-
-def draw() -> Canvas:
-    canvas = Canvas()
-    stems = union(round_rect(88, 62, 104, 176, 3), round_rect(184, 44, 200, 158, 3))
-    beam = polygon([(92, 66), (196, 46), (196, 68), (92, 88)]) - 4.0
-    heads = union(ellipse(72, 178, 33, 25, -20), ellipse(168, 160, 33, 25, -20))
-    note = union(stems, beam, heads)
-    canvas.long_shadow(note)
-    canvas.fill(note, PINK)
-    return canvas
+SUBMIT = Path(__file__).resolve().parents[2] / "switch2homebrew-submit"
+SOURCE = SUBMIT / "icons" / "kaiplayer.jpg"
 
 
-def main() -> None:
-    save_icon(draw().result(), sys.argv[1] if len(sys.argv) > 1 else "icon.jpg")
+def main() -> int:
+    out = sys.argv[1] if len(sys.argv) > 1 else "icon.jpg"
+    if not SOURCE.is_file():
+        print(f"{SOURCE} not found: run python {SUBMIT / 'tools' / 'make_app_icons.py'} first")
+        return 1
+    shutil.copyfile(SOURCE, out)
+    print(f"{SOURCE} -> {out}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
