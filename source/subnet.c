@@ -27,6 +27,7 @@
 #define SUB_ERROR_LOGIN 40
 #define SUB_ERROR_NO_TOKEN 41
 #define SUB_ERROR_NOT_ALLOWED 50
+#define SUB_ERROR_NOT_FOUND 70
 
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 static SubAccount g_account;
@@ -138,13 +139,19 @@ static void statusText(bool plain_http, long status, char *why, size_t why_size)
         snprintf(why, why_size, "%s", T("That port may want a secure connection: write https:// before the address."));
     else if (status == HTTP_UNAUTHORIZED)
         snprintf(why, why_size, "%s", T("Wrong user name or password."));
+    else if (status == HTTP_NOT_FOUND)  // Navidrome under a path (its BaseUrl, a proxy's folder) typed without it.
+        snprintf(why, why_size, "%s",
+                 T("That address answers, but there's no Navidrome or Subsonic server at that path. "
+                   "If it's under one (like /navidrome), add it to the address."));
     else
         snprintf(why, why_size, "%s", T("That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533)."));
 }
 
-JsonDoc *subCall(NetClient *client, const char *method, const char *params, const JsonValue **body,
-                 const volatile bool *cancel, char *why, size_t why_size)
+// subCall, with *error the Subsonic error's code when the server answered with one (0 otherwise).
+static JsonDoc *call(NetClient *client, const char *method, const char *params, const JsonValue **body,
+                     const volatile bool *cancel, char *why, size_t why_size, int *error)
 {
+    *error = 0;
     SubAccount a;
     subGetAccount(&a);
     char url[URL_MAX];
@@ -182,8 +189,10 @@ JsonDoc *subCall(NetClient *client, const char *method, const char *params, cons
     int code;
     char message[160];
     if (!subAnswer(jsonRoot(doc), body, &code, message, sizeof(message))) {
-        if (*body)
+        if (*body) {
             errorText(code, message, why, why_size);
+            *error = code;
+        }
         else
             statusText(plain_http, 0, why, why_size);
         jsonFree(doc);
@@ -191,6 +200,13 @@ JsonDoc *subCall(NetClient *client, const char *method, const char *params, cons
         return NULL;
     }
     return doc;
+}
+
+JsonDoc *subCall(NetClient *client, const char *method, const char *params, const JsonValue **body,
+                 const volatile bool *cancel, char *why, size_t why_size)
+{
+    int error;
+    return call(client, method, params, body, cancel, why, why_size, &error);
 }
 
 bool subTest(char *out, size_t size)
@@ -281,7 +297,7 @@ static bool fetchSearch(Fetch *f, Catalog *c, size_t *items, char *why, size_t w
     return !stopped(f);
 }
 
-// One album's songs.
+// One album's songs. One the server no longer has (gone since the list was made) is left out.
 static bool fetchAlbum(Fetch *f, Catalog *c, const char *id, char *why, size_t why_size)
 {
     char encoded[SUB_ID_MAX], params[SUB_ID_MAX + 8];
@@ -289,7 +305,12 @@ static bool fetchAlbum(Fetch *f, Catalog *c, const char *id, char *why, size_t w
         return true;  // An id too long to ask for: left out.
     snprintf(params, sizeof(params), "id=%s", encoded);
     const JsonValue *body;
-    JsonDoc *doc = subCall(f->client, "getAlbum", params, &body, NULL, why, why_size);
+    int error;
+    JsonDoc *doc = call(f->client, "getAlbum", params, &body, NULL, why, why_size, &error);
+    if (!doc && error == SUB_ERROR_NOT_FOUND) {
+        snprintf(why, why_size, "%s", "");
+        return true;
+    }
     if (!doc)
         return false;
     const JsonValue *album = jsonGet(body, "album");
