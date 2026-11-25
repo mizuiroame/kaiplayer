@@ -8,6 +8,7 @@
 
 #include <switch.h>
 
+#include "applog.h"
 #include "booksub.h"
 #include "catalog_scan.h"
 #include "config.h"
@@ -37,9 +38,9 @@ static volatile bool g_running;
 static volatile bool g_cancel;       // Exiting: a request to the server stops waiting.
 static bool g_pending;               // Under g_lock: a look was asked for.
 static bool g_want_network, g_want_server;
-static bool g_busy;
+static volatile bool g_busy;          // Read without the lock: bookScanBusy may be asked while it's held.
 static BookList g_books;             // Published: written by the thread under g_lock.
-static unsigned g_generation;
+static volatile unsigned g_generation;
 
 // The bookmarks' thread.
 static Thread g_mark_thread;
@@ -154,15 +155,18 @@ static void findNetworkBooks(FileSet *s)
     free(entries);
 }
 
-// The library's songs that are books.
+// The library's songs that are books. The UI thread waits for the catalog's lock each frame:
+// the test is quick (booksIsBookPath looks at the path's text first), and the lock is held once.
 static void findLibraryBooks(FileSet *s)
 {
     const Catalog *c = catalogLock();
+    size_t songs = c ? c->song_count : 0;
     for (size_t i = 0; c && i < c->song_count; i++) {
         if (booksIsBookPath(c->songs[i].path))
             fileSetAdd(s, c->songs[i].path, c->songs[i].size);
     }
     catalogUnlock();
+    appLog("books: library: %zu songs looked at", songs);
 }
 
 // --- The server's ---
@@ -188,6 +192,7 @@ static void findServerBooks(BookList *out)
     if (d)
         list_count += bookSubFolderLists(body, lists + list_count, BOOKSUB_LISTS_MAX - list_count);
     jsonFree(d);
+    appLog("books: server: %zu genres or libraries of books", list_count);
     if (list_count == 0)
         return;
 
@@ -207,6 +212,7 @@ static void findServerBooks(BookList *out)
                 break;
         }
     }
+    appLog("books: server: %zu albums", count);
     for (size_t i = 0; i < count; i++) {
         char encoded[SUB_ID_MAX], params[SUB_ID_MAX + 8];
         if (!subEncode(ids[i], encoded, sizeof(encoded)))
@@ -426,16 +432,23 @@ static void reuse(Book *b, const BookList *known)
 static void lookForBooks(bool network, bool server)
 {
     FileSet files = {0};
+    appLog("books: look (network folder %d, server %d)", network, server);
     walkCard(&files, BOOKSCAN_CARD_FOLDER, CARD_DEPTH);
+    appLog("books: card: %zu files", files.count);
     findLibraryBooks(&files);
-    if (network && !stopNow())
+    if (network && !stopNow()) {
         findNetworkBooks(&files);
+        appLog("books: network folder looked at");
+    }
+    appLog("books: %zu files in all", files.count);
     BookList found = {0};
     booksGroup(&found, (const char *const *)files.paths, files.sizes, files.count);
     fileSetFree(&files);
+    appLog("books: %zu books from files", found.count);
     if (server && !stopNow())
         findServerBooks(&found);
     if (stopNow()) {
+        appLog("books: stopped (looked again, or closing)");
         bookListFree(&found);
         return;
     }
@@ -449,6 +462,7 @@ static void lookForBooks(bool network, bool server)
         reuse(&found.items[i], &g_books);
     booksSortByTitle(&found);
     publish(&found);
+    appLog("books: %zu books shown", g_books.count);
 
     bool changed = false;
     for (size_t i = 0; i < g_books.count; i++) {
@@ -457,10 +471,13 @@ static void lookForBooks(bool network, bool server)
         Book work;
         if (!bookCopy(&work, &g_books.items[i]))
             continue;
+        appLog("books: reading %zu/%zu: %s (%zu files)", i + 1, g_books.count, work.key, work.part_count);
         if (!probeBook(&work)) {
+            appLog("books: reading stopped");
             bookFree(&work);
             break;
         }
+        appLog("books: read: %.0f s, %zu chapters", work.duration, work.chapters.count);
         mutexLock(&g_lock);
         bookFree(&g_books.items[i]);
         g_books.items[i] = work;
@@ -475,6 +492,7 @@ static void lookForBooks(bool network, bool server)
         mutexUnlock(&g_lock);
     }
     saveCache();
+    appLog("books: done, kept in " CACHE_NAME);
 }
 
 static void loadCache(void)
@@ -489,6 +507,7 @@ static void loadCache(void)
     fclose(f);
     booksSortByTitle(&list);
     publish(&list);
+    appLog("books: %zu books from " CACHE_NAME, g_books.count);
 }
 
 static void workerMain(void *arg)
@@ -631,18 +650,13 @@ void bookScanUnlock(void)
     mutexUnlock(&g_lock);
 }
 
+// Neither takes the lock (the UI asks while it holds it): one word, read as it is.
 unsigned bookScanGeneration(void)
 {
-    mutexLock(&g_lock);
-    unsigned g = g_generation;
-    mutexUnlock(&g_lock);
-    return g;
+    return g_generation;
 }
 
 bool bookScanBusy(void)
 {
-    mutexLock(&g_lock);
-    bool busy = g_busy;
-    mutexUnlock(&g_lock);
-    return busy;
+    return g_busy;
 }

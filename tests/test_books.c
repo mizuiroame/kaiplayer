@@ -202,6 +202,9 @@ static void testBookNames(void)
     CHECK(booksIsBookPath("sdmc:/Music/Audiobooks/Author/Book/01.mp3"));
     CHECK(booksIsBookPath("dav:/Stuff/novel.m4b"));
     CHECK(!booksIsBookPath("sdmc:/Music/Rock/song.mp3"));
+    CHECK(booksIsBookPath("sdmc:/Hörbücher/Book/01.mp3") && booksIsBookPath("dav:/AUDIOLIBROS/x/1.mp3"));
+    CHECK(!booksIsBookPath("sdmc:/Audio/Rock/song.mp3"));  // "audio" alone isn't a books' folder.
+    CHECK(!booksIsBookPath("sub:/audiobooks/id.mp3") && booksIsBookPath("sub:/c/id.m4b"));  // A server's: no folders.
     CHECK(booksCompareNatural("Chapter 2", "Chapter 10") < 0);
     CHECK(booksCompareNatural("chapter 02", "Chapter 2") == 0);
     CHECK(booksCompareNatural("b", "A") > 0 && booksCompareNatural("a", "ab") < 0);

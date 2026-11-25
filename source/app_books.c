@@ -11,6 +11,7 @@
 
 #include "app.h"
 #include "app_buttons.h"
+#include "applog.h"
 #include "bookscan.h"
 #include "catalog_scan.h"
 #include "config.h"
@@ -397,6 +398,7 @@ void appBookSeekChapter(App *app, double fraction)
 void appBooksStart(App *app)
 {
     loadStore(app);
+    appLog("books: start, %zu places kept%s", app->books.store.count, app->books.store.active ? ", a book open" : "");
     app->books.menu_playing = true;
     bookScanInit();
     bookScanStart(appNetworkReady(), appServerReady());
@@ -446,11 +448,13 @@ static void tickRestore(App *app)
         return;
     Book b;
     if (copyBook(app, t->restore, 0, &b)) {
+        appLog("books: opening the book left open");
         t->restore[0] = '\0';
         if (startBook(app, &b, -1.0, t->restore_play))
             app->view = VIEW_NOW_PLAYING;
         bookFree(&b);
     } else if (!bookScanBusy()) {
+        appLog("books: the book left open is gone: the music's queue instead");
         t->restore[0] = '\0';
         appRestoreSession(app, t->restore_play);
     }
@@ -501,6 +505,7 @@ void appBooksTick(App *app, const PlayerStatus *status, uint64_t now_ns)
     catalogUnlock();
     size_t done, total;
     if (generation != t->catalog_generation && !catalogScanProgress(&done, &total)) {
+        appLog("books: the library changed (%u): looking again", generation);
         t->catalog_generation = generation;
         appBooksRescan(app);
     }

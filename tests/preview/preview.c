@@ -116,14 +116,23 @@ const CoverImage *coverCacheGet(const char *song_path, bool thumb)
 // The audiobooks (bookscan.c, app_books.c): made-up books, set up by renderBookScenes.
 static BookList g_book_list;
 static bool g_book_busy;
+// As bookscan.c's lock, which doesn't let the same thread take it twice (that froze the tab on the
+// console): taking it again here stops the preview instead of drawing on.
+static bool g_book_locked;
 
 const BookList *bookScanLock(void)
 {
+    if (g_book_locked) {
+        fprintf(stderr, "bookScanLock taken twice: it would freeze the console\n");
+        abort();
+    }
+    g_book_locked = true;
     return &g_book_list;
 }
 
 void bookScanUnlock(void)
 {
+    g_book_locked = false;
 }
 
 bool bookScanBusy(void)

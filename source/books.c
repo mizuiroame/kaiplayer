@@ -145,10 +145,29 @@ bool booksIsDiscFolder(const char *name)
     return false;
 }
 
+// A quick look at the text: could one of its folders be named as books?
+static bool mayNameBooks(const char *path)
+{
+    static const char *const PARTS[] = {"audio", "hörb", "horb", "hoerb", "HÖRB", "オーディオ", "有声", "有聲", "오디오"};
+    char lower[UTIL_PATH_MAX];
+    size_t n = 0;
+    for (; path[n] && n + 1 < sizeof(lower); n++)
+        lower[n] = (char)tolower((unsigned char)path[n]);
+    lower[n] = '\0';
+    for (size_t i = 0; i < sizeof(PARTS) / sizeof(PARTS[0]); i++) {
+        if (strstr(lower, PARTS[i]) || strstr(path, PARTS[i]))
+            return true;
+    }
+    return false;
+}
+
 bool booksIsBookPath(const char *path)
 {
     if (utilHasExtension(path, "m4b"))
         return true;
+    // A server's locations have no folders ("sub:/<cover>/<id>.mp3"); most paths name no books at all.
+    if (strncmp(path, "sub:/", 5) == 0 || !mayNameBooks(path))
+        return false;
     char folder[UTIL_PATH_MAX];
     snprintf(folder, sizeof(folder), "%s", path);
     while (utilParentPath(folder)) {

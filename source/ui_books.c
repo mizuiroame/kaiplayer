@@ -131,9 +131,9 @@ static void drawBookRow(const App *app, const Book *b, size_t row, int y, bool p
 
 void uiDrawBooks(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
+    bool busy = bookScanBusy();
     const BookList *l = bookScanLock();
     size_t count = appBooksCount(app);
-    bool busy = bookScanBusy();
     char line[96];
     snprintf(line, sizeof(line), count == 1 ? T("%zu audiobook") : T("%zu audiobooks"), count);
     const char *looking = T("Looking for audiobooks...");

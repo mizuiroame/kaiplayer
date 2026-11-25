@@ -7,6 +7,7 @@
 #include <switch.h>
 
 #include "app.h"
+#include "applog.h"
 #include "approot.h"
 #include "app_buttons.h"
 #include "ui_list.h"
@@ -394,6 +395,8 @@ int main(int argc, char **argv)
         appRootMigrate("sdmc:/config/kaiplayer", folder);
     configSetFolder(folder);
     resumeSetDir(folder);
+    appLogStart();
+    appLog("KaiPlayer starts");
 
     static App app;
     configLoad(&app.config);
