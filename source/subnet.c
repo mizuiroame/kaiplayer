@@ -141,7 +141,7 @@ static void statusText(bool plain_http, long status, char *why, size_t why_size)
         snprintf(why, why_size, "%s", T("Wrong user name or password."));
     else if (status == HTTP_NOT_FOUND)  // Navidrome under a path (its BaseUrl, a proxy's folder) typed without it.
         snprintf(why, why_size, "%s",
-                 T("No Navidrome or Subsonic server at that path. If it's under one (like /navidrome), add it to the address."));
+                 T("No Navidrome or Subsonic server there. If it's under a path (like /navidrome), add it to the address."));
     else
         snprintf(why, why_size, "%s", T("That address answers, but not as a Navidrome or Subsonic server. Check the port (usually 4533)."));
 }
