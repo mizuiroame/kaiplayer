@@ -874,9 +874,6 @@ The server didn't answer in time. Is the console on the same network as the serv
 The server doesn't let this user see that folder.
 이 사용자는 서버에서 해당 폴더를 볼 수 없습니다.
 
-The server's certificate isn't trusted.
-서버의 인증서를 신뢰할 수 없습니다.
-
 The shared folder couldn't be opened (%d: %s).
 공유 폴더를 열 수 없었습니다 (%d: %s).
 

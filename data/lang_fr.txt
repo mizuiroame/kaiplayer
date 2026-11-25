@@ -874,9 +874,6 @@ Le serveur n'a pas répondu à temps. La console est-elle sur le même réseau q
 The server doesn't let this user see that folder.
 Le serveur n'autorise pas cet utilisateur à voir ce dossier.
 
-The server's certificate isn't trusted.
-Le certificat du serveur n'est pas reconnu.
-
 The shared folder couldn't be opened (%d: %s).
 Impossible d'ouvrir le dossier partagé (%d : %s).
 

@@ -874,9 +874,6 @@ The server didn't answer in time. Is the console on the same network as the serv
 The server doesn't let this user see that folder.
 服务器不允许此用户查看该文件夹。
 
-The server's certificate isn't trusted.
-服务器证书不受信任。
-
 The shared folder couldn't be opened (%d: %s).
 无法打开共享文件夹（%d: %s）。
 

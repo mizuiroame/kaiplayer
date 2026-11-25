@@ -177,11 +177,14 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_NET_TEST:
     case SETTING_NET_FORGET: out[0] = '\0'; break;
     case SETTING_NET_REMEMBER:
-    case SETTING_NET_UNSIGNED: {
-        bool remember, allow_unsigned, smb;
-        appNetworkChoices(&remember, &allow_unsigned, &smb);
+    case SETTING_NET_UNSIGNED:
+    case SETTING_NET_CERTIFICATE: {
+        bool remember, allow_unsigned, smb, check_certificate;
+        appNetworkChoices(&remember, &allow_unsigned, &smb, &check_certificate);
         if (row == SETTING_NET_REMEMBER)
             snprintf(out, size, "%s", remember ? T("On") : T("Off: asked when the folder is used"));
+        else if (row == SETTING_NET_CERTIFICATE)  // For an https folder's connections (as KaiVideo's).
+            snprintf(out, size, "%s", check_certificate ? T("On") : T("Off: any certificate"));
         else if (!smb)
             snprintf(out, size, "%s", T("Only for shared folders (SMB)"));
         else

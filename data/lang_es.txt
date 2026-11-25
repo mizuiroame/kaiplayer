@@ -874,9 +874,6 @@ El servidor no respondió a tiempo. ¿La consola está en la misma red que el se
 The server doesn't let this user see that folder.
 El servidor no deja que este usuario vea esa carpeta.
 
-The server's certificate isn't trusted.
-El certificado del servidor no es de confianza.
-
 The shared folder couldn't be opened (%d: %s).
 No se pudo abrir la carpeta compartida (%d: %s).
 

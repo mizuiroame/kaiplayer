@@ -25,9 +25,10 @@ bool davPasswordMissing(void);
 // shared with the listing (smbFileOpenShared). NULL with why if it can't be.
 struct SmbFile *davSmbOpen(const char *location, bool shared, char *why, size_t why_size);
 
-// A WebDAV location's URL and Authorization header, for reading it with ranges. False if there's no folder
-// (or it's an SMB share).
-bool davStreamRequest(const char *location, char *url, size_t url_size, char *auth, size_t auth_size);
+// A WebDAV location's URL and Authorization header, for reading it with ranges, and whether the server's own
+// certificate is taken (Certificate check off). False if there's no folder (or it's an SMB share).
+bool davStreamRequest(const char *location, char *url, size_t url_size, char *auth, size_t auth_size,
+                      bool *any_certificate);
 
 // Lists a folder ("dav:/" or "dav:/Movies"), over WebDAV or SMB. *out is malloc'd. False with why
 // (for the person) if it can't be.

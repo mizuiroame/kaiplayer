@@ -874,9 +874,6 @@ Il server non ha risposto in tempo. La console è nella stessa rete del server?
 The server doesn't let this user see that folder.
 Il server non permette a questo utente di vedere quella cartella.
 
-The server's certificate isn't trusted.
-Il certificato del server non è attendibile.
-
 The shared folder couldn't be opened (%d: %s).
 Impossibile aprire la cartella condivisa (%d: %s).
 

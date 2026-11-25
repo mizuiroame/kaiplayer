@@ -214,7 +214,8 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         appServerActivate(app, row);
         break;
     case SETTING_NET_REMEMBER:
-    case SETTING_NET_UNSIGNED: appNetworkActivate(app, row); break;
+    case SETTING_NET_UNSIGNED:
+    case SETTING_NET_CERTIFICATE: appNetworkActivate(app, row); break;
     case SETTING_UPDATE_AUTO: appUpdatesToggle(app); break;  // On or off, either way.
     case SETTING_LANGUAGE: {  // Through the languages found: English, those in the app, config/lang's files.
         int count = languagesCount();

@@ -874,9 +874,6 @@ Der Server hat nicht rechtzeitig geantwortet. Ist die Konsole im selben Netzwerk
 The server doesn't let this user see that folder.
 Der Server lässt diesen Benutzer den Ordner nicht sehen.
 
-The server's certificate isn't trusted.
-Dem Zertifikat des Servers wird nicht vertraut.
-
 The shared folder couldn't be opened (%d: %s).
 Der freigegebene Ordner konnte nicht geöffnet werden (%d: %s).
 

@@ -36,7 +36,13 @@ In **+ → Settings → Network folder**:
    signed, so nobody on the network can change what's read. Some old NAS and
    folders open to guests can't sign; KaiPlayer then says so, and this lets
    it connect anyway. Turn it on only for such a folder on your home network.
-5. **Test the connection**: it says how many folders and songs are at the
+5. **Certificate check** (on): for a WebDAV folder at an `https://` address,
+   whether the server's certificate must be one the console trusts. Turn it
+   off for a server with its own certificate (one it made itself, as many NAS
+   do); then any certificate is taken, so someone on the network could pose
+   as the server. It does nothing for shared folders (SMB) or plain `http://`.
+   A new server turns it back on.
+6. **Test the connection**: it says how many folders and songs are at the
    top, or what went wrong.
 
 Then the pill next to KaiPlayer's name, at the top of every tab, says which

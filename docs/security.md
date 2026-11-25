@@ -27,7 +27,9 @@ reduces that risk in these ways:
   `https://` (no `file:`, `ftp:` or other schemes, even through a redirect),
   and an `https://` address can't be redirected to plain `http://`.
   Certificates are checked unless you turn **Certificate check** off for the
-  server. Plain `http://` to WebDAV outside your home network gets a warning.
+  Navidrome server or the network folder (each has its own, for its own
+  `https://` connections; another server turns the network folder's back
+  on). Plain `http://` to WebDAV outside your home network gets a warning.
 - **What the card keeps of the network folder's password is as good as the
   password.** The settings are on the SD card, not encrypted: anyone who
   copies the card's files has them. For a shared folder (SMB), `network.txt`

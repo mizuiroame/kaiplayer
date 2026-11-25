@@ -16,6 +16,9 @@ folder**, **Navidrome**, **Playback**, **Display** and **About**.
 | Library | Update the library | **A** looks for new or changed songs |
 | Network folder | Address | `\\PC\Music`, `smb://`, or a WebDAV address; **A** types it. See [Network folder](network-folder.md) |
 | Network folder | User and password | **A** types them; empty for the folder's guest access |
+| Network folder | Remember the password | On (default), or Off: asked when the folder is used |
+| Network folder | Allow without signing (old NAS) | Off (default), or On for a shared folder whose server can't sign |
+| Network folder | Certificate check | On (default), or Off for an `https://` WebDAV folder with its own certificate |
 | Network folder | Test the connection | **A** tries it, and says what's at its top or what went wrong |
 | Network folder | Forget this folder | **A** removes the address, user and password |
 | Navidrome | Server | `192.168.0.10:4533` or an `https://` address; **A** types it. See [Navidrome](navidrome.md) |

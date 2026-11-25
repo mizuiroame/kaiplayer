@@ -874,9 +874,6 @@ O servidor não respondeu a tempo. O console está na mesma rede que o servidor?
 The server doesn't let this user see that folder.
 O servidor não deixa este usuário ver essa pasta.
 
-The server's certificate isn't trusted.
-O certificado do servidor não é confiável.
-
 The shared folder couldn't be opened (%d: %s).
 Não foi possível abrir a pasta compartilhada (%d: %s).
 

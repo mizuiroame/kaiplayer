@@ -30,6 +30,7 @@ typedef struct {
     char password[DAV_TEXT_MAX];
     bool forget_password;           // Not kept on the card: only until KaiPlayer closes.
     bool allow_unsigned;            // SMB: a server that doesn't sign is used too (an old NAS, guests).
+    bool any_certificate;           // WebDAV over https: its own certificate is taken too (Certificate check off).
 } DavAccount;
 
 typedef struct {
@@ -84,7 +85,7 @@ bool davNtHash(const char *password, char out[DAV_NT_HASH_SIZE]);
 bool davSetPassword(DavAccount *a, const char *typed);
 
 // The account's file: "address=", "user=", "password=", and "forget_password=1",
-// "allow_unsigned=1" when set. On the card the password is never as typed: an SMB
+// "allow_unsigned=1" and "any_certificate=1" when set. On the card the password is never as typed: an SMB
 // folder's is its NT hash, a WebDAV folder's is encoded ("b64:"; Basic needs the
 // password itself, so anyone with the card can still decode it); a password not
 // to remember isn't written. Returns true when text was an older form (a

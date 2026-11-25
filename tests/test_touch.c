@@ -104,13 +104,15 @@ static void testSettings(void)
           !settingsRowEditable(SETTING_SRV_ACCOUNT) && !settingsRowEditable(SETTING_SRV_TEST) &&
           !settingsRowEditable(SETTING_SRV_FORGET));
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_SERVER), "Navidrome") == 0 && settingsPageNote(SETTINGS_PAGE_SERVER));
-    CHECK(settingsPageRows(SETTINGS_PAGE_NETWORK, rows) == 7);
+    CHECK(settingsPageRows(SETTINGS_PAGE_NETWORK, rows) == 8);
     CHECK(rows[0] == SETTING_NET_ADDRESS && rows[1] == SETTING_NET_ACCOUNT && rows[2] == SETTING_NET_REMEMBER &&
-          rows[3] == SETTING_NET_UNSIGNED && rows[4] == SETTING_NET_COLOR && rows[5] == SETTING_NET_TEST &&
-          rows[6] == SETTING_NET_FORGET);
+          rows[3] == SETTING_NET_UNSIGNED && rows[4] == SETTING_NET_CERTIFICATE && rows[5] == SETTING_NET_COLOR &&
+          rows[6] == SETTING_NET_TEST && rows[7] == SETTING_NET_FORGET);
     CHECK(!settingsRowEditable(SETTING_NET_ADDRESS) && !settingsRowEditable(SETTING_NET_FORGET));
-    // The two switches change with the arrows too, as Certificate check.
-    CHECK(settingsRowEditable(SETTING_NET_REMEMBER) && settingsRowEditable(SETTING_NET_UNSIGNED));
+    // The switches change with the arrows too, as the server's Certificate check.
+    CHECK(settingsRowEditable(SETTING_NET_REMEMBER) && settingsRowEditable(SETTING_NET_UNSIGNED) &&
+          settingsRowEditable(SETTING_NET_CERTIFICATE));
+    CHECK(strcmp(settingsRowLabel(SETTING_NET_CERTIFICATE), "Certificate check") == 0);
     CHECK(strcmp(settingsRowLabel(SETTING_NET_UNSIGNED), "Allow without signing (old NAS)") == 0);
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_NETWORK), "Network folder") == 0);
     CHECK(settingsPageNote(SETTINGS_PAGE_NETWORK) && !settingsPageNote(SETTINGS_PAGE_MAIN));

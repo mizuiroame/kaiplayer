@@ -119,27 +119,36 @@ SmbFile *davSmbOpen(const char *location, bool shared, char *why, size_t why_siz
     return f;
 }
 
-bool davStreamRequest(const char *location, char *url, size_t url_size, char *auth, size_t auth_size)
+bool davStreamRequest(const char *location, char *url, size_t url_size, char *auth, size_t auth_size,
+                      bool *any_certificate)
 {
+    *any_certificate = false;
     if (davPasswordMissing())
         return false;
     DavAccount a;
     davGetAccount(&a);
     bool ok = a.address[0] && !davIsSmbAddress(a.address) && davUrlOf(a.address, location, url, url_size) && davAuthorization(&a, auth, auth_size);
+    *any_certificate = a.any_certificate;
     memset(&a, 0, sizeof(a));
     return ok;
 }
 
-// What a failed answer means, for the person.
-static void explain(const NetResponse *r, char *why, size_t size)
+// What a failed answer means, for the person. any_certificate: the certificate
+// check was off, so the console's TLS reporting a certificate means the
+// handshake itself failed (a plain http server at an https address).
+static void explain(const NetResponse *r, bool any_certificate, char *why, size_t size)
 {
     const char *text;
-    switch (r->problem) {
+    NetProblem problem = r->problem == NET_CERTIFICATE && any_certificate ? NET_SECURE : r->problem;
+    switch (problem) {
     case NET_NO_NAME: text = T("The name in the address couldn't be found. Check it, or use the server's IP address."); break;
     case NET_NO_CONNECT: text = T("Nothing answered at that address and port. Is the server on, and is the port right?"); break;
     case NET_TIMEOUT: text = T("The server didn't answer in time. Is the console on the same network as the server?"); break;
     case NET_SECURE: text = T("The secure connection failed. Does the server use https on that port?"); break;
-    case NET_CERTIFICATE: text = T("The server's certificate isn't trusted."); break;
+    case NET_CERTIFICATE:
+        text = T("The server's certificate isn't trusted. "
+                 "If the server has its own certificate, turn Certificate check off.");
+        break;
     case NET_STATUS:
         if (r->status == HTTP_UNAUTHORIZED) {
             text = T("Wrong user name or password.");
@@ -170,6 +179,7 @@ static bool propfind(const char *location, NetResponse *response, char url[URL_M
         return false;
     }
     bool ok = davUrlOf(a.address, location, url, URL_MAX) && davAuthorization(&a, auth, sizeof(auth));
+    bool any_certificate = a.any_certificate;
     memset(&a, 0, sizeof(a));
     if (!ok) {
         snprintf(why, why_size, "%s", T("That folder's name is too long."));
@@ -180,7 +190,7 @@ static bool propfind(const char *location, NetResponse *response, char url[URL_M
         strcat(url, "/");  // A folder: some servers redirect without the '/', losing the method.
     NetClient *c = netClientOpen();
     NetRequest request = {.url = url, .authorization = auth, .custom_method = "PROPFIND", .depth = "1",
-                          .stall_s = LIST_STALL_S, .timeout_s = LIST_TIMEOUT_S};
+                          .stall_s = LIST_STALL_S, .timeout_s = LIST_TIMEOUT_S, .any_certificate = any_certificate};
     memset(response, 0, sizeof(*response));
     ok = c && netFetchText(c, &request, LISTING_MAX_BYTES, response);
     netClientClose(c);
@@ -194,7 +204,7 @@ static bool propfind(const char *location, NetResponse *response, char url[URL_M
             response->status = HTTP_NOT_ALLOWED;
         if (ok)
             response->problem = NET_STATUS;
-        explain(response, why, why_size);
+        explain(response, any_certificate, why, why_size);
         netResponseFree(response);
         return false;
     }

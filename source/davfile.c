@@ -23,6 +23,7 @@ typedef struct {
     bool smb_share;
     NetClient *net;         // or WebDAV's: a stream's own client, or NULL for the shared one.
     char url[URL_MAX], auth[AUTH_MAX];
+    bool any_certificate;   // WebDAV over https with Certificate check off.
 } DavFile;
 
 // Small reads (tags, covers) over WebDAV share one client, which keeps its connection.
@@ -58,7 +59,7 @@ static int64_t fetchRange(DavFile *f, int64_t from, uint8_t *to, size_t size, lo
     char range[64], error[NET_ERROR_MAX];
     snprintf(range, sizeof(range), "%" PRId64 "-%" PRId64, from, from + (int64_t)size - 1);
     NetRequest request = {.url = f->url, .authorization = f->auth, .range = range, .cancel = cancel,
-                          .total_size = total, .stall_s = READ_STALL_S};
+                          .total_size = total, .stall_s = READ_STALL_S, .any_certificate = f->any_certificate};
     Filling filling = {to, 0, size};
     long status = 0;
     *total = -1;
@@ -92,7 +93,7 @@ static void *openFile(const char *location, bool stream, int64_t *size)
         ok = f->smb != NULL;
         *size = ok ? smbFileSize(f->smb) : -1;
     } else {
-        ok = davStreamRequest(location, f->url, sizeof(f->url), f->auth, sizeof(f->auth)) &&
+        ok = davStreamRequest(location, f->url, sizeof(f->url), f->auth, sizeof(f->auth), &f->any_certificate) &&
              (!stream || (f->net = netClientOpen()) != NULL);
         uint8_t first;
         long long total = -1;

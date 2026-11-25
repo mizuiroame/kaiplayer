@@ -120,6 +120,7 @@ bool catalogScanProgress(size_t *done, size_t *total)
 
 // The network folder (app_network.c, kfile.c) and the server (app_server.c): set up in the scenes that show them.
 static bool g_network, g_server;
+static bool g_network_https;  // The network folder is a WebDAV one over https, its certificate check off.
 static const char *g_scan_problem = "";
 static bool g_net_scan;          // A library on the network being read,
 static size_t g_net_scan_total;  // of these songs (0: its folders are still listed),
@@ -176,15 +177,16 @@ void appServerShown(char *address, size_t address_size, char *user, size_t user_
 
 void appNetworkShown(char *address, size_t address_size, char *user, size_t user_size)
 {
-    snprintf(address, address_size, "%s", g_network ? PREVIEW_ADDRESS : "");
+    snprintf(address, address_size, "%s", g_network_https ? "https://music.example.com/dav/" : g_network ? PREVIEW_ADDRESS : "");
     snprintf(user, user_size, "%s", g_network ? "kaiplayer" : "");
 }
 
-void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb)
+void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb, bool *check_certificate)
 {
     *remember = true;
     *allow_unsigned = false;
-    *smb = g_network;
+    *smb = g_network && !g_network_https;
+    *check_certificate = !g_network_https;
 }
 
 // About's update rows: a newer version found, for the shot.
@@ -487,6 +489,10 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     g_network = true;
     app->settings_cursor = SETTING_NET_TEST;
     render(dir, "settings_network", app, status);
+    g_network_https = true;
+    app->settings_cursor = SETTING_NET_CERTIFICATE;
+    render(dir, "settings_network_https", app, status);
+    g_network_https = false;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->settings_cursor = SETTING_OPEN_NETWORK;
     render(dir, "settings_main_network", app, status);

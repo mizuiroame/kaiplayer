@@ -142,7 +142,8 @@ static void testAccountFile(void)
     CHECK_STR(b.address, a.address);
     CHECK_STR(b.user, a.user);
     CHECK_STR(b.password, a.password);
-    CHECK(!b.forget_password && !b.allow_unsigned);
+    CHECK(!b.forget_password && !b.allow_unsigned && !b.any_certificate);  // Certificate check on unless set off.
+    CHECK(strstr(text, "any_certificate") == NULL);
     CHECK(!davAccountRead(&b, "address=http://x/\r\nuser=u\r\nnonsense\r\n"));
     CHECK_STR(b.address, "http://x/");
     CHECK_STR(b.user, "u");
@@ -188,6 +189,11 @@ static void testAccountChoices(void)
     CHECK(!davAccountRead(&b, text));
     CHECK(b.forget_password && b.allow_unsigned && b.password[0] == '\0');
     CHECK_STR(b.user, "kai");
+    // An https folder with its own certificate: Certificate check off, kept.
+    DavAccount own = {.address = "https://nas.example/dav/", .user = "kai", .any_certificate = true};
+    CHECK(davAccountWrite(&own, text, sizeof(text)) && strstr(text, "any_certificate=1\n"));
+    CHECK(!davAccountRead(&b, text) && b.any_certificate && !b.allow_unsigned);
+    CHECK(!davAccountRead(&b, "address=https://nas.example/dav/\nany_certificate=yes\n") && !b.any_certificate);
     // A file not to remember that still has one: dropped, and written again.
     CHECK(davAccountRead(&b, "address=http://pc/\nuser=u\npassword=b64:cA==\nforget_password=1\n"));
     CHECK_STR(b.password, "");

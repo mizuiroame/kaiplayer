@@ -105,9 +105,10 @@ static void typeAddress(App *app)
     } else if (result == SYSTEM_KEYBOARD_OK && !davNormalizeAddress(text, address, sizeof(address))) {
         appNotify(app, NOTICE_ERROR, T("That isn't a network folder's address: \\\\PC\\Music, smb://, http:// or https://."));
     } else if (result == SYSTEM_KEYBOARD_OK) {
-        if (!davSameServer(address, a.address)) {  // Another server: the old one's password isn't sent there.
-            a.user[0] = '\0';
+        if (!davSameServer(address, a.address)) {  // Another server: the old one's password isn't sent there,
+            a.user[0] = '\0';                     // and its certificate is checked again.
             memset(a.password, 0, sizeof(a.password));
+            a.any_certificate = false;
         }
         memcpy(a.address, address, sizeof(a.address));
         save(app, &a);
@@ -215,13 +216,24 @@ static void toggleUnsigned(App *app)
     memset(&a, 0, sizeof(a));
 }
 
-void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb)
+// Only an https folder's connections use it.
+static void toggleCertificate(App *app)
+{
+    DavAccount a;
+    davGetAccount(&a);
+    a.any_certificate = !a.any_certificate;
+    save(app, &a);
+    memset(&a, 0, sizeof(a));
+}
+
+void appNetworkChoices(bool *remember, bool *allow_unsigned, bool *smb, bool *check_certificate)
 {
     DavAccount a;
     davGetAccount(&a);
     *remember = !a.forget_password;
     *allow_unsigned = a.allow_unsigned;
     *smb = davIsSmbAddress(a.address);
+    *check_certificate = !a.any_certificate;
     memset(&a, 0, sizeof(a));
 }
 
@@ -300,6 +312,7 @@ bool appNetworkActivate(App *app, SettingRow row)
     case SETTING_NET_FORGET: forget(app); return true;
     case SETTING_NET_REMEMBER: toggleRemember(app); return true;
     case SETTING_NET_UNSIGNED: toggleUnsigned(app); return true;
+    case SETTING_NET_CERTIFICATE: toggleCertificate(app); return true;
     default: return false;
     }
 }
