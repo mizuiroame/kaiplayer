@@ -1,0 +1,24 @@
+# The host tests and the fuzzer without the devkit: gcc and the host FFmpeg
+# 7.1 that ffmpeg/Dockerfile builds into /opt/ffmpeg-host, from the same
+# checked release and the same options (ffmpeg/configure.sh). CI uses it;
+# locally kaiplayer-devkit has all of this already.
+#   docker build -t kaiplayer-host -f tests/Dockerfile.host ffmpeg
+#   docker run --rm --security-opt seccomp=unconfined -v "$PWD:/w" -w /w/tests kaiplayer-host make coverage
+FROM debian:bookworm-slim
+
+ARG FFMPEG_VERSION=7.1
+ARG FFMPEG_SHA256=40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6
+
+RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends gcc libc6-dev make \
+      util-linux curl ca-certificates xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp/ffmpeg
+COPY configure.sh ./
+RUN curl -fsSL -o ffmpeg.tar.xz "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" \
+ && echo "${FFMPEG_SHA256}  ffmpeg.tar.xz" | sha256sum -c - \
+ && mkdir host && tar xf ffmpeg.tar.xz -C host --strip-components=1 \
+ && cd host && sh ../configure.sh host && make -j"$(nproc)" && make install \
+ && cp COPYING.LGPLv2.1 /opt/ffmpeg-host/ \
+ && rm -rf /tmp/ffmpeg
+WORKDIR /w
