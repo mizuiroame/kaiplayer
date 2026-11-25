@@ -188,6 +188,20 @@ void uiDrawIconPill(int x, int y, const char *hint, PillIcon icon, const char *l
         gfxTriangle(x0 + 4, top + 12, x0 + 9, top + 12, x0 + 3, top + 17, fg);
         gfxLine(x0 + 4, top + 4.5f, x0 + 14, top + 4.5f, 1.8f, COLOR_SURFACE_HI);
         gfxLine(x0 + 4, top + 8.5f, x0 + 11, top + 8.5f, 1.8f, COLOR_SURFACE_HI);
+    } else if (icon == PILL_ICON_SPEED) {  // A dial's upper half and its needle.
+        float cx0 = (float)cx + 10, cy0 = mid + 4;
+        gfxArc(cx0, cy0, 8.0f, 2.2f, (float)M_PI, 2.0f * (float)M_PI, fg);
+        gfxLine(cx0, cy0, cx0 + 5.0f, cy0 - 6.0f, 2.2f, fg);
+        gfxFillCircle((int)cx0, (int)cy0, 2, fg);
+    } else if (icon == PILL_ICON_CHAPTERS) {  // Lines of a list, a dot before each.
+        float x0 = (float)cx + 2;
+        for (int i = -1; i <= 1; i++) {
+            gfxFillCircle((int)x0 + 2, (int)(mid + 6 * i), 2, fg);
+            gfxLine(x0 + 7, mid + 6 * i, x0 + 17, mid + 6 * i, 2.0f, fg);
+        }
+    } else if (icon == PILL_ICON_SLEEP) {  // A crescent: a disc with another cut out of it.
+        gfxFillCircle(cx + 9, (int)mid, 8, fg);
+        gfxFillCircle(cx + 13, (int)mid - 4, 7, bg);
     } else if (icon == PILL_ICON_PLAYLIST_ADD)
         uiDrawPlaylistAddIcon((float)cx + ICON_SIZE / 2.0f, mid, 0.9f, fg);
     else

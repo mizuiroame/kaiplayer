@@ -1050,3 +1050,114 @@ Color
 
 Its own
 고유 색
+
+%d min
+%d분
+
+%d minutes
+%d분
+
+%ld h %02ld min
+%ld시간 %02ld분
+
+%ld min
+%ld분
+
+%s left
+%s 남음
+
+%zu audiobook
+오디오북 %zu권
+
+%zu audiobooks
+오디오북 %zu권
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] 일시정지  [B] 오디오북  [<>][RS] 30초  [L][R] 챕터  [X] 챕터 목록  [Y] 속도  [^] 슬립  [+] 메뉴
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 재생  [X] 챕터  [Y] 옵션  [RS] 페이지 / 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
+
+AUDIOBOOK
+오디오북
+
+Audiobooks
+오디오북
+
+Book: %s of %s  ·  %d%%
+책: %s / %s  ·  %d%%
+
+Chapter %d
+챕터 %d
+
+Chapter %zu of %zu
+챕터 %zu / %zu
+
+Chapters
+챕터
+
+Chapters of "%s"
+"%s"의 챕터
+
+Continue
+이어서 듣기
+
+Could not open the audiobook.
+오디오북을 열 수 없습니다.
+
+End of chapter
+챕터가 끝날 때
+
+Finished
+다 들음
+
+Finished "%s".
+"%s"을(를) 다 들었습니다.
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+라이브러리에서 Audiobooks라는 이름의 폴더와 Navidrome의 Audiobook 장르도 여기에 표시됩니다.
+
+Look for audiobooks again
+오디오북 다시 찾기
+
+Looking for audiobooks...
+오디오북을 찾는 중...
+
+Mark "%s" as finished
+"%s"을(를) 다 들음으로 표시
+
+Mark "%s" as not finished
+"%s"을(를) 안 들음으로 표시
+
+Mark as finished
+다 들음으로 표시
+
+Mark as not finished
+안 들음으로 표시
+
+No audiobooks yet
+아직 오디오북이 없습니다
+
+Normal
+보통
+
+Play
+재생
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+sdmc:/audiobooks에 넣으세요. 책마다 폴더 하나, 또는 .m4b 파일.
+
+Reading speed
+재생 속도
+
+Reading the book...
+책을 읽는 중...
+
+Start "%s" over
+"%s" 처음부터
+
+Start from the beginning
+처음부터 재생

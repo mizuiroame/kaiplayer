@@ -38,6 +38,12 @@ typedef enum {
     HIT_SOURCE,        // Library's source: the card's music, the network folder's, or the server's.
     HIT_NETWORK_SCAN,  // A library on the network being read: shows it. arg: 0 the network folder's, 1 the server's.
     HIT_NOTICE,        // The notice bubble at the top, over any layer: a tap sends it away.
+    HIT_BOOK_SEEK,     // A book's chapter bar: the tap's x gives the place in the chapter.
+    HIT_BOOK_BACK,     // 30 seconds back,
+    HIT_BOOK_FORWARD,  // and on.
+    HIT_BOOK_SPEED,    // The reading speed's list.
+    HIT_BOOK_CHAPTERS, // The book's chapters.
+    HIT_BOOK_SLEEP,    // The sleep timer's list.
 } HitKind;
 
 typedef struct {

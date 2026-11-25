@@ -76,8 +76,10 @@ void appOpenMenu(App *app)
     // Playing, so the menu keeps the actions that have no button.
     if (app->view == VIEW_PLAYLISTS)
         addPlaylistItems(app);
-    else if (app->view == VIEW_QUEUE && status.track_count > 0)
+    else if (app->view == VIEW_QUEUE && status.track_count > 0 && !status.book)
         menuAdd(&app->menu, T("Save queue as playlist"), ACT_SAVE_QUEUE, 0);
+    else if (app->view == VIEW_BOOKS || app->view == VIEW_NOW_PLAYING)
+        appBooksMenuItems(app);  // The book's chapters, speed, sleep timer (app_books.c).
     menuAddDivider(&app->menu);
     if (app->config.library[0] || appLibraryIsRemote(app))
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
@@ -305,7 +307,10 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_EXIT_CONFIRMED: app->quit = true; break;
     case ACT_SETTINGS: appOpenSettings(app); break;
     case ACT_SCREEN_OFF: appScreenOff(app); break;
-    case ACT_RESCAN: appUpdateLibrary(app); break;
+    case ACT_RESCAN:
+        appUpdateLibrary(app);
+        appBooksRescan(app);
+        break;
     case ACT_SOURCE:
         appSwitchLibrarySource(app);
         appSetView(app, VIEW_BROWSER);  // Shown: Library, on its first page.
@@ -329,6 +334,7 @@ static void runItem(App *app, const MenuItem *item)
         break;
     case ACT_REMOVE_SONG: appConfirmRemoveSong(app); break;
     case ACT_REMOVE_CONFIRMED: removeSong(app); break;
+    default: appBooksMenuAction(app, item->action, item->arg); break;  // The books' (APP_BOOK_ACTIONS on).
     }
 }
 

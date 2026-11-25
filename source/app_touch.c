@@ -87,9 +87,15 @@ static void tapRegion(App *app, const HitRegion *r, int x, int y)
         if (status.duration > 0)
             playerSeekTo(status.duration * seekFraction(r, x));
         break;
-    case HIT_PREV: playerPrev(); break;
+    case HIT_PREV: appTransportPrev(app); break;  // A book's chapter, or a song.
     case HIT_PLAY: playerTogglePause(); break;
-    case HIT_NEXT: playerNext(); break;
+    case HIT_NEXT: appTransportNext(app); break;
+    case HIT_BOOK_SEEK: appBookSeekChapter(app, seekFraction(r, x)); break;
+    case HIT_BOOK_BACK: appTransportSeek(app, -1); break;
+    case HIT_BOOK_FORWARD: appTransportSeek(app, 1); break;
+    case HIT_BOOK_SPEED: appBooksOpenSpeed(app); break;
+    case HIT_BOOK_CHAPTERS: appBooksOpenChapters(app, -1); break;
+    case HIT_BOOK_SLEEP: appBooksOpenSleep(app); break;
     case HIT_SHUFFLE: playerToggleShuffle(); break;
     case HIT_REPEAT: playerCycleRepeat(); break;
     case HIT_LYRICS: appToggleLyrics(app); break;
@@ -209,7 +215,8 @@ static void dragSeekOrList(App *app, const TouchEvent *e, uint64_t now_ns)
         appEqualizerSetGain(app, start->arg, sliderGain(start, e->y));
         return;
     }
-    bool on_bar = start && start->kind == HIT_SEEK && !overlayOpen(app);
+    bool book = start && start->kind == HIT_BOOK_SEEK;  // A book's chapter bar.
+    bool on_bar = start && (start->kind == HIT_SEEK || book) && !overlayOpen(app);
     if (!on_bar) {
         app->scrubbing = false;
         if (e->type == TOUCH_DRAG)
@@ -218,7 +225,10 @@ static void dragSeekOrList(App *app, const TouchEvent *e, uint64_t now_ns)
     }
     app->scrub_fraction = seekFraction(start, e->x);
     app->scrubbing = e->type == TOUCH_DRAG;
-    if (e->type == TOUCH_DRAG_END) {
+    app->scrub_book = book;
+    if (e->type == TOUCH_DRAG_END && book) {
+        appBookSeekChapter(app, app->scrub_fraction);
+    } else if (e->type == TOUCH_DRAG_END) {
         PlayerStatus status;
         playerGetStatus(&status);
         if (status.duration > 0)

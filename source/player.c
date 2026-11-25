@@ -12,6 +12,7 @@
 #include "lang.h"
 #include "resampler.h"
 #include "tags.h"
+#include "tempo.h"
 #include "util.h"
 
 #define BUFFER_COUNT 3
@@ -46,6 +47,9 @@ static int g_eq_gains[EQ_BANDS];
 static bool g_eq_changed = true;
 static ReplayGainMode g_replaygain;
 static bool g_mixed_albums;
+static bool g_book;            // An audiobook: its files in order, never shuffled or repeated.
+static int g_speed = TEMPO_PERMILLE;  // An audiobook's reading speed.
+static bool g_speed_changed;
 
 // Owned by the audio thread: the equalizer and the current track's gain.
 static Eq g_eq;
@@ -62,6 +66,9 @@ static u32 g_out_rate;
 static AudioOutBuffer g_buffers[BUFFER_COUNT];
 static bool g_queued[BUFFER_COUNT];
 static float g_mix[BUFFER_FRAMES * 2];
+static Tempo g_tempo;          // Another speed than 1x: the sound goes through it.
+static bool g_tempo_on;
+static u64 g_tempo_base;       // The frame (at the output rate) the tempo's frame 0 is.
 
 static u64 readDecoder(void *ctx, float *out, u64 frames)
 {
@@ -74,6 +81,33 @@ static void installDecoder(Decoder *d)
     g_decoder = d;
     if (d)
         resamplerReset(&g_resampler, decoderSampleRate(d), g_out_rate);
+    tempoReset(&g_tempo);
+    g_tempo_base = 0;
+}
+
+static u64 readResampled(void *ctx, float *out, u64 frames)
+{
+    (void)ctx;
+    return resamplerRun(&g_resampler, readDecoder, g_decoder, out, frames);
+}
+
+// The decoded sound at the output rate, through the tempo at another speed.
+// Counts what was played: the song's frames, whatever the speed.
+static u64 readPlayed(float *out, u64 frames)
+{
+    if (!g_tempo_on) {
+        u64 n = readResampled(NULL, out, frames);
+        mutexLock(&g_lock);
+        g_played_frames += n;
+        mutexUnlock(&g_lock);
+        return n;
+    }
+    u64 n = tempoRun(&g_tempo, readResampled, NULL, out, frames);
+    int64_t at = tempoPosition(&g_tempo);
+    mutexLock(&g_lock);
+    g_played_frames = g_tempo_base + (u64)(at > 0 ? at : 0);
+    mutexUnlock(&g_lock);
+    return n;
 }
 
 // The ReplayGain of a file as a linear factor, for the chosen mode. Album
@@ -218,12 +252,8 @@ static bool fillBuffer(AudioOutBuffer *buffer, float gain_start, float gain_end)
     int empty_tracks = 0;
     float track_gain = g_track_gain;  // The gain of the song this buffer starts in.
     while (done < BUFFER_FRAMES && g_decoder && g_running) {
-        u64 n = resamplerRun(&g_resampler, readDecoder, g_decoder,
-                             g_mix + done * 2, BUFFER_FRAMES - done);
+        u64 n = readPlayed(g_mix + done * 2, BUFFER_FRAMES - done);
         done += n;
-        mutexLock(&g_lock);
-        g_played_frames += n;
-        mutexUnlock(&g_lock);
         if (done == BUFFER_FRAMES)
             break;
         // Tracks that decode to nothing would otherwise loop forever with repeat on.
@@ -252,6 +282,8 @@ static void applySeek(double seconds)
     bool ok = false;
     if (g_decoder && decoderSeek(g_decoder, (u64)(seconds * decoderSampleRate(g_decoder)))) {
         resamplerReset(&g_resampler, decoderSampleRate(g_decoder), g_out_rate);
+        tempoReset(&g_tempo);
+        g_tempo_base = (u64)(seconds * g_out_rate);
         ok = true;
     }
     mutexLock(&g_lock);
@@ -266,10 +298,22 @@ static void handleCommands(void)
     mutexLock(&g_lock);
     bool load = g_load_pending;
     double seek = g_seek_target;
+    // Another speed: the tempo starts over from where the song is (a seek there, unless one is asked for).
+    bool tempo = g_book && g_speed != TEMPO_PERMILLE;
+    bool retune = g_speed_changed;
+    int speed = g_speed;
+    g_speed_changed = false;
+    if (retune && !load && seek < 0.0 && g_decoder && g_out_rate)
+        seek = (double)g_played_frames / g_out_rate;
     g_load_pending = false;
     g_seek_target = -1.0;
     g_seeking_to = seek;  // Still reported as the position until it's done.
     mutexUnlock(&g_lock);
+    if (retune || tempo != g_tempo_on) {
+        g_tempo_on = tempo;
+        tempoInit(&g_tempo, speed);
+        g_tempo_base = 0;
+    }
 
     // Every command that loads a track clears the seek target, except a
     // restore, which loads and then seeks to the saved position.
@@ -433,8 +477,10 @@ static void cancelFadeLocked(void)
 }
 
 // Replaces the list and starts at start. Call with the lock held.
+// An audiobook's list plays in order, once.
 static void startListLocked(TrackList *list, size_t start)
 {
+    bool book = g_book;
     kfileInterruptStreams();  // The song playing from the network needn't wait for it.
     cancelFadeLocked();
     trackListFree(&g_list);
@@ -442,8 +488,8 @@ static void startListLocked(TrackList *list, size_t start)
     g_list = *list;
     *list = (TrackList){0};
     g_generation++;
-    if (queueInit(&g_queue, g_list.count, start, g_shuffle, armGetSystemTick())) {
-        g_queue.repeat = g_repeat;
+    if (queueInit(&g_queue, g_list.count, start, g_shuffle && !book, armGetSystemTick())) {
+        g_queue.repeat = book ? REPEAT_OFF : g_repeat;
         g_state = PLAYER_PLAYING;
         g_load_pending = true;
         g_seek_target = -1.0;
@@ -459,13 +505,41 @@ static void startListLocked(TrackList *list, size_t start)
 void playerPlay(TrackList *list, size_t start)
 {
     mutexLock(&g_lock);
+    g_book = false;
+    g_speed_changed = true;
     startListLocked(list, start);
+    mutexUnlock(&g_lock);
+}
+
+void playerPlayBook(TrackList *list, size_t track, double position, int permille, bool play)
+{
+    mutexLock(&g_lock);
+    g_book = true;
+    g_speed = permille;
+    g_speed_changed = true;
+    startListLocked(list, track);
+    if (g_state == PLAYER_PLAYING) {
+        g_state = play ? PLAYER_PLAYING : PLAYER_PAUSED;
+        g_seek_target = position > 0.0 ? position : -1.0;
+    }
+    mutexUnlock(&g_lock);
+}
+
+void playerSetSpeed(int permille)
+{
+    mutexLock(&g_lock);
+    if (permille != g_speed) {
+        g_speed = permille;
+        g_speed_changed = true;
+    }
     mutexUnlock(&g_lock);
 }
 
 void playerRestore(TrackList *list, size_t track, double position)
 {
     mutexLock(&g_lock);
+    g_book = false;
+    g_speed_changed = true;
     startListLocked(list, track);
     if (g_state == PLAYER_PLAYING) {
         g_state = PLAYER_PAUSED;
@@ -600,6 +674,22 @@ void playerFadeOutAndPause(double seconds)
     mutexUnlock(&g_lock);
 }
 
+void playerJumpToAt(size_t track, double seconds)
+{
+    mutexLock(&g_lock);
+    if (track < g_list.count) {
+        if (track != queueCurrent(&g_queue) || g_state == PLAYER_STOPPED) {
+            bool paused = g_state == PLAYER_PAUSED;
+            queueJumpTo(&g_queue, track);
+            startCurrentLocked();
+            if (paused)
+                g_state = PLAYER_PAUSED;  // Moving through a paused book keeps it paused.
+        }
+        g_seek_target = seconds > 0.0 ? seconds : 0.0;
+    }
+    mutexUnlock(&g_lock);
+}
+
 void playerJumpTo(size_t track)
 {
     mutexLock(&g_lock);
@@ -610,11 +700,14 @@ void playerJumpTo(size_t track)
     mutexUnlock(&g_lock);
 }
 
+// An audiobook keeps its order: shuffle and repeat wait for the music.
 void playerToggleShuffle(void)
 {
     mutexLock(&g_lock);
-    g_shuffle = !g_shuffle;
-    queueSetShuffle(&g_queue, g_shuffle);
+    if (!g_book) {
+        g_shuffle = !g_shuffle;
+        queueSetShuffle(&g_queue, g_shuffle);
+    }
     mutexUnlock(&g_lock);
 }
 
@@ -623,7 +716,8 @@ void playerSetShuffle(bool shuffle)
     mutexLock(&g_lock);
     if (g_shuffle != shuffle) {
         g_shuffle = shuffle;
-        queueSetShuffle(&g_queue, shuffle);
+        if (!g_book)
+            queueSetShuffle(&g_queue, shuffle);
     }
     mutexUnlock(&g_lock);
 }
@@ -631,8 +725,10 @@ void playerSetShuffle(bool shuffle)
 void playerCycleRepeat(void)
 {
     mutexLock(&g_lock);
-    g_repeat = (RepeatMode)((g_repeat + 1) % REPEAT_MODE_COUNT);
-    g_queue.repeat = g_repeat;
+    if (!g_book) {
+        g_repeat = (RepeatMode)((g_repeat + 1) % REPEAT_MODE_COUNT);
+        g_queue.repeat = g_repeat;
+    }
     mutexUnlock(&g_lock);
 }
 
@@ -651,8 +747,10 @@ void playerGetStatus(PlayerStatus *out)
                   : g_seeking_to >= 0.0  ? g_seeking_to
                   : g_out_rate ? (double)g_played_frames / g_out_rate : 0.0;
     out->duration = g_duration;
-    out->shuffle = g_shuffle;
-    out->repeat = g_repeat;
+    out->shuffle = g_shuffle && !g_book;
+    out->repeat = g_book ? REPEAT_OFF : g_repeat;
+    out->book = g_book;
+    out->speed = g_book ? g_speed : TEMPO_PERMILLE;
     out->format = g_decoder ? g_format : (AudioFormat){0};
     snprintf(out->error, sizeof(out->error), "%s", g_error);
     mutexUnlock(&g_lock);

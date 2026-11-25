@@ -49,6 +49,12 @@ static void setSleep(App *app, int minutes)
 {
     app->sleep_minutes = minutes;
     app->sleep_deadline_ns = minutes ? nowNs() + (uint64_t)minutes * NS_PER_MINUTE : 0;
+    app->books.sleep_chapter = false;  // One timer: minutes or a chapter's end.
+}
+
+void appSetSleep(App *app, int minutes)
+{
+    setSleep(app, settingsSleepClamp(minutes));
 }
 
 // Types the sleep timer's minutes on the number pad; 0 turns it off.

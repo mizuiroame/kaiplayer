@@ -23,6 +23,7 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, cons
         appToast(app, T("There are no songs to play."));
         return;
     }
+    appBooksStop(app);  // A book playing keeps its place (app_books.c).
     for (size_t i = 0; i < tracks->count; i++) {  // A network folder's song: its password first, if it's asked for.
         if (davIsLocation(tracks->paths[i])) {
             if (!appNetworkEnsurePassword(app))
@@ -63,8 +64,8 @@ void appSaveSession(App *app, uint64_t now_ns, bool force)
     (void)app;
     PlayerStatus status;
     playerGetStatus(&status);
-    if (status.track_count == 0)
-        return;
+    if (status.track_count == 0 || status.book)
+        return;  // A book keeps its place apart (app_books.c): the music's resume stays as it was.
     bool changed = status.generation != g_saved_generation || status.track != g_saved_track ||
                    status.state != g_saved_state;
     bool due = status.state == PLAYER_PLAYING && now_ns >= g_next_save_ns;

@@ -80,6 +80,12 @@ static void handleQueue(App *app, uint64_t pressed)
 
 static void handleNowPlaying(App *app, uint64_t pressed)
 {
+    PlayerStatus status;
+    playerGetStatus(&status);
+    if (appBookPlaying(app, &status)) {  // A book: its own buttons (app_books.c).
+        appHandleBookPlayer(app, pressed);
+        return;
+    }
     // B adds the song to a playlist (or tap "Add to playlist").
     if (pressed & HidNpadButton_B)
         appAddToPlaylist(app, SRC_NOW_PLAYING);
@@ -154,6 +160,11 @@ void appActivateRow(App *app, size_t index, bool select_only)
             return;
         app->queue_cursor = index;
         break;
+    case VIEW_BOOKS:
+        if (index >= appBooksCount(app))
+            return;
+        app->books.cursor = index;
+        break;
     default:
         return;
     }
@@ -166,10 +177,11 @@ static void handleGlobal(App *app, uint64_t pressed)
     if (pressed & HidNpadButton_ZL) switchView(app, -1);
     if (pressed & HidNpadButton_ZR) switchView(app, 1);
     if (pressed & HidNpadButton_Minus) playerTogglePause();
-    if (pressed & HidNpadButton_L) playerPrev();
-    if (pressed & HidNpadButton_R) playerNext();
-    if (pressed & HidNpadButton_StickRLeft) playerSeek(-SEEK_STEP_SECONDS);
-    if (pressed & HidNpadButton_StickRRight) playerSeek(SEEK_STEP_SECONDS);
+    // A book's chapters and 30 seconds, or music's songs and 10 seconds (app_books.c).
+    if (pressed & HidNpadButton_L) appTransportPrev(app);
+    if (pressed & HidNpadButton_R) appTransportNext(app);
+    if (pressed & HidNpadButton_StickRLeft) appTransportSeek(app, -1);
+    if (pressed & HidNpadButton_StickRRight) appTransportSeek(app, 1);
 }
 
 void appDispatchButtons(App *app, uint64_t pressed)
@@ -187,6 +199,7 @@ void appDispatchButtons(App *app, uint64_t pressed)
     switch (app->view) {
     case VIEW_HOME: appHandleHome(app, pressed); break;
     case VIEW_BROWSER: appHandleLibrary(app, pressed); break;
+    case VIEW_BOOKS: appHandleBooks(app, pressed); break;
     case VIEW_PLAYLISTS: appHandlePlaylists(app, pressed); break;
     case VIEW_QUEUE: handleQueue(app, pressed); break;
     default: handleNowPlaying(app, pressed); break;
@@ -200,6 +213,7 @@ static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, 
 {
     PlayerStatus status;
     playerGetStatus(&status);
+    appBooksTick(app, &status, nowNs());  // Before the plays: a book's aren't counted.
     appTrackPlays(app, &status);
     appServerUpdate(app, &status);  // Its test's answer, and the song playing told to the server.
     if (status.state != *last_state) {
@@ -417,11 +431,15 @@ int main(int argc, char **argv)
     if (app.audio_ok)
         appApplyAudioSettings(&app);
     openStartFolder(&app);
-    if (app.audio_ok && app.config.resume != RESUME_OFF)
+    appBooksStart(&app);
+    // The book playing when KaiPlayer closed goes on instead of the music's queue (once the books are read).
+    if (app.audio_ok && app.config.resume != RESUME_OFF &&
+        !appBooksWillRestore(&app, app.config.resume == RESUME_PLAYING))
         appRestoreSession(&app, app.config.resume == RESUME_PLAYING);
 
     runLoop(&app);
 
+    appBooksExit(&app);  // Where the book was left, before the player stops.
     if (app.audio_ok) {
         if (app.config.resume != RESUME_OFF)
             appSaveSession(&app, nowNs(), true);

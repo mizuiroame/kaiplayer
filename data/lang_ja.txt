@@ -1050,3 +1050,114 @@ Color
 
 Its own
 固有の色
+
+%d min
+%d分
+
+%d minutes
+%d分
+
+%ld h %02ld min
+%ld時間%02ld分
+
+%ld min
+%ld分
+
+%s left
+残り%s
+
+%zu audiobook
+%zu冊のオーディオブック
+
+%zu audiobooks
+%zu冊のオーディオブック
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] 一時停止  [B] オーディオブック  [<>][RS] 30秒  [L][R] チャプター  [X] チャプター  [Y] 速度  [^] スリープ  [+] メニュー
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 再生  [X] チャプター  [Y] オプション  [RS] ページ / シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+AUDIOBOOK
+オーディオブック
+
+Audiobooks
+オーディオブック
+
+Book: %s of %s  ·  %d%%
+本: %s / %s  ·  %d%%
+
+Chapter %d
+チャプター%d
+
+Chapter %zu of %zu
+チャプター %zu / %zu
+
+Chapters
+チャプター
+
+Chapters of "%s"
+「%s」のチャプター
+
+Continue
+続きから
+
+Could not open the audiobook.
+オーディオブックを開けませんでした。
+
+End of chapter
+チャプターの終わり
+
+Finished
+聴き終わり
+
+Finished "%s".
+「%s」を聴き終わりました。
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+ライブラリ内の Audiobooks という名前のフォルダーと、Navidrome の Audiobook ジャンルもここに表示されます。
+
+Look for audiobooks again
+オーディオブックを再検索
+
+Looking for audiobooks...
+オーディオブックを探しています...
+
+Mark "%s" as finished
+「%s」を聴き終わりにする
+
+Mark "%s" as not finished
+「%s」を未読に戻す
+
+Mark as finished
+聴き終わりにする
+
+Mark as not finished
+未読に戻す
+
+No audiobooks yet
+オーディオブックはまだありません
+
+Normal
+標準
+
+Play
+再生
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+sdmc:/audiobooks に入れてください。1冊につき1フォルダー、または .m4b ファイル。
+
+Reading speed
+再生速度
+
+Reading the book...
+本を読み込んでいます...
+
+Start "%s" over
+「%s」を最初から
+
+Start from the beginning
+最初から再生

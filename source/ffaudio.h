@@ -7,12 +7,13 @@
 #include <stdint.h>
 
 #include "audioformat.h"
+#include "bookchap.h"
 #include "kfile.h"
 #include "tags.h"
 
 typedef struct FfAudio FfAudio;
 
-// True for the extensions FFmpeg reads: .m4a, .mp4, .aac, .opus (not .ogg,
+// True for the extensions FFmpeg reads: .m4a, .m4b, .mp4, .aac, .opus (not .ogg,
 // which is Vorbis unless ffaudioOggIsOpus says otherwise).
 bool ffaudioIsFile(const char *path);
 
@@ -42,3 +43,7 @@ bool ffaudioReadTags(KFile *f, TrackTags *t);
 // anything else (stb_vorbis, as before). Reads its first page and goes back
 // to the start.
 bool ffaudioOggIsOpus(KFile *f);
+
+// An MP4/M4B audiobook's chapters (Nero "chpl" or a QuickTime chapter track),
+// in seconds from its start, added to out. False if it has none.
+bool ffaudioReadChapters(KFile *f, BookChapters *out);

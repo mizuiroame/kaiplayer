@@ -35,6 +35,10 @@ with nothing else to install.
   (SMB), or WebDAV, as a library of its own. [More](docs/network-folder.md)
 - **Music from a Navidrome server** (or any Subsonic server): its library,
   covers and play counts, playing the original files. [More](docs/navidrome.md)
+- **Audiobooks** in a tab of their own: `.m4b` and folders of files, their
+  chapters, each book going on where you left it, 30-second skips, 0.75x to 2x
+  with the voice's pitch kept, and a sleep timer to the chapter's end; from the
+  card, the network folder or Navidrome. [More](docs/audiobooks.md)
 - **Covers** embedded in the file, or a `cover.jpg` (or similar) in the
   album's folder. [More](docs/library.md#song-details-and-album-art)
 - **Titles in any language** from the tags, including Japanese, Chinese and

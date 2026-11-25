@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "books.h"
+#include "bookstore.h"
 #include "browser.h"
 #include "catalog.h"
 #include "config.h"
@@ -25,6 +27,7 @@
 typedef enum {
     VIEW_HOME,
     VIEW_BROWSER,  // The Library tab (its Folders page is the old Browse).
+    VIEW_BOOKS,    // The Audiobooks tab.
     VIEW_PLAYLISTS,
     VIEW_QUEUE,
     VIEW_NOW_PLAYING,
@@ -69,6 +72,31 @@ typedef struct {
     int depth;
     unsigned generation;  // The catalog the pages' indexes belong to.
 } LibraryTab;
+
+// The Audiobooks tab, and the book playing (app_books.c).
+typedef struct {
+    size_t cursor;                // In the shown order.
+    size_t *order;                // The scan's books (indexes) as shown: going on first, then new, then finished.
+    size_t order_count;
+    unsigned order_generation;    // The scan's list they belong to.
+    bool order_stale;             // A book's place changed: shown in another order.
+    BookStore store;              // Where each book was left (books.txt).
+    unsigned catalog_generation;  // The library the last look for books saw.
+    // The book playing: a copy, so a new look for books doesn't move it.
+    bool active;
+    unsigned generation;          // The player's list it plays as.
+    Book book;
+    PlayerState last_state;
+    size_t last_part;
+    double last_position;
+    uint64_t next_save_ns, next_mark_ns;
+    bool sleep_chapter;           // Pausing at the end of chapter sleep_at.
+    size_t sleep_at;
+    char restore[UTIL_PATH_MAX];  // The book playing when KaiPlayer closed: opened once the list has it.
+    bool restore_play;
+    bool menu_playing;            // A menu acts on the book playing,
+    char menu_key[UTIL_PATH_MAX]; // or on this one.
+} BooksTab;
 
 // Which song is playing, to count it as played once.
 typedef struct {
@@ -123,6 +151,7 @@ typedef struct {
     View view;
     Browser browser;
     LibraryTab library;
+    BooksTab books;
     History history;            // Plays, for Home.
     HomeTracker home_tracker;
     Home home;                  // Home's rows, from the catalog and history.
@@ -174,6 +203,7 @@ typedef struct {
     bool swallow_tap;           // A press stopped a glide: its tap doesn't open anything.
     bool scrubbing;             // Dragging on the progress bar.
     double scrub_fraction;      // Where the finger is on the bar, 0 to 1.
+    bool scrub_book;            // The bar is a book's chapter's.
     bool quit;
 } App;
 
@@ -319,7 +349,52 @@ void appToggleLyrics(App *app);
 // select_only, opens it as A would.
 void appActivateRow(App *app, size_t index, bool select_only);
 
+// The Audiobooks tab and the book playing (app_books.c, ui_books.c).
+// At start: where books were left, and the look for them (after the library's scan began).
+void appBooksStart(App *app);
+// At the end: the book's place, and that it was playing.
+void appBooksExit(App *app);
+// True if a book was playing when KaiPlayer closed: it's opened again instead of the music's queue.
+bool appBooksWillRestore(const App *app, bool play);
+// Looks for books again (after "Update the library").
+void appBooksRescan(App *app);
+// Once a frame: the book's place kept, a finished book, the sleep timer at a chapter's end, the list's order.
+void appBooksTick(App *app, const PlayerStatus *status, uint64_t now_ns);
+void appHandleBooks(App *app, uint64_t pressed);
+// Now Playing while a book plays.
+void appHandleBookPlayer(App *app, uint64_t pressed);
+// True while the player plays the book (not music).
+bool appBookPlaying(const App *app, const PlayerStatus *status);
+// Rows in the tab, and the scan's index of shown row i (under bookScanLock).
+size_t appBooksCount(const App *app);
+const Book *appBooksShown(const App *app, const BookList *list, size_t row);
+// The place kept for a book (NULL: never played).
+const BookMark *appBooksMark(const App *app, const char *key);
+// Plays the book at shown row (from where it was left).
+void appBooksPlayRow(App *app, size_t row);
+// The book's music stops: its place is kept first (a song or playlist is about to play).
+void appBooksStop(App *app);
+// The transport, for a book or music: L/R (a chapter or a song), the right stick and ←/→ (30 s or 10 s).
+void appTransportPrev(App *app);
+void appTransportNext(App *app);
+void appTransportSeek(App *app, int direction);
+// The book's chapter bar: a tap or a drag's end at fraction of the chapter.
+void appBookSeekChapter(App *app, double fraction);
+// The book's menus: its chapters (row: a shown row, or -1 for the book playing), the speed, the sleep timer,
+// and a book's options (start over, finished or not).
+void appBooksOpenChapters(App *app, int row);
+void appBooksOpenSpeed(App *app);
+void appBooksOpenSleep(App *app);
+void appBooksOpenOptions(App *app, int row);
+// The + menu's items for the tab or the book playing.
+void appBooksMenuItems(App *app);
+// A chosen item of those menus (action from APP_BOOK_ACTIONS on).
+#define APP_BOOK_ACTIONS 1000
+void appBooksMenuAction(App *app, int action, int arg);
+
 // Settings page and sleep timer (app_settings.c).
+// The sleep timer at minutes (0: off).
+void appSetSleep(App *app, int minutes);
 void appOpenSettings(App *app);
 // Settings, on one of its pages (B goes back to the main page from it).
 void appOpenSettingsAt(App *app, SettingsPage page);

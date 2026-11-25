@@ -30,6 +30,8 @@ typedef struct {
     bool shuffle;
     RepeatMode repeat;
     AudioFormat format;   // The playing file's format; an empty codec when none.
+    bool book;            // The list is an audiobook's (playerPlayBook).
+    int speed;            // Its reading speed, in thousandths (tempo.h); 1000 for music.
     char error[320];
 } PlayerStatus;
 
@@ -46,6 +48,15 @@ void playerRestore(TrackList *list, size_t track, double position);
 // Copies the play list, the current track and the position. False if
 // nothing is loaded or memory runs out.
 bool playerSnapshot(TrackList *out, size_t *track, double *position);
+
+// An audiobook's files: in order, never shuffled or repeated, at permille
+// speed (tempo.h, with the pitch kept), from track and position (seconds),
+// playing or paused. The player takes the list's contents.
+void playerPlayBook(TrackList *list, size_t track, double position, int permille, bool play);
+// The audiobook's speed, from now on (music always plays at 1x).
+void playerSetSpeed(int permille);
+// Goes to track (loading it, unless it's the one playing) at seconds into it; a paused book stays paused.
+void playerJumpToAt(size_t track, double seconds);
 
 void playerTogglePause(void);
 void playerNext(void);

@@ -92,8 +92,25 @@ static void drawMenu(const Menu *m)
         bool selected = i == m->cursor;
         if (selected)
             drawRowHighlight(x + 16, row_y, MENU_W - 32, MENU_ROW_H - 6);
-        fontDrawClipped(selected ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD, row_y + 9,
-                        MENU_W - 2 * PANEL_PAD, m->items[i].label, COLOR_TEXT);
+        // A detail ("12:34") and a check at the end of the row, as KaiVideo's Playback list.
+        const MenuItem *item = &m->items[i];
+        int end = x + MENU_W - PANEL_PAD, label_w = MENU_W - 2 * PANEL_PAD;
+        float mid = (float)row_y + (MENU_ROW_H - 6) / 2.0f;
+        if (item->checked) {
+            gfxLine((float)end - 18, mid, (float)end - 12, mid + 6, 2.6f, COLOR_ACCENT);
+            gfxLine((float)end - 12, mid + 6, (float)end - 1, mid - 6, 2.6f, COLOR_ACCENT);
+        }
+        if (item->checked || item->detail[0])
+            end -= 30;
+        if (item->detail[0]) {
+            int w = fontTextWidth(FONT_REGULAR, 18, item->detail);
+            fontDrawMiddle(FONT_REGULAR, 18, end - w, mid, item->detail, COLOR_DIM);
+            end -= w + 16;
+        }
+        if (item->checked || item->detail[0])
+            label_w = end - (x + PANEL_PAD);
+        fontDrawClipped(selected || item->checked ? FONT_BOLD : FONT_REGULAR, 21, x + PANEL_PAD, row_y + 9, label_w,
+                        item->label, item->checked ? COLOR_ACCENT : COLOR_TEXT);
         uiHitAdd(x + 16, row_y, MENU_W - 32, MENU_ROW_H - 6, HIT_MENU_ITEM, i);
     }
     if (m->count > rows) {

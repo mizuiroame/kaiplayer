@@ -1050,3 +1050,114 @@ Cor
 
 Its own
 A própria
+
+%d min
+%d min
+
+%d minutes
+%d minutos
+
+%ld h %02ld min
+%ld h %02ld min
+
+%ld min
+%ld min
+
+%s left
+faltam %s
+
+%zu audiobook
+%zu audiolivro
+
+%zu audiobooks
+%zu audiolivros
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] pausar  [B] audiolivros  [<>][RS] 30 s  [L][R] capítulo  [X] capítulos  [Y] velocidade  [^] timer  [+] menu
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] tocar  [X] capítulos  [Y] opções  [RS] página / posição  [L][R] faixa  [-] pausar  [+] menu
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] posição  [L][R] faixa  [-] pausar  [+] menu
+
+AUDIOBOOK
+AUDIOLIVRO
+
+Audiobooks
+Audiolivros
+
+Book: %s of %s  ·  %d%%
+Livro: %s de %s  ·  %d%%
+
+Chapter %d
+Capítulo %d
+
+Chapter %zu of %zu
+Capítulo %zu de %zu
+
+Chapters
+Capítulos
+
+Chapters of "%s"
+Capítulos de "%s"
+
+Continue
+Continuar
+
+Could not open the audiobook.
+Não foi possível abrir o audiolivro.
+
+End of chapter
+Fim do capítulo
+
+Finished
+Concluído
+
+Finished "%s".
+Você terminou "%s".
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+Pastas chamadas Audiobooks (ou Audiolivros) na biblioteca e o gênero Audiobook do Navidrome também aparecem aqui.
+
+Look for audiobooks again
+Procurar audiolivros de novo
+
+Looking for audiobooks...
+Procurando audiolivros...
+
+Mark "%s" as finished
+Marcar "%s" como concluído
+
+Mark "%s" as not finished
+Marcar "%s" como não concluído
+
+Mark as finished
+Marcar como concluído
+
+Mark as not finished
+Marcar como não concluído
+
+No audiobooks yet
+Ainda não há audiolivros
+
+Normal
+Normal
+
+Play
+Tocar
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+Coloque-os em sdmc:/audiobooks: uma pasta para cada livro, ou arquivos .m4b.
+
+Reading speed
+Velocidade de leitura
+
+Reading the book...
+Lendo o livro...
+
+Start "%s" over
+Começar "%s" de novo
+
+Start from the beginning
+Começar do início

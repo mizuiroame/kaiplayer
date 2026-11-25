@@ -9,6 +9,7 @@
 
 #include "app.h"
 #include "artwork.h"
+#include "bookscan.h"
 #include "catalog_scan.h"
 #include "covercache.h"
 #include "font.h"
@@ -107,8 +108,50 @@ void coverCacheUnlock(void)
 
 const CoverImage *coverCacheGet(const char *song_path, bool thumb)
 {
-    // The sample cover stands in for every album that has one.
-    return g_art.has_cover && strstr(song_path, "Aurora") ? (thumb ? &g_art_thumb_small : &g_art_card) : NULL;
+    // The sample cover stands in for every album that has one (and two of the books).
+    bool has = strstr(song_path, "Aurora") || strstr(song_path, "Lighthouse") || strstr(song_path, "Paper Moon");
+    return g_art.has_cover && has ? (thumb ? &g_art_thumb_small : &g_art_card) : NULL;
+}
+
+// The audiobooks (bookscan.c, app_books.c): made-up books, set up by renderBookScenes.
+static BookList g_book_list;
+static bool g_book_busy;
+
+const BookList *bookScanLock(void)
+{
+    return &g_book_list;
+}
+
+void bookScanUnlock(void)
+{
+}
+
+bool bookScanBusy(void)
+{
+    return g_book_busy;
+}
+
+bool appBookPlaying(const App *app, const PlayerStatus *status)
+{
+    return app->books.active && status->book;
+}
+
+size_t appBooksCount(const App *app)
+{
+    return app->books.order_count;
+}
+
+const Book *appBooksShown(const App *app, const BookList *list, size_t row)
+{
+    const BooksTab *t = &app->books;
+    if (!list || list->generation != t->order_generation || row >= t->order_count || t->order[row] >= list->count)
+        return NULL;
+    return &list->items[t->order[row]];
+}
+
+const BookMark *appBooksMark(const App *app, const char *key)
+{
+    return bookStoreFind(&app->books.store, key);
 }
 
 bool catalogScanProgress(size_t *done, size_t *total)
@@ -405,6 +448,133 @@ static void openMainMenu(App *app, bool playlist_actions)
     menuAdd(&app->menu, T("Turn screen off (music keeps playing)"), 0, 0);
     menuAdd(&app->menu, T("Settings"), 0, 0);
     menuAdd(&app->menu, T("Exit KaiPlayer"), 0, 0);
+}
+
+// A made-up book: parts of the same length, a chapter each (titles), or chapters of its own in one file.
+static void addBook(const char *folder, const char *title, const char *author, size_t parts, double part_seconds,
+                    const char *const *chapters, size_t chapter_count, bool probed)
+{
+    Book b = {0};
+    char path[UTIL_PATH_MAX];
+    b.key = strdup(folder);
+    snprintf(b.title, sizeof(b.title), "%s", title);
+    snprintf(b.author, sizeof(b.author), "%s", author);
+    for (size_t i = 0; i < parts; i++) {
+        if (parts == 1)
+            snprintf(path, sizeof(path), "%s", folder);
+        else
+            snprintf(path, sizeof(path), "%s/%02zu.mp3", folder, i + 1);
+        bookAddPart(&b, path, 1000, probed ? part_seconds : 0.0);
+    }
+    if (probed) {
+        if (parts == 1)
+            for (size_t i = 0; i < chapter_count; i++)
+                bookChaptersAdd(&b.chapters, part_seconds * i / chapter_count, chapters[i]);
+        bookFinishProbe(&b, parts > 1 ? chapters : NULL);
+    }
+    bookListTake(&g_book_list, &b);
+}
+
+// The Audiobooks tab, a book in Now Playing, its menus, and the player bar while it plays.
+static void renderBookScenes(const char *dir, App *app, PlayerStatus *status)
+{
+    static const char *const LIGHTHOUSE[] = {
+        "The Storm", "A Light Across the Water", "Letters from the Mainland", "The Keeper's Logbook",
+        "Fog", "What the Tide Brought", "Winter Rations", "The Inspector", "Signals", "The Long Night",
+        "Morning", "Afterword",
+    };
+    static const char *const MOON[] = {"Prologue", "The Paper Moon", "Ink and Rain", "A Kite in July",
+                                       "The Clockmaker", "Lanterns", "The Last Page", "Epilogue"};
+    static const char *const TEA[] = {"Leaves", "Ships", "Cups"};
+    addBook("sdmc:/audiobooks/Ada Example/The Lighthouse Keeper's Daughter", "The Lighthouse Keeper's Daughter",
+            "Ada Example", 12, 1520.0, LIGHTHOUSE, 12, true);
+    addBook("sdmc:/audiobooks/Paper Moon Stories.m4b", "Paper Moon Stories", "Bo Placeholder", 1, 3 * 3600.0 + 1260,
+            MOON, 8, true);
+    addBook("sdmc:/audiobooks/A Short History of Tea", "A Short History of Tea", "Cy Sample", 3, 2700.0, TEA, 3, true);
+    addBook("sdmc:/audiobooks/Winter Garden", "Winter Garden", "Di Demo", 4, 1800.0, TEA, 0, true);
+    addBook("dav:/Audiobooks/Night Train to Nowhere", "Night Train to Nowhere", "", 9, 0.0, NULL, 0, false);
+    g_book_list.generation = 1;
+    BookStore *store = &app->books.store;
+    bookStoreSet(store, g_book_list.items[0].key, 4, 610.0, 3000, false);
+    bookStoreSet(store, g_book_list.items[1].key, 0, 8100.0, 2000, false);
+    bookStoreSet(store, g_book_list.items[3].key, 0, 0.0, 1000, true);
+    static size_t order[] = {0, 1, 2, 4, 3};
+    app->books.order = order;
+    app->books.order_count = 5;
+    app->books.order_generation = 1;
+    app->books.cursor = 1;
+
+    app->view = VIEW_BOOKS;
+    app->focus = FOCUS_LIST;
+    app->books.active = true;
+    bookCopy(&app->books.book, &g_book_list.items[0]);
+    *status = (PlayerStatus){
+        .state = PLAYER_PLAYING, .track = 4, .queue_pos = 4, .track_count = 12, .position = 610.0,
+        .duration = 1520.0, .book = true, .speed = 1250, .format = {"MP3", 44100, 0},
+    };
+    g_has_art = true;
+    render(dir, "books", app, status);
+    g_book_busy = true;
+    render(dir, "books_looking", app, status);
+    g_book_busy = false;
+    app->focus = FOCUS_PLAYER;
+    app->bar_control = BAR_SHUFFLE;
+    render(dir, "books_player_bar", app, status);
+    app->focus = FOCUS_LIST;
+
+    app->view = VIEW_NOW_PLAYING;
+    render(dir, "now_playing_book", app, status);
+    status->state = PLAYER_PAUSED;
+    status->speed = 1000;
+    app->books.sleep_chapter = true;
+    render(dir, "now_playing_book_paused", app, status);
+    app->books.sleep_chapter = false;
+    status->state = PLAYER_PLAYING;
+    status->speed = 1250;
+
+    // Its chapters, as appBooksOpenChapters lists them: the one playing checked, the times beside them.
+    menuOpen(&app->menu, app->books.book.title);
+    for (size_t i = 0; i < app->books.book.chapters.count; i++) {
+        char label[MENU_LABEL_MAX], at[16];
+        snprintf(label, sizeof(label), "%zu.  %s", i + 1, app->books.book.chapters.items[i].title);
+        utilFormatTime(at, sizeof(at), app->books.book.chapters.items[i].start);
+        menuAdd(&app->menu, label, 0, 0);
+        menuMarkLast(&app->menu, at, i == 4);
+    }
+    app->menu.cursor = 4;
+    render(dir, "book_chapters", app, status);
+    menuOpen(&app->menu, T("Reading speed"));  // As appBooksOpenSpeed.
+    static const char *const SPEEDS[] = {"0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x"};
+    for (int i = 0; i < 6; i++) {
+        menuAdd(&app->menu, SPEEDS[i], 0, 0);
+        menuMarkLast(&app->menu, i == 1 ? T("Normal") : "", i == 2);
+    }
+    app->menu.cursor = 2;
+    render(dir, "book_speed", app, status);
+    menuOpen(&app->menu, T("Sleep timer"));  // As appBooksOpenSleep.
+    menuAdd(&app->menu, T("Off"), 0, 0);
+    static const int MINUTES[] = {15, 30, 45, 60, 90};
+    for (int i = 0; i < 5; i++) {
+        char label[48];
+        snprintf(label, sizeof(label), T("%d minutes"), MINUTES[i]);
+        menuAdd(&app->menu, label, 0, 0);
+    }
+    menuAdd(&app->menu, T("End of chapter"), 0, 0);
+    menuMarkLast(&app->menu, "", true);
+    app->menu.cursor = 6;
+    render(dir, "book_sleep", app, status);
+    menuClose(&app->menu);
+
+    // Empty, while it looks and after.
+    app->books.active = false;
+    status->book = false;
+    app->view = VIEW_BOOKS;
+    app->books.order_count = 0;
+    render(dir, "books_empty", app, status);
+    app->books.order = NULL;
+    bookFree(&app->books.book);
+    bookStoreFree(store);
+    bookListFree(&g_book_list);
 }
 
 static char *const PLAYLIST_NAMES[] = {"Chill evenings", "Road Trip 2026", "Workout"};
@@ -867,6 +1037,7 @@ int main(int argc, char **argv)
     render(argv[1], "browse_incomplete", &app, &status);
     app.browser.incomplete = false;
     renderPlaylistScenes(argv[1], &app, &status);
+    renderBookScenes(argv[1], &app, &status);
     fontExit();
     if (g_touch_problems)
         printf("%d touch targets wouldn't answer a tap\n", g_touch_problems);

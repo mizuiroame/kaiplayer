@@ -68,7 +68,7 @@ static bool drawStyle(const App *app, const PlayerStatus *status, const UiTrack 
 
 void uiNowPlayingUnderOverlay(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
-    if (app->config.now_style == NOW_STYLE_COVER || !g_style_backdrop_ok)
+    if (app->config.now_style == NOW_STYLE_COVER || !g_style_backdrop_ok || appBookPlaying(app, status))
         return;
     int x, y, w, h;
     styleAreaFb(&x, &y, &w, &h);
@@ -273,6 +273,15 @@ static void drawToggles(const PlayerStatus *status, const UiTrack *track, bool l
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns)
 {
     drawBackdrop(track);
+    if (appBookPlaying(app, status)) {  // A book: its cover, and its chapters and times (ui_books.c).
+        g_style_backdrop_ok = false;
+        if (track->cover)
+            gfxBlendRect(COVER_X + SHADOW_OFFSET, COVER_Y + SHADOW_OFFSET, COVER_SIZE, COVER_SIZE, COLOR_SHADOW,
+                         SHADOW_ALPHA);
+        uiDrawCover(COVER_X, COVER_Y, COVER_SIZE, track->cover);
+        uiDrawBookNow(app, status, now_ns);
+        return;
+    }
     g_style_backdrop_ok = false;
     if (uiOverlayOpen(app) && app->config.now_style != NOW_STYLE_COVER && gfxCanReadBack())
         saveStyleBackdrop();  // This frame is kept under the overlay; the record keeps turning on it.

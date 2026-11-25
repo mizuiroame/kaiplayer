@@ -1050,3 +1050,114 @@ Color
 
 Its own
 自带颜色
+
+%d min
+%d分钟
+
+%d minutes
+%d分钟
+
+%ld h %02ld min
+%ld小时%02ld分
+
+%ld min
+%ld分钟
+
+%s left
+剩余%s
+
+%zu audiobook
+%zu本有声书
+
+%zu audiobooks
+%zu本有声书
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] 暂停  [B] 有声书  [<>][RS] 30秒  [L][R] 章节  [X] 章节列表  [Y] 速度  [^] 睡眠  [+] 菜单
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 播放  [X] 章节  [Y] 选项  [RS] 翻页 / 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] 调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+AUDIOBOOK
+有声书
+
+Audiobooks
+有声书
+
+Book: %s of %s  ·  %d%%
+全书：%s / %s  ·  %d%%
+
+Chapter %d
+第%d章
+
+Chapter %zu of %zu
+第%zu章，共%zu章
+
+Chapters
+章节
+
+Chapters of "%s"
+“%s”的章节
+
+Continue
+继续
+
+Could not open the audiobook.
+无法打开有声书。
+
+End of chapter
+本章结束时
+
+Finished
+已听完
+
+Finished "%s".
+已听完“%s”。
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+媒体库中名为 Audiobooks 的文件夹，以及 Navidrome 的 Audiobook 流派，也会显示在这里。
+
+Look for audiobooks again
+重新查找有声书
+
+Looking for audiobooks...
+正在查找有声书...
+
+Mark "%s" as finished
+将“%s”标为已听完
+
+Mark "%s" as not finished
+将“%s”标为未听完
+
+Mark as finished
+标为已听完
+
+Mark as not finished
+标为未听完
+
+No audiobooks yet
+还没有有声书
+
+Normal
+正常
+
+Play
+播放
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+请放到 sdmc:/audiobooks：每本书一个文件夹，或 .m4b 文件。
+
+Reading speed
+朗读速度
+
+Reading the book...
+正在读取书籍...
+
+Start "%s" over
+从头开始“%s”
+
+Start from the beginning
+从头开始

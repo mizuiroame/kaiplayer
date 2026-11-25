@@ -1050,3 +1050,114 @@ Couleur
 
 Its own
 La sienne
+
+%d min
+%d min
+
+%d minutes
+%d minutes
+
+%ld h %02ld min
+%ld h %02ld min
+
+%ld min
+%ld min
+
+%s left
+%s restantes
+
+%zu audiobook
+%zu livre audio
+
+%zu audiobooks
+%zu livres audio
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] pause  [B] livres audio  [<>][RS] 30 s  [L][R] chapitre  [X] chapitres  [Y] vitesse  [^] veille  [+] menu
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] lire  [X] chapitres  [Y] options  [RS] page / position  [L][R] piste  [-] pause  [+] menu
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] position  [L][R] piste  [-] pause  [+] menu
+
+AUDIOBOOK
+LIVRE AUDIO
+
+Audiobooks
+Livres audio
+
+Book: %s of %s  ·  %d%%
+Livre : %s sur %s  ·  %d%%
+
+Chapter %d
+Chapitre %d
+
+Chapter %zu of %zu
+Chapitre %zu sur %zu
+
+Chapters
+Chapitres
+
+Chapters of "%s"
+Chapitres de « %s »
+
+Continue
+Reprendre
+
+Could not open the audiobook.
+Impossible d'ouvrir le livre audio.
+
+End of chapter
+Fin du chapitre
+
+Finished
+Terminé
+
+Finished "%s".
+« %s » terminé.
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+Les dossiers nommés Audiobooks (ou Livres audio) de la bibliothèque et le genre Audiobook de Navidrome s'affichent aussi ici.
+
+Look for audiobooks again
+Chercher à nouveau les livres audio
+
+Looking for audiobooks...
+Recherche des livres audio...
+
+Mark "%s" as finished
+Marquer « %s » comme terminé
+
+Mark "%s" as not finished
+Marquer « %s » comme non terminé
+
+Mark as finished
+Marquer comme terminé
+
+Mark as not finished
+Marquer comme non terminé
+
+No audiobooks yet
+Aucun livre audio pour l'instant
+
+Normal
+Normale
+
+Play
+Lire
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+Placez-les dans sdmc:/audiobooks : un dossier par livre, ou des fichiers .m4b.
+
+Reading speed
+Vitesse de lecture
+
+Reading the book...
+Lecture du livre...
+
+Start "%s" over
+Recommencer « %s »
+
+Start from the beginning
+Reprendre depuis le début

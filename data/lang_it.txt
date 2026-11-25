@@ -1050,3 +1050,114 @@ Colore
 
 Its own
 Il suo
+
+%d min
+%d min
+
+%d minutes
+%d minuti
+
+%ld h %02ld min
+%ld h %02ld min
+
+%ld min
+%ld min
+
+%s left
+mancano %s
+
+%zu audiobook
+%zu audiolibro
+
+%zu audiobooks
+%zu audiolibri
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] pausa  [B] audiolibri  [<>][RS] 30 s  [L][R] capitolo  [X] capitoli  [Y] velocità  [^] timer  [+] menu
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] riproduci  [X] capitoli  [Y] opzioni  [RS] pagina / posizione  [L][R] brano  [-] pausa  [+] menu
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] posizione  [L][R] brano  [-] pausa  [+] menu
+
+AUDIOBOOK
+AUDIOLIBRO
+
+Audiobooks
+Audiolibri
+
+Book: %s of %s  ·  %d%%
+Libro: %s di %s  ·  %d%%
+
+Chapter %d
+Capitolo %d
+
+Chapter %zu of %zu
+Capitolo %zu di %zu
+
+Chapters
+Capitoli
+
+Chapters of "%s"
+Capitoli di "%s"
+
+Continue
+Continua
+
+Could not open the audiobook.
+Impossibile aprire l'audiolibro.
+
+End of chapter
+Fine del capitolo
+
+Finished
+Finito
+
+Finished "%s".
+Hai finito "%s".
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+Anche le cartelle chiamate Audiobooks (o Audiolibri) nella libreria e il genere Audiobook di Navidrome compaiono qui.
+
+Look for audiobooks again
+Cerca di nuovo gli audiolibri
+
+Looking for audiobooks...
+Ricerca degli audiolibri...
+
+Mark "%s" as finished
+Segna "%s" come finito
+
+Mark "%s" as not finished
+Segna "%s" come non finito
+
+Mark as finished
+Segna come finito
+
+Mark as not finished
+Segna come non finito
+
+No audiobooks yet
+Ancora nessun audiolibro
+
+Normal
+Normale
+
+Play
+Riproduci
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+Mettili in sdmc:/audiobooks: una cartella per libro, o file .m4b.
+
+Reading speed
+Velocità di lettura
+
+Reading the book...
+Lettura del libro...
+
+Start "%s" over
+Ricomincia "%s"
+
+Start from the beginning
+Ricomincia dall'inizio

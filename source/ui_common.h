@@ -73,6 +73,9 @@ typedef enum {
     PILL_ICON_PLAYLIST_ADD,
     PILL_ICON_CHECK,
     PILL_ICON_LYRICS,      // A speech bubble with lines.
+    PILL_ICON_SPEED,       // A dial with its needle: an audiobook's speed.
+    PILL_ICON_CHAPTERS,    // A list with a bookmark: its chapters.
+    PILL_ICON_SLEEP,       // A crescent moon: the sleep timer.
 } PillIcon;
 
 // "Add to playlist": a list with a plus, in a box of about 20 * scale.
@@ -98,6 +101,20 @@ void uiDrawOverlay(const App *app, uint64_t now_ns);
 // drawn dimmed by UI_DIM_ALPHA, once, and kept still until the overlay closes.
 bool uiOverlayOpen(const App *app);
 #define UI_DIM_ALPHA 160
+
+// The Audiobooks tab, and Now Playing's right side for a book (ui_books.c).
+void uiDrawBooks(const App *app, const PlayerStatus *status, uint64_t now_ns);
+void uiDrawBookNow(const App *app, const PlayerStatus *status, uint64_t now_ns);
+// Where the book playing is: its chapter and the times around it. False if no book plays.
+typedef struct {
+    const Book *book;          // app->books.book.
+    double at;                 // Seconds into the book (where a finger on its bar points, while it drags).
+    int speed;                 // Thousandths.
+    size_t chapter, chapter_count;
+    double chapter_start, chapter_end;
+    const char *chapter_title;
+} UiBookNow;
+bool uiBookNow(const App *app, const PlayerStatus *status, UiBookNow *out);
 
 // The Now Playing view (ui_now.c).
 void uiDrawNowPlaying(const App *app, const PlayerStatus *status, const UiTrack *track, uint64_t now_ns);

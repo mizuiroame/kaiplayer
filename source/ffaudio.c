@@ -57,8 +57,8 @@ struct FfAudio {
 
 bool ffaudioIsFile(const char *path)
 {
-    return utilHasExtension(path, "m4a") || utilHasExtension(path, "mp4") || utilHasExtension(path, "aac") ||
-           utilHasExtension(path, "opus");
+    return utilHasExtension(path, "m4a") || utilHasExtension(path, "m4b") || utilHasExtension(path, "mp4") ||
+           utilHasExtension(path, "aac") || utilHasExtension(path, "opus");
 }
 
 // --- Reading through kfile ---
@@ -494,4 +494,22 @@ bool ffaudioOggIsOpus(KFile *f)
         return false;
     size_t at = OGG_PAGE_HEADER + page[OGG_PAGE_HEADER - 1];
     return n >= at + 8 && memcmp(page + at, "OpusHead", 8) == 0;
+}
+
+bool ffaudioReadChapters(KFile *f, BookChapters *out)
+{
+    AVIOContext *avio;
+    AVFormatContext *format;
+    if (!openInput(f, &avio, &format))
+        return false;
+    size_t before = out->count;
+    bool ok = true;
+    for (unsigned i = 0; i < format->nb_chapters && ok; i++) {
+        const AVChapter *c = format->chapters[i];
+        double start = c->start * av_q2d(c->time_base);
+        const AVDictionaryEntry *title = av_dict_get(c->metadata, "title", NULL, 0);
+        ok = bookChaptersAdd(out, start > 0.0 ? start : 0.0, title ? title->value : NULL);
+    }
+    closeInput(&avio, &format);
+    return ok && out->count > before;
 }

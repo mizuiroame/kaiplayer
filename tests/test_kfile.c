@@ -491,7 +491,7 @@ static void testNetworkLibrary(void)
     LibraryFiles files;
     char why[128];
     CHECK(libraryScanNetwork(&files, "dav:/", NULL, why, sizeof(why)));
-    CHECK(files.count == 11);  // The tones; not the pictures, the scripts or __pycache__'s.
+    CHECK(files.count == 13);  // The tones; not the pictures, the scripts or __pycache__'s.
     bool sorted = true, sized = true;
     for (size_t i = 0; i < files.count; i++) {
         sorted = sorted && (i == 0 || utilCompareNames(files.files[i - 1].path, files.files[i].path) < 0);
@@ -503,7 +503,7 @@ static void testNetworkLibrary(void)
     CHECK(files.count == 0 && files.files == NULL);
 
     TrackList list;
-    CHECK(libraryScan(&list, "dav:/", true) && list.count == 11 && !strcmp(list.paths[0], "dav:/tone.aac"));
+    CHECK(libraryScan(&list, "dav:/", true) && list.count == 13 && !strcmp(list.paths[0], "dav:/tone.aac"));
     trackListFree(&list);
 
     Browser b = {0};
@@ -513,7 +513,7 @@ static void testNetworkLibrary(void)
         dirs += b.entries[i].is_dir;
         songs += !b.entries[i].is_dir;
     }
-    CHECK(songs == 11 && dirs <= 1);  // A __pycache__ folder may be there.
+    CHECK(songs == 13 && dirs <= 1);  // A __pycache__ folder may be there.
     CHECK(!browserOpen(&b, "dav:/none") && !strcmp(b.problem, "no folder") && !strcmp(b.path, "dav:/"));
     browserFree(&b);
 }

@@ -16,6 +16,7 @@
 #include "catalog_scan.h"
 #include "covercache.h"
 #include "lang.h"
+#include "tempo.h"
 #include "theme.h"
 
 #define MINI_Y 572
@@ -26,8 +27,8 @@
 #define COLOR_CHARGING GFX_RGB(0x5B, 0xD6, 0x7A)
 #define NS_PER_MINUTE 60000000000ull
 
-static const char *const VIEW_NAMES[VIEW_COUNT] = {N_("Home"), N_("Library"), N_("Playlists"), N_("Queue"),
-                                                     N_("Now Playing")};
+static const char *const VIEW_NAMES[VIEW_COUNT] = {N_("Home"), N_("Library"), N_("Audiobooks"), N_("Playlists"),
+                                                     N_("Queue"), N_("Now Playing")};
 
 static void drawBrowser(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
@@ -152,6 +153,7 @@ static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_n
 }
 
 #define TAB_TEXT_MIDDLE 28.5f  // Middle of the tab names' capitals.
+#define TAB_GAP_MIN 14         // Long names (a language's) bring the tabs closer, down to this.
 #define HINT_GAP 14
 #define HEADER_PILL_Y 14
 #define HEADER_PILL_H 30
@@ -166,26 +168,32 @@ static void drawQueue(const App *app, const PlayerStatus *status, uint64_t now_n
 // right (the header's pills) when the screen's middle would put them over one.
 static void drawTabs(const App *app, int left, int right)
 {
-    int widths[VIEW_COUNT], total = 0;
+    int widths[VIEW_COUNT], names = 0;
     for (int i = 0; i < VIEW_COUNT; i++) {
         widths[i] = fontTextWidth((int)app->view == i ? FONT_BOLD : FONT_REGULAR, 20, T(VIEW_NAMES[i]));
-        total += widths[i] + (i > 0 ? TAB_GAP : 0);
+        names += widths[i];
     }
-    int x = (GFX_WIDTH - total) / 2;
-    int last = right - HEADER_GAP - HINT_GAP - uiButtonWidth("ZR") - total;  // The ZR hint's end at right.
     int first = left + HEADER_GAP + HINT_GAP + uiButtonWidth("ZL");          // The ZL hint's start at left.
+    int room = right - HEADER_GAP - HINT_GAP - uiButtonWidth("ZR") - first;  // Up to the ZR hint's end at right.
+    int gap = TAB_GAP;
+    if (names + gap * (VIEW_COUNT - 1) > room)
+        gap = (room - names) / (VIEW_COUNT - 1);
+    gap = gap < TAB_GAP_MIN ? TAB_GAP_MIN : gap;
+    int total = names + gap * (VIEW_COUNT - 1);
+    int x = (GFX_WIDTH - total) / 2;
+    int last = first + room - total;
     x = x > last ? last : x;
     x = x < first ? first : x;
     uiDrawButton(x - HINT_GAP - uiButtonWidth("ZL"), TAB_TEXT_MIDDLE, "ZL", COLOR_SURFACE_HI, COLOR_DIM);
     for (int i = 0; i < VIEW_COUNT; i++) {
         bool active = (int)app->view == i;
         fontDraw(active ? FONT_BOLD : FONT_REGULAR, 20, x, 18, T(VIEW_NAMES[i]), active ? COLOR_TEXT : COLOR_DIM);
-        uiHitAdd(x - TAB_GAP / 2, 4, widths[i] + TAB_GAP, HEADER_H - 8, HIT_TAB, i);
+        uiHitAdd(x - gap / 2, 4, widths[i] + gap, HEADER_H - 8, HIT_TAB, i);
         if (active)
             gfxFillRoundRect(x, 48, widths[i], 3, 1, COLOR_ACCENT);
-        x += widths[i] + TAB_GAP;
+        x += widths[i] + gap;
     }
-    uiDrawButton(x - TAB_GAP + HINT_GAP, TAB_TEXT_MIDDLE, "ZR", COLOR_SURFACE_HI, COLOR_DIM);
+    uiDrawButton(x - gap + HINT_GAP, TAB_TEXT_MIDDLE, "ZR", COLOR_SURFACE_HI, COLOR_DIM);
 }
 
 // Battery outline with a fill for the charge; green while charging.
@@ -375,33 +383,57 @@ static void drawBarTransport(const PlayerStatus *status, int focused)
     uiHitAdd(next_x - 36, MINI_Y + 6, 72, MINI_H - 6, HIT_NEXT, 0);
 }
 
+// With a book playing, the bar's toggles are its speed and its chapters.
+static void drawBookToggles(const UiBookNow *n, int focused)
+{
+    char speed[16];
+    tempoFormatSpeed(speed, sizeof(speed), n->speed);
+    const char *chapters = T("Chapters");
+    int chapters_w = uiIconPillWidth(NULL, chapters), speed_w = uiIconPillWidth(NULL, speed);
+    int x = GFX_WIDTH - MARGIN - chapters_w;
+    if (focused == BAR_REPEAT)
+        drawFocusRing(x, MINI_Y + 48, chapters_w, 30, 15);
+    uiDrawIconPill(x, MINI_Y + 48, NULL, PILL_ICON_CHAPTERS, chapters, false);
+    uiHitAdd(x, MINI_Y + 40, chapters_w, 46, HIT_BOOK_CHAPTERS, 0);
+    x -= speed_w + 10;
+    if (focused == BAR_SHUFFLE)
+        drawFocusRing(x, MINI_Y + 48, speed_w, 30, 15);
+    uiDrawIconPill(x, MINI_Y + 48, NULL, PILL_ICON_SPEED, speed, n->speed != TEMPO_PERMILLE);
+    uiHitAdd(x, MINI_Y + 40, speed_w, 46, HIT_BOOK_SPEED, 0);
+}
+
 static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiTrack *track)
 {
     int focused = app->focus == FOCUS_PLAYER ? (int)app->bar_control : -1;
+    UiBookNow book;
+    bool is_book = uiBookNow(app, status, &book);  // A book: its title, chapter and the chapter's times.
+    double position = is_book ? book.at - book.chapter_start : status->position;
+    double duration = is_book ? book.chapter_end - book.chapter_start : status->duration;
     gfxFillRect(0, MINI_Y, GFX_WIDTH, MINI_H, COLOR_SURFACE);
     gfxFillRect(0, MINI_Y, GFX_WIDTH, 3, COLOR_FAINT);
     uiHitAdd(0, MINI_Y, GFX_WIDTH, MINI_H, HIT_MINI_PLAYER, 0);
-    if (status->duration > 0) {
-        double fraction = status->position / status->duration;
-        gfxFillRect(0, MINI_Y, (int)(GFX_WIDTH * (fraction > 1.0 ? 1.0 : fraction)), 3, COLOR_ACCENT);
+    if (duration > 0) {
+        double fraction = position / duration;
+        gfxFillRect(0, MINI_Y, (int)(GFX_WIDTH * (fraction > 1.0 ? 1.0 : fraction < 0.0 ? 0.0 : fraction)), 3,
+                    COLOR_ACCENT);
     }
 
     uiDrawCover(MARGIN - 8, MINI_Y + 10, THUMB_SIZE, track->thumb);
     int text_x = MARGIN + THUMB_SIZE + 12;
     int text_w = BAR_PREV_X - 48 - text_x;
-    fontDrawClipped(FONT_BOLD, 24, text_x, MINI_Y + 14, text_w, track->title,
+    fontDrawClipped(FONT_BOLD, 24, text_x, MINI_Y + 14, text_w, is_book ? book.book->title : track->title,
                     track->has_track ? COLOR_TEXT : COLOR_DIM);
 
     // Messages are said in the notice bubble, not here.
-    fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w, track->artist[0] ? track->artist : track->folder,
-                    COLOR_DIM);
+    fontDrawClipped(FONT_REGULAR, 20, text_x, MINI_Y + 50, text_w,
+                    is_book ? book.chapter_title : track->artist[0] ? track->artist : track->folder, COLOR_DIM);
     drawBarTransport(status, focused);
 
     char elapsed[16], total[16], line[128];
-    utilFormatTime(elapsed, sizeof(elapsed), status->position);
-    utilFormatTime(total, sizeof(total), status->duration);
+    utilFormatTime(elapsed, sizeof(elapsed), position);
+    utilFormatTime(total, sizeof(total), duration);
     snprintf(line, sizeof(line), "%s%s%s / %s", status->state == PLAYER_PAUSED ? T("Paused") : "",
-             status->state == PLAYER_PAUSED ? "  " : "", elapsed, status->duration > 0 ? total : "--:--");
+             status->state == PLAYER_PAUSED ? "  " : "", elapsed, duration > 0 ? total : "--:--");
     int time_x = GFX_WIDTH - MARGIN - fontTextWidth(FONT_REGULAR, 20, line);
     fontDraw(FONT_REGULAR, 20, time_x, MINI_Y + 14, line, COLOR_TEXT);
 
@@ -413,6 +445,10 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
         fontDrawMiddle(FONT_BOLD, 13, time_x - w - 4, MINI_Y + 26.0f, format, COLOR_DIM);
     }
 
+    if (is_book) {
+        drawBookToggles(&book, focused);
+        return;
+    }
     // Shuffle and repeat as pills, lit in the accent color when on.
     const char *shuffle = status->shuffle ? T("Shuffle on") : T("Shuffle off");
     const char *repeat = uiRepeatLabel(status->repeat);
@@ -430,11 +466,12 @@ static void drawMiniPlayer(const App *app, const PlayerStatus *status, const UiT
     uiHitAdd(x, MINI_Y + 40, shuffle_w, 46, HIT_SHUFFLE, 0);
 }
 
-static const char *footerHelp(const App *app)
+static const char *footerHelp(const App *app, const PlayerStatus *status)
 {
     static const char *const HELP[VIEW_COUNT] = {
         N_("[A] open  [X] play  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu"),
         N_("[A] open  [B] back  [>] add  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu"),
+        N_("[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu"),
         N_("[A] open  [X] play  [Y] shuffle  [RS] page / seek  [L][R] track  [-] pause  [+] menu"),
         N_("[A] play  [B] library  [>] add  [X] shuffle  [Y] repeat  [RS] page / seek  [L][R] track  [+] menu"),
         N_("[A] pause  [B] add to playlist  [<>][RS] seek  [X] shuffle  [Y] repeat  [L][R] track  [+] menu"),
@@ -458,6 +495,10 @@ static const char *footerHelp(const App *app)
         return app->menu.kind == MENU_KIND_MAIN ? T("[A] choose  [B] close  [+] exit") : T("[A] choose  [B] close");
     if (app->playlists.moving)
         return T("[^v] move the song  [A][B] done");
+    if (app->view == VIEW_BOOKS && appBooksCount(app) == 0 && app->focus != FOCUS_PLAYER)
+        return T("[RS] seek  [L][R] track  [-] pause  [+] menu");
+    if (app->view == VIEW_NOW_PLAYING && appBookPlaying(app, status))
+        return T("[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu");
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
     if (app->view == VIEW_HOME && appCanSwitchSource(app))  // X switches there (app_home.c).
@@ -481,9 +522,9 @@ static const char *footerHelp(const App *app)
     return T(HELP[app->view]);
 }
 
-static void drawFooter(const App *app)
+static void drawFooter(const App *app, const PlayerStatus *status)
 {
-    uiDrawHelp(MARGIN, FOOTER_Y + 26.0f, GFX_WIDTH - 2 * MARGIN, footerHelp(app));
+    uiDrawHelp(MARGIN, FOOTER_Y + 26.0f, GFX_WIDTH - 2 * MARGIN, footerHelp(app, status));
     uiDrawNotices(app->notice_views, app->notice_count);  // Last: over everything, and its tap first.
 }
 
@@ -542,7 +583,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
         if (app->view == VIEW_NOW_PLAYING)
             uiNowPlayingUnderOverlay(app, status, &track, now_ns);
         uiDrawOverlay(app, now_ns);
-        drawFooter(app);
+        drawFooter(app, status);
         coverCacheUnlock();
         artworkUnlock();
         return;
@@ -564,6 +605,8 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
             drawBrowser(app, status, now_ns);
         else if (app->view == VIEW_BROWSER)
             uiDrawLibrary(app, status, now_ns);
+        else if (app->view == VIEW_BOOKS)
+            uiDrawBooks(app, status, now_ns);
         else if (app->view == VIEW_PLAYLISTS)
             uiDrawPlaylists(app, status, now_ns);
         else
@@ -584,7 +627,7 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
         }
     }
     uiDrawOverlay(app, now_ns);
-    drawFooter(app);  // Over the dimmed screen, so the overlay's help reads well.
+    drawFooter(app, status);  // Over the dimmed screen, so the overlay's help reads well.
     coverCacheUnlock();
     artworkUnlock();
 }

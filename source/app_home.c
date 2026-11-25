@@ -61,8 +61,8 @@ static double needed(const PlayerStatus *status)
 void appTrackPlays(App *app, const PlayerStatus *status)
 {
     HomeTracker *t = &app->home_tracker;
-    if (status->state == PLAYER_STOPPED || status->track_count == 0)
-        return;
+    if (status->state == PLAYER_STOPPED || status->track_count == 0 || status->book)
+        return;  // A book's chapters aren't songs played.
     if (status->generation != t->generation || status->track != t->track) {  // Another song.
         t->generation = status->generation;
         t->track = status->track;

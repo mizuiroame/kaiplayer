@@ -21,9 +21,20 @@ bool menuAdd(Menu *m, const char *label, int action, int arg)
         return false;
     MenuItem *item = &m->items[m->count++];
     snprintf(item->label, sizeof(item->label), "%s", label);
+    item->detail[0] = '\0';
+    item->checked = false;
     item->action = action;
     item->arg = arg;
     return true;
+}
+
+void menuMarkLast(Menu *m, const char *detail, bool checked)
+{
+    if (m->count == 0)
+        return;
+    MenuItem *item = &m->items[m->count - 1];
+    snprintf(item->detail, sizeof(item->detail), "%s", detail ? detail : "");
+    item->checked = checked;
 }
 
 void menuAddDivider(Menu *m)

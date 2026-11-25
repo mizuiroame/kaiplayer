@@ -12,9 +12,12 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include "bookchap.h"
 #include "cover.h"
 #include "dav.h"
 #include "decoder.h"
+#include "ffaudio.h"
+#include "kfile.h"
 #include "json.h"
 #include "subsonic.h"
 #include "tags.h"
@@ -179,6 +182,47 @@ static void fuzzServerAnswer(const char *seed_path, int iterations)
     free(seed);
 }
 
+// An audiobook's chapters (bookchap.h, ffaudio.h): ID3 CHAP frames, an M4B's chapter track, a cue sheet.
+static void fuzzChapters(const char *seed_path, int iterations)
+{
+    static const char CUE[] = "FILE \"b.mp3\" MP3\n  TRACK 01 AUDIO\n    TITLE \"One\"\n    INDEX 01 00:00:00\n"
+                              "  TRACK 02 AUDIO\n    TITLE \"Two\"\n    INDEX 01 01:02:03\n";
+    size_t seed_size = 0;
+    uint8_t *seed = readFile(seed_path, &seed_size);
+    if (!seed) {
+        fprintf(stderr, "missing seed %s\n", seed_path);
+        exit(2);
+    }
+    bool m4b = strstr(seed_path, ".m4b") != NULL;
+    uint8_t *buf = malloc(seed_size > sizeof(CUE) ? seed_size : sizeof(CUE));
+    for (int i = 0; i < iterations; i++) {
+        BookChapters c = {0};
+        memcpy(buf, seed, seed_size);
+        size_t size = mutate(buf, seed_size);
+        if (m4b) {
+            writeFile(WORK_DIR "/input.m4b", buf, size);
+            KFile *f = kfileOpen(WORK_DIR "/input.m4b", KFILE_PEEK);
+            if (f) {
+                ffaudioReadChapters(f, &c);
+                kfileClose(f);
+            }
+        } else {
+            writeFile(WORK_DIR "/input.mp3", buf, size);
+            bookChaptersParseId3(buf, size, &c);
+        }
+        bookChaptersPrepare(&c);
+        bookChaptersFree(&c);
+        memcpy(buf, CUE, sizeof(CUE) - 1);
+        size = mutate(buf, sizeof(CUE) - 1);
+        writeFile(WORK_DIR "/input.cue", buf, size);
+        bookChaptersParseCue((const char *)buf, size, &c);
+        bookChaptersFree(&c);
+    }
+    printf("  %-28s %d inputs\n", seed_path, iterations);
+    free(buf);
+    free(seed);
+}
+
 // The network folder's account file (dav.h): read, and written back.
 static void fuzzAccountFile(int iterations)
 {
@@ -224,6 +268,8 @@ int main(int argc, char **argv)
     fuzzImage("fixtures/small_cover.jpg", iterations * 4);
     fuzzImage("fixtures/small_cover.png", iterations * 4);
     fuzzServerAnswer("fixtures/navidrome_search3.json", iterations * 4);
+    fuzzChapters("fixtures/tone_book_chapters.mp3", iterations * 4);
+    fuzzChapters("fixtures/tone_book.m4b", iterations);
     fuzzAccountFile(iterations * 20);
     printf("fuzz: done, no crashes\n");
     return 0;

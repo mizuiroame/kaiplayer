@@ -4,14 +4,28 @@
 #include "app_buttons.h"
 #include "player.h"
 
-static void pressBarControl(BarControl control)
+// With a book playing, the bar's shuffle and repeat are its speed and chapters.
+static void pressBarControl(App *app, BarControl control)
 {
+    PlayerStatus status;
+    playerGetStatus(&status);
+    bool book = appBookPlaying(app, &status);
     switch (control) {
-    case BAR_PREV: playerPrev(); break;
+    case BAR_PREV: appTransportPrev(app); break;
     case BAR_PLAY: playerTogglePause(); break;
-    case BAR_NEXT: playerNext(); break;
-    case BAR_SHUFFLE: playerToggleShuffle(); break;
-    default: playerCycleRepeat(); break;
+    case BAR_NEXT: appTransportNext(app); break;
+    case BAR_SHUFFLE:
+        if (book)
+            appBooksOpenSpeed(app);
+        else
+            playerToggleShuffle();
+        break;
+    default:
+        if (book)
+            appBooksOpenChapters(app, -1);
+        else
+            playerCycleRepeat();
+        break;
     }
 }
 
@@ -24,7 +38,7 @@ static uint64_t filterPlayerBar(App *app, uint64_t pressed)
     if ((pressed & BUTTONS_RIGHT) && app->bar_control + 1 < BAR_COUNT)
         app->bar_control++;
     if (pressed & HidNpadButton_A)
-        pressBarControl(app->bar_control);
+        pressBarControl(app, app->bar_control);
     if (pressed & (BUTTONS_UP | HidNpadButton_B))
         app->focus = FOCUS_LIST;
     return pressed & ~(BUTTONS_UP | BUTTONS_DOWN | BUTTONS_LEFT | BUTTONS_RIGHT | HidNpadButton_A | HidNpadButton_B);

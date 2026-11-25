@@ -1050,3 +1050,114 @@ Farbe
 
 Its own
 Eigene
+
+%d min
+%d Min.
+
+%d minutes
+%d Minuten
+
+%ld h %02ld min
+%ld Std. %02ld Min.
+
+%ld min
+%ld Min.
+
+%s left
+noch %s
+
+%zu audiobook
+%zu Hörbuch
+
+%zu audiobooks
+%zu Hörbücher
+
+[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu
+[A] Pause  [B] Hörbücher  [<>][RS] 30 s  [L][R] Kapitel  [X] Kapitel  [Y] Tempo  [^] Sleep  [+] Menü
+
+[A] play  [X] chapters  [Y] options  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] Abspielen  [X] Kapitel  [Y] Optionen  [RS] Seite / Spulen  [L][R] Titel  [-] Pause  [+] Menü
+
+[RS] seek  [L][R] track  [-] pause  [+] menu
+[RS] Spulen  [L][R] Titel  [-] Pause  [+] Menü
+
+AUDIOBOOK
+HÖRBUCH
+
+Audiobooks
+Hörbücher
+
+Book: %s of %s  ·  %d%%
+Buch: %s von %s  ·  %d%%
+
+Chapter %d
+Kapitel %d
+
+Chapter %zu of %zu
+Kapitel %zu von %zu
+
+Chapters
+Kapitel
+
+Chapters of "%s"
+Kapitel von „%s“
+
+Continue
+Fortsetzen
+
+Could not open the audiobook.
+Das Hörbuch konnte nicht geöffnet werden.
+
+End of chapter
+Ende des Kapitels
+
+Finished
+Fertig
+
+Finished "%s".
+„%s“ zu Ende gehört.
+
+Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too.
+Ordner namens Audiobooks (oder Hörbücher) in der Bibliothek und Navidromes Genre Audiobook erscheinen auch hier.
+
+Look for audiobooks again
+Erneut nach Hörbüchern suchen
+
+Looking for audiobooks...
+Suche nach Hörbüchern...
+
+Mark "%s" as finished
+„%s“ als gehört markieren
+
+Mark "%s" as not finished
+„%s“ als nicht gehört markieren
+
+Mark as finished
+Als gehört markieren
+
+Mark as not finished
+Als nicht gehört markieren
+
+No audiobooks yet
+Noch keine Hörbücher
+
+Normal
+Normal
+
+Play
+Abspielen
+
+Put them in sdmc:/audiobooks: a folder for each book, or .m4b files.
+Lege sie in sdmc:/audiobooks ab: ein Ordner pro Buch oder .m4b-Dateien.
+
+Reading speed
+Lesetempo
+
+Reading the book...
+Buch wird gelesen...
+
+Start "%s" over
+„%s“ von vorn beginnen
+
+Start from the beginning
+Von vorn beginnen

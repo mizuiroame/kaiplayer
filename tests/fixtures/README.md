@@ -27,3 +27,17 @@ made by `python make_ffmpeg_tones.py`, with ffmpeg in Docker.
 navidrome_search3.json is what a Navidrome test server answered to `search3`
 (the Subsonic API's search with an empty query) for eight made-up songs; the
 fuzzer starts from it.
+
+tone_book.m4b (3 s of a 330 Hz tone, AAC, the cover, and three chapters in a
+QuickTime chapter track) and tone_book_chapters.mp3 (the same as MP3 with ID3v2.3
+CTOC/CHAP frames) are audiobook fixtures, made with ffmpeg from an
+FFMETADATA file with three [CHAPTER] blocks ("Opening", "The Middle",
+"Ending", one second each):
+
+```sh
+ffmpeg -f lavfi -i "sine=frequency=330:duration=3:sample_rate=22050" -i chapters.txt -i small_cover.jpg \
+  -map 0:a -map 2:v -map_metadata 1 -map_chapters 1 -c:a aac -b:a 24k -ac 1 -c:v copy \
+  -disposition:v attached_pic -f ipod tone_book.m4b
+ffmpeg -f lavfi -i "sine=frequency=330:duration=3:sample_rate=22050" -i chapters.txt \
+  -map 0:a -map_metadata 1 -map_chapters 1 -c:a libmp3lame -b:a 32k -ac 1 -id3v2_version 3 tone_book_chapters.mp3
+```
