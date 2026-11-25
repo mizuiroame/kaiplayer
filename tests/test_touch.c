@@ -94,9 +94,12 @@ static void testSettings(void)
     CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_NETWORK && rows[2] == SETTING_OPEN_SERVER &&
           rows[3] == SETTING_OPEN_PLAYBACK && rows[4] == SETTING_OPEN_DISPLAY && rows[5] == SETTING_ABOUT);
     // Every source's page in one order, as the other Kai apps: address, sign-in, options (color last), test, forget.
-    CHECK(settingsPageRows(SETTINGS_PAGE_SERVER, rows) == 6);
-    CHECK(rows[0] == SETTING_SRV_ADDRESS && rows[1] == SETTING_SRV_ACCOUNT && rows[2] == SETTING_SRV_CERTIFICATE &&
-          rows[3] == SETTING_SRV_COLOR && rows[4] == SETTING_SRV_TEST && rows[5] == SETTING_SRV_FORGET);
+    // The sign-in is a user and password, or an API key (OpenSubsonic's): both rows, one after the other.
+    CHECK(settingsPageRows(SETTINGS_PAGE_SERVER, rows) == 7);
+    CHECK(rows[0] == SETTING_SRV_ADDRESS && rows[1] == SETTING_SRV_ACCOUNT && rows[2] == SETTING_SRV_API_KEY &&
+          rows[3] == SETTING_SRV_CERTIFICATE && rows[4] == SETTING_SRV_COLOR && rows[5] == SETTING_SRV_TEST &&
+          rows[6] == SETTING_SRV_FORGET);
+    CHECK(!settingsRowEditable(SETTING_SRV_API_KEY) && strcmp(settingsRowLabel(SETTING_SRV_API_KEY), "API key") == 0);
     CHECK(settingsRowEditable(SETTING_SRV_COLOR) && settingsRowEditable(SETTING_NET_COLOR));
     CHECK(settingsRowPage(SETTING_OPEN_SERVER) == SETTINGS_PAGE_SERVER &&
           settingsPageRow(SETTINGS_PAGE_SERVER) == SETTING_OPEN_SERVER);

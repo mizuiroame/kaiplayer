@@ -23,6 +23,7 @@ folder**, **Navidrome**, **Playback**, **Display** and **About**.
 | Network folder | Forget this folder | **A** removes the address, user and password |
 | Navidrome | Server | `192.168.0.10:4533` or an `https://` address; **A** types it. See [Navidrome](navidrome.md) |
 | Navidrome | User and password | **A** types them and signs in (only a token is kept) |
+| Navidrome | API key | **A** types a key made in the server's web page, instead of a user and password, and signs in |
 | Navidrome | Test the connection | **A** tries it, and says which server answered and how many songs it has, or what went wrong |
 | Navidrome | Certificate check | On (default), or Off for an `https://` server with its own certificate |
 | Navidrome | Forget this server | **A** removes the address and the sign-in |

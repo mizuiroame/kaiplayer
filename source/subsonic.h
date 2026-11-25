@@ -21,6 +21,8 @@
 #define SUB_ADDRESS_MAX 256
 #define SUB_TEXT_MAX 128         // A user name or a password.
 #define SUB_SALT_MAX 33
+#define SUB_KEY_MAX 256          // An API key (OpenSubsonic's apiKeyAuthentication; Navidrome's are 26 letters).
+#define SUB_API_KEY_EXTENSION "apiKeyAuthentication"
 #define SUB_ID_MAX 192           // An id, percent-encoded.
 #define SUB_ACCOUNT_FILE "navidrome.txt"
 #define SUB_API_VERSION "1.16.1"
@@ -35,6 +37,10 @@ typedef struct {
     // The password is never kept: only a salt and md5(password + salt), which is all Subsonic's sign-in needs.
     char salt[SUB_SALT_MAX];
     char token[MD5_HEX_SIZE];
+    // Or an API key, made in the server's web page: when there is one, it alone signs in (no salt or
+    // token), and user is only the name the server said it belongs to (tokenInfo), shown, never sent.
+    // It is kept as typed, as the token is: it's what the server asks for.
+    char api_key[SUB_KEY_MAX];
     bool check_certificate;      // Off: an https server's own certificate is taken too.
 } SubAccount;
 
@@ -58,18 +64,26 @@ bool subPointedAddress(const char *address, const char *redirected, char *out, s
 // The sign-in for password with this salt (some random letters): a->salt and a->token.
 // False if the salt is unusable (empty, too long, or with characters a URL would change).
 bool subSetPassword(SubAccount *a, const char *password, const char *salt);
-// True when there's an address and a user signed in.
+// Signs in with an API key instead (typed: spaces around it are left out): a->api_key, and no user,
+// salt or token. "" signs out. False if it can't be one (too long, spaces or control characters in it).
+bool subSetApiKey(SubAccount *a, const char *typed);
+// True when there's an address and a user signed in (by a password's token, or an API key).
 bool subSignedIn(const SubAccount *a);
+// True when the sign-in is an API key.
+bool subUsesApiKey(const SubAccount *a);
 
-// The account's file: "address=", "user=", "salt=", "token=", "check_certificate=" lines.
+// The account's file: "address=", "user=", "salt=", "token=", "api_key=", "check_certificate=" lines.
 void subAccountRead(SubAccount *a, const char *text);
 bool subAccountWrite(const SubAccount *a, char *out, size_t size);
 
 // Percent-encodes everything but letters, digits and "-._~". False if it doesn't fit.
 bool subEncode(const char *text, char *out, size_t size);
-// The URL of a request: address/rest/method?u=...&t=...&s=...&v=...&c=...&f=json, then
-// "&" and params (already encoded; may be NULL). False if it doesn't fit.
+// The URL of a request: address/rest/method?u=...&t=...&s=...&v=...&c=...&f=json (with an API key,
+// ?apiKey=...&v=..., no user: the server takes no other sign-in with it), then "&" and params (already
+// encoded; may be NULL). False if it doesn't fit.
 bool subRequestUrl(const SubAccount *a, const char *method, const char *params, char *out, size_t size);
+// The URL of a request without any sign-in (getOpenSubsonicExtensions'): address/rest/method?v=...&c=...&f=json.
+bool subPublicUrl(const char *address, const char *method, char *out, size_t size);
 
 // A song's location from its id, its cover's id ("" for none) and its file's extension. False if one
 // can't be used (no id, an extension that isn't letters and digits).
@@ -104,6 +118,11 @@ bool subAddSongs(Catalog *c, const JsonValue *parent, const char *name, const ch
 // synced lyrics as "[mm:ss.xx]line" lines, or else the first plain ones as
 // lines. False if it has none, or they don't fit in size.
 bool subLyricsText(const JsonValue *body, char *out, size_t size);
+
+// getOpenSubsonicExtensions' answer: true if it lists the extension name.
+bool subHasExtension(const JsonValue *body, const char *name);
+// tokenInfo's answer (an API key's): the user it belongs to, in out. False if it doesn't say.
+bool subTokenUser(const JsonValue *body, char *out, size_t size);
 
 // scanStatus's count of songs; -1 if it doesn't say.
 long subScanCount(const JsonValue *body);

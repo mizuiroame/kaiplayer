@@ -33,6 +33,8 @@ $(OBJDIR)/host_smb: host_smb.c $(addprefix $(SRC)/,$(NETWORK)) $(OBJDIR)/codecs_
 #   ... -e NAVIDROME=http://host.docker.internal:4533 -e NAVIDROME_USER=... -e NAVIDROME_PASS=... -e MUSIC=/music
 #   ... kaiplayer-host-live make navidrome
 # NAVIDROME_UNDER_PATH (optional): another Navidrome with ND_BASEURL=/navidrome, its address without the path.
+# NAVIDROME_API_KEY (optional): an API key of NAVIDROME_USER's (a Navidrome newer than 0.64.2: Settings >
+# Players, API key), signed in with alone. NAVIDROME_NO_KEYS (optional, with it): a Navidrome without API keys.
 navidrome: $(OBJDIR)/host_navidrome
 	$(NOASLR) ./$(OBJDIR)/host_navidrome
 

@@ -1161,3 +1161,30 @@ Empezar "%s" de nuevo
 
 Start from the beginning
 Empezar desde el principio
+
+API key
+Clave de API
+
+%s API key, from its web page
+Clave de API de %s, de su página web
+
+That isn't an API key: it has spaces, or it's too long.
+Eso no es una clave de API: tiene espacios o es demasiado larga.
+
+The API key is used
+Se usa la clave de API
+
+Set
+Configurada
+
+the API key's user
+el usuario de la clave de API
+
+The server doesn't know this API key: it may have been revoked. Make a new one in its web page.
+El servidor no conoce esta clave de API: puede que la hayan revocado. Crea una nueva en su página web.
+
+This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key.
+Este servidor no acepta una contraseña de KaiPlayer: crea una clave de API en su página web e ingrésala en Clave de API.
+
+This server doesn't take API keys. Sign in with your user name and password.
+Este servidor no acepta claves de API. Inicia sesión con tu usuario y contraseña.

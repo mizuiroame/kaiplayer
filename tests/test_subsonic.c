@@ -163,6 +163,96 @@ static void testAccount(void)
     CHECK(!subRequestUrl(&a, "ping", NULL, url, 40));
 }
 
+// OpenSubsonic's apiKeyAuthentication: the key alone signs in, never with a user.
+static void testApiKey(void)
+{
+    SubAccount a = {.address = "http://pc:4533", .user = "kai", .check_certificate = true}, b;
+    CHECK(subSetPassword(&a, "sesame", "c19b2d") && !subUsesApiKey(&a));
+    CHECK(subSetApiKey(&a, "  nds_AbC123xyz~+/=  "));  // Spaces around it, as a keyboard leaves them.
+    CHECK_STR(a.api_key, "nds_AbC123xyz~+/=");
+    CHECK(subUsesApiKey(&a) && subSignedIn(&a));
+    CHECK(!a.user[0] && !a.salt[0] && !a.token[0]);  // One way of signing in at a time.
+    char url[1024];
+    CHECK(subRequestUrl(&a, "ping", NULL, url, sizeof(url)));
+    CHECK_STR(url, "http://pc:4533/rest/ping?apiKey=nds_AbC123xyz~%2B%2F%3D&v=1.16.1&c=KaiPlayer&f=json");
+    snprintf(a.user, sizeof(a.user), "%s", "kai");  // The name tokenInfo gave: shown, never sent.
+    CHECK(subRequestUrl(&a, "stream", "id=1&format=raw", url, sizeof(url)));
+    CHECK(!strstr(url, "u=") && !strstr(url, "&t=") && strstr(url, "&f=json&id=1&format=raw"));
+    CHECK(!subRequestUrl(&a, "ping", NULL, url, 40));
+
+    char text[1024];
+    CHECK(subAccountWrite(&a, text, sizeof(text)));
+    CHECK(strstr(text, "api_key=nds_AbC123xyz~+/=\n") != NULL);
+    subAccountRead(&b, text);
+    CHECK_STR(b.api_key, a.api_key);
+    CHECK_STR(b.user, "kai");
+    CHECK(subUsesApiKey(&b) && subSignedIn(&b));
+    subAccountRead(&b, "address=http://pc\napi_key=has space\n");
+    CHECK(!b.api_key[0] && !subSignedIn(&b));  // Damaged: signed out, not sent.
+    subAccountRead(&b, "api_key=nds_x\n");
+    CHECK(!subSignedIn(&b));  // No address.
+
+    // A password again: the key goes.
+    CHECK(subSetPassword(&a, "sesame", "c19b2d") && !subUsesApiKey(&a) && !a.api_key[0]);
+    // What can't be one.
+    CHECK(!subSetApiKey(&a, "two words"));
+    CHECK(!subSetApiKey(&a, "line\nbreak"));
+    char long_key[SUB_KEY_MAX + 1];
+    memset(long_key, 'k', SUB_KEY_MAX);
+    long_key[SUB_KEY_MAX] = '\0';
+    CHECK(!subSetApiKey(&a, long_key));
+    long_key[SUB_KEY_MAX - 1] = '\0';
+    CHECK(subSetApiKey(&a, long_key) && strlen(a.api_key) == SUB_KEY_MAX - 1);
+    CHECK(subRequestUrl(&a, "ping", NULL, url, sizeof(url)));
+    CHECK(subSetApiKey(&a, "   ") && !subUsesApiKey(&a) && !subSignedIn(&a));  // Nothing typed: signed out.
+
+    CHECK(subPublicUrl("http://pc:4533", "getOpenSubsonicExtensions", url, sizeof(url)));
+    CHECK_STR(url, "http://pc:4533/rest/getOpenSubsonicExtensions?v=1.16.1&c=KaiPlayer&f=json");
+    CHECK(!subPublicUrl("", "ping", url, sizeof(url)));
+    CHECK(!subPublicUrl("http://pc:4533", "ping", url, 20));
+}
+
+// getOpenSubsonicExtensions' and tokenInfo's answers, as Navidrome gives them.
+static void testApiKeyAnswers(void)
+{
+    static const char *const WITH =
+        "{\"subsonic-response\":{\"status\":\"ok\",\"openSubsonic\":true,\"openSubsonicExtensions\":["
+        "{\"name\":\"formPost\",\"versions\":[1]},{\"name\":\"apiKeyAuthentication\",\"versions\":[1]}]}}";
+    static const char *const WITHOUT =
+        "{\"subsonic-response\":{\"status\":\"ok\",\"openSubsonicExtensions\":[{\"name\":\"songLyrics\"}]}}";
+    static const char *const OLD = "{\"subsonic-response\":{\"status\":\"ok\",\"version\":\"1.16.1\"}}";
+    static const char *const INFO =
+        "{\"subsonic-response\":{\"status\":\"ok\",\"tokenInfo\":{\"username\":\"kaitest\"}}}";
+    static const char *const BAD_KEY =
+        "{\"subsonic-response\":{\"status\":\"failed\",\"error\":{\"code\":44,\"message\":\"Invalid API key\"}}}";
+    const JsonValue *body;
+    int code;
+    char message[64], user[SUB_TEXT_MAX];
+    JsonDoc *doc = jsonParse(WITH, strlen(WITH));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(subHasExtension(body, SUB_API_KEY_EXTENSION) && !subHasExtension(body, "transcoding"));
+    jsonFree(doc);
+    doc = jsonParse(WITHOUT, strlen(WITHOUT));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(!subHasExtension(body, SUB_API_KEY_EXTENSION) && subHasExtension(body, "songLyrics"));
+    jsonFree(doc);
+    doc = jsonParse(OLD, strlen(OLD));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(!subHasExtension(body, SUB_API_KEY_EXTENSION) && !subTokenUser(body, user, sizeof(user)));
+    jsonFree(doc);
+    doc = jsonParse(INFO, strlen(INFO));
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    CHECK(subTokenUser(body, user, sizeof(user)));
+    CHECK_STR(user, "kaitest");
+    CHECK(!subTokenUser(body, user, 4));  // Doesn't fit.
+    jsonFree(doc);
+    doc = jsonParse(BAD_KEY, strlen(BAD_KEY));
+    CHECK(doc && !subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)) && code == 44);
+    CHECK_STR(message, "Invalid API key");
+    jsonFree(doc);
+    CHECK(!subHasExtension(NULL, SUB_API_KEY_EXTENSION));
+}
+
 static void testLocations(void)
 {
     char song[256], cover[256];
@@ -321,6 +411,8 @@ void testSubsonic(void)
     testJson();
     testAddresses();
     testAccount();
+    testApiKey();
+    testApiKeyAnswers();
     testLocations();
     testSongs();
 }

@@ -1161,3 +1161,30 @@ Recommencer « %s »
 
 Start from the beginning
 Reprendre depuis le début
+
+API key
+Clé d'API
+
+%s API key, from its web page
+Clé d'API %s, depuis sa page web
+
+That isn't an API key: it has spaces, or it's too long.
+Ce n'est pas une clé d'API : elle contient des espaces ou elle est trop longue.
+
+The API key is used
+La clé d'API est utilisée
+
+Set
+Définie
+
+the API key's user
+l'utilisateur de la clé d'API
+
+The server doesn't know this API key: it may have been revoked. Make a new one in its web page.
+Le serveur ne connaît pas cette clé d'API : elle a peut-être été révoquée. Créez-en une nouvelle sur sa page web.
+
+This server doesn't take a password from KaiPlayer: make an API key in its web page and enter it in API key.
+Ce serveur n'accepte pas de mot de passe de KaiPlayer : créez une clé d'API sur sa page web et saisissez-la dans Clé d'API.
+
+This server doesn't take API keys. Sign in with your user name and password.
+Ce serveur n'accepte pas les clés d'API. Connectez-vous avec votre nom d'utilisateur et votre mot de passe.

@@ -194,6 +194,44 @@ static void progress(size_t done, size_t total, void *user)
     printf("  progress %zu / %zu\n", done, total);
 }
 
+static void useKey(const char *address, const char *key)
+{
+    SubAccount a = {.check_certificate = true};
+    EXPECT(subNormalizeAddress(address, a.address, sizeof(a.address)), "address %s", address);
+    EXPECT(subSetApiKey(&a, key), "the API key");
+    subUseAccount(&a);
+    subFileForget();
+}
+
+// NAVIDROME_API_KEY: an API key of user's (OpenSubsonic's apiKeyAuthentication, Navidrome after 0.64.2).
+// Signs in with it alone (no user in any URL), learns whose it is, reads the library and its songs as with
+// the password (the same songs); a key the server doesn't know says so.
+static void checkApiKey(const char *address, const char *user, const char *key, size_t songs)
+{
+    char text[256], url[2048];
+    bool any;
+    useKey(address, key);
+    EXPECT(subTest(text, sizeof(text)) && strstr(text, user), "API key test: %s", text);
+    printf("API key test: %s\n", text);
+    SubAccount a;
+    subGetAccount(&a);
+    EXPECT(!strcmp(a.user, user), "the key's user learned: \"%s\"", a.user);
+    Catalog c;
+    catalogInit(&c);
+    EXPECT(subFetchLibrary(&c, neverStop, NULL, NULL, text, sizeof(text)), "API key library: %s", text);
+    EXPECT(catalogBuild(&c), "built");
+    EXPECT(c.song_count == songs, "API key: %zu songs, as with the password, not %zu", songs, c.song_count);
+    EXPECT(c.song_count && subSongUrl(c.songs[0].path, false, url, sizeof(url), &any) && strstr(url, "apiKey=") &&
+               !strstr(url, "u=") && !strstr(url, "&t="),
+           "API key song URL: %s", url);
+    checkSongs(&c);
+    EXPECT(c.song_count && subScrobble(c.songs[0].path, false), "API key: now playing");
+    catalogFree(&c);
+    useKey(address, "nds_NotAKeyThisServerKnows01");
+    EXPECT(!subTest(text, sizeof(text)) && strstr(text, "revoked"), "unknown key: %s", text);
+    printf("unknown key: %s\n", text);
+}
+
 int main(void)
 {
     const char *address = getenv("NAVIDROME"), *user = getenv("NAVIDROME_USER"), *pass = getenv("NAVIDROME_PASS");
@@ -216,6 +254,7 @@ int main(void)
            secondsNow() - start);
     EXPECT(c.song_count == 12, "12 songs, not %zu", c.song_count);
     checkSongs(&c);
+    size_t songs = c.song_count;
     EXPECT(c.song_count && subScrobble(c.songs[0].path, false), "now playing");
     catalogFree(&c);
     EXPECT(!kfileOpen("sub:/-/NoSuchSong.flac", KFILE_STREAM), "a missing song opened");
@@ -239,6 +278,14 @@ int main(void)
         EXPECT(!subTest(text, sizeof(text)) && strstr(text, "points to") && strstr(text, "/navidrome"),
                "under a path: %s", text);
         printf("under a path: %s\n", text);
+    }
+    const char *key = getenv("NAVIDROME_API_KEY"), *keyless = getenv("NAVIDROME_NO_KEYS");
+    if (key)
+        checkApiKey(address, user, key, songs);
+    if (key && keyless) {  // A Navidrome without OpenSubsonic's apiKeyAuthentication (0.64.2 and before).
+        useKey(keyless, key);
+        EXPECT(!subTest(text, sizeof(text)) && strstr(text, "doesn't take API keys"), "no keys: %s", text);
+        printf("server without keys: %s\n", text);
     }
     kfileSetRemote(KFILE_REMOTE_SERVER, NULL);
     subFileForget();
