@@ -25,7 +25,8 @@ const BookList *bookScanLock(void);
 void bookScanUnlock(void);
 // Changes whenever the list or a book in it changes. Without the lock: may be asked while it's held.
 unsigned bookScanGeneration(void);
-// True while looking for books or reading them. Without the lock, as above.
+// True from the start until a whole look has ended, and while looking for books or reading them.
+// Without the lock, as above.
 bool bookScanBusy(void);
 
 // Tells the server a book is at seconds into this song of its (a "sub:/" location): in the background,

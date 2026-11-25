@@ -115,7 +115,8 @@ const CoverImage *coverCacheGet(const char *song_path, bool thumb)
 
 // The audiobooks (bookscan.c, app_books.c): made-up books, set up by renderBookScenes.
 static BookList g_book_list;
-static bool g_book_busy;
+static bool g_book_busy;          // A look asked for or running.
+static bool g_book_looked = true;  // A whole look has ended.
 // As bookscan.c's lock, which doesn't let the same thread take it twice (that froze the tab on the
 // console): taking it again here stops the preview instead of drawing on.
 static bool g_book_locked;
@@ -137,7 +138,7 @@ void bookScanUnlock(void)
 
 bool bookScanBusy(void)
 {
-    return g_book_busy;
+    return booksStillLooking(true, g_book_looked, g_book_busy);
 }
 
 bool appBookPlaying(const App *app, const PlayerStatus *status)
@@ -585,6 +586,13 @@ static void renderBookScenes(const char *dir, App *app, PlayerStatus *status)
     status->book = false;
     app->view = VIEW_BOOKS;
     app->books.order_count = 0;
+    g_book_looked = false;  // Started, no look yet (no books.cache): looking, not where to put books.
+    render(dir, "books_empty_not_looked", app, status);
+    g_book_busy = true;
+    render(dir, "books_empty_looking", app, status);
+    g_book_looked = true;  // Looking again after one that found none.
+    render(dir, "books_empty_looking_again", app, status);
+    g_book_busy = false;
     render(dir, "books_empty", app, status);
     app->books.order = NULL;
     bookFree(&app->books.book);

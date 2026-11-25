@@ -88,6 +88,10 @@ void bookLocate(const Book *b, double seconds, size_t *part, double *position);
 size_t bookChapterIndex(const Book *b, double seconds);
 double bookChapterEnd(const Book *b, size_t chapter);
 
+// Whether the Audiobooks tab says it's looking (bookscan.c): from when the look's thread starts until a
+// whole look has ended (looked), and while one is asked for or running (looking). Not if the thread never started.
+bool booksStillLooking(bool started, bool looked, bool looking);
+
 // The list kept between runs (books.cache): what was read of each book.
 bool booksSave(const BookList *l, FILE *f);
 bool booksLoad(BookList *l, FILE *f);

@@ -138,8 +138,13 @@ void uiDrawBooks(const App *app, const PlayerStatus *status, uint64_t now_ns)
     snprintf(line, sizeof(line), count == 1 ? T("%zu audiobook") : T("%zu audiobooks"), count);
     const char *looking = T("Looking for audiobooks...");
     int looking_w = busy ? fontTextWidth(FONT_REGULAR, TEXT_SMALL, looking) : 0;
+    if (count == 0 && busy) {  // Not looked yet, or looking: where to put books only once none were found.
+        uiDrawEmptyList("", looking);
+        bookScanUnlock();
+        return;
+    }
     if (count == 0) {  // Where books are looked for.
-        uiDrawEmptyList(busy ? looking : T("No audiobooks yet"),
+        uiDrawEmptyList(T("No audiobooks yet"),
                         T("Put them in sdmc:/audiobooks: a folder for each book, or .m4b files."));
         fontDraw(FONT_REGULAR, TEXT_ROW, MARGIN, LIST_Y + 10 + ROW_H,
                  T("Folders named Audiobooks in the library, and Navidrome's Audiobook genre, show here too."), COLOR_DIM);

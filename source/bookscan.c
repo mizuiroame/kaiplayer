@@ -39,6 +39,7 @@ static volatile bool g_cancel;       // Exiting: a request to the server stops w
 static bool g_pending;               // Under g_lock: a look was asked for.
 static bool g_want_network, g_want_server;
 static volatile bool g_busy;          // Read without the lock: bookScanBusy may be asked while it's held.
+static volatile bool g_looked;        // A whole look has ended (one stopped to start over doesn't count).
 static BookList g_books;             // Published: written by the thread under g_lock.
 static volatile unsigned g_generation;
 
@@ -429,13 +430,33 @@ static void reuse(Book *b, const BookList *known)
     b->probed = true;
 }
 
-static void lookForBooks(bool network, bool server)
+// The first time (nothing shown yet, no books.cache), the card's and the library's books are shown
+// while the network folder and the server are looked at, which can take a while.
+static void publishEarly(const FileSet *files)
+{
+    if (g_books.count > 0 || files->count == 0 || stopNow())  // Only this thread writes g_books.
+        return;
+    BookList early = {0};
+    booksGroup(&early, (const char *const *)files->paths, files->sizes, files->count);
+    if (early.count == 0) {
+        bookListFree(&early);
+        return;
+    }
+    booksSortByTitle(&early);
+    publish(&early);
+    appLog("books: %zu books shown while looking on", g_books.count);
+}
+
+// False if it stopped before the end (looked again, or closing).
+static bool lookForBooks(bool network, bool server)
 {
     FileSet files = {0};
     appLog("books: look (network folder %d, server %d)", network, server);
     walkCard(&files, BOOKSCAN_CARD_FOLDER, CARD_DEPTH);
     appLog("books: card: %zu files", files.count);
     findLibraryBooks(&files);
+    if (network || server)
+        publishEarly(&files);
     if (network && !stopNow()) {
         findNetworkBooks(&files);
         appLog("books: network folder looked at");
@@ -450,7 +471,7 @@ static void lookForBooks(bool network, bool server)
     if (stopNow()) {
         appLog("books: stopped (looked again, or closing)");
         bookListFree(&found);
-        return;
+        return false;
     }
     // A server not reached keeps its books from before, as they were.
     for (size_t i = 0; !server && i < g_books.count; i++) {
@@ -493,6 +514,7 @@ static void lookForBooks(bool network, bool server)
     }
     saveCache();
     appLog("books: done, kept in " CACHE_NAME);
+    return true;
 }
 
 static void loadCache(void)
@@ -524,8 +546,10 @@ static void workerMain(void *arg)
         bool network = g_want_network, server = g_want_server;
         g_busy = true;
         mutexUnlock(&g_lock);
-        lookForBooks(network, server);
+        bool whole = lookForBooks(network, server);
         mutexLock(&g_lock);
+        if (whole)
+            g_looked = true;
         g_busy = g_pending;
     }
     mutexUnlock(&g_lock);
@@ -597,6 +621,7 @@ bool bookScanInit(void)
     condvarInit(&g_mark_wake);
     g_running = true;
     g_cancel = false;
+    g_looked = false;
     g_started = startThread(&g_thread, workerMain);
     g_mark_started = g_started && startThread(&g_mark_thread, markMain);
     if (!g_started)
@@ -658,5 +683,5 @@ unsigned bookScanGeneration(void)
 
 bool bookScanBusy(void)
 {
-    return g_busy;
+    return booksStillLooking(g_started, g_looked, g_busy);
 }

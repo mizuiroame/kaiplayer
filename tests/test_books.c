@@ -407,8 +407,19 @@ static void testServerBooks(void)
     CHECK(bookSubTime("yesterday") == 0 && bookSubTime(NULL) == 0);
 }
 
+// What the tab says with no books: looking until a whole look has ended, where to put them only after.
+static void testStillLooking(void)
+{
+    CHECK(booksStillLooking(true, false, false));   // Started, the look not begun yet.
+    CHECK(booksStillLooking(true, false, true));    // The first look running (or started over).
+    CHECK(!booksStillLooking(true, true, false));   // A whole look ended: the empty state may show.
+    CHECK(booksStillLooking(true, true, true));     // Looking again.
+    CHECK(!booksStillLooking(false, false, false)); // The thread never started: nothing will look.
+}
+
 void testBooks(void)
 {
+    testStillLooking();
     testTempo();
     testChapters();
     testBookNames();

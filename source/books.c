@@ -453,3 +453,8 @@ bool booksLoad(BookList *l, FILE *f)
     free(line);
     return ok;
 }
+
+bool booksStillLooking(bool started, bool looked, bool looking)
+{
+    return started && (!looked || looking);
+}
