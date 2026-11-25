@@ -115,13 +115,14 @@ only.
 - **If the server stops answering**, the song stops after about 20 seconds,
   and KaiPlayer stops trying after three songs in a row can't be opened.
   Pressing next or previous doesn't wait for it.
-- **The password** is never kept as typed, in `network.txt` in KaiPlayer's
-  folder. For a shared folder (SMB) the card keeps its hash, what Windows
-  signs in with: the password itself can't be read from it, but the hash
-  still opens that share, so use [a user of its own](#a-user-of-its-own). For
-  WebDAV it's only encoded (WebDAV sends the password itself each time), so
-  anyone with the card can read it. With **Remember the password** off, none
-  of it is on the card. A file from an older KaiPlayer is changed to this the
+- **The password**, with **Remember the password** on, is kept in
+  `network.txt` in KaiPlayer's folder, on the SD card and not encrypted. For
+  a shared folder (SMB) the card keeps its hash, what Windows signs in with:
+  the password itself can't be read from it, but the hash signs in as that
+  user just like the password, so use [a user of its own](#a-user-of-its-own).
+  For WebDAV it's only encoded (WebDAV sends the password itself each time),
+  so anyone with the card can read it. With **Remember the password** off,
+  none of it is on the card. A file from an older KaiPlayer is changed to this the
   first time it's read.
 - **WebDAV over plain `http://`** sends the password without encryption.
   Use it only on your home network, or use `https://`.

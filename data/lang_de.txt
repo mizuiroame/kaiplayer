@@ -591,8 +591,8 @@ Warteschlange als Playlist speichern
 Saved until KaiPlayer closes: the password isn't kept on the card.
 Gespeichert, bis KaiPlayer geschlossen wird: Das Passwort wird nicht auf der Karte gespeichert.
 
-Saved: the card keeps the password's hash, not the password.
-Gespeichert: Die Karte enthält den Hash des Passworts, nicht das Passwort.
+Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music.
+Gespeichert: Die Karte behält den Hash des Passworts, der diese Freigabe wie das Passwort öffnet. Nutze einen Benutzer, der die Musik nur lesen darf.
 
 Saved: the password is only encoded on the card. Use a user that can only read the music.
 Gespeichert: Das Passwort ist auf der Karte nur kodiert. Nutze einen Benutzer, der die Musik nur lesen darf.

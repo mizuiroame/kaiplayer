@@ -600,8 +600,8 @@ Salva la coda come playlist
 Saved until KaiPlayer closes: the password isn't kept on the card.
 Salvata fino alla chiusura di KaiPlayer: la password non viene tenuta sulla scheda.
 
-Saved: the card keeps the password's hash, not the password.
-Salvata: la scheda tiene l'hash della password, non la password.
+Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music.
+Salvata: la scheda tiene l'hash della password, che apre questa cartella come la password. Usa un utente che possa solo leggere la musica.
 
 Saved: the password is only encoded on the card. Use a user that can only read the music.
 Salvata: sulla scheda la password è solo codificata. Usa un utente che possa solo leggere la musica.

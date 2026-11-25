@@ -124,7 +124,7 @@ static void sayHowKept(App *app, const DavAccount *a)
     if (a->forget_password)
         appNotify(app, NOTICE_DONE, T("Saved until KaiPlayer closes: the password isn't kept on the card."));
     else if (davIsSmbAddress(a->address))
-        appNotify(app, NOTICE_DONE, T("Saved: the card keeps the password's hash, not the password."));
+        appNotify(app, NOTICE_DONE, T("Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music."));
     else
         appNotify(app, NOTICE_DONE, T("Saved: the password is only encoded on the card. Use a user that can only read the music."));
 }

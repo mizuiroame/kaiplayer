@@ -321,8 +321,8 @@ Lembrar a senha
 Saved until KaiPlayer closes: the password isn't kept on the card.
 Guardada até o KaiPlayer fechar: a senha não fica no cartão.
 
-Saved: the card keeps the password's hash, not the password.
-Salva: o cartão guarda o hash da senha, não a senha.
+Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music.
+Salva: o cartão guarda o hash da senha, que abre esta pasta como a senha. Use um usuário que só possa ler a música.
 
 Saved: the password is only encoded on the card. Use a user that can only read the music.
 Salva: no cartão a senha só está codificada. Use um usuário que só possa ler a música.

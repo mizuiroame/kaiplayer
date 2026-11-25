@@ -591,8 +591,8 @@ Guardar la cola como lista
 Saved until KaiPlayer closes: the password isn't kept on the card.
 Guardada hasta que KaiPlayer se cierre: la contraseña no se guarda en la tarjeta.
 
-Saved: the card keeps the password's hash, not the password.
-Guardada: la tarjeta tiene el hash de la contraseña, no la contraseña.
+Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music.
+Guardada: la tarjeta tiene el hash de la contraseña, que abre esta carpeta igual que la contraseña. Usa un usuario que solo pueda leer la música.
 
 Saved: the password is only encoded on the card. Use a user that can only read the music.
 Guardada: en la tarjeta la contraseña solo está codificada. Usa un usuario que solo pueda leer la música.

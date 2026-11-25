@@ -591,8 +591,8 @@ Enregistrer la file comme playlist
 Saved until KaiPlayer closes: the password isn't kept on the card.
 Enregistré jusqu'à la fermeture de KaiPlayer : le mot de passe n'est pas gardé sur la carte.
 
-Saved: the card keeps the password's hash, not the password.
-Enregistré : la carte garde l'empreinte (hash) du mot de passe, pas le mot de passe.
+Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music.
+Enregistré : la carte garde le hash du mot de passe, qui ouvre ce partage comme le mot de passe. Utilisez un utilisateur qui peut seulement lire la musique.
 
 Saved: the password is only encoded on the card. Use a user that can only read the music.
 Enregistré : sur la carte, le mot de passe est seulement encodé. Utilisez un utilisateur qui peut seulement lire la musique.

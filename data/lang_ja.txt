@@ -591,8 +591,8 @@ Save queue as playlist
 Saved until KaiPlayer closes: the password isn't kept on the card.
 KaiPlayerを閉じるまで保持します。パスワードはカードに保存されません。
 
-Saved: the card keeps the password's hash, not the password.
-保存しました。カードにはパスワードではなく、そのハッシュが保存されます。
+Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music.
+保存しました。カードにはパスワードのハッシュが残り、パスワードと同じようにこの共有を開けます。音楽を読むことしかできないユーザーを使ってください。
 
 Saved: the password is only encoded on the card. Use a user that can only read the music.
 保存しました。カード上のパスワードはエンコードされているだけです。音楽を読むことしかできないユーザーを使ってください。

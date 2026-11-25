@@ -28,24 +28,34 @@ reduces that risk in these ways:
   and an `https://` address can't be redirected to plain `http://`.
   Certificates are checked unless you turn **Certificate check** off for the
   server. Plain `http://` to WebDAV outside your home network gets a warning.
-- **The network folder's password is never kept as typed.** For a shared
-  folder (SMB), `network.txt` holds its NT hash, what Windows signs in with:
-  the password can't be read from it, but the hash still opens that share. For
-  WebDAV it's only encoded, since WebDAV sends the password itself. With
-  **Remember the password** off, nothing of it is written, and it's asked for
-  when the folder is first used. A new address forgets the old user and
-  password, so they're never sent to another server. Give KaiPlayer
+- **What the card keeps of the network folder's password is as good as the
+  password.** The settings are on the SD card, not encrypted: anyone who
+  copies the card's files has them. For a shared folder (SMB), `network.txt`
+  holds the password's NT hash, which is what Windows signs in with: the
+  password can't be read back from it, but the hash signs in as that user
+  just as the password does (to that share, and to anything else that
+  account can open over SMB). For WebDAV
+  the password is only encoded, since WebDAV sends the password itself:
+  anyone with the file can decode it. With **Remember the password** off,
+  nothing of it is written, and it's asked for when the folder is first used.
+  A new address forgets the old user and password, so they're never sent to
+  another server. Give KaiPlayer
   [a user of its own](network-folder.md#a-user-of-its-own) that can only read
   the folder.
 - **Shared folders are signed.** SMB connections require signing, so nobody
   on the network can change what's read. **Allow without signing (old NAS)**
   turns that off for a folder whose server can't sign.
-- **The Navidrome server's password isn't kept.** `navidrome.txt` holds a
-  random salt and the MD5 of the password with it (Subsonic's token), which is
-  what each request carries; the password is never sent. The token still lets
-  whoever has the file use that account through the Subsonic API, and plain
-  `http://` sends it unencrypted. A new address forgets the old sign-in. URLs
-  with the token are never written anywhere.
+- **The Navidrome server's password isn't kept, but its token is as good as
+  a password for the Subsonic API.** `navidrome.txt`, on the SD card and not
+  encrypted, holds the user, a random salt and the MD5 of the password with
+  it (Subsonic's token), which is what each request carries; the password
+  itself is never sent or written. Whoever has the file can use that account
+  through the Subsonic API (list, play and download its music, change its
+  playlists and stars, and anything else the API lets that user do) until
+  the password is changed on the server; it doesn't open the server's web
+  page, which asks for the password. Plain `http://` sends the token
+  unencrypted. A new address forgets the old sign-in. URLs with the token are
+  never written anywhere. Use an account that only plays music.
 - **What the server sends is untrusted.** Folder listings (WebDAV's XML, SMB
   entries) are parsed with length checks; names with control characters or
   slashes, `.` and `..`, and listings past 5000 entries are left out; songs
@@ -72,8 +82,15 @@ reduces that risk in these ways:
 - **Pinned dependencies.** The libraries in `third_party/` and the fonts in
   `data/` are pinned to upstream commits with SHA-256 sums. See
   [third_party/VERSIONS.md](../third_party/VERSIONS.md), and check them with
-  `sh third_party/verify.sh`. libcurl comes from devkitPro's packages
-  (7.69.1, older than upstream's).
+  `sh third_party/verify.sh`.
 
-The main remaining risk is in the third-party decoders, which parse files from
-the SD card. Only play files from sources you trust.
+## Known risks
+
+- **libcurl is old.** Every web request (the WebDAV folder, the Navidrome
+  server, the update check) goes through libcurl 7.69.1, from devkitPro's
+  packages: it's from 2020, and has known vulnerabilities fixed upstream
+  since. It's the clearest known risk, and stays until devkitPro updates its
+  package. Until then, prefer servers you run yourself, on your home network
+  or over `https://` with **Certificate check** on.
+- **The third-party decoders** parse files from the SD card and the network.
+  Only play files from sources you trust.

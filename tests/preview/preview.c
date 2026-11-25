@@ -508,7 +508,7 @@ static void renderPlaylistScenes(const char *dir, App *app, PlayerStatus *status
     render(dir, "about", app, status);
     app->about_open = false;
     // A notice over Settings: the bubble at the top, over everything.
-    noticePush(&app->notices, NOTICE_DONE, T("Saved: the card keeps the password's hash, not the password."), 1);
+    noticePush(&app->notices, NOTICE_DONE, T("Saved: the card keeps the password's hash, which opens this share like the password. Use a user that can only read the music."), 1);
     app->notice_count = noticeVisible(&app->notices, 1 + NOTICE_SLIDE_NS, app->notice_views);
     render(dir, "notice_settings", app, status);
     app->notices = (Notices){0};

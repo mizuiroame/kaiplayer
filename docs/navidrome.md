@@ -59,12 +59,14 @@ library goes back to the card.
 
 ## Good to know
 
-- **The password isn't kept.** KaiPlayer keeps only what Subsonic's sign-in
-  needs: a random salt and the MD5 of the password with it (the "token"), in
-  `navidrome.txt` in KaiPlayer's folder. The password itself is never sent:
-  each request carries the user, the salt and the token. Whoever has that file
-  can still use the account through the Subsonic API, so use an account that
-  only plays music.
+- **The password isn't kept, but the token works like it.** KaiPlayer keeps
+  only what Subsonic's sign-in needs: a random salt and the MD5 of the
+  password with it (the "token"), in `navidrome.txt` in KaiPlayer's folder,
+  on the SD card and not encrypted. The password itself is never sent: each
+  request carries the user, the salt and the token. Whoever has that file can
+  use the account through the Subsonic API (play, download, change its
+  playlists) until you change the password on the server, so use an account
+  that only plays music.
 - **Over plain `http://`** the token travels unencrypted. Use it on your home
   network, or use `https://`.
 - **A server that doesn't take tokens** (some that sign in with LDAP, for
