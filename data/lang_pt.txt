@@ -1038,3 +1038,6 @@ Biblioteca: o cartão SD inteiro (nenhuma pasta de música escolhida)
 
 Go to the whole SD card
 Ir para o cartão SD inteiro
+
+Source:
+Fonte:

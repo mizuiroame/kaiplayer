@@ -1038,3 +1038,6 @@ Library: the whole SD card (no music folder chosen)
 
 Go to the whole SD card
 SD 카드 전체로 이동
+
+Source:
+소스:

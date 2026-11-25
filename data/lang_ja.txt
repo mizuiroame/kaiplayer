@@ -1038,3 +1038,6 @@ Library: the whole SD card (no music folder chosen)
 
 Go to the whole SD card
 SDカード全体へ
+
+Source:
+ソース：

@@ -1038,3 +1038,6 @@ Libreria: tutta la scheda SD (nessuna cartella musica scelta)
 
 Go to the whole SD card
 Vai a tutta la scheda SD
+
+Source:
+Origine:

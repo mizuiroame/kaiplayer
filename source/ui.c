@@ -262,13 +262,16 @@ static int drawSourcePill(const App *app, int x)
                         : app->config.library[0]   ? T("SD card")
                                                    : T("SD card (whole card)");
     Color dot = source == LIBRARY_NETWORK ? COLOR_NETWORK : source == LIBRARY_SERVER ? COLOR_SERVER : COLOR_ACCENT;
+    const char *what = T("Source:");  // As the other Kai apps: "Source: SD card".
+    int what_w = fontTextWidth(FONT_REGULAR, 16, what) + 8;
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
-    int w = 12 + key_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
+    int w = 12 + key_w + what_w + SOURCE_DOT + 8 + fontTextWidth(FONT_BOLD, 16, label) + 14;
     float cy = HEADER_PILL_Y + HEADER_PILL_H / 2.0f;
     gfxFillRoundRect(x, HEADER_PILL_Y, w, HEADER_PILL_H, HEADER_PILL_H / 2, COLOR_SURFACE_HI);
     if (key)
         uiDrawButton(x + 8, cy, "X", COLOR_SURFACE, COLOR_TEXT);
-    int dot_x = x + 12 + key_w;
+    fontDrawMiddle(FONT_REGULAR, 16, x + 12 + key_w, cy, what, COLOR_DIM);
+    int dot_x = x + 12 + key_w + what_w;
     gfxFillRoundRect(dot_x, (int)cy - SOURCE_DOT / 2, SOURCE_DOT, SOURCE_DOT, SOURCE_DOT / 2, dot);
     fontDrawMiddle(FONT_BOLD, 16, dot_x + SOURCE_DOT + 8, cy, label, COLOR_TEXT);
     uiHitAdd(x - 4, 4, w + 8, HEADER_H - 8, HIT_SOURCE, 0);
