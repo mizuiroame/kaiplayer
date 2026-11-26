@@ -24,6 +24,12 @@ void appPlayTracks(App *app, TrackList *tracks, size_t start, bool shuffle, cons
         return;
     }
     appBooksStop(app);  // A book playing keeps its place (app_books.c).
+    for (size_t i = 0; i < tracks->count; i++) {  // The Internet Archive's songs: the network for them.
+        if (streamIsLocation(tracks->paths[i])) {
+            appStreamEnsureNetwork(app);
+            break;
+        }
+    }
     for (size_t i = 0; i < tracks->count; i++) {  // A network folder's song: its password first, if it's asked for.
         if (davIsLocation(tracks->paths[i])) {
             if (!appNetworkEnsurePassword(app))

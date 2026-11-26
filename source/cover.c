@@ -9,6 +9,7 @@
 #include "image_config.h"
 #include "kfile.h"
 #include "stb_image.h"
+#include "stream.h"
 #include "subsonic.h"
 #include "util.h"
 
@@ -240,9 +241,25 @@ static bool loadServerCover(const char *track_path, CoverImage *large, int large
     return ok;
 }
 
+// An online song's (or row's) cover, from its service.
+static bool loadStreamCover(const char *track_path, CoverImage *large, int large_size, CoverImage *small,
+                            int small_size)
+{
+    char location[UTIL_PATH_MAX];
+    size_t size = 0;
+    uint8_t *data = streamCoverLocation(track_path, large_size, location, sizeof(location))
+                        ? readSmallFile(location, &size)
+                        : NULL;
+    bool ok = data && coverDecode(data, size, large, large_size, small, small_size);
+    free(data);
+    return ok;
+}
+
 bool coverLoadFromFolder(const char *track_path, CoverImage *large, int large_size,
                          CoverImage *small, int small_size)
 {
+    if (streamIsLocation(track_path))
+        return loadStreamCover(track_path, large, large_size, small, small_size);
     if (subIsLocation(track_path))
         return loadServerCover(track_path, large, large_size, small, small_size);
     char folder[UTIL_PATH_MAX], path[UTIL_PATH_MAX];

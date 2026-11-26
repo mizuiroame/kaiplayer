@@ -20,6 +20,7 @@
 #include "player.h"
 #include "playlist.h"
 #include "settings.h"
+#include "stream.h"
 #include "sysinfo.h"
 #include "touch.h"
 #include "tracklist.h"
@@ -45,7 +46,7 @@ typedef struct {
     bool moving;                        // Up/Down move the selected song.
 } PlaylistsTab;
 
-// The Library tab's pages. Root lists Artists, Albums, Songs and Folders.
+// The Library tab's pages. Root lists Artists, Albums, Songs and Folders, then the Internet Archive.
 typedef enum {
     LIB_ROOT,
     LIB_ARTISTS,
@@ -54,9 +55,11 @@ typedef enum {
     LIB_ALBUM,    // arg: album index; lists its songs.
     LIB_SONGS,
     LIB_FOLDERS,  // The folder browser.
+    LIB_STREAM,   // An Internet Archive page (app_stream.c): app->stream.pages[depth - 1] says which.
 } LibraryLevel;
 
-#define LIB_ROOT_ROWS 4
+#define LIB_ROOT_ROWS 5
+#define LIB_ROOT_ARCHIVE 4  // Root's row of the Internet Archive.
 #define LIBRARY_DEPTH_MAX 6
 
 typedef struct {
@@ -72,6 +75,27 @@ typedef struct {
     int depth;
     unsigned generation;  // The catalog the pages' indexes belong to.
 } LibraryTab;
+
+// An Internet Archive page: its first page, or a request's results.
+typedef enum {
+    STREAM_PAGE_MENU,
+    STREAM_PAGE_RESULTS,
+} StreamPageKind;
+
+typedef struct {
+    StreamPageKind kind;
+    StreamQuery query;               // The results'.
+    char title[STREAM_TEXT_MAX];     // On the subtitle line.
+    StreamList list;
+    unsigned serial;                 // Its request's (streamnet.h); 0 if none is on its way.
+    bool loading, failed;
+    char why[256];                   // Why it failed.
+} StreamPage;
+
+typedef struct {
+    StreamPage pages[LIBRARY_DEPTH_MAX];  // As the Library's stack: pages[i] for stack[i] when it's LIB_STREAM.
+    char words[STREAM_WORDS_MAX];    // The last search typed, offered again.
+} StreamTab;
 
 // The Audiobooks tab, and the book playing (app_books.c).
 typedef struct {
@@ -152,6 +176,7 @@ typedef struct {
     Browser browser;
     LibraryTab library;
     BooksTab books;
+    StreamTab stream;           // The Internet Archive's pages, in the Library tab.
     History history;            // Plays, for Home.
     HomeTracker home_tracker;
     Home home;                  // Home's rows, from the catalog and history.
@@ -463,6 +488,28 @@ void appServerExit(void);
 void appServerShown(char *address, size_t address_size, char *user, size_t user_size, bool *check_certificate);
 // The sign-in is an API key (user is then the name the server gave for it, "" until a test asks).
 bool appServerUsesKey(void);
+
+// The Internet Archive (app_stream.c, stream.h), in the Library tab's pages.
+// Starts the network if it was used before (a playlist or the resumed queue may have its songs).
+void appStreamStart(App *app);
+// Stops its thread and connections, after everything that reads files has stopped.
+void appStreamExit(void);
+// Starts the console's network for it (once). False if it can't be used.
+bool appStreamEnsureNetwork(App *app);
+// Opens its first page from the Library's first page.
+void appStreamOpen(App *app);
+// The page shown, when it's an online one (NULL otherwise); its rows (library_tab.c, for drawing too).
+const StreamPage *appStreamPage(const App *app);
+size_t appStreamCount(const App *app);
+// True if the page's rows are songs.
+bool appStreamPageHasSongs(const StreamPage *page);
+void appHandleStream(App *app, uint64_t pressed);
+// Once a frame: a page's answer.
+void appStreamUpdate(App *app);
+// The songs of the page (whole_page) or the selected one, in play order; start: the selected song's place.
+bool appStreamSongs(App *app, bool whole_page, TrackList *out, size_t *start);
+// The Archive's song a "+ menu" item is about: the selected row's in a page, or the one playing in Now Playing.
+bool appStreamMenuSong(App *app, char *location, size_t size);
 
 // Resume: restore the last queue at startup and save it while playing.
 // play: keep playing; otherwise the restored queue waits paused.

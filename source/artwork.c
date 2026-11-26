@@ -9,6 +9,8 @@
 #include "gfx.h"
 #include "kfile.h"
 #include "subnet.h"
+#include "stream.h"
+#include "streammeta.h"
 #include "subsonic.h"
 
 #define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
@@ -40,8 +42,8 @@ static void freeArtwork(Artwork *a)
 // cover doesn't wait for that.
 static void loadLyrics(Artwork *a, const char *path, const TrackTags *tags)
 {
-    if (subIsLocation(path))
-        return;
+    if (subIsLocation(path) || streamIsLocation(path))
+        return;  // The Archive's songs have no .lrc next to them, and it has no lyrics to ask for.
     char lrc[UTIL_PATH_MAX];
     if (lyricsPathFor(path, lrc, sizeof(lrc))) {
         size_t size = 0;
@@ -63,12 +65,15 @@ static Artwork *loadArtwork(const char *path)
 
     TrackTags tags;
     tagsInit(&tags);
-    tags.skip_picture = subIsLocation(path);  // A server's song: its cover comes from the server.
+    bool online = streamIsLocation(path);
+    tags.skip_picture = subIsLocation(path) || online;  // A server's or a service's song: its cover comes from there.
     tags.want_lyrics = !tags.skip_picture;
     tagsRead(path, &tags);
     snprintf(a->title, sizeof(a->title), "%s", tags.title);
     snprintf(a->artist, sizeof(a->artist), "%s", tags.artist[0] ? tags.artist : tags.album_artist);
     snprintf(a->album, sizeof(a->album), "%s", tags.album);
+    if (online)  // The names the service gave, over the file's (they're what its page shows).
+        streamMetaGet(path, a->title, sizeof(a->title), a->artist, sizeof(a->artist), a->album, sizeof(a->album));
 
     int large = gfxToFb(ARTWORK_LARGE_SIZE), small = gfxToFb(ARTWORK_SMALL_SIZE);  // Drawn 1:1.
     a->has_cover = coverDecode(tags.picture, tags.picture_size, &a->cover, large, &a->thumb, small) ||

@@ -30,6 +30,7 @@ typedef struct {
     LibrarySource source;        // Where the library shown comes from.
     bool playlists_moved;        // The old sdmc:/playlists were copied into it.
     bool welcomed;               // The first run's welcome was answered ("Later" or a source set).
+    bool online_used;            // The Internet Archive was opened once: the network starts with KaiPlayer.
     bool shuffle;
     RepeatMode repeat;
     ResumeMode resume;           // What to do with the last queue at startup.

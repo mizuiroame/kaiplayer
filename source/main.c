@@ -217,6 +217,7 @@ static void syncWithPlayer(App *app, PlayerState *last_state, char *last_error, 
     appBooksTick(app, &status, nowNs());  // Before the plays: a book's aren't counted.
     appTrackPlays(app, &status);
     appServerUpdate(app, &status);  // Its test's answer, and the song playing told to the server.
+    appStreamUpdate(app);           // The Internet Archive's pages' answers.
     if (status.state != *last_state) {
         appletSetMediaPlaybackState(status.state == PLAYER_PLAYING);
         *last_state = status.state;
@@ -404,6 +405,7 @@ int main(int argc, char **argv)
     appStartLanguages(&app);  // Before anything is said on screen.
     appNetworkStart(&app);    // Before the library: it may be the network folder's,
     appServerStart(&app);     // or the server's.
+    appStreamStart(&app);     // The Internet Archive: the network, if it was used before.
     appStartUpdates(&app, argc > 0 ? argv[0] : NULL);
     appUsePlaylistFolder(&app);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
@@ -458,6 +460,7 @@ int main(int argc, char **argv)
     artworkExit();
     appStopUpdates();  // A download stops; its part is removed.
     appServerExit();   // After everything that read the server's files,
+    appStreamExit();   // the Internet Archive's,
     appNetworkExit();  // and the network folder's.
     sysinfoExit();
     screenExit();

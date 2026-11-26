@@ -9,6 +9,7 @@
 #include "ui_buttons.h"
 #include "ui_hit.h"
 #include "nowstyle.h"
+#include "stream.h"
 #include "ui_nowstyle.h"
 #include "util.h"
 
@@ -99,6 +100,19 @@ static void drawFormat(const PlayerStatus *status)
     fontDrawMiddle(FONT_BOLD, 13, x + 10, PROGRESS_Y - 24.0f, label, COLOR_DIM);
 }
 
+// An Archive song's credits: "CC BY-SA 4.0 · Internet Archive · archive.org/details/<item>", left of the
+// format's pill.
+static void drawCredit(const PlayerStatus *status)
+{
+    char path[UTIL_PATH_MAX], credit[UTIL_PATH_MAX], label[48];
+    if (status->state == PLAYER_STOPPED || !playerTrackPath(status->track, path, sizeof(path)) ||
+        !streamCreditLine(path, credit, sizeof(credit)))
+        return;
+    decoderFormatLabel(&status->format, label, sizeof(label));
+    int pill = label[0] ? fontTextWidth(FONT_BOLD, 13, label) + 20 + 16 : 0;
+    fontDrawClipped(FONT_REGULAR, 17, INFO_X, PROGRESS_Y - 34, INFO_W - pill, credit, COLOR_ACCENT);
+}
+
 static void drawInfo(const PlayerStatus *status, const UiTrack *track, const char *playlist)
 {
     fontDraw(FONT_BOLD, 15, INFO_X, 150, status->state == PLAYER_PAUSED ? T("PAUSED") : T("NOW PLAYING"), COLOR_DIM);
@@ -116,6 +130,7 @@ static void drawInfo(const PlayerStatus *status, const UiTrack *track, const cha
             snprintf(line + n, sizeof(line) - (size_t)n, "  ·  %s", playlist);
         fontDrawClipped(FONT_REGULAR, 20, INFO_X, 314, INFO_W, line, COLOR_DIM);
     }
+    drawCredit(status);
 }
 
 static float easeOut(float t)

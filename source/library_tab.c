@@ -25,7 +25,34 @@ size_t appLibraryCount(const App *app, const Catalog *c)
     case LIB_ALBUMS: return c ? c->album_count : 0;
     case LIB_ALBUM: return c && p->arg < c->album_count ? c->albums[p->arg].song_count : 0;
     case LIB_SONGS: return c ? c->song_count : 0;
+    case LIB_STREAM: return appStreamCount(app);
     default: return 0;
+    }
+}
+
+const StreamPage *appStreamPage(const App *app)
+{
+    const LibraryTab *t = &app->library;
+    if (t->depth == 0 || t->stack[t->depth - 1].level != LIB_STREAM)
+        return NULL;
+    return &app->stream.pages[t->depth - 1];
+}
+
+bool appStreamPageHasSongs(const StreamPage *page)
+{
+    return page && page->kind == STREAM_PAGE_RESULTS && page->list.count > 0 &&
+           page->list.items[0].kind == STREAM_ITEM_TRACK;
+}
+
+size_t appStreamCount(const App *app)
+{
+    const StreamPage *s = appStreamPage(app);
+    if (!s)
+        return 0;
+    switch (s->kind) {
+    case STREAM_PAGE_MENU:
+        return (size_t)streamMenuCount();
+    default: return s->failed && s->list.count == 0 ? 1 : s->list.count;  // A failed page: "Try again".
     }
 }
 

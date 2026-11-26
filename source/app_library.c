@@ -127,8 +127,13 @@ static void openRow(App *app)
     if (c && level == LIB_ARTIST && p->arg < c->artist_count && cursor < count)
         album = c->artists[p->arg].albums[cursor];
     catalogUnlock();
+    if (level == LIB_ROOT && cursor == LIB_ROOT_ARCHIVE) {
+        appStreamOpen(app);
+        return;
+    }
     if (level == LIB_ROOT) {
-        static const LibraryLevel ROWS[LIB_ROOT_ROWS] = {LIB_ARTISTS, LIB_ALBUMS, LIB_SONGS, LIB_FOLDERS};
+        static const LibraryLevel ROWS[LIB_ROOT_ROWS] = {LIB_ARTISTS, LIB_ALBUMS, LIB_SONGS, LIB_FOLDERS,
+                                                         LIB_STREAM};
         if (cursor < LIB_ROOT_ROWS && ROWS[cursor] == LIB_FOLDERS) {
             if (appLibrarySource(app) == LIBRARY_NETWORK)
                 appNetworkEnsurePassword(app);  // Without it, Folders says why.
@@ -155,6 +160,10 @@ void appHandleLibrary(App *app, uint64_t pressed)
     LibraryPage *p = appLibraryPage(app);
     if (p->level == LIB_FOLDERS) {
         appHandleBrowser(app, pressed);
+        return;
+    }
+    if (p->level == LIB_STREAM) {
+        appHandleStream(app, pressed);
         return;
     }
     const Catalog *c = catalogLock();

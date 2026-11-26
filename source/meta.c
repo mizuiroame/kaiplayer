@@ -8,6 +8,8 @@
 
 #include "catalog_scan.h"
 #include "kfile.h"
+#include "stream.h"
+#include "streammeta.h"
 
 #define THREAD_STACK_SIZE 0x40000  // Roomy: a network folder's reads (libsmb2, curl) run on it.
 #define THREAD_PRIORITY 0x31  // Below the artwork thread.
@@ -35,10 +37,19 @@ static bool fromCatalog(const char *path, TrackTags *tags)
     return i >= 0;
 }
 
+// An online song shown in a page: its names from the service's answer.
+static bool fromStream(const char *path, TrackTags *tags)
+{
+    return streamIsLocation(path) && streamMetaGet(path, tags->title, sizeof(tags->title), tags->artist,
+                                                   sizeof(tags->artist), tags->album, sizeof(tags->album));
+}
+
 static void readMeta(const char *path, TrackTags *tags)
 {
     tagsInit(tags);
     tags->skip_picture = true;  // Only the text is needed.
+    if (fromStream(path, tags))
+        return;
     if (!kfileIsRemote(path) || !fromCatalog(path, tags))
         tagsRead(path, tags);
 }

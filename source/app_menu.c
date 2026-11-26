@@ -1,6 +1,7 @@
 // The + menu: actions for the current tab, the playlist picker and the
 // delete confirmation. Names are typed on the keyboard (app_keyboard.c).
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "app.h"
@@ -32,6 +33,7 @@ typedef enum {
     ACT_REMOVE_SONG,    // Asks to confirm.
     ACT_REMOVE_CONFIRMED,
     ACT_SOURCE,         // The library from the other source: the card's or the network folder's.
+    ACT_STREAM_ABOUT,   // An online song's artist, license and page.
 } MenuAction;
 
 // The playlist the menu acts on: the open one, or the selected one.
@@ -80,6 +82,9 @@ void appOpenMenu(App *app)
         menuAdd(&app->menu, T("Save queue as playlist"), ACT_SAVE_QUEUE, 0);
     else if (app->view == VIEW_BOOKS || app->view == VIEW_NOW_PLAYING)
         appBooksMenuItems(app);  // The book's chapters, speed, sleep timer (app_books.c).
+    char online[UTIL_PATH_MAX];
+    if (appStreamMenuSong(app, online, sizeof(online)))  // Its license and page (the services' terms ask for them).
+        menuAdd(&app->menu, T("About this song"), ACT_STREAM_ABOUT, 0);
     menuAddDivider(&app->menu);
     if (app->config.library[0] || appLibraryIsRemote(app))
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
@@ -127,9 +132,10 @@ static bool collectSongs(App *app, AddSource source)
         TrackList all;
         size_t start = 0;
         LibraryLevel level = appLibraryPage(app)->level;
-        bool ok = c && appLibrarySongs(app, c, false, &all, &start);
+        bool ok = level == LIB_STREAM ? appStreamSongs(app, false, &all, &start)
+                                      : c && appLibrarySongs(app, c, false, &all, &start);
         catalogUnlock();
-        if (ok && (level == LIB_ALBUM || level == LIB_SONGS))
+        if (ok && (level == LIB_ALBUM || level == LIB_SONGS || level == LIB_STREAM))
             ok = start < all.count && trackListAdd(&app->pending, all.paths[start]);
         else if (ok)
             ok = trackListAddAll(&app->pending, &all);
@@ -286,6 +292,36 @@ static void removeSong(App *app)
     appToast(app, message);
 }
 
+// An online song's credits, as its service's terms ask: who made it, its license and the song's page.
+static void openStreamAbout(App *app)
+{
+    char location[UTIL_PATH_MAX], song[SONG_TITLE_MAX], line[MENU_LABEL_MAX], text[160];
+    StreamTarget *t = malloc(sizeof(*t));
+    if (!t || !appStreamMenuSong(app, location, sizeof(location)) || !streamParseLocation(location, t)) {
+        free(t);
+        return;
+    }
+    songTitle(location, song);
+    menuOpen(&app->menu, song);
+    static SongMeta meta;  // Big; menus run on the UI thread.
+    if (metaLookup(location, &meta) && meta.artist[0]) {
+        snprintf(line, sizeof(line), T("By %s"), meta.artist);
+        menuAdd(&app->menu, line, ACT_CANCEL, 0);
+    }
+    streamLicenseName(t->license, text, sizeof(text));
+    snprintf(line, sizeof(line), T("License: %s"), text[0] ? text : T("not given"));
+    menuAdd(&app->menu, line, ACT_CANCEL, 0);
+    streamLicenseLink(t->license, text, sizeof(text));
+    if (text[0])
+        menuAdd(&app->menu, text, ACT_CANCEL, 0);
+    if (streamPageLink(location, text, sizeof(text))) {
+        snprintf(line, sizeof(line), T("From %s: %s"), "Internet Archive", text);
+        menuAdd(&app->menu, line, ACT_CANCEL, 0);
+    }
+    menuAdd(&app->menu, T("Close"), ACT_CANCEL, 0);
+    free(t);
+}
+
 static void saveQueue(App *app)
 {
     TrackList queue;
@@ -332,6 +368,7 @@ static void runItem(App *app, const MenuItem *item)
     case ACT_DELETE: confirmDelete(app); break;
     case ACT_DELETE_CONFIRMED: deletePlaylist(app); break;
     case ACT_CANCEL: break;
+    case ACT_STREAM_ABOUT: openStreamAbout(app); break;
     case ACT_MOVE_SONG:
         app->playlists.moving = true;
         appToast(app, T("Move the song with Up/Down, then press A."));

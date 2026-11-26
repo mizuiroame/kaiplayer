@@ -514,6 +514,10 @@ static const char *footerHelp(const App *app, const PlayerStatus *status)
         case LIB_ARTIST: return T("[A] open album  [B] back  [>] add  [X] play artist  [Y] shuffle  [RS] page / seek  [L][R] track");
         case LIB_ALBUM:
         case LIB_SONGS: return T("[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu");
+        case LIB_STREAM:
+            return appStreamPageHasSongs(appStreamPage(app))
+                       ? T("[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu")
+                       : T("[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu");
         default: break;
         }
     }

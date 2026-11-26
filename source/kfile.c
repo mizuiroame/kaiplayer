@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "blockcache.h"
+#include "stream.h"
 #include "subsonic.h"
 
 // A song playing: blocks of 256 KB, 4 MB read ahead (about 30 s of FLAC),
@@ -64,18 +65,19 @@ void kfileSetRemote(KFileRemoteKind kind, const KFileRemote *remote)
         __atomic_store_n(&g_remotes[kind], remote, __ATOMIC_RELEASE);
 }
 
-// What reads a location: the network folder's ("dav:/") or the server's ("sub:/"). NULL for neither.
+// What reads a location: the network folder's ("dav:/"), the server's ("sub:/") or the Archive's ("ia:/"). NULL for none.
 static const KFileRemote *remoteOps(const char *location)
 {
     KFileRemoteKind kind = davIsLocation(location) ? KFILE_REMOTE_FOLDER
                          : subIsLocation(location) ? KFILE_REMOTE_SERVER
+                         : streamIsLocation(location) ? KFILE_REMOTE_STREAM
                                                    : KFILE_REMOTE_COUNT;
     return kind == KFILE_REMOTE_COUNT ? NULL : __atomic_load_n(&g_remotes[kind], __ATOMIC_ACQUIRE);
 }
 
 bool kfileIsRemote(const char *path)
 {
-    return davIsLocation(path) || subIsLocation(path);
+    return davIsLocation(path) || subIsLocation(path) || streamIsLocation(path);
 }
 
 void kfileSetBlockSizes(size_t stream, size_t peek)

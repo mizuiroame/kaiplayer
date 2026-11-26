@@ -6,6 +6,7 @@
 
 #include "lang.h"
 #include "meta.h"
+#include "stream.h"
 #include "ui_buttons.h"
 
 Color g_ui_network = COLOR_NETWORK_OWN, g_ui_server = COLOR_SERVER_OWN;
@@ -13,6 +14,15 @@ Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
 
 void uiSplitTrackPath(const char *path, char *title, char *folder)
 {
+    StreamTarget online;
+    if (streamParseLocation(path, &online) && !online.cover) {  // Its folders are an item and a license, not names.
+        snprintf(title, UTIL_PATH_MAX, "%s", utilFileName(online.file));
+        char *dot = strrchr(title, '.');
+        if (dot && dot != title)
+            *dot = '\0';
+        folder[0] = '\0';
+        return;
+    }
     snprintf(title, UTIL_PATH_MAX, "%s", utilFileName(path));
     char *dot = strrchr(title, '.');
     if (dot && dot != title)
@@ -80,6 +90,14 @@ void uiDrawNoteIcon(int x, int y, int size, Color color)
                 color);
     gfxLine(left, bottom - head * 0.2f, left, bottom - head * 0.2f, head * 2.0f, color);  // Note heads.
     gfxLine(right, bottom - head * 0.6f, right, bottom - head * 0.6f, head * 2.0f, color);
+}
+
+void uiDrawSearchIcon(int x, int y, int size, Color color)
+{
+    // A magnifying glass: a ring, and its handle down to the right.
+    float s = (float)size, cx = x + s * 0.42f, cy = y + s * 0.42f, r = s * 0.27f;
+    gfxArc(cx, cy, r, s * 0.1f, 0.0f, 6.2832f, color);
+    gfxLine(cx + r * 0.72f, cy + r * 0.72f, x + s * 0.86f, y + s * 0.86f, s * 0.12f, color);
 }
 
 void uiDrawPersonIcon(float cx, float cy, float size, Color color)

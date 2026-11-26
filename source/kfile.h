@@ -43,6 +43,7 @@ typedef struct {
 typedef enum {
     KFILE_REMOTE_FOLDER,  // The network folder's "dav:/" locations.
     KFILE_REMOTE_SERVER,  // The Navidrome server's "sub:/" locations.
+    KFILE_REMOTE_STREAM,  // The Internet Archive's "ia:/" locations (stream.h).
     KFILE_REMOTE_COUNT,
 } KFileRemoteKind;
 

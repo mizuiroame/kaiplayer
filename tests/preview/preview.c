@@ -23,6 +23,8 @@
 #include "ui_hit.h"
 #include "ui_nowstyle.h"
 #include "nowstyle.h"
+#include "stream.h"
+#include "streammeta.h"
 
 static const char *const TRACKS[] = {
     "sdmc:/Music/Aurora Fields/01 - Morning Light.flac",
@@ -42,8 +44,14 @@ static CoverImage g_art_card, g_art_thumb_small;  // The sample cover at the Hom
 static bool g_has_art;
 
 // Stubs for the modules that need the console.
+static const char *g_playing_online;  // An Archive song playing instead of TRACKS[track] (renderStreamScenes).
+
 bool playerTrackPath(size_t track, char *out, size_t size)
 {
+    if (g_playing_online && track == 2) {
+        snprintf(out, size, "%s", g_playing_online);
+        return true;
+    }
     if (track >= TRACK_COUNT)
         return false;
     snprintf(out, size, "%s", TRACKS[track]);
@@ -69,6 +77,9 @@ bool metaLookup(const char *path, SongMeta *out)
 {
     if (g_meta_loading)
         return false;
+    if (streamMetaGet(path, out->title, sizeof(out->title), out->artist, sizeof(out->artist), out->album,
+                      sizeof(out->album)))
+        return true;  // An Archive song's, as its answer named it.
     bool aurora = strstr(path, "Aurora") != NULL;
     const char *name = strrchr(path, '/') ? strrchr(path, '/') + 1 : path;
     const char *dash = strstr(name, " - ");
@@ -109,7 +120,8 @@ void coverCacheUnlock(void)
 const CoverImage *coverCacheGet(const char *song_path, bool thumb)
 {
     // The sample cover stands in for every album that has one (and two of the books).
-    bool has = strstr(song_path, "Aurora") || strstr(song_path, "Lighthouse") || strstr(song_path, "Paper Moon");
+    bool has = strstr(song_path, "Aurora") || strstr(song_path, "Lighthouse") || strstr(song_path, "Paper Moon") ||
+               strstr(song_path, "ia:/ndb2006") || strstr(song_path, "ia:/78_made");
     return g_art.has_cover && has ? (thumb ? &g_art_thumb_small : &g_art_card) : NULL;
 }
 
@@ -748,6 +760,126 @@ static void useLanguageFile(void)
         fprintf(stderr, "cannot read the language in %s\n", path);
 }
 
+// A made-up Archive song or item, kept as the pages' answers keep them.
+static void addOnline(StreamList *list, StreamItemKind kind, const char *location, const char *title,
+                      const char *artist, const char *album, const char *detail, const char *id)
+{
+    list->items = realloc(list->items, (list->count + 1) * sizeof(StreamItem));
+    StreamItem *item = &list->items[list->count++];
+    *item = (StreamItem){.kind = kind, .position = (int)list->count};
+    snprintf(item->location, sizeof(item->location), "%s", location);
+    snprintf(item->title, sizeof(item->title), "%s", title);
+    snprintf(item->artist, sizeof(item->artist), "%s", artist);
+    snprintf(item->album, sizeof(item->album), "%s", album);
+    snprintf(item->detail, sizeof(item->detail), "%s", detail);
+    snprintf(item->id, sizeof(item->id), "%s", id);
+    if (kind == STREAM_ITEM_TRACK)
+        streamMetaPut(location, title, artist, album);
+}
+
+// An Archive page at depth (1-based) of the Library's stack.
+static StreamPage *onlinePage(App *app, int depth, StreamPageKind kind, StreamQueryKind query, const char *title)
+{
+    StreamPage *s = &app->stream.pages[depth - 1];
+    streamListFree(&s->list);
+    *s = (StreamPage){.kind = kind, .query = {.kind = query}};
+    snprintf(s->title, sizeof(s->title), "%s", title);
+    app->library.stack[depth - 1] = (LibraryPage){.level = LIB_STREAM};
+    app->library.depth = depth;
+    return s;
+}
+
+#define LIVE_ITEM "ndb2006-01-14.made.up"
+#define LIVE_TITLE "The Night Drive Band Live at a Made-Up Hall"
+
+// The Internet Archive: Library's row, its pages, the + menu's "About this song", Now Playing's credits.
+static void renderStreamScenes(const char *dir, App *app, PlayerStatus *status)
+{
+    app->view = VIEW_BROWSER;
+    app->focus = FOCUS_LIST;
+    app->library.depth = 1;
+    app->library.stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = LIB_ROOT_ARCHIVE};
+    render(dir, "library_online_row", app, status);
+
+    onlinePage(app, 2, STREAM_PAGE_MENU, STREAM_Q_COUNT, "Internet Archive");
+    render(dir, "online_archive", app, status);
+    char title[STREAM_TEXT_MAX];
+    snprintf(title, sizeof(title), "Internet Archive  \xC2\xB7  %s", streamMenuLabel(0));
+    StreamPage *s = onlinePage(app, 3, STREAM_PAGE_RESULTS, STREAM_Q_POPULAR_LIVE, title);
+    s->loading = true;
+    render(dir, "online_loading", app, status);
+    s->loading = false;
+    s->failed = true;
+    snprintf(s->why, sizeof(s->why), "%s", T("The Internet Archive didn't answer. Is the console connected to the internet?"));
+    render(dir, "online_failed", app, status);
+    s->failed = false;
+    addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/" LIVE_ITEM "/cover/0.jpg", LIVE_TITLE, "The Night Drive Band", "",
+              "2006-01-14", LIVE_ITEM);
+    addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/af1999-07-01.sbd/cover/0.jpg", "Aurora Fields at the Pier",
+              "Aurora Fields", "", "1999-07-01", "af1999-07-01.sbd");
+    render(dir, "online_archive_concerts", app, status);
+    snprintf(title, sizeof(title), "Internet Archive  \xC2\xB7  %s", streamMenuLabel(2));
+    s = onlinePage(app, 3, STREAM_PAGE_RESULTS, STREAM_Q_POPULAR_78, title);
+    addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/78_made-up-waltz/cover/0.jpg", "Made-Up Waltz",
+              "The Paper Moon Orchestra", "", "1928", "78_made-up-waltz");
+    addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/78_lighthouse-blues/cover/0.jpg", "Lighthouse Blues",
+              "Neon Harbor Quartet", "", "1931", "78_lighthouse-blues");
+    render(dir, "online_archive_78s", app, status);
+
+    size_t was_track = status->track;
+    status->track = 2;  // g_playing_online stands in for it.
+    s = onlinePage(app, 4, STREAM_PAGE_RESULTS, STREAM_Q_ITEM, LIVE_TITLE);
+    addOnline(&s->list, STREAM_ITEM_TRACK, "ia:/" LIVE_ITEM "/lma/ndb2006-01-14d1t01.mp3", "Morning Light",
+              "The Night Drive Band", LIVE_TITLE, "", "");
+    addOnline(&s->list, STREAM_ITEM_TRACK, "ia:/" LIVE_ITEM "/lma/ndb2006-01-14d1t02.mp3", "Second Song",
+              "The Night Drive Band", LIVE_TITLE, "", "");
+    addOnline(&s->list, STREAM_ITEM_TRACK, "ia:/" LIVE_ITEM "/lma/ndb2006-01-14d1t03.mp3", "Encore",
+              "The Night Drive Band", LIVE_TITLE, "", "");
+    app->library.stack[3].cursor = 1;
+    g_playing_online = s->list.items[0].location;
+    render(dir, "online_archive_concert", app, status);
+
+    menuOpen(&app->menu, "Morning Light");  // The + menu's "About this song".
+    char line[MENU_LABEL_MAX], text[160];
+    snprintf(line, sizeof(line), T("By %s"), "The Night Drive Band");
+    menuAdd(&app->menu, line, 0, 0);
+    streamLicenseName("lma", text, sizeof(text));
+    snprintf(line, sizeof(line), T("License: %s"), text);
+    menuAdd(&app->menu, line, 0, 0);
+    menuAdd(&app->menu, "archive.org/details/etree", 0, 0);
+    snprintf(line, sizeof(line), T("From %s: %s"), "Internet Archive", "archive.org/details/" LIVE_ITEM);
+    menuAdd(&app->menu, line, 0, 0);
+    menuAdd(&app->menu, T("Close"), 0, 0);
+    app->view = VIEW_NOW_PLAYING;
+    Artwork card_art = g_art;  // The Archive song's names over the sample cover.
+    bool had_art = g_has_art;
+    g_has_art = true;
+    snprintf(g_art.path, sizeof(g_art.path), "%s", g_playing_online);
+    snprintf(g_art.title, sizeof(g_art.title), "Morning Light");
+    snprintf(g_art.artist, sizeof(g_art.artist), "The Night Drive Band");
+    snprintf(g_art.album, sizeof(g_art.album), "%s", LIVE_TITLE);
+    AudioFormat card_format = status->format;
+    status->format = (AudioFormat){"MP3", 44100, 0, 0};
+    render(dir, "online_about_song", app, status);
+    menuClose(&app->menu);
+    render(dir, "now_playing_online", app, status);
+    g_playing_online = "ia:/madeup-netlabel-001/by-sa-4.0/01%20-%20Quiet%20Room.ogg";
+    snprintf(g_art.path, sizeof(g_art.path), "%s", g_playing_online);
+    snprintf(g_art.title, sizeof(g_art.title), "Quiet Room");
+    snprintf(g_art.artist, sizeof(g_art.artist), "Paper Moons");
+    snprintf(g_art.album, sizeof(g_art.album), "Quiet Rooms EP");
+    status->format = (AudioFormat){"OGG", 44100, 0, 0};
+    render(dir, "now_playing_online_cc", app, status);
+    g_playing_online = NULL;
+    g_art = card_art;
+    g_has_art = had_art;
+    status->format = card_format;
+    status->track = was_track;
+    app->view = VIEW_BROWSER;
+    app->library.depth = 1;
+    app->library.stack[0] = (LibraryPage){.level = LIB_ROOT};
+}
+
 int main(int argc, char **argv)
 {
     useLanguageFile();
@@ -1065,6 +1197,7 @@ int main(int argc, char **argv)
     app.browser.incomplete = false;
     renderPlaylistScenes(argv[1], &app, &status);
     renderBookScenes(argv[1], &app, &status);
+    renderStreamScenes(argv[1], &app, &status);
     fontExit();
     if (g_touch_problems)
         printf("%d touch targets wouldn't answer a tap\n", g_touch_problems);
