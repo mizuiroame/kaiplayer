@@ -166,7 +166,7 @@ static void drawWrapped(int x, int y, int w, const char *text, Color color, int 
     }
 }
 
-static void drawStreamRow(const App *app, const StreamPage *s, size_t i, int y, bool selected, const char *playing,
+static void drawStreamRow(const StreamPage *s, size_t i, int y, bool selected, const char *playing,
                           const PlayerStatus *status, uint64_t now_ns)
 {
     int icon_y = y + (ROW_H - ICON_SIZE) / 2;
@@ -250,7 +250,7 @@ static void drawStream(const App *app, const PlayerStatus *status, uint64_t now_
         uiHitRow(y, i);
         if (selected && !songs)
             uiDrawSelection(y, COLOR_ACCENT);
-        drawStreamRow(app, s, i, y, selected, playing, status, now_ns);
+        drawStreamRow(s, i, y, selected, playing, status, now_ns);
     }
     uiListEnd();
     uiDrawScrollbar(first, count);
