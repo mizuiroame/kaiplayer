@@ -57,7 +57,10 @@ static void applyLine(Config *c, char *line)
     } else if (strcmp(key, "library") == 0 && strlen(value) < sizeof(c->library)) {
         strcpy(c->library, value);
     } else if (strcmp(key, "library_source") == 0) {
-        c->source = !strcmp(value, "network") ? LIBRARY_NETWORK : !strcmp(value, "server") ? LIBRARY_SERVER : LIBRARY_CARD;
+        c->source = !strcmp(value, "network")   ? LIBRARY_NETWORK
+                    : !strcmp(value, "server")  ? LIBRARY_SERVER
+                    : !strcmp(value, "archive") ? LIBRARY_ARCHIVE
+                                                : LIBRARY_CARD;
     } else if (strcmp(key, "playlists_moved") == 0) {
         c->playlists_moved = strcmp(value, "1") == 0;
     } else if (strcmp(key, "welcomed") == 0) {
@@ -86,6 +89,8 @@ static void applyLine(Config *c, char *line)
         c->network_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
     } else if (strcmp(key, "server_color") == 0) {
         c->server_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
+    } else if (strcmp(key, "archive_color") == 0) {
+        c->archive_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
     } else if (strcmp(key, "screen_off") == 0) {
         c->screen_off_minutes = clampInt(atoi(value), 0, 60);
     } else if (strcmp(key, "now_style") == 0) {
@@ -170,14 +175,17 @@ bool configSave(const Config *c)
             folder, c->shuffle ? 1 : 0, (int)c->repeat, (int)c->resume, c->clock_24h ? 1 : 0);
     if (c->library[0] && !strpbrk(c->library, "\r\n"))
         fprintf(f, "library=%s\nplaylists_moved=%d\n", c->library, c->playlists_moved ? 1 : 0);
-    if (c->source == LIBRARY_NETWORK || c->source == LIBRARY_SERVER)
-        fprintf(f, "library_source=%s\n", c->source == LIBRARY_NETWORK ? "network" : "server");
+    if (c->source == LIBRARY_NETWORK || c->source == LIBRARY_SERVER || c->source == LIBRARY_ARCHIVE)
+        fprintf(f, "library_source=%s\n", c->source == LIBRARY_NETWORK  ? "network"
+                                          : c->source == LIBRARY_SERVER ? "server"
+                                                                        : "archive");
     fprintf(f, "eq_on=%d\neq_preset=%d\neq_gains=", c->eq_on ? 1 : 0, c->eq_preset);
     for (int b = 0; b < EQ_BANDS; b++)
         fprintf(f, b ? ",%d" : "%d", c->eq_gains[b]);
     fprintf(f, "\nreplaygain=%d\naccent=%d\nscreen_off=%d\nnow_style=%d\nbackground_blur=%d\n", c->replaygain,
             c->accent, c->screen_off_minutes, c->now_style, c->background_blur);
-    fprintf(f, "network_color=%d\nserver_color=%d\n", c->network_color, c->server_color);
+    fprintf(f, "network_color=%d\nserver_color=%d\narchive_color=%d\n", c->network_color, c->server_color,
+            c->archive_color);
     if (c->background[0] && !strpbrk(c->background, "\r\n/"))
         fprintf(f, "background=%s\n", c->background);
     if (c->language[0] && !strpbrk(c->language, "\r\n"))

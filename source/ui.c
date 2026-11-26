@@ -253,7 +253,7 @@ static bool xSwitchesSource(const App *app)
     if (!appCanSwitchSource(app) || uiOverlayOpen(app) || app->focus == FOCUS_PLAYER)
         return false;
     return app->view == VIEW_HOME ||
-           (app->view == VIEW_BROWSER && appLibraryPage((App *)app)->level == LIB_ROOT);
+           (app->view == VIEW_BROWSER && app->library.depth <= 1);  // Library's first page (the Archive's too).
 }
 
 // Where the library comes from, after the title, once there's a network
@@ -267,9 +267,13 @@ static int drawSourcePill(const App *app, int x)
     // Without a music folder chosen, the card's library is all of it: said so, apart from a chosen one.
     const char *label = source == LIBRARY_NETWORK  ? T("Network folder")
                         : source == LIBRARY_SERVER ? T("Navidrome")
+                        : source == LIBRARY_ARCHIVE ? "Internet Archive"
                         : app->config.library[0]   ? T("SD card")
                                                    : T("SD card (whole card)");
-    Color dot = source == LIBRARY_NETWORK ? COLOR_NETWORK : source == LIBRARY_SERVER ? COLOR_SERVER : COLOR_ACCENT;
+    Color dot = source == LIBRARY_NETWORK   ? COLOR_NETWORK
+              : source == LIBRARY_SERVER    ? COLOR_SERVER
+              : source == LIBRARY_ARCHIVE   ? COLOR_ARCHIVE
+                                            : COLOR_ACCENT;
     const char *what = T("Source:");  // As the other Kai apps: "Source: SD card".
     int what_w = fontTextWidth(FONT_REGULAR, 16, what) + 8;
     int key_w = key ? uiButtonWidth("X") + 8 : 0;
@@ -501,6 +505,8 @@ static const char *footerHelp(const App *app, const PlayerStatus *status)
         return T("[A] pause  [B] audiobooks  [<>][RS] 30 s  [L][R] chapter  [X] chapters  [Y] speed  [^] sleep  [+] menu");
     if (app->focus == FOCUS_PLAYER && app->view != VIEW_NOW_PLAYING)
         return T("[<>] choose  [A] press  [^][B] back to the list  [RS] seek  [L][R] track  [-] pause");
+    if (app->view == VIEW_HOME && appLibraryIsArchive(app) && app->focus != FOCUS_PLAYER)
+        return T("[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
     if (app->view == VIEW_HOME && appCanSwitchSource(app))  // X switches there (app_home.c).
         return T("[A] open  [X] SD card / network  [Y] shuffle  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
     if (app->view == VIEW_BROWSER) {
@@ -515,6 +521,8 @@ static const char *footerHelp(const App *app, const PlayerStatus *status)
         case LIB_ALBUM:
         case LIB_SONGS: return T("[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu");
         case LIB_STREAM:
+            if (app->library.depth <= 1)  // The Internet Archive's first page: as Library's, X switches source.
+                return T("[A] open  [X] SD card / network  [LS] move  [RS] seek  [L][R] track  [-] pause  [+] menu");
             return appStreamPageHasSongs(appStreamPage(app))
                        ? T("[A] play  [B] back  [>] add  [X] play all  [Y] shuffle  [RS] page / seek  [L][R] track  [+] menu")
                        : T("[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu");
@@ -578,6 +586,8 @@ void uiDraw(const App *app, const PlayerStatus *status, uint64_t now_ns)
     g_ui_network = app->config.network_color ? themeAccentColor(app->config.network_color - 1, 0, false)
                                              : COLOR_NETWORK_OWN;
     g_ui_server = app->config.server_color ? themeAccentColor(app->config.server_color - 1, 0, false) : COLOR_SERVER_OWN;
+    g_ui_archive = app->config.archive_color ? themeAccentColor(app->config.archive_color - 1, 0, false)
+                                             : COLOR_ARCHIVE_OWN;
 
     // Only the CPU keeps the view behind an overlay: the GPU draws it all again quickly.
     bool overlay = uiOverlayOpen(app), keep = overlay && gfxCanReadBack();

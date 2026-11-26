@@ -14,6 +14,7 @@
 
 #define DEVICE_ROOT "sdmc:/"
 
+// The Internet Archive has no catalog: under it, the card's music folder stays the one the catalog knows.
 const char *appMusicRoot(const App *app)
 {
     if (app->config.source == LIBRARY_NETWORK)
@@ -30,7 +31,12 @@ LibrarySource appLibrarySource(const App *app)
 
 bool appLibraryIsRemote(const App *app)
 {
-    return app->config.source != LIBRARY_CARD;
+    return app->config.source == LIBRARY_NETWORK || app->config.source == LIBRARY_SERVER;
+}
+
+bool appLibraryIsArchive(const App *app)
+{
+    return app->config.source == LIBRARY_ARCHIVE;
 }
 
 bool appSourceReady(LibrarySource source)
@@ -38,7 +44,7 @@ bool appSourceReady(LibrarySource source)
     switch (source) {
     case LIBRARY_NETWORK: return appNetworkReady();
     case LIBRARY_SERVER: return appServerReady();
-    default: return true;
+    default: return true;  // The card's, and the Internet Archive's: nothing to set up.
     }
 }
 
@@ -59,7 +65,8 @@ LibrarySource appNextLibrarySource(const App *app)
 
 bool appCanSwitchSource(const App *app)
 {
-    return appNetworkReady() || appServerReady() || appLibraryIsRemote(app);
+    (void)app;
+    return true;  // The Internet Archive is always there to switch to.
 }
 
 void appSwitchLibrarySource(App *app)
@@ -101,17 +108,21 @@ void appSetLibrarySource(App *app, LibrarySource source)
         return;
     if (source == LIBRARY_NETWORK)
         appNetworkEnsurePassword(app);  // Without it, what was read before shows.
+    bool from_archive = app->config.source == LIBRARY_ARCHIVE;
     app->config.source = source;
     configSave(&app->config);
     app->library.depth = 0;  // Back to the Library's first page.
     app->focus = FOCUS_LIST;
     resetFolders(app);
-    if (source != LIBRARY_CARD || app->config.library[0])
+    if (source == LIBRARY_ARCHIVE)
+        appStreamEnsureNetwork(app);  // Browsed: no catalog to read; the card's stays loaded underneath.
+    else if (source != LIBRARY_CARD || app->config.library[0] || from_archive)
         catalogScanStart(appMusicRoot(app));
-    appToast(app, source == LIBRARY_NETWORK  ? T("Library: the network folder")
-                  : source == LIBRARY_SERVER ? T("Library: Navidrome")
-                  : app->config.library[0]   ? T("Library: the SD card")
-                                             : T("Library: the whole SD card (no music folder chosen)"));
+    appToast(app, source == LIBRARY_NETWORK   ? T("Library: the network folder")
+                  : source == LIBRARY_SERVER  ? T("Library: Navidrome")
+                  : source == LIBRARY_ARCHIVE ? T("Library: the Internet Archive")
+                  : app->config.library[0]    ? T("Library: the SD card")
+                                              : T("Library: the whole SD card (no music folder chosen)"));
 }
 
 void appLibraryRemoteChanged(App *app, LibrarySource source, bool moved)
@@ -196,6 +207,10 @@ void appUsePlaylistFolder(App *app)
 
 void appUpdateLibrary(App *app)
 {
+    if (appLibraryIsArchive(app)) {  // Asked each time a page opens: nothing to read again.
+        appToast(app, T("The Internet Archive is asked each time you open a page: nothing to update."));
+        return;
+    }
     if (!app->config.library[0] && !appLibraryIsRemote(app)) {
         appToast(app, T("Choose your music folder first."));
         return;

@@ -16,8 +16,6 @@
 #define ICON_SIZE 30
 #define COLUMN_X 760
 #define COLOR_ARTIST GFX_RGB(0xC3, 0x9B, 0xFF)
-// The Internet Archive's rows: a quiet color of their own.
-#define COLOR_ARCHIVE GFX_RGB(0xE8, 0xC1, 0x6B)
 #define HINT_LINE_H 28
 
 // An artist: their latest album's cover in a circle, or a person icon.
@@ -55,9 +53,8 @@ static void drawRowText(int y, bool selected, const char *name, const char *deta
 
 static void drawRoot(const App *app, const Catalog *c, size_t cursor)
 {
-    static const char *const NAMES[LIB_ROOT_ROWS] = {N_("Artists"), N_("Albums"), N_("Songs"), N_("Folders"),
-                                                     "Internet Archive"};
-    size_t counts[LIB_ROOT_ROWS] = {c ? c->artist_count : 0, c ? c->album_count : 0, c ? c->song_count : 0, 0, 0};
+    static const char *const NAMES[LIB_ROOT_ROWS] = {N_("Artists"), N_("Albums"), N_("Songs"), N_("Folders")};
+    size_t counts[LIB_ROOT_ROWS] = {c ? c->artist_count : 0, c ? c->album_count : 0, c ? c->song_count : 0, 0};
     for (size_t i = 0; i < LIB_ROOT_ROWS; i++) {
         int y = LIST_Y + (int)i * ROW_H;
         uiHitRow(y, i);
@@ -70,16 +67,9 @@ static void drawRoot(const App *app, const Catalog *c, size_t cursor)
             drawAlbumIcon(ICON_X, icon_y, NULL);
         else if (i == 2)
             uiDrawNoteIcon(ICON_X + 3, icon_y + 2, 26, COLOR_ACCENT);
-        else if (i == LIB_ROOT_ARCHIVE)
-            uiDrawNoteIcon(ICON_X + 3, icon_y + 2, 26, COLOR_ARCHIVE);
         else
             uiDrawFolderIcon(ICON_X + 2, icon_y + 5, COLOR_FOLDER);
         char detail[64] = "";
-        if (i == LIB_ROOT_ARCHIVE) {  // A name: not translated.
-            snprintf(detail, sizeof(detail), "%s", T("Concerts, 78s, classical: online"));
-            drawRowText(y, i == cursor, NAMES[i], detail, COLOR_TEXT);
-            continue;
-        }
         if (i < 3 && c)
             snprintf(detail, sizeof(detail), "%zu", counts[i]);
         else if (i == 3 && appLibrarySource(app) == LIBRARY_NETWORK) {
@@ -180,6 +170,11 @@ static void drawStreamRow(const StreamPage *s, size_t i, int y, bool selected, c
     }
     if (s->failed && s->list.count == 0) {
         drawRowText(y, selected, T("Try again"), "", COLOR_ACCENT);
+        return;
+    }
+    if (i >= s->list.count) {  // After the results: the next 50.
+        uiDrawSearchIcon(ICON_X + 3, icon_y + 2, 26, COLOR_ARCHIVE);
+        drawRowText(y, selected, s->appending ? T("Asking...") : T("Show 50 more"), "", COLOR_ACCENT);
         return;
     }
     const StreamItem *item = &s->list.items[i];
@@ -288,13 +283,13 @@ static void drawSubtitle(const App *app, const Catalog *c, const LibraryPage *p)
     size_t done, total;
     char scan[192] = "";
     bool problem = false;
-    if (catalogScanProgress(&done, &total)) {
+    if (p->level == LIB_STREAM) {
+        // An Archive page: the library's scan and problems aren't about it.
+    } else if (catalogScanProgress(&done, &total)) {
         if (total)
             snprintf(scan, sizeof(scan), T("Updating library  %zu / %zu"), done, total);
         else
             snprintf(scan, sizeof(scan), "%s", T("Looking for music..."));
-    } else if (p->level == LIB_STREAM) {
-        // An online page: the library's own problems aren't about it.
     } else if (appLibraryIsRemote(app)) {  // Why the network folder's or the server's couldn't be looked at.
         catalogScanProblem(appMusicRoot(app), scan, sizeof(scan));
         problem = scan[0] != '\0';

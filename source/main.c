@@ -166,6 +166,10 @@ void appActivateRow(App *app, size_t index, bool select_only)
             return;
         app->books.cursor = index;
         break;
+    case VIEW_HOME:  // The Internet Archive's Home: its one row opens Library.
+        if (appLibraryIsArchive(app) && index == 0 && !select_only)
+            appSetView(app, VIEW_BROWSER);
+        return;
     default:
         return;
     }

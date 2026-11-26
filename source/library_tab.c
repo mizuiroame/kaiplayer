@@ -7,7 +7,9 @@
 LibraryPage *appLibraryPage(App *app)
 {
     LibraryTab *t = &app->library;
-    if (t->depth == 0)
+    if (t->depth == 0 && app->config.source == LIBRARY_ARCHIVE)
+        appStreamRootPage(app);  // The Internet Archive's own first page.
+    else if (t->depth == 0)
         t->stack[t->depth++] = (LibraryPage){.level = LIB_ROOT};
     return &t->stack[t->depth - 1];
 }
@@ -38,6 +40,23 @@ const StreamPage *appStreamPage(const App *app)
     return &app->stream.pages[t->depth - 1];
 }
 
+bool appStreamHasMore(const StreamPage *page)
+{
+    return page && page->kind == STREAM_PAGE_RESULTS && page->query.kind != STREAM_Q_ITEM && !page->loading &&
+           page->list.count > 0 && page->list.total > (long)page->list.count &&
+           page->list.count + STREAM_PAGE_SIZE <= STREAM_ITEMS_MAX && page->query.page < STREAM_ITEMS_MAX / STREAM_PAGE_SIZE;
+}
+
+void appStreamRootPage(App *app)
+{
+    StreamPage *s = &app->stream.pages[0];
+    streamListFree(&s->list);
+    *s = (StreamPage){.kind = STREAM_PAGE_MENU, .list = {.total = -1}};
+    snprintf(s->title, sizeof(s->title), "%s", "Internet Archive");
+    app->library.stack[0] = (LibraryPage){.level = LIB_STREAM};
+    app->library.depth = 1;
+}
+
 bool appStreamPageHasSongs(const StreamPage *page)
 {
     return page && page->kind == STREAM_PAGE_RESULTS && page->list.count > 0 &&
@@ -52,7 +71,10 @@ size_t appStreamCount(const App *app)
     switch (s->kind) {
     case STREAM_PAGE_MENU:
         return (size_t)streamMenuCount();
-    default: return s->failed && s->list.count == 0 ? 1 : s->list.count;  // A failed page: "Try again".
+    default:
+        if (s->failed && s->list.count == 0)
+            return 1;  // A failed page: "Try again".
+        return s->list.count + (appStreamHasMore(s) ? 1 : 0);  // And "Show 50 more" after them.
     }
 }
 

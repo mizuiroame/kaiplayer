@@ -11,12 +11,16 @@ static const char *const ROW_LABELS[SETTING_COUNT] = {
     N_("User and password"), N_("Test the connection"), N_("Certificate check"), N_("Forget this server"),
     N_("Remember the password"), N_("Allow without signing (old NAS)"), N_("Credits and licenses"),
     N_("Check once a day"), N_("Look for an update"), N_("Color"), N_("Color"), N_("Certificate check"),
-    N_("API key"),
+    N_("API key"), N_("Internet Archive"), N_("Color"),
 };
 
 // The same pages, in the same order, as KaiVideo's and KaiRadio's Settings.
+// The sources' pages come after Library; the Internet Archive is KaiPlayer's own (it needs no address, only
+// its color).
 static const SettingRow MAIN_ROWS[] = {SETTING_OPEN_LIBRARY, SETTING_OPEN_NETWORK, SETTING_OPEN_SERVER,
-                                       SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY, SETTING_ABOUT};
+                                       SETTING_OPEN_ARCHIVE, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY,
+                                       SETTING_ABOUT};
+static const SettingRow ARCHIVE_ROWS[] = {SETTING_IA_COLOR};
 static const SettingRow LIBRARY_ROWS[] = {SETTING_LIBRARY, SETTING_RESCAN};
 static const SettingRow NETWORK_ROWS[] = {SETTING_NET_ADDRESS,     SETTING_NET_ACCOUNT, SETTING_NET_REMEMBER,
                                           SETTING_NET_UNSIGNED,    SETTING_NET_CERTIFICATE, SETTING_NET_COLOR,
@@ -43,6 +47,7 @@ int settingsPageRows(SettingsPage page, SettingRow rows[SETTINGS_PAGE_MAX_ROWS])
     case SETTINGS_PAGE_PLAYBACK: from = PLAYBACK_ROWS; count = COUNT_OF(PLAYBACK_ROWS); break;
     case SETTINGS_PAGE_DISPLAY: from = DISPLAY_ROWS; count = COUNT_OF(DISPLAY_ROWS); break;
     case SETTINGS_PAGE_ABOUT: from = ABOUT_ROWS; count = COUNT_OF(ABOUT_ROWS); break;
+    case SETTINGS_PAGE_ARCHIVE: from = ARCHIVE_ROWS; count = COUNT_OF(ARCHIVE_ROWS); break;
     default: break;
     }
     for (int i = 0; i < count; i++)
@@ -59,6 +64,7 @@ SettingsPage settingsRowPage(SettingRow row)
     case SETTING_OPEN_PLAYBACK: return SETTINGS_PAGE_PLAYBACK;
     case SETTING_OPEN_DISPLAY: return SETTINGS_PAGE_DISPLAY;
     case SETTING_ABOUT: return SETTINGS_PAGE_ABOUT;
+    case SETTING_OPEN_ARCHIVE: return SETTINGS_PAGE_ARCHIVE;
     default: return SETTINGS_PAGE_MAIN;
     }
 }
@@ -71,6 +77,7 @@ SettingRow settingsPageRow(SettingsPage page)
     case SETTINGS_PAGE_PLAYBACK: return SETTING_OPEN_PLAYBACK;
     case SETTINGS_PAGE_DISPLAY: return SETTING_OPEN_DISPLAY;
     case SETTINGS_PAGE_ABOUT: return SETTING_ABOUT;
+    case SETTINGS_PAGE_ARCHIVE: return SETTING_OPEN_ARCHIVE;
     default: return SETTING_OPEN_LIBRARY;
     }
 }
@@ -84,12 +91,16 @@ const char *settingsPageTitle(SettingsPage page)
     case SETTINGS_PAGE_PLAYBACK: return T("Playback");
     case SETTINGS_PAGE_DISPLAY: return T("Display");
     case SETTINGS_PAGE_ABOUT: return T("About");
+    case SETTINGS_PAGE_ARCHIVE: return "Internet Archive";  // A name.
     default: return T("Settings");
     }
 }
 
 const char *settingsPageNote(SettingsPage page)
 {
+    if (page == SETTINGS_PAGE_ARCHIVE)
+        return T("Live concerts, 78 rpm records, public-domain classical music and free audio from archive.org, "
+                 "played as they stream: nothing to set up. On Home and Library, X switches to it.");
     if (page == SETTINGS_PAGE_SERVER)
         return T("A Navidrome server, or another with the Subsonic API. On Home and Library, X switches to its music.");
     return page == SETTINGS_PAGE_NETWORK

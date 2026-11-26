@@ -21,6 +21,7 @@ typedef enum {
     LIBRARY_CARD,     // The music folder on the card.
     LIBRARY_NETWORK,  // The network folder (dav.h).
     LIBRARY_SERVER,   // The Navidrome server (subsonic.h).
+    LIBRARY_ARCHIVE,  // The Internet Archive (stream.h): browsed, not a catalog.
     LIBRARY_SOURCE_COUNT,
 } LibrarySource;
 
@@ -30,7 +31,7 @@ typedef struct {
     LibrarySource source;        // Where the library shown comes from.
     bool playlists_moved;        // The old sdmc:/playlists were copied into it.
     bool welcomed;               // The first run's welcome was answered ("Later" or a source set).
-    bool online_used;            // The Internet Archive was opened once: the network starts with KaiPlayer.
+    bool online_used;            // The Internet Archive was used once: the network starts with KaiPlayer.
     bool shuffle;
     RepeatMode repeat;
     ResumeMode resume;           // What to do with the last queue at startup.
@@ -42,6 +43,7 @@ typedef struct {
     int accent;                  // Theme accent, see theme.h.
     int network_color;           // The network folder's color: 0 its own, else a preset accent + 1.
     int server_color;            // Navidrome's, the same way.
+    int archive_color;           // The Internet Archive's, the same way.
     int screen_off_minutes;      // Turn the screen off after this long idle while playing; 0 never.
     int now_style;               // NowStyle: cover, vinyl, CD or cassette.
     bool show_lyrics;            // Now Playing shows a song's synced lyrics when it has them.

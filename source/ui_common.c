@@ -9,7 +9,7 @@
 #include "stream.h"
 #include "ui_buttons.h"
 
-Color g_ui_network = COLOR_NETWORK_OWN, g_ui_server = COLOR_SERVER_OWN;
+Color g_ui_network = COLOR_NETWORK_OWN, g_ui_server = COLOR_SERVER_OWN, g_ui_archive = COLOR_ARCHIVE_OWN;
 Color g_ui_accent = GFX_RGB(0xFF, 0x6B, 0x9A);
 
 void uiSplitTrackPath(const char *path, char *title, char *folder)

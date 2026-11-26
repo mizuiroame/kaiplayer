@@ -169,6 +169,11 @@ static void testUrls(void)
     CHECK_STR(url, "https://archive.org/advancedsearch.php?q=collection%3Aetree%20AND%20mediatype%3Aetree"
                    "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=creator&fl%5B%5D=date&fl%5B%5D=licenseurl"
                    "&sort%5B%5D=downloads+desc&rows=50&page=1&output=json");
+    q.page = 3;  // "Show 50 more", twice.
+    CHECK(streamQueryUrl(&q, url, sizeof(url)) && strstr(url, "&rows=50&page=3&"));
+    q.page = 11;  // Past STREAM_ITEMS_MAX: refused.
+    CHECK(!streamQueryUrl(&q, url, sizeof(url)));
+    q.page = 0;
     q.kind = STREAM_Q_POPULAR_78;
     CHECK(streamQueryUrl(&q, url, sizeof(url)) && strstr(url, "q=collection%3A78rpm%20AND%20mediatype%3Aaudio&"));
     q.kind = STREAM_Q_CLASSICAL;

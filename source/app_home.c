@@ -133,6 +133,10 @@ static bool goToPlace(App *app, const Home *home, int place, size_t col)
 
 void appHandleHome(App *app, uint64_t pressed)
 {
+    if (appLibraryIsArchive(app)) {  // The Internet Archive's Home: no catalog of its own.
+        appStreamHandleHome(app, pressed);
+        return;
+    }
     if (app->focus == FOCUS_PLAYER) {  // The player bar under Home.
         appFocusFilter(app, pressed, 0, 0, false, false);
         return;

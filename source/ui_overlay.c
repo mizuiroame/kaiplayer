@@ -157,8 +157,11 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     }
     case SETTING_ACCENT: snprintf(out, size, "%s", themeAccentName(app->config.accent)); break;
     case SETTING_NET_COLOR:
-    case SETTING_SRV_COLOR: {
-        int choice = row == SETTING_NET_COLOR ? app->config.network_color : app->config.server_color;
+    case SETTING_SRV_COLOR:
+    case SETTING_IA_COLOR: {
+        int choice = row == SETTING_NET_COLOR   ? app->config.network_color
+                   : row == SETTING_SRV_COLOR   ? app->config.server_color
+                                                : app->config.archive_color;
         snprintf(out, size, "%s", choice ? themeAccentName(choice - 1) : T("Its own"));
         break;
     }
@@ -194,6 +197,7 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_UPDATE_NOW: appUpdatesValue(app, row, out, size); break;
     case SETTING_SRV_TEST:
     case SETTING_SRV_FORGET: out[0] = '\0'; break;
+    case SETTING_OPEN_ARCHIVE:  // Nothing to set up: just the arrow.
     case SETTING_OPEN_LIBRARY:
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.
@@ -286,7 +290,13 @@ static void sourceDot(int x, int middle, Color color)
 
 static bool isSourcePage(int page)
 {
-    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER;
+    return page == SETTINGS_PAGE_NETWORK || page == SETTINGS_PAGE_SERVER || page == SETTINGS_PAGE_ARCHIVE;
+}
+
+// A source's color: its page's, or the row that opens it.
+static Color sourceColor(int page)
+{
+    return page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : page == SETTINGS_PAGE_SERVER ? COLOR_SERVER : COLOR_ARCHIVE;
 }
 
 static void drawSettingsPanel(const App *app, uint64_t now_ns)
@@ -305,8 +315,8 @@ static void drawSettingsPanel(const App *app, uint64_t now_ns)
     if (app->settings_page != SETTINGS_PAGE_MAIN) {  // A page: back to the main one.
         title_x += uiDrawBackButtonHit(x + PANEL_PAD - 4, y + 18, false, HIT_OVERLAY_BACK) + 12;
     }
-    if (app->settings_page == SETTINGS_PAGE_NETWORK || app->settings_page == SETTINGS_PAGE_SERVER) {  // Its color.
-        sourceDot(title_x, y + 37, app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+    if (isSourcePage(app->settings_page)) {  // Its color.
+        sourceDot(title_x, y + 37, sourceColor(app->settings_page));
         title_x += SOURCE_DOT_ROOM;
     }
     fontDraw(FONT_BOLD, 24, title_x, y + 22, settingsPageTitle(app->settings_page), COLOR_TEXT);
@@ -321,8 +331,8 @@ static void drawSettingsPanel(const App *app, uint64_t now_ns)
         if (selected)
             drawRowHighlight(x + 16, row_y, SETTINGS_W - 32, SETTINGS_ROW_H - 6);
         int label_x = x + PANEL_PAD;
-        if (i == SETTING_OPEN_NETWORK || i == SETTING_OPEN_SERVER) {  // A source: its color, as KaiVideo's.
-            sourceDot(label_x, row_y + 22, i == SETTING_OPEN_NETWORK ? COLOR_NETWORK : COLOR_SERVER);
+        if (isSourcePage(settingsRowPage((SettingRow)i))) {  // A source: its color, as KaiVideo's.
+            sourceDot(label_x, row_y + 22, sourceColor(settingsRowPage((SettingRow)i)));
             label_x += SOURCE_DOT_ROOM;
         }
         fontDraw(selected ? FONT_BOLD : FONT_REGULAR, 21, label_x, row_y + 8, settingsRowLabel((SettingRow)i), COLOR_TEXT);
@@ -353,7 +363,7 @@ static void drawSettings(const App *app, uint64_t now_ns)
 {
     Color accent = g_ui_accent;
     if (isSourcePage(app->settings_page))
-        g_ui_accent = app->settings_page == SETTINGS_PAGE_NETWORK ? COLOR_NETWORK : COLOR_SERVER;
+        g_ui_accent = sourceColor(app->settings_page);
     drawSettingsPanel(app, now_ns);
     g_ui_accent = accent;
 }

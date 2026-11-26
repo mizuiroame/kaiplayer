@@ -88,6 +88,7 @@ typedef struct {
     StreamQueryKind kind;
     char words[STREAM_WORDS_MAX];  // What to search for.
     char id[STREAM_ID_MAX];
+    int page;                      // A search's page of STREAM_PAGE_SIZE: 1 (or 0) for the first.
 } StreamQuery;
 
 // The request's URL. False if something in it can't be used (no words to search for, an identifier that

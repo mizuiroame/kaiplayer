@@ -46,7 +46,8 @@ typedef struct {
     bool moving;                        // Up/Down move the selected song.
 } PlaylistsTab;
 
-// The Library tab's pages. Root lists Artists, Albums, Songs and Folders, then the Internet Archive.
+// The Library tab's pages. Root lists Artists, Albums, Songs and Folders; with the Internet Archive as the
+// source, the first page is its own (LIB_STREAM).
 typedef enum {
     LIB_ROOT,
     LIB_ARTISTS,
@@ -58,8 +59,7 @@ typedef enum {
     LIB_STREAM,   // An Internet Archive page (app_stream.c): app->stream.pages[depth - 1] says which.
 } LibraryLevel;
 
-#define LIB_ROOT_ROWS 5
-#define LIB_ROOT_ARCHIVE 4  // Root's row of the Internet Archive.
+#define LIB_ROOT_ROWS 4
 #define LIBRARY_DEPTH_MAX 6
 
 typedef struct {
@@ -89,6 +89,7 @@ typedef struct {
     StreamList list;
     unsigned serial;                 // Its request's (streamnet.h); 0 if none is on its way.
     bool loading, failed;
+    bool appending;                  // The next 50 are asked for (query.page), to go after these.
     char why[256];                   // Why it failed.
 } StreamPage;
 
@@ -291,16 +292,18 @@ void appUpdateLibrary(App *app);
 // the Navidrome server ("sub:/"). One that isn't set up says so, and the library stays.
 void appSetLibrarySource(App *app, LibrarySource source);
 LibrarySource appLibrarySource(const App *app);
-// Not the card's: the network folder's or the server's.
+// A catalog on the network: the network folder's or the server's (not the Internet Archive, which has none).
 bool appLibraryIsRemote(const App *app);
+// The Internet Archive is the source shown: browsed in Library's pages, no catalog.
+bool appLibraryIsArchive(const App *app);
 // The card's always is; the others once set up (and the network is up).
 bool appSourceReady(LibrarySource source);
 // DAV_ROOT or SUB_ROOT; NULL for the card.
 const char *appSourceRoot(LibrarySource source);
-// Where X goes: the next source set up, card, network folder, Navidrome, card...
+// Where X goes: the next source set up, card, network folder, Navidrome, Internet Archive, card...
 LibrarySource appNextLibrarySource(const App *app);
 void appSwitchLibrarySource(App *app);
-// There's another source to switch to (or this one isn't the card's): X switches, and the pill shows.
+// There's another source to switch to (always: the Internet Archive): X switches, and the pill shows.
 bool appCanSwitchSource(const App *app);
 // A source on the network changed its account (moved: its address): its library is read again (in the
 // background while another is shown), or, gone, what was found of it is forgotten and the card's shows.
@@ -496,11 +499,15 @@ void appStreamStart(App *app);
 void appStreamExit(void);
 // Starts the console's network for it (once). False if it can't be used.
 bool appStreamEnsureNetwork(App *app);
-// Opens its first page from the Library's first page.
-void appStreamOpen(App *app);
+// Its first page, as the Library's first page while it's the source (pages[0]).
+void appStreamRootPage(App *app);
+// Home while it's the source: A (or a tap on its row) opens Library.
+void appStreamHandleHome(App *app, uint64_t pressed);
 // The page shown, when it's an online one (NULL otherwise); its rows (library_tab.c, for drawing too).
 const StreamPage *appStreamPage(const App *app);
 size_t appStreamCount(const App *app);
+// True if the page has a "Show 50 more" row after its results (a search's, with more found).
+bool appStreamHasMore(const StreamPage *page);
 // True if the page's rows are songs.
 bool appStreamPageHasSongs(const StreamPage *page);
 void appHandleStream(App *app, uint64_t pressed);

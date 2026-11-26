@@ -98,10 +98,29 @@ static const char *sectionEmpty(HomeRowKind row)
     return row == HOME_RECENT_PLAYLISTS ? T("Playlists you play show up here.") : T("Songs you play show up here.");
 }
 
+// The Internet Archive's Home: what it is, and a row that opens its pages in Library.
+static void drawArchiveHome(const App *app)
+{
+    fontDraw(FONT_BOLD, 30, MARGIN, 150, "Internet Archive", COLOR_TEXT);
+    fontDraw(FONT_REGULAR, 21, MARGIN, 200, T("Live concerts, 78 rpm records, public-domain classical music and free audio."),
+             COLOR_DIM);
+    int y = 250;
+    uiHitRow(y, 0);
+    if (app->focus != FOCUS_PLAYER)
+        uiDrawSelection(y, COLOR_ARCHIVE);
+    uiDrawSearchIcon(MARGIN + 7, y + 9, 26, COLOR_ARCHIVE);
+    fontDraw(app->focus != FOCUS_PLAYER ? FONT_BOLD : FONT_REGULAR, 22, MARGIN + 52, y + 8,
+             T("Browse the Internet Archive"), COLOR_TEXT);
+}
+
 void uiDrawHome(const App *app, const PlayerStatus *status, uint64_t now_ns)
 {
     (void)status;
     (void)now_ns;
+    if (appLibraryIsArchive(app)) {
+        drawArchiveHome(app);
+        return;
+    }
     const Catalog *c = catalogLock();
     const Home *home = appHome((App *)app, c);
     bool any = false;

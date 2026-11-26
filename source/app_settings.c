@@ -199,6 +199,10 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         app->config.server_color = (app->config.server_color + delta + SOURCE_COLOR_CHOICES) % SOURCE_COLOR_CHOICES;
         configSave(&app->config);
         break;
+    case SETTING_IA_COLOR:
+        app->config.archive_color = (app->config.archive_color + delta + SOURCE_COLOR_CHOICES) % SOURCE_COLOR_CHOICES;
+        configSave(&app->config);
+        break;
     case SETTING_NOW_STYLE:
         app->config.now_style = ((app->config.now_style + delta) % NOW_STYLE_COUNT + NOW_STYLE_COUNT) % NOW_STYLE_COUNT;
         configSave(&app->config);

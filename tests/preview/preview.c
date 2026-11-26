@@ -226,12 +226,18 @@ LibrarySource appLibrarySource(const App *app)
 
 bool appLibraryIsRemote(const App *app)
 {
-    return app->config.source != LIBRARY_CARD;
+    return app->config.source == LIBRARY_NETWORK || app->config.source == LIBRARY_SERVER;
+}
+
+bool appLibraryIsArchive(const App *app)
+{
+    return app->config.source == LIBRARY_ARCHIVE;
 }
 
 bool appCanSwitchSource(const App *app)
 {
-    return g_network || g_server || appLibraryIsRemote(app);
+    (void)app;
+    return true;  // The Internet Archive is always there to switch to.
 }
 
 void appServerShown(char *address, size_t address_size, char *user, size_t user_size, bool *check_certificate)
@@ -792,20 +798,25 @@ static StreamPage *onlinePage(App *app, int depth, StreamPageKind kind, StreamQu
 #define LIVE_ITEM "ndb2006-01-14.made.up"
 #define LIVE_TITLE "The Night Drive Band Live at a Made-Up Hall"
 
-// The Internet Archive: Library's row, its pages, the + menu's "About this song", Now Playing's credits.
+// The Internet Archive as the source: Home, its first page with the pill, its lists (with "Show 50 more"),
+// an item's songs, the + menu, Now Playing's credits, and its Settings page.
 static void renderStreamScenes(const char *dir, App *app, PlayerStatus *status)
 {
-    app->view = VIEW_BROWSER;
+    app->config.source = LIBRARY_ARCHIVE;
     app->focus = FOCUS_LIST;
-    app->library.depth = 1;
-    app->library.stack[0] = (LibraryPage){.level = LIB_ROOT, .cursor = LIB_ROOT_ARCHIVE};
-    render(dir, "library_online_row", app, status);
-
-    onlinePage(app, 2, STREAM_PAGE_MENU, STREAM_Q_COUNT, "Internet Archive");
+    app->view = VIEW_HOME;
+    render(dir, "home_archive_source", app, status);
+    app->view = VIEW_BROWSER;
+    app->library.depth = 0;  // Its first page, as Library's.
+    appLibraryPage(app);
     render(dir, "online_archive", app, status);
+    app->library.stack[0].cursor = 2;
+    render(dir, "online_archive_78_row", app, status);
+    app->library.stack[0].cursor = 0;
+
     char title[STREAM_TEXT_MAX];
     snprintf(title, sizeof(title), "Internet Archive  \xC2\xB7  %s", streamMenuLabel(0));
-    StreamPage *s = onlinePage(app, 3, STREAM_PAGE_RESULTS, STREAM_Q_POPULAR_LIVE, title);
+    StreamPage *s = onlinePage(app, 2, STREAM_PAGE_RESULTS, STREAM_Q_POPULAR_LIVE, title);
     s->loading = true;
     render(dir, "online_loading", app, status);
     s->loading = false;
@@ -817,9 +828,16 @@ static void renderStreamScenes(const char *dir, App *app, PlayerStatus *status)
               "2006-01-14", LIVE_ITEM);
     addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/af1999-07-01.sbd/cover/0.jpg", "Aurora Fields at the Pier",
               "Aurora Fields", "", "1999-07-01", "af1999-07-01.sbd");
+    s->list.total = 307208;  // More than shown: a "Show 50 more" row.
     render(dir, "online_archive_concerts", app, status);
+    app->library.stack[1].cursor = 2;
+    render(dir, "online_archive_more", app, status);
+    s->appending = true;
+    render(dir, "online_archive_more_asking", app, status);
+    s->appending = false;
+    app->library.stack[1].cursor = 0;
     snprintf(title, sizeof(title), "Internet Archive  \xC2\xB7  %s", streamMenuLabel(2));
-    s = onlinePage(app, 3, STREAM_PAGE_RESULTS, STREAM_Q_POPULAR_78, title);
+    s = onlinePage(app, 2, STREAM_PAGE_RESULTS, STREAM_Q_POPULAR_78, title);
     addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/78_made-up-waltz/cover/0.jpg", "Made-Up Waltz",
               "The Paper Moon Orchestra", "", "1928", "78_made-up-waltz");
     addOnline(&s->list, STREAM_ITEM_ARCHIVE, "ia:/78_lighthouse-blues/cover/0.jpg", "Lighthouse Blues",
@@ -828,18 +846,28 @@ static void renderStreamScenes(const char *dir, App *app, PlayerStatus *status)
 
     size_t was_track = status->track;
     status->track = 2;  // g_playing_online stands in for it.
-    s = onlinePage(app, 4, STREAM_PAGE_RESULTS, STREAM_Q_ITEM, LIVE_TITLE);
+    s = onlinePage(app, 3, STREAM_PAGE_RESULTS, STREAM_Q_ITEM, LIVE_TITLE);
     addOnline(&s->list, STREAM_ITEM_TRACK, "ia:/" LIVE_ITEM "/lma/ndb2006-01-14d1t01.mp3", "Morning Light",
               "The Night Drive Band", LIVE_TITLE, "", "");
     addOnline(&s->list, STREAM_ITEM_TRACK, "ia:/" LIVE_ITEM "/lma/ndb2006-01-14d1t02.mp3", "Second Song",
               "The Night Drive Band", LIVE_TITLE, "", "");
     addOnline(&s->list, STREAM_ITEM_TRACK, "ia:/" LIVE_ITEM "/lma/ndb2006-01-14d1t03.mp3", "Encore",
               "The Night Drive Band", LIVE_TITLE, "", "");
-    app->library.stack[3].cursor = 1;
+    app->library.stack[2].cursor = 1;
     g_playing_online = s->list.items[0].location;
     render(dir, "online_archive_concert", app, status);
 
-    menuOpen(&app->menu, "Morning Light");  // The + menu's "About this song".
+    menuOpen(&app->menu, "KaiPlayer");  // The + menu under the Archive: its song's credits, the next source.
+    app->menu.kind = MENU_KIND_MAIN;
+    menuAdd(&app->menu, T("About this song"), 0, 0);
+    menuAddDivider(&app->menu);
+    menuAdd(&app->menu, T("Go to the SD card library"), 0, 0);
+    menuAdd(&app->menu, T("Settings"), 0, 0);
+    menuAdd(&app->menu, T("Exit KaiPlayer"), 0, 0);
+    render(dir, "menu_archive_source", app, status);
+    menuClose(&app->menu);
+
+    menuOpen(&app->menu, "Morning Light");  // "About this song".
     char line[MENU_LABEL_MAX], text[160];
     snprintf(line, sizeof(line), T("By %s"), "The Night Drive Band");
     menuAdd(&app->menu, line, 0, 0);
@@ -875,6 +903,16 @@ static void renderStreamScenes(const char *dir, App *app, PlayerStatus *status)
     g_has_art = had_art;
     status->format = card_format;
     status->track = was_track;
+
+    app->settings_open = true;  // Its Settings page: its color only.
+    app->settings_page = SETTINGS_PAGE_ARCHIVE;
+    app->settings_cursor = SETTING_IA_COLOR;
+    render(dir, "settings_archive", app, status);
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_ARCHIVE;
+    render(dir, "settings_main_archive", app, status);
+    app->settings_open = false;
+    app->config.source = LIBRARY_CARD;
     app->view = VIEW_BROWSER;
     app->library.depth = 1;
     app->library.stack[0] = (LibraryPage){.level = LIB_ROOT};

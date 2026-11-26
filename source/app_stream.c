@@ -1,7 +1,10 @@
-// The Internet Archive (stream.h): the Library tab's pages for it, and the console's network for them. Each
-// page asks the Archive once, on a thread (streamnet.c), and keeps the answer while it's in the Library's
-// stack of pages. Nothing to set up: no Settings page.
+// The Internet Archive (stream.h) as a source: the Library tab's pages for it (its first page is the
+// Library's while it's the source), Home's while it is, and the console's network for them. Each page asks
+// the Archive once, on a thread (streamnet.c), and keeps the answer while it's in the Library's stack of
+// pages; a search's "Show 50 more" asks for the next ones. Nothing to set up: its Settings page has its
+// color only.
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <switch.h>
@@ -41,8 +44,8 @@ bool appStreamEnsureNetwork(App *app)
 
 void appStreamStart(App *app)
 {
-    if (app->config.online_used)
-        appStreamEnsureNetwork(app);
+    if (app->config.online_used || app->config.source == LIBRARY_ARCHIVE)
+        appStreamEnsureNetwork(app);  // A playlist, the resumed queue or the source shown may need it.
 }
 
 // --- Pages ---
@@ -56,6 +59,8 @@ static StreamPage *topPage(App *app)
 static void startFetch(App *app, StreamPage *s)
 {
     streamListFree(&s->list);
+    s->query.page = 1;
+    s->appending = false;
     s->failed = false;
     s->why[0] = '\0';
     s->serial = appStreamEnsureNetwork(app) ? streamFetch(&s->query) : 0;
@@ -90,10 +95,19 @@ static bool push(App *app, StreamPageKind kind, const StreamQuery *query, const 
     return true;
 }
 
-void appStreamOpen(App *app)
+// The next 50 of a search, to go after those shown.
+static void fetchMore(App *app, StreamPage *s)
 {
-    if (push(app, STREAM_PAGE_MENU, NULL, ARCHIVE_NAME))
-        appStreamEnsureNetwork(app);
+    if (s->appending || !appStreamEnsureNetwork(app))
+        return;
+    StreamQuery next = s->query;
+    next.page = (s->query.page < 1 ? 1 : s->query.page) + 1;  // Not from the count: invalid items are left out.
+    unsigned serial = streamFetch(&next);
+    if (!serial)
+        return;
+    s->query.page = next.page;
+    s->serial = g_last_serial = serial;
+    s->appending = true;
 }
 
 static void pushQuery(App *app, StreamQueryKind kind, const char *words, const char *id, const char *title)
@@ -181,6 +195,10 @@ static void openResult(App *app, StreamPage *s, size_t row)
         startFetch(app, s);
         return;
     }
+    if (row == s->list.count && appStreamHasMore(s)) {  // "Show 50 more".
+        fetchMore(app, s);
+        return;
+    }
     if (row >= s->list.count)
         return;
     const StreamItem *item = &s->list.items[row];
@@ -207,7 +225,8 @@ void appHandleStream(App *app, uint64_t pressed)
     LibraryPage *p = appLibraryPage(app);
     size_t count = appStreamCount(app);
     bool songs = appStreamPageHasSongs(topPage(app));
-    pressed = appFocusFilter(app, pressed, p->cursor, count, true, songs);
+    bool first = app->library.depth <= 1;  // Its first page: the Library's while it's the source.
+    pressed = appFocusFilter(app, pressed, p->cursor, count, !first, songs);
 
     long cursor = (long)p->cursor;
     if (pressed & BUTTONS_UP) cursor--;
@@ -217,7 +236,7 @@ void appHandleStream(App *app, uint64_t pressed)
     cursor = cursor >= (long)count ? (long)count - 1 : cursor;
     p->cursor = cursor < 0 ? 0 : (size_t)cursor;
 
-    if ((pressed & BUTTON_ROW_ACTION) && songs)
+    if ((pressed & BUTTON_ROW_ACTION) && songs && p->cursor < topPage(app)->list.count)
         appAddToPlaylist(app, SRC_LIBRARY_ENTRY);
     if (pressed & HidNpadButton_A) {
         if (app->focus == FOCUS_BACK)
@@ -227,11 +246,50 @@ void appHandleStream(App *app, uint64_t pressed)
     }
     if (pressed & HidNpadButton_B)
         appLibraryBack(app);
-    // X plays and Y shuffles an item's songs, as an album's in the library.
-    if ((pressed & HidNpadButton_X) && songs)
+    // X plays and Y shuffles an item's songs, as an album's in the library. On the first page, X goes to the
+    // next source, as on the Library's first page of the others.
+    if ((pressed & HidNpadButton_X) && first)
+        appSwitchLibrarySource(app);
+    else if ((pressed & HidNpadButton_X) && songs)
         play(app, false, false);
     if ((pressed & HidNpadButton_Y) && songs)
         play(app, false, true);
+}
+
+// Keeps the names of an answer's songs, for the lists and Now Playing.
+static void keepNames(const StreamList *list)
+{
+    for (size_t k = 0; k < list->count; k++) {
+        const StreamItem *item = &list->items[k];
+        if (item->kind == STREAM_ITEM_TRACK)
+            streamMetaPut(item->location, item->title, item->artist, item->album);
+    }
+}
+
+// The next 50 that came: after those shown (taken from list). A failure leaves those shown, and says why.
+static void appendAnswer(App *app, StreamPage *s, bool ok, StreamList *list, const char *why)
+{
+    s->appending = false;
+    size_t room = s->list.count + list->count;
+    StreamItem *items = ok && list->count ? realloc(s->list.items, room * sizeof(StreamItem)) : NULL;
+    if (items) {
+        memcpy(items + s->list.count, list->items, list->count * sizeof(StreamItem));
+        keepNames(list);
+        s->list.items = items;
+        s->list.count = s->list.capacity = room;
+        if (list->total >= 0)
+            s->list.total = list->total;
+    } else if (ok && list->count) {
+        s->query.page--;  // Not shown: asked for again next time.
+        appNotify(app, NOTICE_ERROR, T("Not enough memory."));
+    } else if (ok) {
+        s->list.total = (long)s->list.count;  // Nothing more: no "more" row.
+    } else {
+        s->query.page--;
+        if (why[0])
+            appNotify(app, NOTICE_ERROR, why);
+    }
+    streamListFree(list);
 }
 
 // An answer that came, put on its page (if that page is still there and still waiting for it).
@@ -246,13 +304,14 @@ static void takeAnswer(App *app)
     LibraryTab *t = &app->library;
     for (int i = 0; i < t->depth; i++) {
         StreamPage *s = &app->stream.pages[i];
-        if (t->stack[i].level != LIB_STREAM || s->kind != STREAM_PAGE_RESULTS || !s->loading || s->serial != serial)
+        bool waiting = s->loading || s->appending;
+        if (t->stack[i].level != LIB_STREAM || s->kind != STREAM_PAGE_RESULTS || !waiting || s->serial != serial)
             continue;
-        for (size_t k = 0; k < list.count; k++) {
-            const StreamItem *item = &list.items[k];
-            if (item->kind == STREAM_ITEM_TRACK)
-                streamMetaPut(item->location, item->title, item->artist, item->album);
+        if (s->appending) {
+            appendAnswer(app, s, ok, &list, why);
+            return;
         }
+        keepNames(&list);
         streamListFree(&s->list);
         s->list = list;
         s->loading = false;
@@ -273,6 +332,10 @@ void appStreamUpdate(App *app)
     StreamPage *s = topPage(app);
     if (s && s->kind == STREAM_PAGE_RESULTS && s->loading && s->serial != g_last_serial)
         startFetch(app, s);  // Its request was called off by a newer one (a page left before it came).
+    else if (s && s->appending && s->serial != g_last_serial) {
+        s->appending = false;  // Called off too: its "more" row can be chosen again.
+        s->query.page--;
+    }
 }
 
 bool appStreamMenuSong(App *app, char *location, size_t size)
@@ -289,6 +352,19 @@ bool appStreamMenuSong(App *app, char *location, size_t size)
         return false;
     snprintf(location, size, "%s", s->list.items[row].location);
     return true;
+}
+
+void appStreamHandleHome(App *app, uint64_t pressed)
+{
+    if (app->focus == FOCUS_PLAYER) {  // The player bar under Home.
+        appFocusFilter(app, pressed, 0, 0, false, false);
+        return;
+    }
+    pressed = appFocusFilter(app, pressed, 0, 1, false, false);
+    if (pressed & HidNpadButton_X)
+        appSwitchLibrarySource(app);
+    else if (pressed & HidNpadButton_A)
+        appSetView(app, VIEW_BROWSER);  // Its first page.
 }
 
 void appStreamExit(void)

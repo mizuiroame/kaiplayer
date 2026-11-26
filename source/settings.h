@@ -42,10 +42,13 @@ typedef enum {
     SETTING_SRV_COLOR,      // Navidrome's.
     SETTING_NET_CERTIFICATE,// Whether an https network folder's certificate must be trusted.
     SETTING_SRV_API_KEY,    // Types an API key instead of a user and password, and signs in.
+    SETTING_OPEN_ARCHIVE,   // Opens the Internet Archive's page.
+    SETTING_IA_COLOR,       // The color the Internet Archive wears.
     SETTING_COUNT,
 } SettingRow;
 
-// Settings opens on the main page; Library, Network folder, Navidrome, Playback and Display hold the rest.
+// Settings opens on the main page; Library, Network folder, Navidrome, Internet Archive, Playback and Display
+// hold the rest.
 typedef enum {
     SETTINGS_PAGE_MAIN,
     SETTINGS_PAGE_LIBRARY,
@@ -54,6 +57,7 @@ typedef enum {
     SETTINGS_PAGE_PLAYBACK,
     SETTINGS_PAGE_DISPLAY,
     SETTINGS_PAGE_ABOUT,
+    SETTINGS_PAGE_ARCHIVE,
     SETTINGS_PAGE_COUNT,
 } SettingsPage;
 

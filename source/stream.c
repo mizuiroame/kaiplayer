@@ -379,13 +379,13 @@ bool streamSearchWords(const char *typed, char *out, size_t size)
     return n > 0;
 }
 
-static bool searchUrl(const char *query, bool by_downloads, char *out, size_t size)
+static bool searchUrl(const char *query, bool by_downloads, int page, char *out, size_t size)
 {
     char q[STREAM_URL_MAX / 2];
-    if (!encode(query, false, q, sizeof(q)))
+    if (!encode(query, false, q, sizeof(q)) || page > STREAM_ITEMS_MAX / STREAM_PAGE_SIZE)
         return false;
-    int n = snprintf(out, size, ARCHIVE_SEARCH "?q=%s%s%s&rows=%d&page=1&output=json", q, ARCHIVE_FIELDS,
-                     by_downloads ? BY_DOWNLOADS : "", STREAM_PAGE_SIZE);
+    int n = snprintf(out, size, ARCHIVE_SEARCH "?q=%s%s%s&rows=%d&page=%d&output=json", q, ARCHIVE_FIELDS,
+                     by_downloads ? BY_DOWNLOADS : "", STREAM_PAGE_SIZE, page < 1 ? 1 : page);
     return n > 0 && (size_t)n < size;
 }
 
@@ -398,15 +398,15 @@ bool streamQueryUrl(const StreamQuery *q, char *out, size_t size)
     if (search && !streamSearchWords(q->words, words, sizeof(words)))
         return false;
     switch (q->kind) {
-    case STREAM_Q_POPULAR_LIVE: return searchUrl(Q_LIVE, true, out, size);
-    case STREAM_Q_POPULAR_78: return searchUrl(Q_78, true, out, size);
-    case STREAM_Q_CLASSICAL: return searchUrl(Q_CLASSICAL, true, out, size);
+    case STREAM_Q_POPULAR_LIVE: return searchUrl(Q_LIVE, true, q->page, out, size);
+    case STREAM_Q_POPULAR_78: return searchUrl(Q_78, true, q->page, out, size);
+    case STREAM_Q_CLASSICAL: return searchUrl(Q_CLASSICAL, true, q->page, out, size);
     case STREAM_Q_SEARCH_LIVE:
     case STREAM_Q_SEARCH_78:
     case STREAM_Q_SEARCH_FREE: {
         const char *base = q->kind == STREAM_Q_SEARCH_LIVE ? Q_LIVE : q->kind == STREAM_Q_SEARCH_78 ? Q_78 : Q_FREE;
         snprintf(query, sizeof(query), "%s AND (%s)", base, words);
-        return searchUrl(query, false, out, size);
+        return searchUrl(query, false, q->page, out, size);
     }
     case STREAM_Q_ITEM: {
         if (!streamIdentifierValid(q->id))

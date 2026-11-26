@@ -86,12 +86,13 @@ void appOpenMenu(App *app)
     if (appStreamMenuSong(app, online, sizeof(online)))  // Its license and page (the services' terms ask for them).
         menuAdd(&app->menu, T("About this song"), ACT_STREAM_ABOUT, 0);
     menuAddDivider(&app->menu);
-    if (app->config.library[0] || appLibraryIsRemote(app))
+    if ((app->config.library[0] || appLibraryIsRemote(app)) && !appLibraryIsArchive(app))
         menuAdd(&app->menu, T("Update the library"), ACT_RESCAN, 0);
     if (appCanSwitchSource(app)) {  // Where X goes in Library, from anywhere.
         LibrarySource next = appNextLibrarySource(app);
         menuAdd(&app->menu, next == LIBRARY_NETWORK  ? T("Go to the network folder library")
                             : next == LIBRARY_SERVER ? T("Go to the Navidrome library")
+                            : next == LIBRARY_ARCHIVE ? T("Go to the Internet Archive")
                             : app->config.library[0] ? T("Go to the SD card library")
                                                      : T("Go to the whole SD card"), ACT_SOURCE, 0);
     }

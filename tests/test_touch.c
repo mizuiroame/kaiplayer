@@ -87,12 +87,19 @@ static void testSettings(void)
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_DISPLAY), "Display") == 0);
     CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_LIBRARY), "Library") == 0);
 
-    // The pages as in KaiVideo and KaiRadio: Library, the app's sources (the network folder, as KaiVideo's, and
-    // Navidrome), Playback, Display, then About.
+    // The pages as in KaiVideo and KaiRadio: Library, the app's sources (the network folder, as KaiVideo's,
+    // Navidrome, and KaiPlayer's own Internet Archive), Playback, Display, then About.
     SettingRow rows[SETTINGS_PAGE_MAX_ROWS];
-    CHECK(settingsPageRows(SETTINGS_PAGE_MAIN, rows) == 6);
+    CHECK(settingsPageRows(SETTINGS_PAGE_MAIN, rows) == 7);
     CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_NETWORK && rows[2] == SETTING_OPEN_SERVER &&
-          rows[3] == SETTING_OPEN_PLAYBACK && rows[4] == SETTING_OPEN_DISPLAY && rows[5] == SETTING_ABOUT);
+          rows[3] == SETTING_OPEN_ARCHIVE && rows[4] == SETTING_OPEN_PLAYBACK && rows[5] == SETTING_OPEN_DISPLAY &&
+          rows[6] == SETTING_ABOUT);
+    // The Internet Archive needs nothing set up: its page has its color only, which steps as the others' do.
+    CHECK(settingsPageRows(SETTINGS_PAGE_ARCHIVE, rows) == 1 && rows[0] == SETTING_IA_COLOR);
+    CHECK(settingsRowPage(SETTING_OPEN_ARCHIVE) == SETTINGS_PAGE_ARCHIVE &&
+          settingsPageRow(SETTINGS_PAGE_ARCHIVE) == SETTING_OPEN_ARCHIVE);
+    CHECK(settingsRowEditable(SETTING_IA_COLOR) && settingsPageNote(SETTINGS_PAGE_ARCHIVE));
+    CHECK(strcmp(settingsPageTitle(SETTINGS_PAGE_ARCHIVE), "Internet Archive") == 0);
     // Every source's page in one order, as the other Kai apps: address, sign-in, options (color last), test, forget.
     // The sign-in is a user and password, or an API key (OpenSubsonic's): both rows, one after the other.
     CHECK(settingsPageRows(SETTINGS_PAGE_SERVER, rows) == 7);
