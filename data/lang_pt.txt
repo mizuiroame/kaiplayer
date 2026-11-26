@@ -1188,3 +1188,104 @@ Este servidor não aceita uma senha do KaiPlayer: crie uma chave de API na pági
 
 This server doesn't take API keys. Sign in with your user name and password.
 Este servidor não aceita chaves de API. Entre com seu usuário e senha.
+
+# Internet Archive (música online).
+
+78 rpm collection
+Coleção de discos de 78 rpm
+
+[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] abrir  [B] voltar  [RS] pág. / posição  [L][R] faixa  [-] pausa  [+] menu
+
+About this song
+Sobre esta música
+
+Asking...
+Consultando...
+
+By %s
+De %s
+
+Close
+Fechar
+
+Concerts, 78s, classical: online
+Shows, 78 rpm, clássica: online
+
+From %s: %s
+De %s: %s
+
+License: %s
+Licença: %s
+
+Live Music Archive: non-commercial
+Live Music Archive: não comercial
+
+Not enough memory.
+Não há memória suficiente.
+
+not given
+não informada
+
+Nothing found.
+Nada encontrado.
+
+Played as it streams from archive.org, nothing downloaded: the Live Music Archive's concerts (from bands that allow it, non-commercial), old 78 rpm records, public-domain classical music, and audio with a Creative Commons license. Each song's license shows in Now Playing.
+Toca enquanto chega do archive.org, sem baixar nada: os shows do Live Music Archive (de bandas que permitem, não comercial), discos antigos de 78 rpm, música clássica em domínio público e áudio com licença Creative Commons. A licença de cada música aparece em Tocando agora.
+
+Popular 78 rpm records
+Discos de 78 rpm populares
+
+Popular live concerts
+Shows ao vivo populares
+
+Public domain
+Domínio público
+
+Public-domain classical music
+Música clássica em domínio público
+
+Search 78 rpm records
+Buscar discos de 78 rpm
+
+Search free music
+Buscar música livre
+
+Search live concerts
+Buscar shows ao vivo
+
+That can't be searched for.
+Isso não pode ser buscado.
+
+That item isn't on the Internet Archive any more.
+Esse item não está mais no Internet Archive.
+
+The connection to the Internet Archive failed.
+A conexão com o Internet Archive falhou.
+
+The Internet Archive answered with an error (%ld).
+O Internet Archive respondeu com um erro (%ld).
+
+The Internet Archive didn't answer. Is the console connected to the internet?
+O Internet Archive não respondeu. O console está conectado à internet?
+
+The Internet Archive has no folders here: open it in Library.
+O Internet Archive não tem pastas aqui: abra-o na Biblioteca.
+
+The Internet Archive is busy: try again in a minute.
+O Internet Archive está ocupado: tente de novo em um minuto.
+
+The Internet Archive said: %s
+O Internet Archive disse: %s
+
+The Internet Archive's answer wasn't what was expected.
+A resposta do Internet Archive não foi a esperada.
+
+The secure connection to the Internet Archive failed.
+A conexão segura com o Internet Archive falhou.
+
+Try again
+Tentar de novo
+
+Type some words to search for.
+Digite algumas palavras para buscar.

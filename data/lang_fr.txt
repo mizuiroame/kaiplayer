@@ -1188,3 +1188,104 @@ Ce serveur n'accepte pas de mot de passe de KaiPlayer : créez une clé d'API su
 
 This server doesn't take API keys. Sign in with your user name and password.
 Ce serveur n'accepte pas les clés d'API. Connectez-vous avec votre nom d'utilisateur et votre mot de passe.
+
+# Internet Archive (musique en ligne).
+
+78 rpm collection
+Collection de 78 tours
+
+[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] ouvrir  [B] retour  [RS] page / position  [L][R] piste  [-] pause  [+] menu
+
+About this song
+À propos de ce titre
+
+Asking...
+Demande en cours...
+
+By %s
+Par %s
+
+Close
+Fermer
+
+Concerts, 78s, classical: online
+Concerts, 78 tours, classique : en ligne
+
+From %s: %s
+Sur %s : %s
+
+License: %s
+Licence : %s
+
+Live Music Archive: non-commercial
+Live Music Archive : non commercial
+
+Not enough memory.
+Pas assez de mémoire.
+
+not given
+non indiquée
+
+Nothing found.
+Rien trouvé.
+
+Played as it streams from archive.org, nothing downloaded: the Live Music Archive's concerts (from bands that allow it, non-commercial), old 78 rpm records, public-domain classical music, and audio with a Creative Commons license. Each song's license shows in Now Playing.
+Joué pendant qu'il arrive d'archive.org, sans rien télécharger : les concerts du Live Music Archive (de groupes qui l'autorisent, non commercial), de vieux 78 tours, de la musique classique du domaine public et de l'audio sous licence Creative Commons. La licence de chaque titre s'affiche dans Lecture en cours.
+
+Popular 78 rpm records
+78 tours populaires
+
+Popular live concerts
+Concerts populaires
+
+Public domain
+Domaine public
+
+Public-domain classical music
+Musique classique du domaine public
+
+Search 78 rpm records
+Chercher des 78 tours
+
+Search free music
+Chercher de la musique libre
+
+Search live concerts
+Chercher des concerts
+
+That can't be searched for.
+Impossible de chercher cela.
+
+That item isn't on the Internet Archive any more.
+Cet élément n'est plus sur l'Internet Archive.
+
+The connection to the Internet Archive failed.
+La connexion à l'Internet Archive a échoué.
+
+The Internet Archive answered with an error (%ld).
+L'Internet Archive a répondu par une erreur (%ld).
+
+The Internet Archive didn't answer. Is the console connected to the internet?
+L'Internet Archive n'a pas répondu. La console est-elle connectée à Internet ?
+
+The Internet Archive has no folders here: open it in Library.
+L'Internet Archive n'a pas de dossiers ici : ouvrez-le dans Bibliothèque.
+
+The Internet Archive is busy: try again in a minute.
+L'Internet Archive est occupé : réessayez dans une minute.
+
+The Internet Archive said: %s
+L'Internet Archive a répondu : %s
+
+The Internet Archive's answer wasn't what was expected.
+La réponse de l'Internet Archive n'est pas celle attendue.
+
+The secure connection to the Internet Archive failed.
+La connexion sécurisée à l'Internet Archive a échoué.
+
+Try again
+Réessayer
+
+Type some words to search for.
+Tapez quelques mots à chercher.

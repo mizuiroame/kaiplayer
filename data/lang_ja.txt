@@ -1188,3 +1188,104 @@ This server doesn't take a password from KaiPlayer: make an API key in its web p
 
 This server doesn't take API keys. Sign in with your user name and password.
 このサーバーはAPIキーに対応していません。ユーザー名とパスワードでログインしてください。
+
+# Internet Archive（オンライン音楽）。
+
+78 rpm collection
+78回転レコード・コレクション
+
+[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 開く  [B] 戻る  [RS] ページ / シーク  [L][R] 曲送り  [-] 一時停止  [+] メニュー
+
+About this song
+この曲について
+
+Asking...
+問い合わせ中...
+
+By %s
+%s
+
+Close
+閉じる
+
+Concerts, 78s, classical: online
+ライブ、78回転、クラシック（オンライン）
+
+From %s: %s
+%s: %s
+
+License: %s
+ライセンス: %s
+
+Live Music Archive: non-commercial
+Live Music Archive: 非商用
+
+Not enough memory.
+メモリーが足りません。
+
+not given
+記載なし
+
+Nothing found.
+見つかりませんでした。
+
+Played as it streams from archive.org, nothing downloaded: the Live Music Archive's concerts (from bands that allow it, non-commercial), old 78 rpm records, public-domain classical music, and audio with a Creative Commons license. Each song's license shows in Now Playing.
+archive.orgからストリーミングで再生し、ダウンロードはしません。Live Music Archiveのライブ演奏（許可しているバンドのもの、非商用）、古い78回転レコード、パブリックドメインのクラシック音楽、クリエイティブ・コモンズの音源です。各曲のライセンスは再生中の画面に表示されます。
+
+Popular 78 rpm records
+人気の78回転レコード
+
+Popular live concerts
+人気のライブ演奏
+
+Public domain
+パブリックドメイン
+
+Public-domain classical music
+パブリックドメインのクラシック
+
+Search 78 rpm records
+78回転レコードを検索
+
+Search free music
+フリー音楽を検索
+
+Search live concerts
+ライブ演奏を検索
+
+That can't be searched for.
+その言葉では検索できません。
+
+That item isn't on the Internet Archive any more.
+その項目はもうInternet Archiveにありません。
+
+The connection to the Internet Archive failed.
+Internet Archiveへの接続に失敗しました。
+
+The Internet Archive answered with an error (%ld).
+Internet Archiveがエラーを返しました（%ld）。
+
+The Internet Archive didn't answer. Is the console connected to the internet?
+Internet Archiveから応答がありません。本体はインターネットに接続されていますか？
+
+The Internet Archive has no folders here: open it in Library.
+Internet Archiveにはここでフォルダーがありません。ライブラリーで開いてください。
+
+The Internet Archive is busy: try again in a minute.
+Internet Archiveが混み合っています。1分後にもう一度お試しください。
+
+The Internet Archive said: %s
+Internet Archiveの応答: %s
+
+The Internet Archive's answer wasn't what was expected.
+Internet Archiveの応答が想定と異なります。
+
+The secure connection to the Internet Archive failed.
+Internet Archiveへの安全な接続に失敗しました。
+
+Try again
+もう一度試す
+
+Type some words to search for.
+検索する言葉を入力してください。

@@ -1188,3 +1188,104 @@ This server doesn't take a password from KaiPlayer: make an API key in its web p
 
 This server doesn't take API keys. Sign in with your user name and password.
 此服务器不支持API密钥。请使用用户名和密码登录。
+
+# Internet Archive（在线音乐）。
+
+78 rpm collection
+78 转唱片收藏
+
+[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 打开  [B] 返回  [RS] 翻页/调整进度  [L][R] 切歌  [-] 暂停  [+] 菜单
+
+About this song
+关于这首歌
+
+Asking...
+正在请求...
+
+By %s
+%s
+
+Close
+关闭
+
+Concerts, 78s, classical: online
+现场、78 转、古典（在线）
+
+From %s: %s
+来自 %s：%s
+
+License: %s
+许可：%s
+
+Live Music Archive: non-commercial
+Live Music Archive：非商业
+
+Not enough memory.
+内存不足。
+
+not given
+未注明
+
+Nothing found.
+什么也没找到。
+
+Played as it streams from archive.org, nothing downloaded: the Live Music Archive's concerts (from bands that allow it, non-commercial), old 78 rpm records, public-domain classical music, and audio with a Creative Commons license. Each song's license shows in Now Playing.
+从 archive.org 边下载边播放，不会保存到本地：Live Music Archive 的现场演出（来自允许录制的乐队，非商业）、老式 78 转唱片、公有领域的古典音乐，以及带知识共享许可的音频。每首歌的许可显示在“正在播放”中。
+
+Popular 78 rpm records
+热门 78 转唱片
+
+Popular live concerts
+热门现场演出
+
+Public domain
+公有领域
+
+Public-domain classical music
+公有领域古典音乐
+
+Search 78 rpm records
+搜索 78 转唱片
+
+Search free music
+搜索免费音乐
+
+Search live concerts
+搜索现场演出
+
+That can't be searched for.
+无法搜索这些内容。
+
+That item isn't on the Internet Archive any more.
+该条目已不在 Internet Archive 上。
+
+The connection to the Internet Archive failed.
+连接 Internet Archive 失败。
+
+The Internet Archive answered with an error (%ld).
+Internet Archive 返回了错误（%ld）。
+
+The Internet Archive didn't answer. Is the console connected to the internet?
+Internet Archive 没有响应。主机已连接到互联网吗？
+
+The Internet Archive has no folders here: open it in Library.
+Internet Archive 在这里没有文件夹：请在媒体库中打开它。
+
+The Internet Archive is busy: try again in a minute.
+Internet Archive 繁忙，请一分钟后再试。
+
+The Internet Archive said: %s
+Internet Archive 返回：%s
+
+The Internet Archive's answer wasn't what was expected.
+Internet Archive 的响应不符合预期。
+
+The secure connection to the Internet Archive failed.
+与 Internet Archive 的安全连接失败。
+
+Try again
+重试
+
+Type some words to search for.
+请输入要搜索的词。

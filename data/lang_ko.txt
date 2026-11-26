@@ -1188,3 +1188,104 @@ This server doesn't take a password from KaiPlayer: make an API key in its web p
 
 This server doesn't take API keys. Sign in with your user name and password.
 이 서버는 API 키를 지원하지 않습니다. 사용자 이름과 비밀번호로 로그인하세요.
+
+# Internet Archive(온라인 음악).
+
+78 rpm collection
+78회전 음반 컬렉션
+
+[A] open  [B] back  [RS] page / seek  [L][R] track  [-] pause  [+] menu
+[A] 열기  [B] 뒤로  [RS] 페이지 / 탐색  [L][R] 트랙  [-] 일시정지  [+] 메뉴
+
+About this song
+이 곡 정보
+
+Asking...
+요청 중...
+
+By %s
+%s
+
+Close
+닫기
+
+Concerts, 78s, classical: online
+라이브, 78회전, 클래식: 온라인
+
+From %s: %s
+%s: %s
+
+License: %s
+라이선스: %s
+
+Live Music Archive: non-commercial
+Live Music Archive: 비상업용
+
+Not enough memory.
+메모리가 부족합니다.
+
+not given
+표기 없음
+
+Nothing found.
+찾은 항목이 없습니다.
+
+Played as it streams from archive.org, nothing downloaded: the Live Music Archive's concerts (from bands that allow it, non-commercial), old 78 rpm records, public-domain classical music, and audio with a Creative Commons license. Each song's license shows in Now Playing.
+archive.org에서 스트리밍으로 재생하며 아무것도 다운로드하지 않습니다. Live Music Archive의 라이브 공연(허용한 밴드의 것, 비상업용), 오래된 78회전 음반, 퍼블릭 도메인 클래식 음악, 크리에이티브 커먼즈 라이선스의 오디오입니다. 각 곡의 라이선스는 재생 중 화면에 표시됩니다.
+
+Popular 78 rpm records
+인기 78회전 음반
+
+Popular live concerts
+인기 라이브 공연
+
+Public domain
+퍼블릭 도메인
+
+Public-domain classical music
+퍼블릭 도메인 클래식
+
+Search 78 rpm records
+78회전 음반 검색
+
+Search free music
+무료 음악 검색
+
+Search live concerts
+라이브 공연 검색
+
+That can't be searched for.
+그 내용은 검색할 수 없습니다.
+
+That item isn't on the Internet Archive any more.
+이 항목은 더 이상 Internet Archive에 없습니다.
+
+The connection to the Internet Archive failed.
+Internet Archive 연결에 실패했습니다.
+
+The Internet Archive answered with an error (%ld).
+Internet Archive에서 오류를 반환했습니다(%ld).
+
+The Internet Archive didn't answer. Is the console connected to the internet?
+Internet Archive에서 응답이 없습니다. 본체가 인터넷에 연결되어 있나요?
+
+The Internet Archive has no folders here: open it in Library.
+Internet Archive에는 여기서 폴더가 없습니다. 라이브러리에서 여세요.
+
+The Internet Archive is busy: try again in a minute.
+Internet Archive가 바쁩니다. 1분 후에 다시 시도하세요.
+
+The Internet Archive said: %s
+Internet Archive 응답: %s
+
+The Internet Archive's answer wasn't what was expected.
+Internet Archive의 응답이 예상과 다릅니다.
+
+The secure connection to the Internet Archive failed.
+Internet Archive 보안 연결에 실패했습니다.
+
+Try again
+다시 시도
+
+Type some words to search for.
+검색할 단어를 입력하세요.
