@@ -2,8 +2,9 @@
 
 [Back to the README](../README.md)
 
-Open **+ → Settings**. It opens on six rows: **Library**, **Network
-folder**, **Navidrome**, **Playback**, **Display** and **About**.
+Open **+ → Settings**. It opens on seven rows: **Library**, **Network
+folder**, **Navidrome**, **Internet Archive**, **Playback**, **Display** and
+**About**.
 
 - **A** or **→** opens a page.
 - **B** (or the **Back** button) goes back, and **B** on the first page
@@ -27,6 +28,7 @@ folder**, **Navidrome**, **Playback**, **Display** and **About**.
 | Navidrome | Test the connection | **A** tries it, and says which server answered and how many songs it has, or what went wrong |
 | Navidrome | Certificate check | On (default), or Off for an `https://` server with its own certificate |
 | Navidrome | Forget this server | **A** removes the address and the sign-in |
+| Internet Archive | Color | Its own (amber, default), or one of the accent colors. Nothing else to set up: see [Internet Archive](internet-archive.md) |
 | Playback | Sleep timer | Off, or any number of minutes up to 600 |
 | Playback | Resume where you left off | Keep playing (default), Paused or Off |
 | Playback | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |

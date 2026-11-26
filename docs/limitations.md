@@ -25,10 +25,11 @@
   take token sign-in (some with LDAP) can't be used. Its books from a library
   named `Audiobooks` also show among the music (those of a genre named so
   don't). See [Audiobooks](audiobooks.md).
-- The Internet Archive: 50 items a list (no "more" yet), its songs read as
-  they play (nothing kept on the card), and only the Live Music Archive, the
-  78 rpm collection and audio with a Creative Commons or public-domain
-  license are searched. See [Internet Archive](internet-archive.md).
+- The Internet Archive: up to 500 items a list (50 at a time), its songs read
+  as they play (nothing kept on the card), and only the Live Music Archive,
+  the 78 rpm collection and audio with a Creative Commons or public-domain
+  license are searched. It's browsed, not read into Artists, Albums and Songs,
+  so Home has no cards for it. See [Internet Archive](internet-archive.md).
 - DSD is converted to PCM (no native DSD and no DoP), and DST-compressed
   `.dff`, SACD `.iso` images and DSD in WavPack don't play. See
   [DSD](playback.md#dsd-dsf-dff).

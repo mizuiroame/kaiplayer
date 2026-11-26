@@ -35,7 +35,7 @@ Then the pill next to KaiPlayer's name says **Navidrome**, with a blue dot,
 when its library is shown. **X** on **Home** or on **Library's first page**,
 a tap on the pill, or **+ → Go to the … library** goes to the next library
 that is set up:
-**SD card**, **Network folder**, **Navidrome**, then the SD card again.
+**SD card**, **Network folder**, **Navidrome**, **Internet Archive**, then the SD card again.
 
 - **Artists, Albums and Songs** come from the server. KaiPlayer reads them as
   soon as you sign in, and its library becomes the one shown; each time

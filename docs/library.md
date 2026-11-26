@@ -9,10 +9,12 @@ change it in **+ → Settings → Library → Music folder**. Without one, the S
 card's library is the whole card, and the pill says **SD card (whole card)**.
 
 The library can also come from a [network folder](network-folder.md) or a
-[Navidrome server](navidrome.md): with one set up, the pill next to
-KaiPlayer's name says which is shown. **X** on Home or on Library's first
-page, a tap on the pill, or **+ → Go to the … library** goes to the next one
-set up: **SD card**, **network folder**, **Navidrome**, and back.
+[Navidrome server](navidrome.md), and the music from the
+[Internet Archive](internet-archive.md), which needs nothing set up. The pill
+next to KaiPlayer's name says which is shown. **X** on Home or on Library's
+first page, a tap on the pill, or **+ → Go to the …** goes to the next one:
+**SD card**, **network folder**, **Navidrome** (those set up), **Internet
+Archive**, and back.
 
 ## Home
 
@@ -44,9 +46,6 @@ their covers, all on one screen:
 - **Songs:** every song by title.
 - **Folders:** the folders of your music folder, as they are on the card (or
   in the network folder).
-- **Internet Archive:** live concerts, 78 rpm records, public-domain classical
-  music and other free music from archive.org, played as it streams. See
-  [Internet Archive](internet-archive.md).
 
 Artists and albums come from the tags (album artist, artist, album, track
 and disc numbers, year), **not from the folder names**: a folder named

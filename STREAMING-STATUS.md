@@ -7,11 +7,15 @@ what's left, so the work can be picked up again. Not for the release notes.
 
 - **2026-11-27, owner: Jamendo is dropped.** Only the Internet Archive is built. The Jamendo code,
   strings, fixtures and docs from the first commits were removed in later commits (history kept).
-  With one source that needs no key or account, there is **no Settings page** for it (Navidrome
-  and the network folder have one because they need an address and a sign-in; the Archive needs
-  nothing).
+  It needs no key or account (its Settings page, added later, has its color only).
 - **2026-11-27, owner: show what the Archive is good for**: the Live Music Archive's concerts, 78 rpm
   records, public-domain classical music, and search.
+- **2026-11-27, owner: keep the 78 rpm rows.**
+- **2026-11-27, owner: the Internet Archive is a source of its own**, switched to as the SD card, the
+  network folder and Navidrome are (the pill, X on Home and Library's first page, a tap on the pill,
+  **+ → Go to the Internet Archive**), with its own color (amber, changeable as the others'), and not a
+  row in Library (it showed inside the card's and Navidrome's libraries). Its Settings page has its
+  Color only, as the per-source color convention asks. "Show 50 more" added (up to 500).
 
 ## What the Internet Archive's terms say (read 2026-11-26)
 
@@ -49,14 +53,21 @@ dated 31 Dec 2014), and the developer portal's "Bots, LLMs, and Automated Access
 Copied from Navidrome where it fits; Navidrome's library is read whole into the catalog, which the
 Archive can't be, so it's browsed:
 
-- **Where**: a row on the Library tab's first page, after Folders: **Internet Archive**, whatever
-  library source is shown (it doesn't change it; Home and the catalog stay the library's). Its pages
-  use the Library's page stack: `< Back`, B, the rows, the `+` button on song rows, X plays / Y
-  shuffles an item, A opens or plays; all by touch too.
+- **A source**: `LIBRARY_ARCHIVE`, always ready (nothing to set up), last in X's cycle: SD card,
+  network folder, Navidrome (those set up), Internet Archive. `settings.txt` keeps it
+  (`library_source=archive`, `archive_color=`). It has no catalog: switching to it reads nothing,
+  and the card's catalog stays loaded underneath (switching back reads it as usual).
+- **Its tabs** (decided): **Library** = the Archive's own first page (the six rows), as Library's first
+  page (no Back; X switches source there, as on the others' first page); its pages use the Library's
+  page stack: `< Back`, B, the `+` button on song rows, X plays / Y shuffles an item, A opens or plays,
+  all by touch too. **Home** = what the Archive has and one row, "Browse the Internet Archive", that
+  opens Library (A or a tap); X switches source as usual. **Audiobooks** unchanged (books aren't a
+  source's). **Playlists, Queue, Now Playing** as always. **+ → Update the library** isn't offered
+  under it (and Settings' row says there's nothing to update).
 - **Its first page**: Popular live concerts, Search live concerts, Popular 78 rpm records, Search 78
   rpm records, Public-domain classical music, Search free music. An item opens its songs (the item's
   VBR MP3 files, else 128/64 kbps MP3, else Ogg, else FLAC).
-- **50 results a page** (no "more" yet).
+- **50 results a page**, and a **Show 50 more** row while the Archive has more (up to 500).
 - **Songs are locations**, as Navidrome's `sub:/`: `ia:/<identifier>/<license>/<file, percent-encoded>`;
   covers `ia:/<identifier>/cover/<px>.jpg` (archive.org/services/img). The license code (`by-sa-4.0`,
   `cc0-1.0`, `pd`, `lma`, `78rpm`, `-`) is in the location, so a playlist or the resumed queue still
@@ -70,8 +81,7 @@ Archive can't be, so it's browsed:
 
 ## Owner questions
 
-None open. (Jamendo's client-ID question is moot; the Settings row question is answered by having
-no Settings page.)
+None open.
 
 ## Status
 
@@ -84,6 +94,7 @@ no Settings page.)
 - [x] Strings in the 8 language files; lang check 0/0/0.
 - [x] Preview scenes (made-up content).
 - [x] Docs: docs/internet-archive.md, README, library, controls, limitations, legal, building.
+- [x] The Archive as a source (2026-11-27): pill, X, + menu, its color and Settings page, Home, "more".
 - [ ] Console test (owner).
-- Left for later: a "more" row (the next 50), a cover for items without one, the Archive's own
-  playlists/collections browsing beyond these six rows.
+- Left for later: a cover for items without one; browsing the Archive's collections beyond these six
+  rows.
