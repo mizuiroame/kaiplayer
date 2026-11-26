@@ -109,8 +109,12 @@ static bool collectSongs(App *app, AddSource source)
     case SRC_BROWSE_ENTRY:
         if (!entry || !utilJoinPath(path, sizeof(path), app->browser.path, entry->name))
             return false;
-        if (entry->is_dir)
-            return libraryScan(&app->pending, path, true);
+        if (entry->is_dir) {
+            if (!libraryScan(&app->pending, path, true))
+                return false;
+            libraryDropBooks(&app->pending);  // As playing the folder: its music only.
+            return true;
+        }
         return trackListAdd(&app->pending, path);
     case SRC_QUEUE_ENTRY:
         return playerQueueTrack(app->queue_cursor, &track) && playerTrackPath(track, path, sizeof(path)) &&

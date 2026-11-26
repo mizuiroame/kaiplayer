@@ -20,6 +20,7 @@ static void playFolder(App *app, const char *folder, bool recursive, const char 
                                             : T("Out of memory for the track list."));
         return;
     }
+    libraryDropBooks(&list);  // They play from Audiobooks, not with the music.
     if (list.count == 0) {
         trackListFree(&list);
         appToast(app, T("No music in this folder."));

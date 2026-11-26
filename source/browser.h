@@ -22,6 +22,7 @@ typedef struct {
     size_t cursor;
     bool incomplete;  // Some entries could not be read, or the list was capped.
     char problem[BROWSER_PROBLEM_MAX];  // Why the last network folder couldn't be listed; "" if it could.
+    bool hide_books;  // Leaves out the audiobooks (books.h): the music's Folders page, not the folder picker.
 } Browser;
 
 // Lists path: a folder on the card, or in the network folder ("dav:/...",

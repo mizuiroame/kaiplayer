@@ -24,6 +24,10 @@ bool libraryIsSystemFolder(const char *parent, const char *name);
 // or if a network folder (kfile.h) can't be listed.
 bool libraryScan(TrackList *out, const char *folder, bool recursive);
 
+// Takes the audiobooks' files (books.h) out of list, keeping the order: a
+// folder played or added from Folders is music, as the library is.
+void libraryDropBooks(TrackList *list);
+
 // A network folder's song, as its listing says.
 typedef struct {
     char *path;        // "dav:/Artist/Album/01 Song.flac"

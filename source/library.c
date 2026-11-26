@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "books.h"
 #include "kfile.h"
 #include "util.h"
 
@@ -54,6 +55,18 @@ static bool scanDir(TrackList *list, const char *folder, bool recursive, int dep
     }
     closedir(dir);
     return ok;
+}
+
+void libraryDropBooks(TrackList *list)
+{
+    size_t kept = 0;
+    for (size_t i = 0; i < list->count; i++) {
+        if (booksIsBookPath(list->paths[i]))
+            free(list->paths[i]);
+        else
+            list->paths[kept++] = list->paths[i];
+    }
+    list->count = kept;
 }
 
 static int comparePaths(const void *a, const void *b)

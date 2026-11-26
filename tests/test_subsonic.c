@@ -304,6 +304,31 @@ static const char SEARCH[] =
     "{\"id\":42,\"title\":\"Numbered\",\"suffix\":\"ogg\",\"album\":\"N\"}"
     "]}}}";
 
+// A song whose genre names books is an audiobook's (Audiobooks has it, booksub.c): not one of the songs.
+static const char BOOK_SONGS[] =
+    "{\"subsonic-response\":{\"status\":\"ok\",\"version\":\"1.16.1\",\"searchResult3\":{\"song\":["
+    "{\"id\":\"s1\",\"title\":\"Tune\",\"album\":\"A\",\"genre\":\"Pop\",\"suffix\":\"mp3\"},"
+    "{\"id\":\"b1\",\"title\":\"Chapter 1\",\"album\":\"Saga\",\"genre\":\"Audiobook\",\"suffix\":\"mp3\"},"
+    "{\"id\":\"b2\",\"title\":\"Kapitel 1\",\"album\":\"Sage\",\"genre\":\"H\xc3\xb6rbuch\",\"suffix\":\"mp3\"}"
+    "]}}}";
+
+static void testBookSongs(void)
+{
+    JsonDoc *doc = jsonParse(BOOK_SONGS, strlen(BOOK_SONGS));
+    const JsonValue *body;
+    int code;
+    char message[128];
+    CHECK(doc && subAnswer(jsonRoot(doc), &body, &code, message, sizeof(message)));
+    Catalog c;
+    catalogInit(&c);
+    size_t added = 0;
+    CHECK(subAddSongs(&c, jsonGet(body, "searchResult3"), "song", NULL, &added));
+    CHECK(added == 1 && c.song_count == 1 && c.book_count == 0);
+    CHECK(catalogBuild(&c) && catalogFind(&c, "sub:/-/s1.mp3") >= 0);
+    catalogFree(&c);
+    jsonFree(doc);
+}
+
 static void testSongs(void)
 {
     JsonDoc *doc = jsonParse(SEARCH, strlen(SEARCH));
@@ -415,4 +440,5 @@ void testSubsonic(void)
     testApiKeyAnswers();
     testLocations();
     testSongs();
+    testBookSongs();
 }

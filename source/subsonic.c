@@ -6,6 +6,7 @@
 #include <string.h>
 #include <strings.h>
 
+#include "books.h"
 #include "util.h"
 
 #define HTTP "http://"
@@ -480,6 +481,8 @@ bool subAddSongs(Catalog *c, const JsonValue *parent, const char *name, const ch
         if (s->type != JSON_OBJECT || isTrue(s, "isDir") || isTrue(s, "isVideo") ||
             !subSongLocation(id, cover, suffixOf(s), location, sizeof(location)) || !utilIsAudioFile(location))
             continue;  // Not a song KaiPlayer can play.
+        if (booksIsBookName(jsonText(s, "genre")))
+            continue;  // An audiobook's: in Audiobooks (booksub.h), not among the songs.
         fillTags(s, album_artist, tags);
         long long size = jsonInt(s, "size");
         ok = catalogAddFile(c, location, size > 0 && size < 0x7FFFFFFF ? (long)size : 0, 0, tags, SUB_ROOT);

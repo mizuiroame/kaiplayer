@@ -399,6 +399,7 @@ int main(int argc, char **argv)
     appLog("KaiPlayer starts");
 
     static App app;
+    app.browser.hide_books = true;  // Folders shows the music; the books are in Audiobooks.
     configLoad(&app.config);
     appStartLanguages(&app);  // Before anything is said on screen.
     appNetworkStart(&app);    // Before the library: it may be the network folder's,

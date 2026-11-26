@@ -1,6 +1,9 @@
 // The music library as artists, albums and songs, built from the tags of
 // the songs in the music folder. Songs without tags are grouped by folder:
 // "Artist/Album/song.mp3". Pure data: catalog_scan.c fills it on a thread.
+// The folder's audiobooks (booksIsBookPath: an .m4b, or under a folder named
+// "Audiobooks"...) are kept apart, in books: they aren't songs, albums or
+// artists, but the Audiobooks tab finds them here (bookscan.c).
 #pragma once
 
 #include <stdbool.h>
@@ -47,6 +50,8 @@ typedef struct {
     CatalogArtist *artists;  // Sorted by name.
     size_t artist_count;
     size_t *songs_by_title;  // Song indexes for the "Songs" list.
+    CatalogSong *books;      // The audiobooks' files: path, size and time only. Sorted by path.
+    size_t book_count, book_capacity;
     unsigned generation;     // Set when published; indexes from another generation are stale.
 } Catalog;
 
@@ -60,7 +65,12 @@ bool catalogAdd(Catalog *c, const char *path, long size, const TrackTags *tags, 
 bool catalogAddFile(Catalog *c, const char *path, long size, int64_t modified, const TrackTags *tags,
                     const char *root);
 // Adds a song with its fields already worked out (from the cache file).
+// An audiobook's file (booksIsBookPath) goes to books instead, whatever it's added with.
 bool catalogAddFields(Catalog *c, const CatalogSong *fields);
+// Adds an audiobook's file to books, with no tags (the Audiobooks tab reads its own).
+bool catalogAddBook(Catalog *c, const char *path, long size, int64_t modified);
+// The book's file with this path in books, or -1. Needs catalogBuild.
+long catalogFindBook(const Catalog *c, const char *path);
 
 // Whether a library's file times can be trusted to notice changes: some are
 // set (not 0) and they aren't all the same (a card whose times all read the
@@ -78,7 +88,8 @@ bool catalogBuild(Catalog *c);
 // The song with this path, or -1. Needs catalogBuild.
 long catalogFind(const Catalog *c, const char *path);
 
-// The cache file: one song per line. Load fills an unbuilt catalog (and
-// reads the files of KaiPlayer 1.1, without the times).
+// The cache file: one song per line, the books' files after them. Load fills
+// an unbuilt catalog (and reads the files of KaiPlayer 1.1, without the times);
+// the books in a file of KaiPlayer 1.7, kept there as songs, go to books.
 bool catalogSave(const Catalog *c, FILE *f);
 bool catalogLoad(Catalog *c, FILE *f);

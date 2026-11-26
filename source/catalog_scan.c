@@ -8,6 +8,7 @@
 
 #include <switch.h>
 
+#include "books.h"
 #include "dav.h"
 #include "kfile.h"
 #include "lang.h"
@@ -134,7 +135,11 @@ static Catalog *loadCache(const char *root)
             if (utilPathWithin(all.songs[i].path, root))
                 ok = catalogAddFields(kept, &all.songs[i]);
         }
-        ok = ok && kept->song_count > 0 && catalogBuild(kept);
+        for (size_t i = 0; i < all.book_count && ok; i++) {
+            if (utilPathWithin(all.books[i].path, root))
+                ok = catalogAddFields(kept, &all.books[i]);
+        }
+        ok = ok && kept->song_count + kept->book_count > 0 && catalogBuild(kept);
         if (!ok)
             catalogFree(kept);
     }
@@ -167,6 +172,8 @@ static void saveCache(const char *root, const Catalog *c)
 static bool addFile(Catalog *fresh, const Catalog *previous, const char *path, long size, int64_t modified,
                     const char *root, TrackTags *tags)
 {
+    if (booksIsBookPath(path))  // An audiobook: no tags to read, it isn't one of the songs.
+        return catalogAddBook(fresh, path, size, modified);
     long known = previous ? catalogFind(previous, path) : -1;
     if (known >= 0 && catalogSongUnchanged(&previous->songs[known], size, modified)) {
         CatalogSong same = previous->songs[known];
@@ -182,14 +189,22 @@ static bool addFile(Catalog *fresh, const Catalog *previous, const char *path, l
     return ok;
 }
 
+// A book's size as a listing gives it (0 if it doesn't say), as the Audiobooks tab takes it (bookscan.c).
+static long listedSize(const LibraryFile *file)
+{
+    return file->size > 0 && file->size < 0x7FFFFFFF ? (long)file->size : 0;
+}
+
 // A network folder's song: from the previous catalog if its size and time
 // are the same, else from its tags, read over the network. *failed: they
 // couldn't be read (it's kept without them, to be read again next time).
 static bool addNetworkFile(Catalog *fresh, const Catalog *previous, const LibraryFile *file, const char *root,
                            TrackTags *tags, bool *failed)
 {
-    long known = previous ? catalogFind(previous, file->path) : -1;
     *failed = false;
+    if (booksIsBookPath(file->path))  // As on the card: not read over the network either.
+        return catalogAddBook(fresh, file->path, listedSize(file), file->modified);
+    long known = previous ? catalogFind(previous, file->path) : -1;
     if (known >= 0 && previous->songs[known].size == (long)file->size &&
         previous->songs[known].modified == file->modified)
         return catalogAddFields(fresh, &previous->songs[known]);
@@ -241,7 +256,12 @@ static bool keepRest(Catalog *fresh, const Catalog *previous, const LibraryFiles
 {
     bool ok = true;
     for (size_t j = from; j < files->count && ok; j++) {
-        long known = previous ? catalogFind(previous, files->files[j].path) : -1;
+        const LibraryFile *file = &files->files[j];
+        if (booksIsBookPath(file->path)) {  // Nothing to read: as the listing says.
+            ok = catalogAddBook(fresh, file->path, listedSize(file), file->modified);
+            continue;
+        }
+        long known = previous ? catalogFind(previous, file->path) : -1;
         if (known >= 0)
             ok = catalogAddFields(fresh, &previous->songs[known]);
     }

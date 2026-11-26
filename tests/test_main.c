@@ -328,6 +328,38 @@ static void testBrowser(void)
     CHECK(browserSelected(&b) == NULL);
 }
 
+// Folders leaves out the audiobooks, and playing a folder from it plays its music only.
+static void testBooksLeftOut(void)
+{
+    mkdir(TMP_ROOT "/books", 0777);
+    mkdir(TMP_ROOT "/books/Audiobooks", 0777);
+    mkdir(TMP_ROOT "/books/Album", 0777);
+    touch(TMP_ROOT "/books/Audiobooks/ch1.mp3");
+    touch(TMP_ROOT "/books/Album/song.mp3");
+    touch(TMP_ROOT "/books/Album/novel.m4b");
+    touch(TMP_ROOT "/books/tune.m4a");
+
+    Browser b = {0};
+    CHECK(browserOpen(&b, TMP_ROOT "/books") && b.count == 3);  // The folder picker sees everything.
+    b.hide_books = true;
+    CHECK(browserOpen(&b, TMP_ROOT "/books") && b.count == 2);
+    if (b.count == 2)
+        CHECK(!strcmp(b.entries[0].name, "Album") && !strcmp(b.entries[1].name, "tune.m4a"));
+    CHECK(browserOpen(&b, TMP_ROOT "/books/Album") && b.count == 1);
+    if (b.count == 1)
+        CHECK(!strcmp(b.entries[0].name, "song.mp3"));
+    browserFree(&b);
+
+    TrackList list;
+    CHECK(libraryScan(&list, TMP_ROOT "/books", true) && list.count == 4);
+    libraryDropBooks(&list);
+    CHECK(list.count == 2);
+    if (list.count == 2)
+        CHECK(!strcmp(list.paths[0], TMP_ROOT "/books/Album/song.mp3") &&
+              !strcmp(list.paths[1], TMP_ROOT "/books/tune.m4a"));
+    trackListFree(&list);
+}
+
 int main(void)
 {
     if (system("rm -rf " TMP_ROOT) != 0 || mkdir(TMP_ROOT, 0777) != 0) {
@@ -343,6 +375,7 @@ int main(void)
     testDecoder();
     testLibrary();
     testBrowser();
+    testBooksLeftOut();
     testTags();
     testCover();
     testFixtures();

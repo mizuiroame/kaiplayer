@@ -147,6 +147,55 @@ static void testCacheTimes(void)
     tagsFree(&t);
 }
 
+// The music folder's audiobooks (an .m4b, files under a folder named as books) are kept apart:
+// not songs, albums or artists, but books, for the Audiobooks tab; the cache keeps them so.
+static void testBooksApart(void)
+{
+    Catalog c, back;
+    catalogInit(&c);
+    catalogInit(&back);
+    fill(&c);
+    size_t songs = c.song_count;
+    addTagged(&c, "sdmc:/music/Novel.m4b", "Novel", "Writer", "Novel", 1, 2020);
+    addTagged(&c, "sdmc:/music/Audiobooks/Saga/01.mp3", "Chapter 1", "Writer", "Saga", 1, 2020);
+    addUntagged(&c, "sdmc:/music/H\xc3\xb6rb\xc3\xbc" "cher/Tale/1.mp3");
+    addUntagged(&c, "sdmc:/music/Audiobook Club/song.mp3");  // Not a books' folder's name: a song.
+    CHECK(catalogAddBook(&c, "dav:/Audiobooks/Far/1.mp3", 77, 1795293630));
+    CHECK(catalogBuild(&c));
+    CHECK(c.song_count == songs + 1 && c.book_count == 4);
+    CHECK(catalogFind(&c, "sdmc:/music/Novel.m4b") < 0 && catalogFind(&c, "sdmc:/music/Audiobooks/Saga/01.mp3") < 0);
+    CHECK(catalogFind(&c, "sdmc:/music/Audiobook Club/song.mp3") >= 0);
+    long novel = catalogFindBook(&c, "sdmc:/music/Novel.m4b");
+    CHECK(novel >= 0 && c.books[novel].size == 100);
+    CHECK(catalogFindBook(&c, "sdmc:/music/loose.wav") < 0);
+    for (size_t i = 0; i < c.album_count; i++)
+        CHECK(strcmp(c.albums[i].title, "Novel") != 0 && strcmp(c.albums[i].title, "Saga") != 0);
+    for (size_t i = 0; i < c.artist_count; i++)
+        CHECK(strcmp(c.artists[i].name, "Writer") != 0);
+
+    FILE *f = tmpfile();
+    CHECK(f && catalogSave(&c, f));
+    rewind(f);
+    CHECK(catalogLoad(&back, f) && catalogBuild(&back));
+    fclose(f);
+    CHECK(back.song_count == c.song_count && back.book_count == 4);
+    long far = catalogFindBook(&back, "dav:/Audiobooks/Far/1.mp3");
+    CHECK(far >= 0 && back.books[far].size == 77 && back.books[far].modified == 1795293630);
+    catalogFree(&c);
+    catalogFree(&back);
+
+    // KaiPlayer 1.7's cache kept them as songs: they come back as books.
+    FILE *old = tmpfile();
+    fputs("KAIPLAYER-CATALOG 3\n100\t0\t3\t1\t2001\tsdmc:/music/a.mp3\tA\tArtist\tArtist\tAlbum\n"
+          "900\t0\t1\t0\t2020\tsdmc:/music/Novel.m4b\tNovel\tWriter\tWriter\tNovel\n", old);
+    rewind(old);
+    catalogInit(&back);
+    CHECK(catalogLoad(&back, old) && catalogBuild(&back) && back.song_count == 1 && back.book_count == 1);
+    CHECK(back.album_count == 1 && back.artist_count == 1 && catalogFindBook(&back, "sdmc:/music/Novel.m4b") >= 0);
+    fclose(old);
+    catalogFree(&back);
+}
+
 // The card's file times: trusted only when some are set and they differ; a song is read
 // again when its size changed, its time changed, or it was kept before times could be trusted.
 static void testCardTimes(void)
@@ -182,6 +231,7 @@ void testCatalog(void)
     testGrouping();
     testCache();
     testCacheTimes();
+    testBooksApart();
     testCardTimes();
     testNumbers();
 }

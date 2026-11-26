@@ -156,18 +156,16 @@ static void findNetworkBooks(FileSet *s)
     free(entries);
 }
 
-// The library's songs that are books. The UI thread waits for the catalog's lock each frame:
-// the test is quick (booksIsBookPath looks at the path's text first), and the lock is held once.
+// The library's files that are books (booksIsBookPath): the catalog keeps them apart from its songs.
+// The UI thread waits for the catalog's lock each frame: it's held once, for copying their paths.
 static void findLibraryBooks(FileSet *s)
 {
     const Catalog *c = catalogLock();
-    size_t songs = c ? c->song_count : 0;
-    for (size_t i = 0; c && i < c->song_count; i++) {
-        if (booksIsBookPath(c->songs[i].path))
-            fileSetAdd(s, c->songs[i].path, c->songs[i].size);
-    }
+    size_t books = c ? c->book_count : 0;
+    for (size_t i = 0; i < books; i++)
+        fileSetAdd(s, c->books[i].path, c->books[i].size);
     catalogUnlock();
-    appLog("books: library: %zu songs looked at", songs);
+    appLog("books: library: %zu files of books", books);
 }
 
 // --- The server's ---

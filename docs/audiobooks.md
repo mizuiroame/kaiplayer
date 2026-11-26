@@ -12,10 +12,14 @@ ones you're in the middle of first, with how much is left of each.
 - **Your library** (the card's music folder, the network folder or Navidrome):
   every `.m4b`, and the files in a folder named `Audiobooks` (also
   `Hörbücher`, `Audiolibros`, `Livres audio`, `Audiolibri`, `Audiolivros`...).
+  These are only in Audiobooks: they stay out of the music's artists, albums,
+  songs and folders. [More](library.md#library)
 - **The network folder**: a folder named `Audiobooks` at its top.
 - **Navidrome** (or another Subsonic server): the albums of a genre named
   `Audiobook` or `Audiobooks`, and of a library (music folder) with that name.
-  Each album is a book.
+  Each album is a book. The genre's songs stay out of the music library. A
+  server library named `Audiobooks` still shows among the music as well: the
+  server doesn't say which library a song comes from.
 
 A book's name and author come from its tags (album and album artist), else
 from its folders. Its cover is the album's, as in the Library.

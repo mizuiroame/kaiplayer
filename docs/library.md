@@ -50,6 +50,14 @@ and disc numbers, year), **not from the folder names**: a folder named
 `Miki Matsubara` whose songs are tagged 松原みき shows as **松原みき**. Songs
 without tags are grouped by folder, as `Artist/Album/song.mp3`.
 
+Audiobooks in your music folder (every `.m4b`, and the files in a folder named
+`Audiobooks`, `Hörbücher`, `Audiolibros`...) stay out of the library: they
+aren't among the artists, albums and songs, Folders doesn't list them, and
+playing a folder leaves them out. They are in the
+[Audiobooks](audiobooks.md) tab. On a Navidrome server the same goes for the
+songs of a genre named `Audiobook` or `Audiobooks`. A playlist that lists one
+still plays it.
+
 KaiPlayer keeps the library in `catalog.txt` in its folder so it shows at
 once next time, and updates it in the background, reading only new or changed
 files; the progress shows at the top right. **+ → Update the library** (or

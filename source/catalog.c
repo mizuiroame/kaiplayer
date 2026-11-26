@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "books.h"
 #include "util.h"
 
 #define CACHE_HEADER "KAIPLAYER-CATALOG 3"
@@ -31,19 +32,39 @@ static void freeGroups(Catalog *c)
     c->album_count = c->artist_count = 0;
 }
 
-void catalogFree(Catalog *c)
+static void freeSongs(CatalogSong *songs, size_t count)
 {
-    freeGroups(c);
-    for (size_t i = 0; i < c->song_count; i++) {
-        CatalogSong *s = &c->songs[i];
+    for (size_t i = 0; i < count; i++) {
+        CatalogSong *s = &songs[i];
         free(s->path);
         free(s->title);
         free(s->artist);
         free(s->album_artist);
         free(s->album);
     }
-    free(c->songs);
+    free(songs);
+}
+
+void catalogFree(Catalog *c)
+{
+    freeGroups(c);
+    freeSongs(c->songs, c->song_count);
+    freeSongs(c->books, c->book_count);
     catalogInit(c);
+}
+
+// Room for one more in a list of songs.
+static bool makeRoom(CatalogSong **songs, size_t count, size_t *capacity)
+{
+    if (count < *capacity)
+        return true;
+    size_t grown = *capacity ? *capacity * 2 : 256;
+    CatalogSong *bigger = realloc(*songs, grown * sizeof(CatalogSong));
+    if (!bigger)
+        return false;
+    *songs = bigger;
+    *capacity = grown;
+    return true;
 }
 
 // strdup with tabs and line breaks turned into spaces, so the cache file
@@ -58,18 +79,27 @@ static char *copyClean(const char *s)
     return copy;
 }
 
+bool catalogAddBook(Catalog *c, const char *path, long size, int64_t modified)
+{
+    if (strpbrk(path, "\t\r\n"))
+        return true;  // As a song's: such a name can't be kept in the cache file.
+    if (!makeRoom(&c->books, c->book_count, &c->book_capacity))
+        return false;
+    CatalogSong b = {.path = strdup(path), .size = size, .modified = modified};
+    if (!b.path)
+        return false;
+    c->books[c->book_count++] = b;
+    return true;
+}
+
 bool catalogAddFields(Catalog *c, const CatalogSong *f)
 {
+    if (booksIsBookPath(f->path))  // An audiobook isn't music: kept apart, for the Audiobooks tab.
+        return catalogAddBook(c, f->path, f->size, f->modified);
     if (strpbrk(f->path, "\t\r\n"))
         return true;  // Such a name can't be kept in the cache file: left out.
-    if (c->song_count == c->song_capacity) {
-        size_t grown = c->song_capacity ? c->song_capacity * 2 : 256;
-        CatalogSong *songs = realloc(c->songs, grown * sizeof(CatalogSong));
-        if (!songs)
-            return false;
-        c->songs = songs;
-        c->song_capacity = grown;
-    }
+    if (!makeRoom(&c->songs, c->song_count, &c->song_capacity))
+        return false;
     CatalogSong s = {
         .path = strdup(f->path), .title = copyClean(f->title), .artist = copyClean(f->artist),
         .album_artist = copyClean(f->album_artist), .album = copyClean(f->album),
@@ -286,6 +316,8 @@ bool catalogBuild(Catalog *c)
     freeGroups(c);
     if (c->song_count > 1)
         qsort(c->songs, c->song_count, sizeof(CatalogSong), byPath);
+    if (c->book_count > 1)
+        qsort(c->books, c->book_count, sizeof(CatalogSong), byPath);
     size_t *order = malloc((c->song_count ? c->song_count : 1) * sizeof(size_t));
     c->songs_by_title = malloc((c->song_count ? c->song_count : 1) * sizeof(size_t));
     if (!order || !c->songs_by_title) {
@@ -305,12 +337,13 @@ bool catalogBuild(Catalog *c)
     return ok;
 }
 
-long catalogFind(const Catalog *c, const char *path)
+// The one with this path in songs (sorted by path), or -1.
+static long findPath(const CatalogSong *songs, size_t count, const char *path)
 {
-    size_t lo = 0, hi = c->song_count;
+    size_t lo = 0, hi = count;
     while (lo < hi) {
         size_t mid = lo + (hi - lo) / 2;
-        int d = strcmp(c->songs[mid].path, path);
+        int d = strcmp(songs[mid].path, path);
         if (d == 0)
             return (long)mid;
         if (d < 0)
@@ -319,6 +352,16 @@ long catalogFind(const Catalog *c, const char *path)
             hi = mid;
     }
     return -1;
+}
+
+long catalogFind(const Catalog *c, const char *path)
+{
+    return findPath(c->songs, c->song_count, path);
+}
+
+long catalogFindBook(const Catalog *c, const char *path)
+{
+    return findPath(c->books, c->book_count, path);
 }
 
 // --- Cache file ---
@@ -331,6 +374,10 @@ bool catalogSave(const Catalog *c, FILE *f)
         fprintf(f, "%ld\t%lld\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%s\n", s->size, (long long)s->modified, s->track, s->disc,
                 s->year, s->path, s->title, s->artist, s->album_artist, s->album);
     }
+    // The books' files as songs without tags: catalogLoad gives them back to books by their paths.
+    for (size_t i = 0; i < c->book_count; i++)
+        fprintf(f, "%ld\t%lld\t0\t0\t0\t%s\t\t\t\t\n", c->books[i].size, (long long)c->books[i].modified,
+                c->books[i].path);
     return !ferror(f);
 }
 

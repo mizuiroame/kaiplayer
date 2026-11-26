@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "books.h"
 #include "kfile.h"
 #include "lang.h"
 
@@ -41,6 +42,19 @@ static bool pushEntry(BrowserEntry **entries, size_t *count, size_t *capacity,
     return true;
 }
 
+// Whether folder's entry is listed: a folder, or a song (not an audiobook's file or folder when they're hidden).
+static bool isListed(const Browser *b, const char *folder, const char *name, bool is_dir)
+{
+    if (name[0] == '.' || (!is_dir && !utilIsAudioFile(name)))
+        return false;
+    if (!b->hide_books)
+        return true;
+    if (is_dir)
+        return !booksIsBookName(name);
+    char path[UTIL_PATH_MAX];
+    return !utilJoinPath(path, sizeof(path), folder, name) || !booksIsBookPath(path);
+}
+
 // A network folder's entries, from its listing. False if it can't be listed.
 static bool listNetwork(Browser *b, const char *path, BrowserEntry **entries, size_t *count, bool *incomplete)
 {
@@ -55,7 +69,7 @@ static bool listNetwork(Browser *b, const char *path, BrowserEntry **entries, si
             *incomplete = true;
             break;
         }
-        if (e->name[0] != '.' && (e->is_dir || utilIsAudioFile(e->name)))
+        if (isListed(b, path, e->name, e->is_dir))
             ok = pushEntry(entries, count, &capacity, e->name, e->is_dir);
     }
     free(listed);
@@ -63,7 +77,7 @@ static bool listNetwork(Browser *b, const char *path, BrowserEntry **entries, si
 }
 
 // A card folder's entries.
-static bool listCard(const char *path, BrowserEntry **entries, size_t *count, bool *incomplete)
+static bool listCard(const Browser *b, const char *path, BrowserEntry **entries, size_t *count, bool *incomplete)
 {
     DIR *dir = opendir(path);
     if (!dir)
@@ -84,7 +98,7 @@ static bool listCard(const char *path, BrowserEntry **entries, size_t *count, bo
         if (entry->d_name[0] == '.')
             continue;
         bool is_dir = utilEntryIsDir(path, entry);
-        if (is_dir || utilIsAudioFile(entry->d_name))
+        if (isListed(b, path, entry->d_name, is_dir))
             ok = pushEntry(entries, count, &capacity, entry->d_name, is_dir);
     }
     closedir(dir);
@@ -100,7 +114,8 @@ bool browserOpen(Browser *b, const char *path)
     bool incomplete = false;
     b->problem[0] = '\0';
     bool remote = kfileIsRemote(path);
-    bool ok = remote ? listNetwork(b, path, &entries, &count, &incomplete) : listCard(path, &entries, &count, &incomplete);
+    bool ok = remote ? listNetwork(b, path, &entries, &count, &incomplete)
+                     : listCard(b, path, &entries, &count, &incomplete);
     if (!ok && remote && !b->problem[0])  // No network folder to ask.
         snprintf(b->problem, sizeof(b->problem), "%s", T("Set up the network folder in Settings first."));
 
