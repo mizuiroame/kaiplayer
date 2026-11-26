@@ -1,0 +1,6 @@
+{"responseHeader":{"status":0,"QTime":12,"params":{"query":"collection:etree AND mediatype:etree","rows":3}},
+"response":{"numFound":307208,"start":0,"docs":[
+{"creator":"The Night Drive Band","date":"2006-01-14T00:00:00Z","identifier":"ndb2006-01-14.made.up","title":"The Night Drive Band Live at a Made-Up Hall on 2006-01-14"},
+{"creator":["Aurora Fields","Guests"],"identifier":"bad identifier!","title":"Left out"},
+{"identifier":"af1999-07-01.sbd","date":"1999"}
+]}}

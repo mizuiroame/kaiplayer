@@ -1,0 +1,13 @@
+{"created":1700000000,"dir":"/1/items/ndb2006-01-14.made.up","files_count":9,
+"metadata":{"identifier":"ndb2006-01-14.made.up","mediatype":"etree","creator":"The Night Drive Band","date":"2006-01-14","title":"The Night Drive Band Live at a Made-Up Hall","collection":["NightDriveBand","etree"]},
+"files":[
+{"name":"__ia_thumb.jpg","source":"original","format":"Item Tile","size":"3110"},
+{"name":"ndb2006-01-14d1t02.flac","source":"original","format":"Flac","title":"Second Song","track":"2"},
+{"name":"ndb2006-01-14d1t02.mp3","source":"derivative","format":"VBR MP3","title":"Second Song","track":"2","creator":"N.D.B. (The Night Drive Band)","length":"09:01"},
+{"name":"ndb2006-01-14d1t01.mp3","source":"derivative","format":"VBR MP3","title":"Opening","track":"01/12","length":"01:37"},
+{"name":"disc 2/ndb d2t01 encore #1.mp3","source":"derivative","format":"VBR MP3","track":"10"},
+{"name":"ndb2006-01-14d1t03.ogg","source":"derivative","format":"Ogg Vorbis","title":"Third"},
+{"name":"notes.txt","source":"original","format":"Text"},
+{"name":"evil\u0001name.mp3","source":"derivative","format":"VBR MP3","track":"3"},
+{"name":"ndb2006-01-14d1t04.mp3","source":"derivative","format":"VBR MP3","track":"4"}
+]}

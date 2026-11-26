@@ -396,6 +396,7 @@ int main(void)
     testLang();
     testDav();
     testSubsonic();
+    testStream();
     testKfile();
     testFfaudio();
     testBooks();
