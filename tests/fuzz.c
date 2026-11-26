@@ -183,7 +183,7 @@ static void fuzzServerAnswer(const char *seed_path, int iterations)
     free(seed);
 }
 
-// An online service's answer (stream.h): parsed as each page that could get it, and every location tried.
+// The Internet Archive's answer (stream.h): parsed as each page that could get it, and every location tried.
 static void fuzzStreamAnswer(const char *seed_path, int iterations)
 {
     size_t seed_size = 0;
@@ -202,14 +202,13 @@ static void fuzzStreamAnswer(const char *seed_path, int iterations)
             StreamQuery q = {.kind = (StreamQueryKind)(i % STREAM_Q_COUNT)};
             snprintf(q.id, sizeof(q.id), "fuzz.item");
             StreamList list = {0};
-            char why[128], url[STREAM_URL_MAX], credit[256];
+            char why[128], credit[256];
             if (streamParseAnswer(&q, jsonRoot(doc), &list, why, sizeof(why)))
                 for (size_t k = 0; k < list.count; k++) {
                     StreamTarget t;
                     if (streamParseLocation(list.items[k].location, &t) && !t.cover)
                         streamCreditLine(list.items[k].location, credit, sizeof(credit));
                 }
-            streamJamendoAudioUrl(jsonRoot(doc), url, sizeof(url));
             streamListFree(&list);
         }
         jsonFree(doc);
@@ -305,7 +304,7 @@ int main(int argc, char **argv)
     fuzzImage("fixtures/small_cover.jpg", iterations * 4);
     fuzzImage("fixtures/small_cover.png", iterations * 4);
     fuzzServerAnswer("fixtures/navidrome_search3.json", iterations * 4);
-    fuzzStreamAnswer("fixtures/jamendo_tracks.json", iterations * 2);
+    fuzzStreamAnswer("fixtures/archive_item_78.json", iterations);
     fuzzStreamAnswer("fixtures/archive_item.json", iterations * 2);
     fuzzStreamAnswer("fixtures/archive_search.json", iterations);
     fuzzChapters("fixtures/tone_book_chapters.mp3", iterations * 4);

@@ -42,10 +42,9 @@ ffmpeg -f lavfi -i "sine=frequency=330:duration=3:sample_rate=22050" -i chapters
   -map 0:a -map_metadata 1 -map_chapters 1 -c:a libmp3lame -b:a 32k -ac 1 -id3v2_version 3 tone_book_chapters.mp3
 ```
 
-jamendo_*.json and archive_*.json are made-up answers in the shape of
-Jamendo's API v3.0 (`tracks`, `albums`, `artists`, an error, a track's audio
-address) and the Internet Archive's `advancedsearch.php` and `metadata/<id>`
-(an etree concert, a Creative Commons netlabel release). The bands, songs,
-ids and addresses are invented, and a few entries are broken on purpose (an
-id that isn't one, a file name with a control character). No real service is
-asked in the tests; the fuzzer starts from these too.
+archive_*.json are made-up answers in the shape of the Internet Archive's
+`advancedsearch.php` and `metadata/<id>`: an etree concert, a Creative
+Commons netlabel release and a 78 rpm record. The bands, songs and
+identifiers are invented, and a few entries are broken on purpose (an
+identifier that isn't one, a file name with a control character). No real
+service is asked in the tests; the fuzzer starts from these too.
