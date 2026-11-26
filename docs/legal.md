@@ -24,6 +24,15 @@
   under the same license. The scripts that build them (`ffmpeg/` and
   `smb/Dockerfile`, from their releases, checked by SHA-256) are in this
   repository, so KaiPlayer can be rebuilt, changed and relinked.
+- **The Internet Archive.** KaiPlayer is not affiliated with the Internet
+  Archive. It plays the Archive's songs as they stream, under the Archive's
+  [terms of use](https://archive.org/about/terms.php): only the Live Music
+  Archive (bands that allow non-commercial sharing), the 78 rpm collection and
+  audio with a declared Creative Commons or public-domain license are offered,
+  nothing is downloaded, and each song's creator, license and page on
+  archive.org are shown (Now Playing, and **+ → About this song**). Those
+  declarations come from the uploaders, rarely from the Archive: using the
+  music within its license is up to you.
 - **Patents.** AAC is played with FFmpeg's decoder; it may be covered by
   patents in some countries. ALAC and Opus are royalty-free.
 - **User responsibility.** Only play music you have the right to listen to.
@@ -59,7 +68,7 @@ licenses are):
 |---------|----------|---------|
 | [FFmpeg](https://ffmpeg.org/) 7.1 (libavformat, libavcodec, libswresample, libavutil) | Playing AAC, ALAC and Opus | [LGPL 2.1](../third_party/FFmpeg-LGPL-2.1.txt) |
 | [libsmb2](https://github.com/sahlberg/libsmb2) 6.0.0 | Network folders over SMB | [LGPL 2.1](../third_party/libsmb2-LGPL-2.1.txt) ([its notice](../third_party/libsmb2-COPYING.txt)) |
-| [curl](https://curl.se/) 7.69.1 | WebDAV network folders, Navidrome servers | [curl](../third_party/curl-LICENSE.txt) |
+| [curl](https://curl.se/) 7.69.1 | WebDAV network folders, Navidrome servers, the Internet Archive | [curl](../third_party/curl-LICENSE.txt) |
 | [zlib](https://zlib.net/) 1.3.1 | Used by curl | [zlib](../third_party/zlib-LICENSE.txt) |
 | [OunceVK](https://github.com/ouncebrew/ouncevk) (Mesa) | Drawing on the GPU (EGL and OpenGL ES) | [MIT](../third_party/Mesa-MIT.txt) ([Mesa's notes](../third_party/Mesa-license.rst)) |
 | [libounce](https://github.com/ouncebrew/libounce) (a libnx fork, with mimalloc) | The Switch 2 system library | ISC: [libounce](../third_party/libounce-ISC.txt), [libnx](../third_party/libnx-ISC.txt); [MIT](../third_party/mimalloc-MIT.txt) (mimalloc) |

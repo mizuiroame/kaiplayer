@@ -35,6 +35,10 @@ with nothing else to install.
   (SMB), or WebDAV, as a library of its own. [More](docs/network-folder.md)
 - **Music from a Navidrome server** (or any Subsonic server): its library,
   covers and play counts, playing the original files. [More](docs/navidrome.md)
+- **Music from the Internet Archive**, streamed with nothing to set up: the
+  Live Music Archive's concerts, 78 rpm records, public-domain classical music
+  and Creative Commons audio, each song with its license and its page.
+  [More](docs/internet-archive.md)
 - **Audiobooks** in a tab of their own: `.m4b` and folders of files, their
   chapters, each book going on where you left it, 30-second skips, 0.75x to 2x
   with the voice's pitch kept, and a sleep timer to the chapter's end; from the

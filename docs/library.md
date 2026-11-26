@@ -44,6 +44,9 @@ their covers, all on one screen:
 - **Songs:** every song by title.
 - **Folders:** the folders of your music folder, as they are on the card (or
   in the network folder).
+- **Internet Archive:** live concerts, 78 rpm records, public-domain classical
+  music and other free music from archive.org, played as it streams. See
+  [Internet Archive](internet-archive.md).
 
 Artists and albums come from the tags (album artist, artist, album, track
 and disc numbers, year), **not from the folder names**: a folder named

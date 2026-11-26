@@ -156,6 +156,11 @@ source/
   subfile.c       reads the server's songs and covers for kfile.c (HTTP ranges)
   app_server.c    the Navidrome page, its sign-in and test, and the scrobbles
   json.c md5.c    the server's JSON answers, and the token's MD5
+  stream.c        the Internet Archive's song locations, licenses and request URLs
+  streamparse.c   its answers (search, an item's files) into lists
+  streamnet.c     asks it, on a thread; streamfile.c: its songs and covers for kfile.c
+  streammeta.c    the names of its songs shown, kept for the session
+  app_stream.c    its pages in the Library tab
   lang.c          T(): the texts in the language in use (data/lang_*.txt)
   languages.c     the languages in the app and in config/lang, for Settings
   tags_*.c        ID3 and Vorbis comment readers (title, artist, album, cover)

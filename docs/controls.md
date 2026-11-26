@@ -55,6 +55,7 @@ list. **−**, **L** and **R** also pause and change the song from anywhere.
 |-------------|------------|
 | Playlists   | New playlist, rename or delete a playlist; inside a playlist, move or remove a song |
 | Queue       | Save the whole queue as a playlist |
+| Now Playing, an Internet Archive page | About this song: its artist, license and page on archive.org (for the Archive's songs) |
 | All         | Update the library, Go to the … library (with a network folder or a Navidrome server set up), Turn screen off (while music plays), Settings, and Exit KaiPlayer (asks you to confirm) |
 
 **+ → Update the library** checks the music folder again after you add
