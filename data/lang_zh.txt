@@ -1209,9 +1209,6 @@ By %s
 Close
 关闭
 
-Concerts, 78s, classical: online
-现场、78 转、古典（在线）
-
 From %s: %s
 来自 %s：%s
 
@@ -1289,3 +1286,27 @@ Try again
 
 Type some words to search for.
 请输入要搜索的词。
+
+Browse the Internet Archive
+浏览 Internet Archive
+
+Go to the Internet Archive
+前往 Internet Archive
+
+Internet Archive
+Internet Archive
+
+Library: the Internet Archive
+媒体库：Internet Archive
+
+Live concerts, 78 rpm records, public-domain classical music and free audio from archive.org, played as they stream: nothing to set up. On Home and Library, X switches to it.
+来自 archive.org 的现场演出、78 转唱片、公有领域古典音乐和免费音频，边下载边播放：无需设置。在主页和媒体库中按 X 切换到它。
+
+Live concerts, 78 rpm records, public-domain classical music and free audio.
+现场演出、78 转唱片、公有领域古典音乐和免费音频。
+
+Show 50 more
+再显示 50 个
+
+The Internet Archive is asked each time you open a page: nothing to update.
+每次打开页面都会请求 Internet Archive：没有需要更新的内容。

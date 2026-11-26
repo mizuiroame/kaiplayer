@@ -1209,9 +1209,6 @@ De %s
 Close
 Cerrar
 
-Concerts, 78s, classical: online
-Conciertos, 78 rpm, clásica: en línea
-
 From %s: %s
 De %s: %s
 
@@ -1289,3 +1286,27 @@ Intentar de nuevo
 
 Type some words to search for.
 Escribe algunas palabras para buscar.
+
+Browse the Internet Archive
+Explorar el Internet Archive
+
+Go to the Internet Archive
+Ir al Internet Archive
+
+Internet Archive
+Internet Archive
+
+Library: the Internet Archive
+Biblioteca: el Internet Archive
+
+Live concerts, 78 rpm records, public-domain classical music and free audio from archive.org, played as they stream: nothing to set up. On Home and Library, X switches to it.
+Conciertos en vivo, discos de 78 rpm, música clásica de dominio público y audio libre de archive.org, que suenan mientras llegan: no hay nada que configurar. En Inicio y Biblioteca, X cambia a él.
+
+Live concerts, 78 rpm records, public-domain classical music and free audio.
+Conciertos en vivo, discos de 78 rpm, música clásica de dominio público y audio libre.
+
+Show 50 more
+Mostrar 50 más
+
+The Internet Archive is asked each time you open a page: nothing to update.
+Al Internet Archive se le pregunta cada vez que abres una página: no hay nada que actualizar.

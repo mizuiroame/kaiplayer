@@ -1209,9 +1209,6 @@ By %s
 Close
 닫기
 
-Concerts, 78s, classical: online
-라이브, 78회전, 클래식: 온라인
-
 From %s: %s
 %s: %s
 
@@ -1289,3 +1286,27 @@ Try again
 
 Type some words to search for.
 검색할 단어를 입력하세요.
+
+Browse the Internet Archive
+Internet Archive 둘러보기
+
+Go to the Internet Archive
+Internet Archive로 이동
+
+Internet Archive
+Internet Archive
+
+Library: the Internet Archive
+라이브러리: Internet Archive
+
+Live concerts, 78 rpm records, public-domain classical music and free audio from archive.org, played as they stream: nothing to set up. On Home and Library, X switches to it.
+archive.org의 라이브 공연, 78회전 음반, 퍼블릭 도메인 클래식 음악, 무료 오디오를 스트리밍으로 재생합니다. 설정할 것이 없습니다. 홈과 라이브러리에서 X로 전환합니다.
+
+Live concerts, 78 rpm records, public-domain classical music and free audio.
+라이브 공연, 78회전 음반, 퍼블릭 도메인 클래식 음악, 무료 오디오.
+
+Show 50 more
+50개 더 보기
+
+The Internet Archive is asked each time you open a page: nothing to update.
+Internet Archive는 페이지를 열 때마다 요청합니다. 업데이트할 것이 없습니다.

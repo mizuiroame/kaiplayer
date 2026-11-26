@@ -1209,9 +1209,6 @@ By %s
 Close
 閉じる
 
-Concerts, 78s, classical: online
-ライブ、78回転、クラシック（オンライン）
-
 From %s: %s
 %s: %s
 
@@ -1289,3 +1286,27 @@ Try again
 
 Type some words to search for.
 検索する言葉を入力してください。
+
+Browse the Internet Archive
+Internet Archiveを見る
+
+Go to the Internet Archive
+Internet Archiveへ
+
+Internet Archive
+Internet Archive
+
+Library: the Internet Archive
+ライブラリー: Internet Archive
+
+Live concerts, 78 rpm records, public-domain classical music and free audio from archive.org, played as they stream: nothing to set up. On Home and Library, X switches to it.
+archive.orgのライブ演奏、78回転レコード、パブリックドメインのクラシック音楽、フリー音源をストリーミングで再生します。設定は不要です。ホームとライブラリーではXで切り替えます。
+
+Live concerts, 78 rpm records, public-domain classical music and free audio.
+ライブ演奏、78回転レコード、パブリックドメインのクラシック音楽、フリー音源。
+
+Show 50 more
+さらに50件表示
+
+The Internet Archive is asked each time you open a page: nothing to update.
+Internet Archiveにはページを開くたびに問い合わせます。更新するものはありません。
