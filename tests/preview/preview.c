@@ -236,8 +236,7 @@ bool appLibraryIsArchive(const App *app)
 
 bool appCanSwitchSource(const App *app)
 {
-    (void)app;
-    return true;  // The Internet Archive is always there to switch to.
+    return g_network || g_server || app->config.archive_on || app->config.source != LIBRARY_CARD;
 }
 
 void appServerShown(char *address, size_t address_size, char *user, size_t user_size, bool *check_certificate)
@@ -906,8 +905,22 @@ static void renderStreamScenes(const char *dir, App *app, PlayerStatus *status)
 
     app->settings_open = true;  // Its Settings page: its color only.
     app->settings_page = SETTINGS_PAGE_ARCHIVE;
-    app->settings_cursor = SETTING_IA_COLOR;
+    app->settings_cursor = SETTING_IA_ENABLED;
     render(dir, "settings_archive", app, status);
+    app->config.archive_on = false;  // Turned off: out of the sources (the card's shows), Off on the main page.
+    app->config.source = LIBRARY_CARD;
+    render(dir, "settings_archive_off", app, status);
+    app->settings_page = SETTINGS_PAGE_MAIN;
+    app->settings_cursor = SETTING_OPEN_ARCHIVE;
+    render(dir, "settings_main_archive_off", app, status);
+    app->settings_open = false;
+    app->view = VIEW_HOME;
+    render(dir, "home_archive_off", app, status);
+    app->view = VIEW_NOW_PLAYING;
+    app->settings_open = true;
+    app->config.archive_on = true;
+    app->config.source = LIBRARY_ARCHIVE;
+    app->settings_page = SETTINGS_PAGE_ARCHIVE;
     app->settings_page = SETTINGS_PAGE_MAIN;
     app->settings_cursor = SETTING_OPEN_ARCHIVE;
     render(dir, "settings_main_archive", app, status);
@@ -926,6 +939,7 @@ int main(int argc, char **argv)
         return 2;
     }
     static App app;
+    app.config.archive_on = true;  // As configLoad leaves it.
     app.audio_ok = true;
     app.sys = (SysInfo){.has_time = true, .hour = 21, .minute = 47,
                         .has_battery = true, .battery_percent = 72, .charging = false};

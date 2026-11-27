@@ -303,7 +303,7 @@ const char *appSourceRoot(LibrarySource source);
 // Where X goes: the next source set up, card, network folder, Navidrome, Internet Archive, card...
 LibrarySource appNextLibrarySource(const App *app);
 void appSwitchLibrarySource(App *app);
-// There's another source to switch to (always: the Internet Archive): X switches, and the pill shows.
+// There's another source to switch to (the Internet Archive, unless it's off): X switches, and the pill shows.
 bool appCanSwitchSource(const App *app);
 // A source on the network changed its account (moved: its address): its library is read again (in the
 // background while another is shown), or, gone, what was found of it is forgotten and the card's shows.
@@ -497,7 +497,10 @@ bool appServerUsesKey(void);
 void appStreamStart(App *app);
 // Stops its thread and connections, after everything that reads files has stopped.
 void appStreamExit(void);
-// Starts the console's network for it (once). False if it can't be used.
+// Turns it on or off (Settings): off, it leaves the cycle of sources (the card's shows if it was the
+// source) and nothing connects to it.
+void appStreamSetEnabled(App *app, bool on);
+// Starts the console's network for it (once). False if it can't be used, or the Archive is off.
 bool appStreamEnsureNetwork(App *app);
 // Its first page, as the Library's first page while it's the source (pages[0]).
 void appStreamRootPage(App *app);

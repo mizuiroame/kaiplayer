@@ -23,6 +23,18 @@ typedef struct {
     size_t cover_size;        // and its length.
 } StreamFile;
 
+static bool g_enabled = true;  // Settings' switch: off, nothing connects to archive.org.
+
+void streamFileSetEnabled(bool on)
+{
+    __atomic_store_n(&g_enabled, on, __ATOMIC_RELEASE);
+}
+
+bool streamFileEnabled(void)
+{
+    return __atomic_load_n(&g_enabled, __ATOMIC_ACQUIRE);
+}
+
 // Small reads (tags, the start of a song) share one client, which keeps its connection.
 static pthread_mutex_t g_peek_lock = PTHREAD_MUTEX_INITIALIZER;
 static NetClient *g_peek;
@@ -123,6 +135,8 @@ static bool openSong(StreamFile *f, const StreamTarget *t, bool stream, int64_t 
 
 static void *openFile(const char *location, bool stream, int64_t *size)
 {
+    if (!streamFileEnabled())
+        return NULL;  // Turned off in Settings: player.c says so.
     StreamTarget *target = malloc(sizeof(*target));
     StreamFile *f = calloc(1, sizeof(*f));
     bool ok = target && f && streamParseLocation(location, target) &&

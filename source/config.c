@@ -89,6 +89,8 @@ static void applyLine(Config *c, char *line)
         c->network_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
     } else if (strcmp(key, "server_color") == 0) {
         c->server_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
+    } else if (strcmp(key, "archive_on") == 0) {
+        c->archive_on = strcmp(value, "0") != 0;
     } else if (strcmp(key, "archive_color") == 0) {
         c->archive_color = clampInt(atoi(value), 0, SOURCE_COLOR_CHOICES - 1);
     } else if (strcmp(key, "screen_off") == 0) {
@@ -123,6 +125,7 @@ void configLoad(Config *c)
     c->source = LIBRARY_CARD;
     c->welcomed = false;
     c->online_used = false;
+    c->archive_on = true;
     c->shuffle = false;
     c->resume = RESUME_PLAYING;
     c->clock_24h = true;
@@ -191,7 +194,7 @@ bool configSave(const Config *c)
     if (c->language[0] && !strpbrk(c->language, "\r\n"))
         fprintf(f, "language=%s\n", c->language);
     fprintf(f, "show_lyrics=%d\nwelcomed=%d\n", c->show_lyrics ? 1 : 0, c->welcomed ? 1 : 0);
-    fprintf(f, "online=%d\n", c->online_used ? 1 : 0);
+    fprintf(f, "online=%d\narchive_on=%d\n", c->online_used ? 1 : 0, c->archive_on ? 1 : 0);
     fprintf(f, "update_check=%d\nupdate_checked=%lld\n", c->update_check ? 1 : 0, c->update_checked);
     if (c->update_tag[0] && !strpbrk(c->update_tag, "\r\n"))
         fprintf(f, "update_tag=%s\n", c->update_tag);

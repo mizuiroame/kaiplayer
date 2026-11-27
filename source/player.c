@@ -11,6 +11,8 @@
 #include "kfile.h"
 #include "lang.h"
 #include "resampler.h"
+#include "stream.h"
+#include "streamfile.h"
 #include "tags.h"
 #include "tempo.h"
 #include "util.h"
@@ -165,7 +167,10 @@ static bool loadCurrent(void)
             mutexUnlock(&g_lock);
             return false;
         }
-        snprintf(g_error, sizeof(g_error), T("Could not open: %s"), utilFileName(path));
+        if (streamIsLocation(path) && !streamFileEnabled())  // Not a broken file: its source is off.
+            snprintf(g_error, sizeof(g_error), "%s", T("The Internet Archive is turned off in Settings: its songs don't play."));
+        else
+            snprintf(g_error, sizeof(g_error), T("Could not open: %s"), utilFileName(path));
         if (kfileIsRemote(path) && ++network_failures >= MAX_NETWORK_FAILURES) {
             mutexUnlock(&g_lock);
             break;  // Without waiting for each of the others in turn.

@@ -197,7 +197,10 @@ static void settingValue(const App *app, SettingRow row, uint64_t now_ns, char *
     case SETTING_UPDATE_NOW: appUpdatesValue(app, row, out, size); break;
     case SETTING_SRV_TEST:
     case SETTING_SRV_FORGET: out[0] = '\0'; break;
-    case SETTING_OPEN_ARCHIVE:  // Nothing to set up: just the arrow.
+    case SETTING_OPEN_ARCHIVE:  // Nothing to set up: Off when it's off, else just the arrow.
+        snprintf(out, size, "%s", app->config.archive_on ? "" : T("Off"));
+        break;
+    case SETTING_IA_ENABLED: snprintf(out, size, "%s", app->config.archive_on ? T("On") : T("Off")); break;
     case SETTING_OPEN_LIBRARY:
     case SETTING_OPEN_PLAYBACK:
     case SETTING_OPEN_DISPLAY: out[0] = '\0'; break;  // Just the arrow: these open a page.

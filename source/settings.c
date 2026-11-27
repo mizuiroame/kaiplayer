@@ -11,16 +11,16 @@ static const char *const ROW_LABELS[SETTING_COUNT] = {
     N_("User and password"), N_("Test the connection"), N_("Certificate check"), N_("Forget this server"),
     N_("Remember the password"), N_("Allow without signing (old NAS)"), N_("Credits and licenses"),
     N_("Check once a day"), N_("Look for an update"), N_("Color"), N_("Color"), N_("Certificate check"),
-    N_("API key"), N_("Internet Archive"), N_("Color"),
+    N_("API key"), N_("Internet Archive"), N_("Color"), N_("Use the Internet Archive"),
 };
 
 // The same pages, in the same order, as KaiVideo's and KaiRadio's Settings.
-// The sources' pages come after Library; the Internet Archive is KaiPlayer's own (it needs no address, only
-// its color).
+// The sources' pages come after Library; the Internet Archive is KaiPlayer's own (it needs no address: it's
+// on or off, and its color).
 static const SettingRow MAIN_ROWS[] = {SETTING_OPEN_LIBRARY, SETTING_OPEN_NETWORK, SETTING_OPEN_SERVER,
                                        SETTING_OPEN_ARCHIVE, SETTING_OPEN_PLAYBACK, SETTING_OPEN_DISPLAY,
                                        SETTING_ABOUT};
-static const SettingRow ARCHIVE_ROWS[] = {SETTING_IA_COLOR};
+static const SettingRow ARCHIVE_ROWS[] = {SETTING_IA_ENABLED, SETTING_IA_COLOR};
 static const SettingRow LIBRARY_ROWS[] = {SETTING_LIBRARY, SETTING_RESCAN};
 static const SettingRow NETWORK_ROWS[] = {SETTING_NET_ADDRESS,     SETTING_NET_ACCOUNT, SETTING_NET_REMEMBER,
                                           SETTING_NET_UNSIGNED,    SETTING_NET_CERTIFICATE, SETTING_NET_COLOR,

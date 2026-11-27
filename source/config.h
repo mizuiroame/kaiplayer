@@ -44,6 +44,7 @@ typedef struct {
     int network_color;           // The network folder's color: 0 its own, else a preset accent + 1.
     int server_color;            // Navidrome's, the same way.
     int archive_color;           // The Internet Archive's, the same way.
+    bool archive_on;             // The Internet Archive is a source (On by default); Off: nothing connects to it.
     int screen_off_minutes;      // Turn the screen off after this long idle while playing; 0 never.
     int now_style;               // NowStyle: cover, vinyl, CD or cassette.
     bool show_lyrics;            // Now Playing shows a song's synced lyrics when it has them.

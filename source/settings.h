@@ -44,6 +44,7 @@ typedef enum {
     SETTING_SRV_API_KEY,    // Types an API key instead of a user and password, and signs in.
     SETTING_OPEN_ARCHIVE,   // Opens the Internet Archive's page.
     SETTING_IA_COLOR,       // The color the Internet Archive wears.
+    SETTING_IA_ENABLED,     // The Internet Archive on (a source) or off (nothing connects to it).
     SETTING_COUNT,
 } SettingRow;
 

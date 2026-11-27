@@ -199,6 +199,7 @@ void appChangeSetting(App *app, SettingRow row, int delta)
         app->config.server_color = (app->config.server_color + delta + SOURCE_COLOR_CHOICES) % SOURCE_COLOR_CHOICES;
         configSave(&app->config);
         break;
+    case SETTING_IA_ENABLED: appStreamSetEnabled(app, !app->config.archive_on); break;
     case SETTING_IA_COLOR:
         app->config.archive_color = (app->config.archive_color + delta + SOURCE_COLOR_CHOICES) % SOURCE_COLOR_CHOICES;
         configSave(&app->config);

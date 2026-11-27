@@ -28,6 +28,8 @@ static unsigned g_last_serial;  // The newest request: older ones were called of
 
 bool appStreamEnsureNetwork(App *app)
 {
+    if (!streamFileEnabled())
+        return false;  // Off in Settings: nothing connects to it.
     if (!g_network) {
         g_network = netInit();
         if (g_network) {
@@ -44,6 +46,9 @@ bool appStreamEnsureNetwork(App *app)
 
 void appStreamStart(App *app)
 {
+    streamFileSetEnabled(app->config.archive_on);
+    if (!app->config.archive_on && app->config.source == LIBRARY_ARCHIVE)
+        app->config.source = LIBRARY_CARD;  // Turned off: the card's.
     if (app->config.online_used || app->config.source == LIBRARY_ARCHIVE)
         appStreamEnsureNetwork(app);  // A playlist, the resumed queue or the source shown may need it.
 }
@@ -352,6 +357,15 @@ bool appStreamMenuSong(App *app, char *location, size_t size)
         return false;
     snprintf(location, size, "%s", s->list.items[row].location);
     return true;
+}
+
+void appStreamSetEnabled(App *app, bool on)
+{
+    app->config.archive_on = on;
+    streamFileSetEnabled(on);
+    configSave(&app->config);
+    if (!on && app->config.source == LIBRARY_ARCHIVE)
+        appSetLibrarySource(app, LIBRARY_CARD);  // Back to the card's, and says so.
 }
 
 void appStreamHandleHome(App *app, uint64_t pressed)

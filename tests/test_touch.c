@@ -94,8 +94,10 @@ static void testSettings(void)
     CHECK(rows[0] == SETTING_OPEN_LIBRARY && rows[1] == SETTING_OPEN_NETWORK && rows[2] == SETTING_OPEN_SERVER &&
           rows[3] == SETTING_OPEN_ARCHIVE && rows[4] == SETTING_OPEN_PLAYBACK && rows[5] == SETTING_OPEN_DISPLAY &&
           rows[6] == SETTING_ABOUT);
-    // The Internet Archive needs nothing set up: its page has its color only, which steps as the others' do.
-    CHECK(settingsPageRows(SETTINGS_PAGE_ARCHIVE, rows) == 1 && rows[0] == SETTING_IA_COLOR);
+    // The Internet Archive needs nothing set up: its page turns it on or off, and has its color.
+    CHECK(settingsPageRows(SETTINGS_PAGE_ARCHIVE, rows) == 2 && rows[0] == SETTING_IA_ENABLED &&
+          rows[1] == SETTING_IA_COLOR);
+    CHECK(settingsRowEditable(SETTING_IA_ENABLED));
     CHECK(settingsRowPage(SETTING_OPEN_ARCHIVE) == SETTINGS_PAGE_ARCHIVE &&
           settingsPageRow(SETTINGS_PAGE_ARCHIVE) == SETTING_OPEN_ARCHIVE);
     CHECK(settingsRowEditable(SETTING_IA_COLOR) && settingsPageNote(SETTINGS_PAGE_ARCHIVE));

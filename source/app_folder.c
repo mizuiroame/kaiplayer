@@ -10,6 +10,7 @@
 #include "dav.h"
 #include "lang.h"
 #include "playlist.h"
+#include "streamfile.h"
 #include "subsonic.h"
 
 #define DEVICE_ROOT "sdmc:/"
@@ -44,7 +45,8 @@ bool appSourceReady(LibrarySource source)
     switch (source) {
     case LIBRARY_NETWORK: return appNetworkReady();
     case LIBRARY_SERVER: return appServerReady();
-    default: return true;  // The card's, and the Internet Archive's: nothing to set up.
+    case LIBRARY_ARCHIVE: return streamFileEnabled();  // Nothing to set up: on, or off in Settings.
+    default: return true;
     }
 }
 
@@ -65,8 +67,7 @@ LibrarySource appNextLibrarySource(const App *app)
 
 bool appCanSwitchSource(const App *app)
 {
-    (void)app;
-    return true;  // The Internet Archive is always there to switch to.
+    return appNetworkReady() || appServerReady() || streamFileEnabled() || app->config.source != LIBRARY_CARD;
 }
 
 void appSwitchLibrarySource(App *app)
@@ -100,8 +101,9 @@ void appOpenFolders(App *app)
 void appSetLibrarySource(App *app, LibrarySource source)
 {
     if (!appSourceReady(source)) {
-        appToast(app, source == LIBRARY_SERVER ? T("Sign in to the Navidrome server in Settings first.")
-                                               : T("Set up the network folder in Settings first."));
+        appToast(app, source == LIBRARY_SERVER    ? T("Sign in to the Navidrome server in Settings first.")
+                      : source == LIBRARY_ARCHIVE ? T("The Internet Archive is turned off in Settings.")
+                                                  : T("Set up the network folder in Settings first."));
         return;
     }
     if (app->config.source == source)
