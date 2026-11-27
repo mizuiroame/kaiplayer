@@ -13,7 +13,7 @@ changed. KaiPlayer still shows the real titles from the tags.
 Run it from PowerShell or cmd: Git Bash turns "/music" into a Windows path.
 
 Names: accents are dropped (Canción -> Cancion, Ñandú -> Nandu); other
-characters such as Japanese become "_" (04 みずいろの雨.mp3 -> 04 _.mp3).
+characters such as Japanese become "_" (04 夜の港.mp3 -> 04 _.mp3).
 Files already on the console with the same size are skipped, so an
 interrupted upload can be run again. Needs only Python 3.8+.
 """

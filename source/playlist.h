@@ -2,7 +2,7 @@
 // (sdmc:/playlists before one is chosen). Paths are written relative to the
 // playlist's folder, so other players can read the files.
 //
-// A playlist's name can have any characters ("Español", "松原みき"), but its
+// A playlist's name can have any characters ("Español", "架空みどり"), but its
 // file gets a plain one the Switch 2 can list ("Espanol.m3u8"), with the
 // name in a "#PLAYLIST:" line. The rest of the app uses the names.
 #pragma once

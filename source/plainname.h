@@ -1,7 +1,7 @@
 // Plain (ASCII) file names that the Switch 2 can list. The console's file
 // system leaves names with other characters (accents, Japanese) out of its
 // folders, so a name the user sees can be anything, but the file gets one of
-// these: "Español" -> "Espanol", "松原みき" -> "Playlist".
+// these: "Español" -> "Espanol", "架空みどり" -> "Playlist".
 #pragma once
 
 #include <stdbool.h>

@@ -32,8 +32,8 @@ limitation of the console, not of KaiPlayer:
 KaiPlayer takes each song's title, artist and album from its tags (ID3 in MP3
 and DSD, Vorbis comments in FLAC, Ogg and Opus, MP4 tags in `.m4a`), not from
 the file name, and tags
-can hold any language. A file renamed `04 Mizuiro no Ame.mp3` is still shown
-as **みずいろの雨 · 八神純子 · 素顔の私**, with its embedded cover, and
+can hold any language. A file renamed `04 Yoru no Minato.mp3` is still shown
+as **夜の港 · 夜灯楽団 · 夜灯り**, with its embedded cover, and
 `06 Cancion.flac` as **Canción**.
 
 Make sure your songs are tagged (most music from stores or ripped with a good
@@ -67,7 +67,7 @@ python kaiupload.py 192.168.1.50 "G:\Music\Spanish album" /music --port 5000
   server asks for them.
 - Accents are dropped (`06 Canción.mp3` → `06 Cancion.mp3`, `Ñandú` →
   `Nandu`), and characters such as Japanese become `_`
-  (`04 みずいろの雨.mp3` → `04 _.mp3`).
+  (`04 夜の港.mp3` → `04 _.mp3`).
 - Run it with `--dry-run` first to see the names it will use.
 - Files already on the console with the same size are skipped, so you can run
   it again after adding songs or if an upload stops.
@@ -80,14 +80,14 @@ hidden. You can rename or delete it with FileZilla's
 current remote folder):
 
 ```
-RNFR 04 みずいろの雨.mp3
-RNTO 04 Mizuiro no Ame.mp3
+RNFR 04 夜の港.mp3
+RNTO 04 Yoru no Minato.mp3
 ```
 
 or, to delete it:
 
 ```
-DELE 04 みずいろの雨.mp3
+DELE 04 夜の港.mp3
 ```
 
 `SIZE <name>` tells you whether a hidden file is there: it answers `213`

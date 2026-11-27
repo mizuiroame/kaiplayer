@@ -143,8 +143,8 @@ static void testPlainNames(void)
     CHECK(plain("Ñandú Œuvre", "Nandu Ouvre"));
     CHECK(plain("Why’d You Only Call Me When You’re High?", "Why'd You Only Call Me When You're High_"));
     CHECK(plain("¿Qué? — sí", "Que_ - si"));
-    CHECK(plain("松原みき", "Playlist"));
-    CHECK(plain("Best of 松原みき", "Best of _"));
+    CHECK(plain("架空みどり", "Playlist"));
+    CHECK(plain("Best of 架空みどり", "Best of _"));
     CHECK(plain("..hidden.", "hidden"));
     CHECK(plain("  spaced   out  ", "spaced out"));
     CHECK(plainNameIs("Espanol (2)") && !plainNameIs("Español") && !plainNameIs("a:b"));
@@ -165,32 +165,32 @@ static void testPlaylistTitles(void)
     CHECK(playlistCreate("Espanol"));  // Another name: its file gets a number.
     CHECK(playlistPathFor("Espanol", path, sizeof(path)) &&
           strcmp(path, TMP_ROOT "/titled/Espanol (2).m3u8") == 0);
-    CHECK(playlistCreate("松原みき") && playlistCreate("中原めいこ"));
-    CHECK(playlistPathFor("中原めいこ", path, sizeof(path)) &&
+    CHECK(playlistCreate("架空みどり") && playlistCreate("架空あおい"));
+    CHECK(playlistPathFor("架空あおい", path, sizeof(path)) &&
           strcmp(path, TMP_ROOT "/titled/Playlist (2).m3u8") == 0);
 
     TrackList add = {0};
     trackListAdd(&add, TMP_ROOT "/lib/z.mp3");
-    CHECK(playlistAddTracks("松原みき", &add) == 1);  // Saving keeps the name.
+    CHECK(playlistAddTracks("架空みどり", &add) == 1);  // Saving keeps the name.
     trackListFree(&add);
     PlaylistIndex index;
     CHECK(playlistIndexLoad(&index) && index.count == 4);
     if (index.count == 4)
         CHECK(strcmp(index.names[0], "Espanol") == 0 && strcmp(index.names[1], "Español") == 0 &&
-              strcmp(index.names[3], "松原みき") == 0);
+              strcmp(index.names[3], "架空みどり") == 0);
     playlistIndexFree(&index);
 
     CHECK(playlistRename("Español", "Españoles") && playlistExists("Españoles") && !playlistExists("Español"));
     CHECK(playlistPathFor("Españoles", path, sizeof(path)) &&
           strcmp(path, TMP_ROOT "/titled/Espanoles.m3u8") == 0);
-    CHECK(playlistRename("松原みき", "Miki Matsubara"));  // Now the file name can say it.
-    CHECK(playlistPathFor("Miki Matsubara", path, sizeof(path)) &&
-          strcmp(path, TMP_ROOT "/titled/Miki Matsubara.m3u8") == 0);
+    CHECK(playlistRename("架空みどり", "Midori Kakuu"));  // Now the file name can say it.
+    CHECK(playlistPathFor("Midori Kakuu", path, sizeof(path)) &&
+          strcmp(path, TMP_ROOT "/titled/Midori Kakuu.m3u8") == 0);
     TrackList loaded;
     CHECK(playlistLoad(path, &loaded) && loaded.count == 1);
     trackListFree(&loaded);
-    CHECK(!playlistRename("Miki Matsubara", "ESPANOL"));  // Taken, ignoring case.
-    CHECK(playlistDelete("中原めいこ") && !playlistExists("中原めいこ"));
+    CHECK(!playlistRename("Midori Kakuu", "ESPANOL"));  // Taken, ignoring case.
+    CHECK(playlistDelete("架空あおい") && !playlistExists("架空あおい"));
 }
 
 static void testResume(void)

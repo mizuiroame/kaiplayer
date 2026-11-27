@@ -50,7 +50,7 @@ their covers, all on one screen:
 
 Artists and albums come from the tags (album artist, artist, album, track
 and disc numbers, year), **not from the folder names**: a folder named
-`Miki Matsubara` whose songs are tagged 松原みき shows as **松原みき**. Songs
+`Midori Kakuu` whose songs are tagged 架空みどり shows as **架空みどり**. Songs
 without tags are grouped by folder, as `Artist/Album/song.mp3`.
 
 Audiobooks in your music folder (every `.m4b`, and the files in a folder named

@@ -42,7 +42,7 @@ when playing.
 ## Playlist names
 
 Playlist names are typed on the console's own keyboard and can have **any
-characters**: accents (`Español`), Japanese (`松原みき`) and so on, up to 48.
+characters**: accents (`Español`), Japanese (`架空みどり`) and so on, up to 48.
 
 - Since the console hides files whose names have such characters (see
   [File names and tags](file-names.md)), the file gets a plain version of
