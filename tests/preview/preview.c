@@ -34,8 +34,8 @@ static const char *const TRACKS[] = {
     "sdmc:/Music/Night Drive/01 - Overpass.mp3",
     "sdmc:/Music/Night Drive/02 - Ñandú Express.mp3",
     "sdmc:/Music/Night Drive/03 - Glass City.ogg",
-    "sdmc:/Music/東京の夜/01 - 夜明けの歌.flac",
-    "sdmc:/Music/東京の夜/02 - 桜の木の下で.flac",
+    "sdmc:/Music/夜灯り/01 - 夜の港.flac",
+    "sdmc:/Music/夜灯り/02 - 窓辺の雨.flac",
 };
 #define TRACK_COUNT (sizeof(TRACKS) / sizeof(TRACKS[0]))
 
@@ -286,7 +286,7 @@ static void buildCatalog(void)
         {"Aurora Fields", "Paper Boats & Other Stories", 2024}, {"Aurora Fields", "Paper Boats & Other Stories", 2024},
         {"Aurora Fields", "Paper Boats & Other Stories", 2024}, {"Aurora Fields", "Neon Harbor (Single)", 2025},
         {"The Night Drive Band", "Night Drive", 2019}, {"The Night Drive Band", "Night Drive", 2019},
-        {"The Night Drive Band", "Glass City", 2022}, {"八神純子", "東京の夜", 1983}, {"八神純子", "東京の夜", 1983},
+        {"The Night Drive Band", "Glass City", 2022}, {"夜灯楽団", "夜灯り", 1983}, {"夜灯楽団", "夜灯り", 1983},
     };
     catalogInit(&g_catalog);
     for (size_t i = 0; i < TRACK_COUNT; i++) {
@@ -947,7 +947,7 @@ int main(int argc, char **argv)
     addEntry(&app.browser, "Aurora Fields", true);
     addEntry(&app.browser, "Night Drive", true);
     addEntry(&app.browser, "Soundtracks", true);
-    addEntry(&app.browser, "東京の夜", true);
+    addEntry(&app.browser, "夜灯り", true);
     addEntry(&app.browser, "intro.mp3", false);
     addEntry(&app.browser, "voice memo 2026-11-02.wav", false);
     app.browser.cursor = 1;
