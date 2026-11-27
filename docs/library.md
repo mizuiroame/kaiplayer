@@ -10,7 +10,8 @@ card's library is the whole card, and the pill says **SD card (whole card)**.
 
 The library can also come from a [network folder](network-folder.md) or a
 [Navidrome server](navidrome.md), and the music from the
-[Internet Archive](internet-archive.md), which needs nothing set up. The pill
+[Internet Archive](internet-archive.md), which needs nothing set up (it can be
+turned off in Settings). The pill
 next to KaiPlayer's name says which is shown. **X** on Home or on Library's
 first page, a tap on the pill, or **+ → Go to the …** goes to the next one:
 **SD card**, **network folder**, **Navidrome** (those set up), **Internet

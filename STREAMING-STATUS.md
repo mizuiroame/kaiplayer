@@ -16,6 +16,12 @@ what's left, so the work can be picked up again. Not for the release notes.
   **+ → Go to the Internet Archive**), with its own color (amber, changeable as the others'), and not a
   row in Library (it showed inside the card's and Navidrome's libraries). Its Settings page has its
   Color only, as the per-source color convention asks. "Show 50 more" added (up to 500).
+- **2026-11-27, owner (after a console test: works well): an On/Off switch**, "Use the Internet
+  Archive", On by default, on its Settings page before Color (the other sources have no switch: they
+  are on once set up, off when forgotten; the Archive's page is where its settings are). Off: out of
+  the cycle and the + menu, the card's library if it was shown, nothing connects to archive.org
+  (streamfile.c refuses to open, the network isn't started for it), and its songs say "The Internet
+  Archive is turned off in Settings: its songs don't play." (when asked to play, and as each fails).
 
 ## What the Internet Archive's terms say (read 2026-11-26)
 
@@ -95,6 +101,7 @@ None open.
 - [x] Preview scenes (made-up content).
 - [x] Docs: docs/internet-archive.md, README, library, controls, limitations, legal, building.
 - [x] The Archive as a source (2026-11-27): pill, X, + menu, its color and Settings page, Home, "more".
+- [x] Its On/Off switch (2026-11-27).
 - [ ] Console test (owner).
 - Left for later: a cover for items without one; browsing the Archive's collections beyond these six
   rows.

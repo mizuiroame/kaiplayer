@@ -19,9 +19,9 @@ account and no key. The Archive is best for:
 |----------------|-------------------|
 | ![The Internet Archive's first page](screenshots/internet_archive.png) | ![A concert's songs](screenshots/internet_archive_concert.png) |
 
-| Home while it's the source | Its place in Settings |
+| Home while it's the source | Its Settings page |
 |----------------------------|-----------------------|
-| ![Home with the Internet Archive as the source](screenshots/internet_archive_home.png) | ![Settings with the Internet Archive's page](screenshots/internet_archive_settings.png) |
+| ![Home with the Internet Archive as the source](screenshots/internet_archive_home.png) | ![The Internet Archive's Settings page: on or off, and its color](screenshots/internet_archive_settings.png) |
 
 ## Going to it
 
@@ -46,6 +46,21 @@ source:
 The other sources' libraries aren't shown while the Archive is, and the
 Archive doesn't show inside them. **+ → Update the library** isn't offered for
 it: each page asks the Archive when it opens.
+
+## Turning it off
+
+**+ → Settings → Internet Archive → Use the Internet Archive** is **On** by
+default. Turned **Off**:
+
+- it leaves the sources: **X**, the pill and the + menu go from Navidrome (or
+  the network folder, or the card) back to the SD card, and if it was the
+  source shown, the SD card's library shows;
+- nothing connects to archive.org, not even when KaiPlayer starts;
+- its songs in a playlist or the queue don't play, and say **The Internet
+  Archive is turned off in Settings: its songs don't play.** The main
+  Settings page shows **Off** on its row.
+
+Turn it **On** again on the same page.
 
 ## Its pages
 

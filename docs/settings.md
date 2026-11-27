@@ -28,7 +28,8 @@ folder**, **Navidrome**, **Internet Archive**, **Playback**, **Display** and
 | Navidrome | Test the connection | **A** tries it, and says which server answered and how many songs it has, or what went wrong |
 | Navidrome | Certificate check | On (default), or Off for an `https://` server with its own certificate |
 | Navidrome | Forget this server | **A** removes the address and the sign-in |
-| Internet Archive | Color | Its own (amber, default), or one of the accent colors. Nothing else to set up: see [Internet Archive](internet-archive.md) |
+| Internet Archive | Use the Internet Archive | On (default), or Off: it leaves the sources and nothing connects to it. See [Internet Archive](internet-archive.md) |
+| Internet Archive | Color | Its own (amber, default), or one of the accent colors |
 | Playback | Sleep timer | Off, or any number of minutes up to 600 |
 | Playback | Resume where you left off | Keep playing (default), Paused or Off |
 | Playback | Screen off while playing | Never (default), or after 1, 2, 5, 10 or 30 minutes without input |
