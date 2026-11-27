@@ -1310,3 +1310,12 @@ Show 50 more
 
 The Internet Archive is asked each time you open a page: nothing to update.
 每次打开页面都会请求 Internet Archive：没有需要更新的内容。
+
+The Internet Archive is turned off in Settings.
+Internet Archive 已在设置中关闭。
+
+The Internet Archive is turned off in Settings: its songs don't play.
+Internet Archive 已在设置中关闭：其歌曲无法播放。
+
+Use the Internet Archive
+使用 Internet Archive

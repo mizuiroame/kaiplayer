@@ -1310,3 +1310,12 @@ Show 50 more
 
 The Internet Archive is asked each time you open a page: nothing to update.
 Internet Archiveにはページを開くたびに問い合わせます。更新するものはありません。
+
+The Internet Archive is turned off in Settings.
+Internet Archiveは設定でオフになっています。
+
+The Internet Archive is turned off in Settings: its songs don't play.
+Internet Archiveは設定でオフになっています。その曲は再生されません。
+
+Use the Internet Archive
+Internet Archiveを使う

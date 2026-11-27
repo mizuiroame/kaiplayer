@@ -1310,3 +1310,12 @@ Mostrar 50 más
 
 The Internet Archive is asked each time you open a page: nothing to update.
 Al Internet Archive se le pregunta cada vez que abres una página: no hay nada que actualizar.
+
+The Internet Archive is turned off in Settings.
+El Internet Archive está desactivado en Configuración.
+
+The Internet Archive is turned off in Settings: its songs don't play.
+El Internet Archive está desactivado en Configuración: sus canciones no suenan.
+
+Use the Internet Archive
+Usar el Internet Archive
